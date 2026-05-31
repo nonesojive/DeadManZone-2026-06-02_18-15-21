@@ -1,0 +1,104 @@
+using System.Linq;
+using DeadManZone.Core.Board;
+using DeadManZone.Core.Common;
+using DeadManZone.Core.Content;
+using DeadManZone.Core.Shop;
+using NUnit.Framework;
+
+namespace DeadManZone.Core.Tests
+{
+    public class ShopGeneratorTests
+    {
+        private static BoardLayout DefaultLayout() =>
+            BoardLayout.CreateStandard(
+                width: 8,
+                height: 6,
+                rearRows: 2,
+                supportRows: 2,
+                specialTiles: new[] { new GridCoord(1, 2) });
+
+        private static BoardState BuildBoardWithSupplyDepot()
+        {
+            var board = new BoardState(DefaultLayout());
+            board.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 0));
+            return board;
+        }
+
+        [Test]
+        public void SupplyDepot_AppliesGoldDiscount()
+        {
+            var board = BuildBoardWithSupplyDepot();
+            var registry = TestContentRegistry.Create();
+            var generator = new ShopGenerator(registry);
+            var shop = generator.Generate(board, factionId: "iron_vanguard", round: 2, seed: 999);
+
+            Assert.That(shop.Modifiers.GoldDiscountPercent, Is.GreaterThanOrEqualTo(10));
+        }
+
+        [Test]
+        public void SameSeed_ProducesSameOffers()
+        {
+            var board = new BoardState(DefaultLayout());
+            var registry = TestContentRegistry.Create();
+            var generator = new ShopGenerator(registry);
+
+            var shopA = generator.Generate(board, "iron_vanguard", round: 1, seed: 42);
+            var shopB = generator.Generate(board, "iron_vanguard", round: 1, seed: 42);
+
+            Assert.AreEqual(shopA.Offers.Count, shopB.Offers.Count);
+            for (int i = 0; i < shopA.Offers.Count; i++)
+            {
+                Assert.AreEqual(shopA.Offers[i].PieceId, shopB.Offers[i].PieceId);
+                Assert.AreEqual(shopA.Offers[i].Lane, shopB.Offers[i].Lane);
+            }
+        }
+
+        [Test]
+        public void CommandBunker_AddsExtraGeneralSlot()
+        {
+            var board = new BoardState(DefaultLayout());
+            board.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0));
+
+            var registry = TestContentRegistry.Create();
+            var generator = new ShopGenerator(registry);
+            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 100);
+
+            Assert.That(shop.Modifiers.ExtraGeneralSlots, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void GoldDiscount_ReducesOfferGoldPrice()
+        {
+            var boardWithout = new BoardState(DefaultLayout());
+            var boardWith = BuildBoardWithSupplyDepot();
+            var registry = TestContentRegistry.Create();
+            var generator = new ShopGenerator(registry);
+
+            var shopWithout = generator.Generate(boardWithout, "iron_vanguard", round: 1, seed: 50);
+            var shopWith = generator.Generate(boardWith, "iron_vanguard", round: 1, seed: 50);
+
+            var generalWithout = shopWithout.Offers.First(o => o.Lane == ShopLane.General && o.GoldPrice > 0);
+            var matchingWith = shopWith.Offers.First(o =>
+                o.Lane == ShopLane.General && o.PieceId == generalWithout.PieceId);
+
+            Assert.That(matchingWith.GoldPrice, Is.LessThan(generalWithout.GoldPrice));
+        }
+
+        [Test]
+        public void FieldWorkshop_GuaranteesEngineerOffer()
+        {
+            var board = new BoardState(DefaultLayout());
+            board.TryPlace(TestPieces.FieldWorkshop(), new GridCoord(1, 0));
+
+            var registry = new ContentRegistry();
+            registry.Register(TestPieces.RifleSquad(), ShopLane.General);
+            registry.Register(TestPieces.CommandBunker(), ShopLane.General);
+
+            var generator = new ShopGenerator(registry);
+            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 7);
+
+            Assert.That(shop.Offers.Any(o => o.Lane == ShopLane.Engineers), Is.True);
+            Assert.IsTrue(shop.Modifiers.GuaranteeEngineerOffer);
+        }
+    }
+}
