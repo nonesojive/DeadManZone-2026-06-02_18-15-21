@@ -2,9 +2,7 @@
   "name": "DeadManZone.Core.Tests",
   "rootNamespace": "DeadManZone.Core.Tests",
   "references": [
-    "DeadManZone.Core",
-    "UnityEngine.TestRunner",
-    "UnityEditor.TestRunner"
+    "DeadManZone.Core"
   ],
   "includePlatforms": [
     "Editor"
