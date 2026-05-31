@@ -2,7 +2,8 @@
   "name": "DeadManZone.Core.Tests",
   "rootNamespace": "DeadManZone.Core.Tests",
   "references": [
-    "DeadManZone.Core"
+    "DeadManZone.Core",
+    "DeadManZone.Data"
   ],
   "includePlatforms": [
     "Editor"

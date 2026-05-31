@@ -1,0 +1,14 @@
+{
+  "name": "DeadManZone.Data.Editor",
+  "rootNamespace": "DeadManZone.Data.Editor",
+  "references": [
+    "DeadManZone.Data",
+    "DeadManZone.Core"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "autoReferenced": false
+}
