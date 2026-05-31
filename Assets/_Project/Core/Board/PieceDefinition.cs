@@ -1,0 +1,39 @@
+using System.Collections.Generic;
+
+namespace DeadManZone.Core.Board
+{
+    public sealed class PieceDefinition
+    {
+        public string Id { get; init; }
+        public string DisplayName { get; init; }
+        public PieceCategory Category { get; init; }
+        public PieceShape Shape { get; init; }
+        public IReadOnlyList<string> Tags { get; init; } = System.Array.Empty<string>();
+        public int MaxHp { get; init; }
+        public int BaseDamage { get; init; }
+        public int CooldownTicks { get; init; }
+        public int GoldCost { get; init; }
+        public int RequisitionCost { get; init; }
+        public ShopModifierFlags ShopModifiers { get; init; }
+        public CommandActionFlags CommandActions { get; init; }
+    }
+
+    [System.Flags]
+    public enum ShopModifierFlags
+    {
+        None = 0,
+        ExtraGeneralSlot = 1 << 0,
+        GoldDiscount10 = 1 << 1,
+        EnemyTagPreview = 1 << 2,
+        GuaranteeEngineerOffer = 1 << 3
+    }
+
+    [System.Flags]
+    public enum CommandActionFlags
+    {
+        None = 0,
+        ChangeStance = 1 << 0,
+        SpendRequisitionBuff = 1 << 1,
+        CallStrike = 1 << 2
+    }
+}
