@@ -9,11 +9,11 @@ namespace DeadManZone.Core.Combat
 
     public sealed class PhaseCommand
     {
-        public CombatPhase AfterPhase { get; init; }
-        public CommandType Type { get; init; }
-        public StanceType Stance { get; init; }
-        public int Cost { get; init; }
-        public string SourcePieceId { get; init; }
+        public CombatPhase AfterPhase { get; set; }
+        public CommandType Type { get; set; }
+        public StanceType Stance { get; set; }
+        public int Cost { get; set; }
+        public string SourcePieceId { get; set; }
     }
 
     public sealed class AvailableCommand

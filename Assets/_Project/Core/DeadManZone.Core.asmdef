@@ -1,7 +1,9 @@
 {
   "name": "DeadManZone.Core",
   "rootNamespace": "DeadManZone.Core",
-  "references": [],
+  "references": [
+    "Newtonsoft.Json"
+  ],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
