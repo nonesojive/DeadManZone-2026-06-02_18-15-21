@@ -40,7 +40,8 @@ namespace DeadManZone.Core.Tests
             Tags = new[] { "Supply" },
             MaxHp = 15,
             GoldCost = 6,
-            ShopModifiers = ShopModifierFlags.GoldDiscount10
+            ShopModifiers = ShopModifierFlags.GoldDiscount10,
+            CommandActions = CommandActionFlags.SpendRequisitionBuff
         };
 
         public static PieceDefinition FieldWorkshop() => new()
@@ -65,7 +66,20 @@ namespace DeadManZone.Core.Tests
             MaxHp = 8,
             BaseDamage = 4,
             GoldCost = 5,
-            RequisitionCost = 3
+            RequisitionCost = 3,
+            CommandActions = CommandActionFlags.CallStrike
+        };
+
+        public static PieceDefinition WeakConscript() => new()
+        {
+            Id = "weak_conscript",
+            DisplayName = "Weak Conscript",
+            Category = PieceCategory.Unit,
+            Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
+            Tags = new[] { "Infantry" },
+            MaxHp = 3,
+            BaseDamage = 1,
+            CooldownTicks = 4
         };
     }
 }
