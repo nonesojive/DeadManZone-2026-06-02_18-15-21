@@ -1,0 +1,12 @@
+{
+  "name": "DeadManZone.Game",
+  "rootNamespace": "DeadManZone.Game",
+  "references": [
+    "DeadManZone.Core",
+    "DeadManZone.Data"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "autoReferenced": true
+}
