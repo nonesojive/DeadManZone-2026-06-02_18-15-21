@@ -3,7 +3,8 @@
   "rootNamespace": "DeadManZone.Core.Tests",
   "references": [
     "DeadManZone.Core",
-    "DeadManZone.Data"
+    "DeadManZone.Data",
+    "DeadManZone.Game"
   ],
   "includePlatforms": [
     "Editor"
