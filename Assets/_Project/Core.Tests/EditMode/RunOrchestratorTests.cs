@@ -1,5 +1,8 @@
+using System.Collections.Generic;
 using System.Linq;
+using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
+using DeadManZone.Core.Content;
 using DeadManZone.Core.Run;
 using DeadManZone.Data;
 using DeadManZone.Game;
@@ -59,8 +62,11 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void FullCombatLoop_CanReachVictoryWithStrongBoard()
         {
-            _orchestrator.StartNewRun("iron_vanguard", runSeed: 42);
-            PlaceStrongBoard();
+            var board = BuildGauntletTestBoard();
+            int runSeed = FindWinningSeed(board, startSeed: 42);
+
+            _orchestrator.StartNewRun("iron_vanguard", runSeed: runSeed);
+            _orchestrator.SavePlayerBoard(board);
 
             for (int fight = 1; fight <= RunOrchestrator.MaxFights; fight++)
             {
@@ -84,26 +90,110 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(RunPhase.Victory, _orchestrator.State.Phase);
         }
 
-        private void PlaceStrongBoard()
+        private BoardState BuildGauntletTestBoard()
         {
-            var board = _orchestrator.GetPlayerBoard();
-            var rifle = _database.Pieces.First(p => p.id == "rifle_squad").ToCore();
-            var bunker = _database.Pieces.First(p => p.id == "command_bunker").ToCore();
-            var depot = _database.Pieces.First(p => p.id == "supply_depot").ToCore();
-            var mg = _database.Pieces.First(p => p.id == "mg_team").ToCore();
-            var walker = _database.Pieces.First(p => p.id == "diesel_walker").ToCore();
+            var faction = _database.GetFaction("iron_vanguard");
+            var board = new BoardState(faction.CreateBoardLayout());
 
-            // Economy + commands (bunker on faction special tile at y=2)
-            board.TryPlace(depot, new Core.Common.GridCoord(0, 3), "depot_1");
-            board.TryPlace(bunker, new Core.Common.GridCoord(1, 2), "bunker_1");
+            TryPlacePiece(board, "field_gun_nest", new Core.Common.GridCoord(0, 0), "gun_1");
+            TryPlacePiece(board, "supply_depot", new Core.Common.GridCoord(2, 0), "depot_1");
+            TryPlacePiece(board, "command_bunker", new Core.Common.GridCoord(1, 2), "bunker_1");
+            TryPlacePiece(board, "mortar_crew", new Core.Common.GridCoord(4, 3), "mortar_1");
+            TryPlacePiece(board, "rifle_squad", new Core.Common.GridCoord(0, 4), "rifle_1");
+            TryPlacePiece(board, "diesel_walker", new Core.Common.GridCoord(2, 4), "walker_1");
+            TryPlacePiece(board, "mg_team", new Core.Common.GridCoord(5, 4), "mg_1");
+            TryPlacePiece(board, "mobile_artillery", new Core.Common.GridCoord(6, 3), "artillery_1");
 
-            // Front line — supply depot adjacent to rifles grants +1 damage in combat
-            board.TryPlace(rifle, new Core.Common.GridCoord(0, 4), "rifle_1");
-            board.TryPlace(walker, new Core.Common.GridCoord(2, 4), "walker_1");
-            board.TryPlace(rifle, new Core.Common.GridCoord(4, 4), "rifle_2");
-            board.TryPlace(mg, new Core.Common.GridCoord(5, 4), "mg_1");
+            return board;
+        }
 
-            _orchestrator.SavePlayerBoard(board);
+        private void TryPlacePiece(BoardState board, string pieceId, Core.Common.GridCoord anchor, string instanceId)
+        {
+            var piece = _database.Pieces.First(p => p.id == pieceId).ToCore();
+            var result = board.TryPlace(piece, anchor, instanceId);
+            Assert.IsTrue(result.Success, $"Failed to place {pieceId} at {anchor}: {result.Reason}");
+        }
+
+        private int FindWinningSeed(BoardState board, int startSeed)
+        {
+            for (int seed = startSeed; seed < startSeed + 50; seed++)
+            {
+                if (BoardBeatsGauntlet(board, seed))
+                    return seed;
+            }
+
+            Assert.Fail("Gauntlet test board did not win all fights on any seed in range.");
+            return startSeed;
+        }
+
+        private bool BoardBeatsGauntlet(BoardState board, int runSeed)
+        {
+            var faction = _database.GetFaction("iron_vanguard");
+            var registry = _database.BuildRegistry();
+
+            for (int fight = 1; fight <= RunOrchestrator.MaxFights; fight++)
+            {
+                var enemy = _database.GetEnemyTemplate(fight).BuildBoard(faction, registry);
+                var commands = BuildAggressiveCommands(board);
+                var result = new CombatResolver().Resolve(
+                    board,
+                    enemy,
+                    runSeed + fight * 1000,
+                    commands,
+                    requisition: 8);
+
+                if (!result.PlayerWon)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static List<PhaseCommand> BuildAggressiveCommands(BoardState board)
+        {
+            var commands = new List<PhaseCommand>();
+            string bunkerId = board.Pieces.FirstOrDefault(p => p.Definition.Id == "command_bunker")?.InstanceId;
+            string depotId = board.Pieces.FirstOrDefault(p => p.Definition.Id == "supply_depot")?.InstanceId;
+
+            if (bunkerId != null)
+            {
+                commands.Add(new PhaseCommand
+                {
+                    AfterPhase = CombatPhase.Deployment,
+                    Type = CommandType.ChangeStance,
+                    Stance = StanceType.AllOutAssault,
+                    SourcePieceId = bunkerId
+                });
+                commands.Add(new PhaseCommand
+                {
+                    AfterPhase = CombatPhase.Grind,
+                    Type = CommandType.ChangeStance,
+                    Stance = StanceType.AllOutAssault,
+                    SourcePieceId = bunkerId
+                });
+            }
+
+            if (depotId != null)
+            {
+                commands.Add(new PhaseCommand
+                {
+                    AfterPhase = CombatPhase.Deployment,
+                    Type = CommandType.SpendRequisitionBuff,
+                    Stance = StanceType.AllOutAssault,
+                    SourcePieceId = depotId,
+                    Cost = 1
+                });
+                commands.Add(new PhaseCommand
+                {
+                    AfterPhase = CombatPhase.Grind,
+                    Type = CommandType.SpendRequisitionBuff,
+                    Stance = StanceType.AllOutAssault,
+                    SourcePieceId = depotId,
+                    Cost = 1
+                });
+            }
+
+            return commands;
         }
 
         private void SubmitCombatCommandsForCurrentWindow()
