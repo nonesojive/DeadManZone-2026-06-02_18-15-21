@@ -162,18 +162,21 @@ namespace DeadManZone.Core.Combat
             if (commands == null)
                 return;
 
+            int requisition = Requisition;
             foreach (var command in commands.Where(c => c.AfterPhase == completedPhase))
             {
                 _commandProcessor.TryApply(
                     command,
                     _playerBoard,
-                    ref Requisition,
+                    ref requisition,
                     _stances,
                     _playerCombatants,
                     _enemyCombatants,
                     _log,
                     completedPhase);
             }
+
+            Requisition = requisition;
         }
 
         private void RunPhase(
