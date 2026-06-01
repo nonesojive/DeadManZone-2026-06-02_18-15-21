@@ -68,18 +68,7 @@ namespace DeadManZone.Core.Tests
 
                 while (_orchestrator.State.Phase == RunPhase.Combat)
                 {
-                    if (_orchestrator.GetAvailableCommands().Count > 0)
-                    {
-                        var cmd = _orchestrator.GetAvailableCommands().First();
-                        _orchestrator.SubmitCombatCommand(new PhaseCommand
-                        {
-                            AfterPhase = _orchestrator.State.Combat.CompletedPhase,
-                            Type = cmd.Type,
-                            Stance = StanceType.AllOutAssault,
-                            SourcePieceId = cmd.SourcePieceId,
-                            Cost = cmd.RequisitionCost
-                        });
-                    }
+                    SubmitCombatCommandsForCurrentWindow();
 
                     var step = _orchestrator.AdvanceCombat();
                     if (step.Status == CombatAdvanceStatus.Completed)
@@ -100,12 +89,52 @@ namespace DeadManZone.Core.Tests
             var board = _orchestrator.GetPlayerBoard();
             var rifle = _database.Pieces.First(p => p.id == "rifle_squad").ToCore();
             var bunker = _database.Pieces.First(p => p.id == "command_bunker").ToCore();
+            var depot = _database.Pieces.First(p => p.id == "supply_depot").ToCore();
+            var mg = _database.Pieces.First(p => p.id == "mg_team").ToCore();
+            var walker = _database.Pieces.First(p => p.id == "diesel_walker").ToCore();
 
-            board.TryPlace(bunker, new Core.Common.GridCoord(0, 0), "bunker_1");
+            // Economy + commands (bunker on faction special tile at y=2)
+            board.TryPlace(depot, new Core.Common.GridCoord(0, 3), "depot_1");
+            board.TryPlace(bunker, new Core.Common.GridCoord(1, 2), "bunker_1");
+
+            // Front line — supply depot adjacent to rifles grants +1 damage in combat
             board.TryPlace(rifle, new Core.Common.GridCoord(0, 4), "rifle_1");
-            board.TryPlace(rifle, new Core.Common.GridCoord(2, 4), "rifle_2");
-            board.TryPlace(rifle, new Core.Common.GridCoord(4, 4), "rifle_3");
+            board.TryPlace(walker, new Core.Common.GridCoord(2, 4), "walker_1");
+            board.TryPlace(rifle, new Core.Common.GridCoord(4, 4), "rifle_2");
+            board.TryPlace(mg, new Core.Common.GridCoord(5, 4), "mg_1");
+
             _orchestrator.SavePlayerBoard(board);
+        }
+
+        private void SubmitCombatCommandsForCurrentWindow()
+        {
+            var available = _orchestrator.GetAvailableCommands();
+            if (available.Count == 0)
+                return;
+
+            int budget = _orchestrator.GetPrimaryActionBudget();
+            int submitted = 0;
+            var completedPhase = _orchestrator.State.Combat.CompletedPhase;
+
+            foreach (var cmd in available)
+            {
+                if (submitted >= budget)
+                    break;
+
+                if (cmd.Type == CommandType.SpendRequisitionBuff &&
+                    _orchestrator.State.Combat.Requisition < cmd.RequisitionCost)
+                    continue;
+
+                _orchestrator.SubmitCombatCommand(new PhaseCommand
+                {
+                    AfterPhase = completedPhase,
+                    Type = cmd.Type,
+                    Stance = StanceType.AllOutAssault,
+                    SourcePieceId = cmd.SourcePieceId,
+                    Cost = cmd.RequisitionCost
+                });
+                submitted++;
+            }
         }
     }
 }
