@@ -1,3 +1,4 @@
+using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Run;
@@ -45,9 +46,9 @@ namespace DeadManZone.Data
                 Height = boardHeight,
                 RearRows = rearRows,
                 SupportRows = supportRows,
-                SpecialTiles = System.Array.ConvertAll(
-                    specialTileCoords,
-                    c => new GridCoordRecord { X = c.x, Y = c.y })
+                SpecialTiles = specialTileCoords
+                    .Select(c => new GridCoordRecord { X = c.x, Y = c.y })
+                    .ToList()
             };
         }
     }

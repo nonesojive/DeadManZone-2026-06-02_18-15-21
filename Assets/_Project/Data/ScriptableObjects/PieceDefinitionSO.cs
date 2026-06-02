@@ -23,6 +23,10 @@ namespace DeadManZone.Data
         public CommandActionFlags commandActions;
         public ShopLane shopLane = ShopLane.General;
 
+        [Header("Visuals")]
+        public Sprite icon;
+        public Color categoryTint = Color.white;
+
         public PieceDefinition ToCore()
         {
             var cells = new List<GridCoord>();

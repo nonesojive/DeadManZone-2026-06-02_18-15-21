@@ -1,0 +1,17 @@
+{
+  "name": "DeadManZone.PlayMode.Tests",
+  "rootNamespace": "DeadManZone.PlayMode.Tests",
+  "references": [
+    "DeadManZone.Presentation",
+    "DeadManZone.Game",
+    "DeadManZone.Core",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "autoReferenced": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

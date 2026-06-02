@@ -38,6 +38,7 @@ namespace DeadManZone.Core.Run
         public List<string> BenchPieceIds { get; set; } = new();
         public ShopState Shop { get; set; }
         public string FrozenOfferId { get; set; }
+        public ShopOfferRecord LockedOffer { get; set; }
         public CombatSaveState Combat { get; set; }
 
         public static RunState CreateNew(string factionId, int runSeed, int startingGold, int startingRequisition)

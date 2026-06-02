@@ -1,0 +1,182 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using DeadManZone.Core.Board;
+using DeadManZone.Core.Combat;
+using DeadManZone.Game;
+using DeadManZone.Presentation.Visual;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace DeadManZone.Presentation.Combat
+{
+    public sealed class PhaseCommandPanel : MonoBehaviour
+    {
+        [SerializeField] private TMP_Text commandsText;
+        [SerializeField] private Button submitButton;
+        [SerializeField] private Button skipButton;
+        [SerializeField] private CombatDirector combatDirector;
+        [SerializeField] private Image panelBackground;
+
+        private readonly List<AvailableCommand> _available = new();
+        private CombatPhase _completedPhase;
+        private int _budget;
+
+        private void Awake()
+        {
+            if (combatDirector == null)
+                combatDirector = GetComponentInParent<CombatDirector>();
+
+            if (submitButton != null)
+                submitButton.onClick.AddListener(SubmitDefaultCommands);
+            if (skipButton != null)
+                skipButton.onClick.AddListener(SkipCommands);
+
+            if (panelBackground != null)
+                UiThemeApplicator.ApplyCard(panelBackground);
+        }
+
+        public void ShowCommands(
+            IReadOnlyList<AvailableCommand> availableCommands,
+            CombatPhase completedPhase,
+            int budget,
+            int totalSlots)
+        {
+            _available.Clear();
+            if (availableCommands != null)
+                _available.AddRange(availableCommands);
+
+            _completedPhase = completedPhase;
+            _budget = Mathf.Max(0, budget);
+            gameObject.SetActive(true);
+
+            if (commandsText == null)
+                return;
+
+            var theme = UiThemeProvider.Current;
+            UiThemeApplicator.ApplyLabel(commandsText, false, theme);
+            commandsText.text = BuildDisplayText(completedPhase, budget, totalSlots).TrimEnd();
+        }
+
+        public void Hide() => gameObject.SetActive(false);
+
+        public void InitializeForTests(TMP_Text testCommandsText) => commandsText = testCommandsText;
+
+        private string BuildDisplayText(CombatPhase completedPhase, int budget, int totalSlots)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(GetPhaseTitle(completedPhase));
+            sb.AppendLine(GetPhaseFlavor(completedPhase));
+            sb.AppendLine(FormatBudget(budget, totalSlots));
+
+            if (_available.Count == 0)
+            {
+                sb.AppendLine("No commands available.");
+                sb.AppendLine("Skip to continue.");
+                return sb.ToString();
+            }
+
+            sb.AppendLine("Submit applies (in order):");
+            foreach (var cmd in _available)
+                sb.AppendLine($"• {FormatCommand(cmd)}");
+
+            return sb.ToString();
+        }
+
+        private static string GetPhaseTitle(CombatPhase phase) =>
+            phase switch
+            {
+                CombatPhase.Deployment => "After Deployment",
+                CombatPhase.Grind => "After the Grind",
+                CombatPhase.FinalPush => "After Final Push",
+                _ => $"After {phase}"
+            };
+
+        private static string GetPhaseFlavor(CombatPhase phase) =>
+            phase switch
+            {
+                CombatPhase.Deployment => "Issue orders before the lines close.",
+                CombatPhase.Grind => "Spend requisition while the trenches hold.",
+                _ => "Command your remaining forces."
+            };
+
+        private static string FormatBudget(int budget, int totalSlots)
+        {
+            var chips = new StringBuilder("Actions ");
+            for (int i = 0; i < totalSlots; i++)
+                chips.Append(i < budget ? '●' : '○');
+            chips.Append($"  ({budget}/{totalSlots})");
+            return chips.ToString();
+        }
+
+        private static string FormatCommand(AvailableCommand cmd)
+        {
+            string pieceName = ResolvePieceName(cmd.SourcePieceId);
+            return cmd.Type switch
+            {
+                CommandType.ChangeStance => $"All-Out Assault — {pieceName}",
+                CommandType.SpendRequisitionBuff => $"Spend Requisition (+buff) — {pieceName} ({cmd.RequisitionCost}R)",
+                CommandType.CallStrike => $"Call Strike — {pieceName} ({cmd.RequisitionCost}R)",
+                _ => $"{cmd.Type} — {pieceName}"
+            };
+        }
+
+        private static string ResolvePieceName(string instanceId)
+        {
+            if (string.IsNullOrEmpty(instanceId) || RunManager.Instance == null)
+                return instanceId;
+
+            var piece = RunManager.Instance.Orchestrator.GetPlayerBoard().Pieces
+                .FirstOrDefault(p => p.InstanceId == instanceId);
+            if (piece?.Definition == null)
+                return instanceId;
+
+            return string.IsNullOrEmpty(piece.Definition.DisplayName)
+                ? piece.Definition.Id
+                : piece.Definition.DisplayName;
+        }
+
+        private void SubmitDefaultCommands()
+        {
+            if (RunManager.Instance == null)
+                return;
+
+            var toSubmit = new List<PhaseCommand>();
+            int submitted = 0;
+            foreach (var cmd in _available)
+            {
+                if (submitted >= _budget)
+                    break;
+
+                if (cmd.Type == CommandType.SpendRequisitionBuff &&
+                    RunManager.Instance.State?.Combat?.Requisition < cmd.RequisitionCost)
+                {
+                    continue;
+                }
+
+                toSubmit.Add(new PhaseCommand
+                {
+                    AfterPhase = _completedPhase,
+                    Type = cmd.Type,
+                    SourcePieceId = cmd.SourcePieceId,
+                    Cost = cmd.RequisitionCost,
+                    Stance = StanceType.AllOutAssault
+                });
+                submitted++;
+            }
+
+            if (toSubmit.Count > 0)
+                RunManager.Instance.SubmitCombatCommands(toSubmit);
+
+            Hide();
+            combatDirector?.ContinueCombat();
+        }
+
+        private void SkipCommands()
+        {
+            Hide();
+            combatDirector?.ContinueCombat();
+        }
+    }
+}
