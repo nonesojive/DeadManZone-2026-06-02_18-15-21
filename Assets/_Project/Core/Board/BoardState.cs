@@ -22,6 +22,23 @@ namespace DeadManZone.Core.Board
 
         public IReadOnlyCollection<PlacedPiece> Pieces => _pieces.Values;
 
+        public bool CanPlace(PieceDefinition definition, GridCoord anchor)
+        {
+            foreach (var cell in definition.Shape.GetCells(anchor))
+            {
+                if (cell.X < 0 || cell.Y < 0 || cell.X >= Layout.Width || cell.Y >= Layout.Height)
+                    return false;
+
+                if (_occupied.Contains(cell))
+                    return false;
+
+                if (!IsCategoryAllowed(definition.Category, Layout.GetZone(cell)))
+                    return false;
+            }
+
+            return true;
+        }
+
         public PlacementResult TryPlace(PieceDefinition definition, GridCoord anchor, string instanceId = null)
         {
             instanceId ??= Guid.NewGuid().ToString("N");
@@ -64,6 +81,38 @@ namespace DeadManZone.Core.Board
             BoardAdjacency.GetTouchingPairs(_pieces.Values)
                 .Where(pair => pair.A == instanceId || pair.B == instanceId)
                 .Select(pair => pair.A == instanceId ? pair.B : pair.A);
+
+        public bool TryRemove(string instanceId, out PlacedPiece removedPiece)
+        {
+            if (!_pieces.TryGetValue(instanceId, out removedPiece))
+                return false;
+
+            foreach (var cell in removedPiece.Definition.Shape.GetCells(removedPiece.Anchor))
+                _occupied.Remove(cell);
+
+            _pieces.Remove(instanceId);
+            return true;
+        }
+
+        public PlacementResult TryRelocate(string instanceId, GridCoord newAnchor)
+        {
+            if (!_pieces.TryGetValue(instanceId, out var piece))
+                return new PlacementResult { Success = false, Reason = "Piece not found" };
+
+            if (piece.Anchor.X == newAnchor.X && piece.Anchor.Y == newAnchor.Y)
+                return new PlacementResult { Success = true };
+
+            if (!TryRemove(instanceId, out var removed))
+                return new PlacementResult { Success = false, Reason = "Piece not found" };
+
+            if (!CanPlace(removed.Definition, newAnchor))
+            {
+                TryPlace(removed.Definition, removed.Anchor, removed.InstanceId);
+                return new PlacementResult { Success = false, Reason = "Invalid placement" };
+            }
+
+            return TryPlace(removed.Definition, newAnchor, removed.InstanceId);
+        }
 
         private static bool IsCategoryAllowed(PieceCategory category, ZoneType zone) =>
             zone switch

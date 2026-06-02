@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Run;
+using DeadManZone.Core.Shop;
 using DeadManZone.Data;
 using UnityEngine;
 
@@ -81,17 +83,150 @@ namespace DeadManZone.Game
             _orchestrator?.SaveAndExit();
         }
 
+        public bool TrySellPlacedPiece(string instanceId)
+        {
+            EnsureOrchestrator();
+            bool sold = _orchestrator.TrySellPlacedPiece(instanceId);
+            if (sold)
+                NotifyStateChanged();
+            return sold;
+        }
+
+        public bool TryPurchaseOffer(string offerId)
+        {
+            EnsureOrchestrator();
+            bool purchased = _orchestrator.TryPurchaseOffer(offerId);
+            if (purchased)
+                NotifyStateChanged();
+            return purchased;
+        }
+
+        public bool TryRerollLane(ShopLane lane)
+        {
+            EnsureOrchestrator();
+            bool rerolled = _orchestrator.TryRerollLane(lane);
+            if (rerolled)
+                NotifyStateChanged();
+            return rerolled;
+        }
+
+        public void SetFrozenOffer(string offerId)
+        {
+            EnsureOrchestrator();
+            _orchestrator.SetFrozenOffer(offerId);
+            NotifyStateChanged();
+        }
+
+        public void SetLockedOffer(ShopOffer offer, bool locked)
+        {
+            EnsureOrchestrator();
+            _orchestrator.SetLockedOffer(offer, locked);
+            NotifyStateChanged();
+        }
+
+        public bool TryAcquireOfferToBench(string offerId)
+        {
+            EnsureOrchestrator();
+            bool ok = _orchestrator.TryAcquireOfferToBench(offerId);
+            if (ok)
+                NotifyStateChanged();
+            return ok;
+        }
+
+        public bool TryAcquireOfferToBoard(string offerId, Core.Common.GridCoord anchor)
+        {
+            EnsureOrchestrator();
+            bool ok = _orchestrator.TryAcquireOfferToBoard(offerId, anchor);
+            if (ok)
+                NotifyStateChanged();
+            return ok;
+        }
+
+        public bool TryPlaceFromBench(int benchIndex, Core.Common.GridCoord anchor)
+        {
+            EnsureOrchestrator();
+            bool ok = _orchestrator.TryPlaceFromBench(benchIndex, anchor);
+            if (ok)
+                NotifyStateChanged();
+            return ok;
+        }
+
+        public bool TrySellFromBench(int benchIndex)
+        {
+            EnsureOrchestrator();
+            bool ok = _orchestrator.TrySellFromBench(benchIndex);
+            if (ok)
+                NotifyStateChanged();
+            return ok;
+        }
+
+        public bool TryMovePlacedPiece(string instanceId, Core.Common.GridCoord newAnchor)
+        {
+            EnsureOrchestrator();
+            bool ok = _orchestrator.TryMovePlacedPiece(instanceId, newAnchor);
+            if (ok)
+                NotifyStateChanged();
+            return ok;
+        }
+
+        public bool TryMoveBoardToBench(string instanceId, int benchIndex)
+        {
+            EnsureOrchestrator();
+            bool ok = _orchestrator.TryMoveBoardToBench(instanceId, benchIndex);
+            if (ok)
+                NotifyStateChanged();
+            return ok;
+        }
+
         public void BeginCombat()
         {
             EnsureOrchestrator();
             _orchestrator.BeginCombat();
             NotifyStateChanged();
+
+            if (_orchestrator.State.Phase == RunPhase.Combat)
+                CombatAdvanced?.Invoke(BuildCombatAdvanceSnapshot());
+        }
+
+        private CombatAdvanceResult BuildCombatAdvanceSnapshot()
+        {
+            var combat = _orchestrator.State.Combat;
+            var log = new CombatEventLog();
+            if (combat?.EventLog != null)
+            {
+                foreach (var record in combat.EventLog)
+                {
+                    log.Append(
+                        record.Phase,
+                        record.Tick,
+                        record.ActorId,
+                        record.ActionType,
+                        record.TargetId,
+                        record.Value);
+                }
+            }
+
+            return new CombatAdvanceResult
+            {
+                Status = combat is { AwaitingCommand: true }
+                    ? CombatAdvanceStatus.AwaitingCommand
+                    : CombatAdvanceStatus.Completed,
+                CompletedPhase = combat?.CompletedPhase ?? default,
+                EventLog = log
+            };
         }
 
         public void SubmitCombatCommand(PhaseCommand command)
         {
+            EnsureOrchestrator();
             _orchestrator.SubmitCombatCommand(command);
             NotifyStateChanged();
+        }
+
+        public void SubmitCombatCommands(IReadOnlyList<PhaseCommand> commands)
+        {
+            EnsureOrchestrator();
+            _orchestrator.SubmitCombatCommands(commands);
         }
 
         public CombatAdvanceResult AdvanceCombat()

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Content;
@@ -63,9 +64,9 @@ namespace DeadManZone.Data
             snapshot.Height = faction.boardHeight;
             snapshot.RearRows = faction.rearRows;
             snapshot.SupportRows = faction.supportRows;
-            snapshot.SpecialTiles = System.Array.ConvertAll(
-                faction.specialTileCoords,
-                c => new GridCoordRecord { X = c.x, Y = c.y });
+            snapshot.SpecialTiles = faction.specialTileCoords
+                .Select(c => new GridCoordRecord { X = c.x, Y = c.y })
+                .ToList();
 
             return BoardSnapshotMapper.ToBoard(snapshot, registry);
         }

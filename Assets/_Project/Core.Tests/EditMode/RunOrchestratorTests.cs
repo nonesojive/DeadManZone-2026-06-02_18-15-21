@@ -60,6 +60,170 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
+        public void SellPlacedPiece_RemovesFromBoardAndRefundsHalfGold()
+        {
+            _orchestrator.StartNewRun("iron_vanguard", runSeed: 77);
+            int startingGold = _orchestrator.State.Gold;
+
+            var board = _orchestrator.GetPlayerBoard();
+            var bunker = _database.Pieces.First(p => p.id == "command_bunker").ToCore();
+            var place = board.TryPlace(bunker, new Core.Common.GridCoord(1, 2), "bunker_1");
+            Assert.IsTrue(place.Success, place.Reason);
+            _orchestrator.SavePlayerBoard(board);
+
+            int refund = bunker.GoldCost / 2;
+            Assert.IsTrue(_orchestrator.TrySellPlacedPiece("bunker_1"));
+            Assert.AreEqual(startingGold + refund, _orchestrator.State.Gold);
+            Assert.IsEmpty(_orchestrator.GetPlayerBoard().Pieces);
+        }
+
+        [Test]
+        public void RerollLane_IncreasesCostByOneEachUse()
+        {
+            _orchestrator.StartNewRun("iron_vanguard", runSeed: 101);
+            int startingGold = _orchestrator.State.Gold;
+
+            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.General));
+            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.Engineers));
+
+            Assert.AreEqual(startingGold - 3, _orchestrator.State.Gold);
+            Assert.AreEqual(2, _orchestrator.State.RerollCountThisRound);
+        }
+
+        [Test]
+        public void LockedOffer_PersistsAcrossMultipleRerolls()
+        {
+            _orchestrator.StartNewRun("iron_vanguard", runSeed: 202);
+            var toLock = _orchestrator.State.Shop.Offers.First(o => o.Lane == Core.Shop.ShopLane.General);
+            _orchestrator.SetLockedOffer(toLock, locked: true);
+            string lockedPieceId = toLock.PieceId;
+
+            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.General));
+            Assert.IsTrue(_orchestrator.State.Shop.Offers.Any(o =>
+                o.Lane == Core.Shop.ShopLane.General && o.PieceId == lockedPieceId));
+
+            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.General));
+            Assert.IsTrue(_orchestrator.State.Shop.Offers.Any(o =>
+                o.Lane == Core.Shop.ShopLane.General && o.PieceId == lockedPieceId));
+        }
+
+        [Test]
+        public void TryAcquireOfferToBench_RemovesOfferAndAddsToBench()
+        {
+            _orchestrator.StartNewRun("iron_vanguard", runSeed: 303);
+            var offer = _orchestrator.State.Shop.Offers.First();
+            int goldBefore = _orchestrator.State.Gold;
+            int offerCountBefore = _orchestrator.State.Shop.Offers.Count;
+
+            Assert.IsTrue(_orchestrator.TryAcquireOfferToBench(offer.OfferId));
+            Assert.AreEqual(goldBefore - offer.GoldPrice, _orchestrator.State.Gold);
+            Assert.AreEqual(offerCountBefore - 1, _orchestrator.State.Shop.Offers.Count);
+            Assert.Contains(offer.PieceId, _orchestrator.State.BenchPieceIds);
+        }
+
+        [Test]
+        public void TryAcquireOfferToBoard_InvalidZone_DoesNotCharge()
+        {
+            _orchestrator.StartNewRun("iron_vanguard", runSeed: 404);
+            var offer = _orchestrator.State.Shop.Offers.First(o => o.PieceId == "rifle_squad");
+            int goldBefore = _orchestrator.State.Gold;
+
+            bool placed = _orchestrator.TryAcquireOfferToBoard(
+                offer.OfferId,
+                new Core.Common.GridCoord(0, 0));
+
+            Assert.IsFalse(placed);
+            Assert.AreEqual(goldBefore, _orchestrator.State.Gold);
+        }
+
+        [Test]
+        public void TryMovePlacedPiece_RelocatesOnBoard()
+        {
+            _orchestrator.StartNewRun("iron_vanguard", runSeed: 505);
+            var board = _orchestrator.GetPlayerBoard();
+            var bunker = TestPieces.CommandBunker();
+            Assert.IsTrue(board.TryPlace(bunker, new Core.Common.GridCoord(1, 2), "bunker_1").Success);
+            _orchestrator.SavePlayerBoard(board);
+
+            Assert.IsTrue(_orchestrator.TryMovePlacedPiece("bunker_1", new Core.Common.GridCoord(0, 2)));
+
+            var updated = _orchestrator.GetPlayerBoard();
+            var piece = updated.Pieces.First(p => p.InstanceId == "bunker_1");
+            Assert.AreEqual(0, piece.Anchor.X);
+            Assert.AreEqual(2, piece.Anchor.Y);
+        }
+
+        [Test]
+        public void TryMoveBoardToBench_RemovesFromBoardAndFillsBench()
+        {
+            _orchestrator.StartNewRun("iron_vanguard", runSeed: 606);
+            var board = _orchestrator.GetPlayerBoard();
+            var bunker = TestPieces.CommandBunker();
+            Assert.IsTrue(board.TryPlace(bunker, new Core.Common.GridCoord(1, 2), "bunker_1").Success);
+            _orchestrator.SavePlayerBoard(board);
+
+            Assert.IsTrue(_orchestrator.TryMoveBoardToBench("bunker_1", 0));
+            Assert.AreEqual(0, _orchestrator.GetPlayerBoard().Pieces.Count());
+            Assert.Contains(bunker.Id, _orchestrator.State.BenchPieceIds);
+        }
+
+        [Test]
+        public void SaveMidCombat_RestoresAwaitingCommandWindow()
+        {
+            _orchestrator.StartNewRun("iron_vanguard", runSeed: 909);
+            var board = _orchestrator.GetPlayerBoard();
+            Assert.IsTrue(board.TryPlace(TestPieces.CommandBunker(), new Core.Common.GridCoord(1, 2), "bunker_1").Success);
+            _orchestrator.SavePlayerBoard(board);
+
+            _orchestrator.BeginCombat();
+
+            Assert.AreEqual(RunPhase.Combat, _orchestrator.State.Phase);
+            Assert.IsTrue(_orchestrator.State.Combat.AwaitingCommand);
+            Assert.Greater(_orchestrator.GetAvailableCommands().Count, 0);
+
+            _orchestrator.SaveAndExit();
+            var reloaded = new RunOrchestrator(_database);
+            Assert.IsTrue(reloaded.TryLoadSavedRun());
+            Assert.AreEqual(RunPhase.Combat, reloaded.State.Phase);
+            Assert.IsTrue(reloaded.State.Combat.AwaitingCommand);
+            Assert.Greater(reloaded.GetAvailableCommands().Count, 0);
+        }
+
+        [Test]
+        public void SaveMidBuild_RestoresGoldAndBench()
+        {
+            _orchestrator.StartNewRun("iron_vanguard", runSeed: 808);
+            _orchestrator.State.Gold = 42;
+            _orchestrator.State.BenchPieceIds.Add("rifle_squad");
+            _orchestrator.SaveAndExit();
+
+            var reloaded = new RunOrchestrator(_database);
+            Assert.IsTrue(reloaded.TryLoadSavedRun());
+            Assert.AreEqual(42, reloaded.State.Gold);
+            Assert.Contains("rifle_squad", reloaded.State.BenchPieceIds);
+        }
+
+        [Test]
+        public void RerollLane_ChangesOnlySelectedLaneOffers()
+        {
+            _orchestrator.StartNewRun("iron_vanguard", runSeed: 303);
+            var before = _orchestrator.State.Shop.Offers.ToList();
+
+            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.General));
+            var after = _orchestrator.State.Shop.Offers;
+
+            var beforeEngineers = before.Where(o => o.Lane == Core.Shop.ShopLane.Engineers)
+                .Select(o => o.OfferId)
+                .OrderBy(id => id)
+                .ToArray();
+            var afterEngineers = after.Where(o => o.Lane == Core.Shop.ShopLane.Engineers)
+                .Select(o => o.OfferId)
+                .OrderBy(id => id)
+                .ToArray();
+            CollectionAssert.AreEquivalent(beforeEngineers, afterEngineers);
+        }
+
+        [Test]
         public void FullCombatLoop_CanReachVictoryWithStrongBoard()
         {
             var board = BuildGauntletTestBoard();

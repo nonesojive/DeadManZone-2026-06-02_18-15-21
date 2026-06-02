@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
+  m_Name: field_gun_nest
+  m_EditorClassIdentifier: 
+  id: field_gun_nest
+  displayName: Field Gun Nest
+  category: 0
+  shapeCells:
+  - {x: 0, y: 0}
+  - {x: 0, y: 1}
+  tags:
+  - Artillery
+  maxHp: 18
+  baseDamage: 3
+  cooldownTicks: 4
+  goldCost: 9
+  requisitionCost: 0
+  shopModifiers: 0
+  commandActions: 0
+  shopLane: 1
+  icon: {fileID: 0}
+  categoryTint: {r: 0.48, g: 0.4, b: 0.28, a: 1}

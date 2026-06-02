@@ -1,0 +1,14 @@
+{
+  "name": "DeadManZone.Presentation",
+  "rootNamespace": "DeadManZone.Presentation",
+  "references": [
+    "DeadManZone.Core",
+    "DeadManZone.Game",
+    "DeadManZone.Data",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "autoReferenced": true
+}

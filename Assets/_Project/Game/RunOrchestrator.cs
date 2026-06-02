@@ -11,7 +11,7 @@ using DeadManZone.Data;
 namespace DeadManZone.Game
 {
     /// <summary>Pure run flow logic used by RunManager and tests.</summary>
-    public sealed class RunOrchestrator
+    public sealed partial class RunOrchestrator
     {
         public const int MaxFights = 5;
         public const int BenchLimit = 3;
@@ -129,6 +129,20 @@ namespace DeadManZone.Game
             Persist();
         }
 
+        public void SubmitCombatCommands(IReadOnlyList<PhaseCommand> commands)
+        {
+            if (_activeCombat == null || !_activeCombat.AwaitingCommand)
+                throw new InvalidOperationException("Not awaiting a combat command.");
+
+            if (commands == null || commands.Count == 0)
+                return;
+
+            foreach (var command in commands)
+                State.Combat.SubmittedCommands.Add(command);
+
+            Persist();
+        }
+
         public CombatAdvanceResult AdvanceCombat()
         {
             if (_activeCombat == null)
@@ -145,42 +159,73 @@ namespace DeadManZone.Game
             return result;
         }
 
-        public bool TryPurchaseOffer(string offerId)
-        {
-            var offer = State.Shop?.Offers?.FirstOrDefault(o => o.OfferId == offerId);
-            if (offer == null)
-                return false;
-
-            if (State.Gold < offer.GoldPrice || State.Requisition < offer.RequisitionPrice)
-                return false;
-
-            if (State.BenchPieceIds.Count >= BenchLimit)
-                return false;
-
-            State.Gold -= offer.GoldPrice;
-            State.Requisition -= offer.RequisitionPrice;
-            State.BenchPieceIds.Add(offer.PieceId);
-            Persist();
-            return true;
-        }
-
         public bool TryRerollLane(ShopLane lane)
         {
             int cost = BaseRerollCost + State.RerollCountThisRound;
             if (State.Gold < cost)
                 return false;
 
+            var previousShop = State.Shop;
             State.Gold -= cost;
             State.RerollCountThisRound++;
             RefreshShop();
+            ReplaceNonRerolledLanes(previousShop, lane);
             Persist();
             return true;
         }
 
-        public void SetFrozenOffer(string offerId)
+        public bool TrySellPlacedPiece(string instanceId)
         {
-            State.FrozenOfferId = offerId;
+            if (State.Phase != RunPhase.Build)
+                return false;
+
+            var board = GetPlayerBoard();
+            if (!board.TryRemove(instanceId, out var removed))
+                return false;
+
+            int refund = removed.Definition.GoldCost / 2;
+            State.Gold += refund;
+            SavePlayerBoard(board);
+            return true;
+        }
+
+        public bool TryMovePlacedPiece(string instanceId, Core.Common.GridCoord newAnchor)
+        {
+            if (State.Phase != RunPhase.Build)
+                return false;
+
+            var board = GetPlayerBoard();
+            var result = board.TryRelocate(instanceId, newAnchor);
+            if (!result.Success)
+                return false;
+
+            SavePlayerBoard(board);
             Persist();
+            return true;
+        }
+
+        public bool TryMoveBoardToBench(string instanceId, int benchIndex)
+        {
+            if (State.Phase != RunPhase.Build)
+                return false;
+
+            if (benchIndex < 0 || benchIndex >= BenchLimit)
+                return false;
+
+            if (benchIndex < State.BenchPieceIds.Count)
+                return false;
+
+            if (State.BenchPieceIds.Count >= BenchLimit)
+                return false;
+
+            var board = GetPlayerBoard();
+            if (!board.TryRemove(instanceId, out var removed))
+                return false;
+
+            State.BenchPieceIds.Add(removed.Definition.Id);
+            SavePlayerBoard(board);
+            Persist();
+            return true;
         }
 
         public void SaveAndExit() => Persist();
@@ -189,22 +234,6 @@ namespace DeadManZone.Game
         {
             var next = _content.GetEnemyTemplate(State.FightIndex);
             return next?.previewTag;
-        }
-
-        private void RefreshShop()
-        {
-            var board = GetPlayerBoard();
-            int shopSeed = State.RunSeed + State.FightIndex * 100 + State.RerollCountThisRound;
-            var shop = _shopGenerator.Generate(board, State.FactionId, State.FightIndex, shopSeed);
-
-            if (!string.IsNullOrEmpty(State.FrozenOfferId) && State.Shop != null)
-            {
-                var frozen = State.Shop.Offers.FirstOrDefault(o => o.OfferId == State.FrozenOfferId);
-                if (frozen != null && shop.Offers.All(o => o.OfferId != frozen.OfferId))
-                    shop.Offers.Add(frozen);
-            }
-
-            State.Shop = shop;
         }
 
         private void CompleteCombat(bool playerWon)

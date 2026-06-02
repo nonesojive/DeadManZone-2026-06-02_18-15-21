@@ -111,6 +111,13 @@ namespace DeadManZone.Data.Editor
             asset.requisitionCost = requisitionCost;
             asset.shopModifiers = shopModifiers;
             asset.commandActions = commandActions;
+            asset.categoryTint = category switch
+            {
+                PieceCategory.Unit => new Color(0.35f, 0.42f, 0.55f, 1f),
+                PieceCategory.Building => new Color(0.48f, 0.4f, 0.28f, 1f),
+                PieceCategory.Hybrid => new Color(0.38f, 0.32f, 0.48f, 1f),
+                _ => Color.gray
+            };
             EditorUtility.SetDirty(asset);
             return asset;
         }

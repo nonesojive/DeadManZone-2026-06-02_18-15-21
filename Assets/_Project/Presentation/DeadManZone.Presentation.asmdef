@@ -5,7 +5,8 @@
     "DeadManZone.Core",
     "DeadManZone.Game",
     "DeadManZone.Data",
-    "Unity.TextMeshPro"
+    "Unity.TextMeshPro",
+    "Unity.UGUI"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],
