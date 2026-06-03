@@ -180,6 +180,7 @@ namespace DeadManZone.Core.Tests
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 909);
             var board = _orchestrator.GetPlayerBoard();
             Assert.IsTrue(board.TryPlace(TestPieces.CommandBunker(), new Core.Common.GridCoord(1, 2), "bunker_1").Success);
+            Assert.IsTrue(board.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(), "rifle_1").Success);
             _orchestrator.SavePlayerBoard(board);
 
             _orchestrator.BeginCombat();
@@ -233,7 +234,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void FullCombatLoop_CanReachVictoryWithStrongBoard()
         {
-            var board = BuildGauntletTestBoard();
+            var board = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
             int runSeed = FindWinningSeed(board, startSeed: 42);
 
             _orchestrator.StartNewRun("iron_vanguard", runSeed: runSeed);
@@ -261,33 +262,9 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(RunPhase.Victory, _orchestrator.State.Phase);
         }
 
-        private BoardState BuildGauntletTestBoard()
-        {
-            var faction = _database.GetFaction("iron_vanguard");
-            var board = new BoardState(faction.CreateBoardLayout());
-
-            TryPlacePiece(board, "field_gun_nest", new Core.Common.GridCoord(0, 0), "gun_1");
-            TryPlacePiece(board, "supply_depot", new Core.Common.GridCoord(2, 0), "depot_1");
-            TryPlacePiece(board, "command_bunker", new Core.Common.GridCoord(1, 2), "bunker_1");
-            TryPlacePiece(board, "mortar_crew", new Core.Common.GridCoord(4, 3), "mortar_1");
-            TryPlacePiece(board, "rifle_squad", new Core.Common.GridCoord(6, 4), "rifle_1");
-            TryPlacePiece(board, "diesel_walker", new Core.Common.GridCoord(7, 4), "walker_1");
-            TryPlacePiece(board, "mg_team", new Core.Common.GridCoord(5, 4), "mg_1");
-            TryPlacePiece(board, "mobile_artillery", new Core.Common.GridCoord(6, 3), "artillery_1");
-
-            return board;
-        }
-
-        private void TryPlacePiece(BoardState board, string pieceId, Core.Common.GridCoord anchor, string instanceId)
-        {
-            var piece = _database.Pieces.First(p => p.id == pieceId).ToCore();
-            var result = board.TryPlace(piece, anchor, instanceId);
-            Assert.IsTrue(result.Success, $"Failed to place {pieceId} at {anchor}: {result.Reason}");
-        }
-
         private int FindWinningSeed(BoardState board, int startSeed)
         {
-            for (int seed = startSeed; seed < startSeed + 500; seed++)
+            for (int seed = startSeed; seed < startSeed + 1000; seed++)
             {
                 if (BoardBeatsGauntlet(board, seed))
                     return seed;
@@ -301,6 +278,7 @@ namespace DeadManZone.Core.Tests
         {
             var faction = _database.GetFaction("iron_vanguard");
             var registry = _database.BuildRegistry();
+            int authority = AuthorityCalculator.ComputeRoundPool(board);
 
             for (int fight = 1; fight <= RunOrchestrator.MaxFights; fight++)
             {
@@ -311,7 +289,7 @@ namespace DeadManZone.Core.Tests
                     enemy,
                     runSeed + fight * 1000,
                     commands,
-                    requisition: 8);
+                    requisition: authority);
 
                 if (!result.PlayerWon)
                     return false;

@@ -24,10 +24,11 @@ namespace DeadManZone.Core.Tests
             Place(board, database, "supply_depot", new GridCoord(2, 0), "depot_1");
             Place(board, database, "command_bunker", new GridCoord(1, 2), "bunker_1");
             Place(board, database, "mortar_crew", new GridCoord(4, 3), "mortar_1");
-            Place(board, database, "rifle_squad", new GridCoord(6, 4), "rifle_1");
-            Place(board, database, "diesel_walker", new GridCoord(7, 4), "walker_1");
             Place(board, database, "mg_team", new GridCoord(5, 4), "mg_1");
             Place(board, database, "mobile_artillery", new GridCoord(6, 3), "artillery_1");
+            Place(board, database, "diesel_walker", new GridCoord(7, 4), "walker_1");
+            // Walker is 2x2 at (7,4) -> through (8,5); rifle sits above that block at (8,3).
+            Place(board, database, "rifle_squad", new GridCoord(8, 3), "rifle_1");
             return board;
         }
 

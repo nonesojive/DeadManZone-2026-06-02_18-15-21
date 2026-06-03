@@ -27,6 +27,7 @@ namespace DeadManZone.Game
 
         public bool IsOfferLocked(ShopOffer offer) =>
             offer != null &&
+            State != null &&
             State.LockedOffer != null &&
             State.LockedOffer.Lane == offer.Lane &&
             State.LockedOffer.PieceId == offer.PieceId;

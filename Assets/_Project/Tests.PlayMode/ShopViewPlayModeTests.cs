@@ -13,6 +13,9 @@ namespace DeadManZone.PlayMode.Tests
     {
         private GameObject _root;
 
+        [SetUp]
+        public void SetUp() => PlayModeTestHelpers.CleanupPersistentManagers();
+
         [TearDown]
         public void TearDown()
         {

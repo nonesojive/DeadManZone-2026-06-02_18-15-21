@@ -137,11 +137,11 @@ namespace DeadManZone.Core.Combat
             CombatSegment segment,
             CombatPhase phase)
         {
-            var targetPositions = targets.Where(t => t.IsAlive).Select(t => t.Position).ToList();
-            if (targetPositions.Count == 0)
+            var aliveTargets = targets.Where(t => t.IsAlive).OrderBy(t => t.InstanceId).ToList();
+            if (aliveTargets.Count == 0)
                 return;
 
-            var goal = targetPositions[0];
+            var goal = aliveTargets[0].Position;
             var blocked = new HashSet<GridCoord>(_occupied);
 
             foreach (var mover in movers.Where(m => m.IsAlive && m.HasTag(GameTags.Combatant)).OrderBy(m => m.InstanceId))
