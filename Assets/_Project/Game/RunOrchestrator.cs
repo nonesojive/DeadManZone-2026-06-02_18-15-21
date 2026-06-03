@@ -177,10 +177,25 @@ namespace DeadManZone.Game
             SyncCombatFromRunner(result);
 
             if (result.Status == CombatAdvanceStatus.Completed)
-                CompleteCombat(result.PlayerWon);
+                CompleteCombat(result);
 
             Persist();
             return result;
+        }
+
+        public bool TryEmergencyDraft()
+        {
+            var board = GetPlayerBoard();
+            int upkeep = ManpowerCalculator.ComputeUpkeep(board, _registry);
+            int shortfall = upkeep - State.Manpower;
+            if (shortfall <= 0)
+                return false;
+
+            if (!EmergencyDraft.TryUse(State, shortfall))
+                return false;
+
+            Persist();
+            return true;
         }
 
         public bool TryRerollLane(ShopLane lane)
@@ -260,13 +275,31 @@ namespace DeadManZone.Game
             return next?.previewTag;
         }
 
-        private void CompleteCombat(bool playerWon)
+        private void CompleteCombat(CombatAdvanceResult result)
         {
             _activeCombat = null;
+            bool playerWon = result.PlayerWon;
 
             if (!playerWon)
             {
-                State.Phase = RunPhase.Defeat;
+                int moraleLoss = MoraleCalculator.ComputeLoss(
+                    State.FightIndex,
+                    result.PlayerCombatantsLost,
+                    result.PlayerCombatantsTotal,
+                    result.PlayerHqDamaged);
+                State.Morale -= moraleLoss;
+                State.Combat = null;
+
+                if (State.Morale <= 0)
+                {
+                    State.Phase = RunPhase.Defeat;
+                    Persist();
+                    return;
+                }
+
+                State.Phase = RunPhase.Build;
+                State.RerollCountThisRound = 0;
+                RefreshShop();
                 Persist();
                 return;
             }
