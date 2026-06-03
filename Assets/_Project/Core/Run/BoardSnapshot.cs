@@ -18,8 +18,13 @@ namespace DeadManZone.Core.Run
     {
         public int Width { get; set; }
         public int Height { get; set; }
+        public int RearCols { get; set; }
+        public int SupportCols { get; set; }
+
+        /// <summary>Legacy row-based layout; used when <see cref="RearCols"/> is zero.</summary>
         public int RearRows { get; set; }
         public int SupportRows { get; set; }
+
         public List<GridCoordRecord> SpecialTiles { get; set; } = new();
         public List<PlacedPieceRecord> Pieces { get; set; } = new();
     }
@@ -32,14 +37,14 @@ namespace DeadManZone.Core.Run
 
     public static class BoardSnapshotMapper
     {
-        public static BoardSnapshot FromBoard(BoardState board, int rearRows, int supportRows)
+        public static BoardSnapshot FromBoard(BoardState board, int rearCols, int supportCols)
         {
             var snapshot = new BoardSnapshot
             {
                 Width = board.Layout.Width,
                 Height = board.Layout.Height,
-                RearRows = rearRows,
-                SupportRows = supportRows,
+                RearCols = rearCols,
+                SupportCols = supportCols,
                 SpecialTiles = board.Layout.SpecialTiles
                     .Select(t => new GridCoordRecord { X = t.X, Y = t.Y })
                     .ToList(),
@@ -60,12 +65,19 @@ namespace DeadManZone.Core.Run
                 .Select(t => new GridCoord(t.X, t.Y))
                 .ToArray();
 
-            var layout = BoardLayout.CreateStandard(
-                snapshot.Width,
-                snapshot.Height,
-                snapshot.RearRows,
-                snapshot.SupportRows,
-                specialTiles);
+            var layout = snapshot.RearCols > 0 || snapshot.SupportCols > 0
+                ? BoardLayout.CreateHorizontalZones(
+                    snapshot.Width,
+                    snapshot.Height,
+                    snapshot.RearCols,
+                    snapshot.SupportCols,
+                    specialTiles)
+                : BoardLayout.CreateStandard(
+                    snapshot.Width,
+                    snapshot.Height,
+                    snapshot.RearRows,
+                    snapshot.SupportRows,
+                    specialTiles);
 
             var board = new BoardState(layout);
             foreach (var record in snapshot.Pieces)

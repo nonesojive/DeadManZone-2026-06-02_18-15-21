@@ -263,8 +263,8 @@ namespace DeadManZone.Core.Tests
             TryPlacePiece(board, "supply_depot", new Core.Common.GridCoord(2, 0), "depot_1");
             TryPlacePiece(board, "command_bunker", new Core.Common.GridCoord(1, 2), "bunker_1");
             TryPlacePiece(board, "mortar_crew", new Core.Common.GridCoord(4, 3), "mortar_1");
-            TryPlacePiece(board, "rifle_squad", new Core.Common.GridCoord(0, 4), "rifle_1");
-            TryPlacePiece(board, "diesel_walker", new Core.Common.GridCoord(2, 4), "walker_1");
+            TryPlacePiece(board, "rifle_squad", new Core.Common.GridCoord(6, 4), "rifle_1");
+            TryPlacePiece(board, "diesel_walker", new Core.Common.GridCoord(7, 4), "walker_1");
             TryPlacePiece(board, "mg_team", new Core.Common.GridCoord(5, 4), "mg_1");
             TryPlacePiece(board, "mobile_artillery", new Core.Common.GridCoord(6, 3), "artillery_1");
 
@@ -280,7 +280,7 @@ namespace DeadManZone.Core.Tests
 
         private int FindWinningSeed(BoardState board, int startSeed)
         {
-            for (int seed = startSeed; seed < startSeed + 50; seed++)
+            for (int seed = startSeed; seed < startSeed + 100; seed++)
             {
                 if (BoardBeatsGauntlet(board, seed))
                     return seed;

@@ -2,13 +2,15 @@ namespace DeadManZone.Game
 {
     public readonly struct FightReward
     {
-        public int Gold { get; }
-        public int Requisition { get; }
+        public int Supplies { get; }
+        public int BonusAuthority { get; }
+        public int BonusManpower { get; }
 
-        public FightReward(int gold, int requisition)
+        public FightReward(int supplies, int bonusAuthority, int bonusManpower)
         {
-            Gold = gold;
-            Requisition = requisition;
+            Supplies = supplies;
+            BonusAuthority = bonusAuthority;
+            BonusManpower = bonusManpower;
         }
     }
 
@@ -16,11 +18,16 @@ namespace DeadManZone.Game
     {
         private static readonly FightReward[] Rewards =
         {
-            new FightReward(15, 1),
-            new FightReward(20, 1),
-            new FightReward(25, 2),
-            new FightReward(30, 2),
-            new FightReward(40, 3)
+            new FightReward(15, 1, 2),
+            new FightReward(18, 1, 2),
+            new FightReward(20, 1, 2),
+            new FightReward(22, 2, 2),
+            new FightReward(25, 2, 3),
+            new FightReward(28, 2, 3),
+            new FightReward(30, 2, 3),
+            new FightReward(32, 3, 3),
+            new FightReward(35, 3, 4),
+            new FightReward(45, 4, 4)
         };
 
         public static FightReward GetReward(int fightIndex)

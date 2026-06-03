@@ -157,7 +157,10 @@ namespace DeadManZone.Core.Tests
         {
             var registry = TestContentRegistry.Create();
             var source = TestBoards.WithCommandBunker();
-            var snapshot = BoardSnapshotMapper.FromBoard(source, rearRows: 2, supportRows: 2);
+            var snapshot = BoardSnapshotMapper.FromBoard(
+                source,
+                TestBoards.DefaultRearCols,
+                TestBoards.DefaultSupportCols);
             var restored = BoardSnapshotMapper.ToBoard(snapshot, registry);
 
             Assert.AreEqual(source.Pieces.Count, restored.Pieces.Count);

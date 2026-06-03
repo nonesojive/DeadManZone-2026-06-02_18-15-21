@@ -30,8 +30,22 @@ namespace DeadManZone.Data
         public FactionSO GetFaction(string factionId) =>
             factions.FirstOrDefault(f => f != null && f.factionId == factionId);
 
-        public EnemyTemplateSO GetEnemyTemplate(int fightNumber) =>
-            enemyTemplates.FirstOrDefault(e => e != null && e.fightNumber == fightNumber);
+        public EnemyTemplateSO GetEnemyTemplate(int fightNumber)
+        {
+            var direct = enemyTemplates.FirstOrDefault(e => e != null && e.fightNumber == fightNumber);
+            if (direct != null)
+                return direct;
+
+            var sorted = enemyTemplates
+                .Where(e => e != null)
+                .OrderBy(e => e.fightNumber)
+                .ToArray();
+            if (sorted.Length == 0)
+                return null;
+
+            int index = (fightNumber - 1) % sorted.Length;
+            return sorted[index];
+        }
 
         public static ContentDatabase Load()
         {
