@@ -31,6 +31,11 @@ namespace DeadManZone.Core.Run
 
             if (schemaVersion < CurrentSchemaVersion)
                 json = MigrateLegacySave(root).ToString();
+            else
+            {
+                MigrateShopLaneNames(root);
+                json = root.ToString();
+            }
 
             return JsonConvert.DeserializeObject<RunState>(json, Settings);
         }
@@ -65,8 +70,30 @@ namespace DeadManZone.Core.Run
 
             root.Remove("Gold");
             root.Remove("Requisition");
+            MigrateShopLaneNames(root);
             root["SaveSchemaVersion"] = CurrentSchemaVersion;
             return root;
+        }
+
+        private static void MigrateShopLaneNames(JObject root)
+        {
+            if (root.SelectToken("Shop.Offers") is not JArray offers)
+                return;
+
+            foreach (var token in offers)
+            {
+                if (token is not JObject offer)
+                    continue;
+
+                var lane = offer["Lane"]?.Value<string>();
+                offer["Lane"] = lane switch
+                {
+                    "General" => "Offensive",
+                    "Engineers" => "Defensive",
+                    "Requisition" => "Specialty",
+                    _ => lane
+                };
+            }
         }
     }
 }

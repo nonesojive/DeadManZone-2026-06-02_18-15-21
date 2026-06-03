@@ -13,11 +13,11 @@ namespace DeadManZone.Core.Tests
         public static ContentRegistry Create()
         {
             var registry = new ContentRegistry();
-            registry.Register(TestPieces.RifleSquad(), ShopLane.General);
-            registry.Register(TestPieces.CommandBunker(), ShopLane.Engineers);
-            registry.Register(TestPieces.SupplyDepot(), ShopLane.Engineers);
-            registry.Register(TestPieces.FieldWorkshop(), ShopLane.Engineers);
-            registry.Register(TestPieces.GasDrone(), ShopLane.Requisition);
+            registry.Register(TestPieces.RifleSquad(), ShopLane.Offensive);
+            registry.Register(TestPieces.CommandBunker(), ShopLane.Defensive);
+            registry.Register(TestPieces.SupplyDepot(), ShopLane.Defensive);
+            registry.Register(TestPieces.FieldWorkshop(), ShopLane.Defensive);
+            registry.Register(TestPieces.GasDrone(), ShopLane.Specialty);
             return registry;
         }
     }

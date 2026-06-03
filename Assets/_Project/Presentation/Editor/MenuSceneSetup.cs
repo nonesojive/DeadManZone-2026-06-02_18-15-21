@@ -43,6 +43,23 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log("DeadManZone: MainMenu and Run scenes created. Open MainMenu and press Play.");
         }
 
+        [MenuItem("DeadManZone/Refresh Main Menu Scene")]
+        public static void RefreshMainMenuScene()
+        {
+            UiThemeEditor.EnsureThemeAsset();
+            EnsureFolder(ScenesFolder);
+            CreateMainMenuScene();
+            AssetDatabase.SaveAssets();
+            Debug.Log("DeadManZone: MainMenu scene refreshed.");
+        }
+
+        /// <summary>Invoked from Unity batch mode to regenerate MainMenu without touching Run scene.</summary>
+        public static void BatchRefreshMainMenuScene()
+        {
+            RefreshMainMenuScene();
+            EditorApplication.Exit(0);
+        }
+
         private static void CreateMainMenuScene()
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
@@ -58,22 +75,45 @@ namespace DeadManZone.Presentation.Editor
 
             var menuRoot = CreateStretchChild(canvas.transform, "MainMenu");
             var controller = menuRoot.AddComponent<MainMenuController>();
+            CreateRunManager();
 
-            var mainPanel = CreateStretchChild(menuRoot.transform, "MainPanel");
-            UiThemeSceneStyling.AddPanelBackground(mainPanel.transform, theme);
+            var mainPanel = CreateStretchChild(menuRoot.transform, "Main Menu");
+            var background = CreateStretchChild(mainPanel.transform, "Background");
+            UiThemeSceneStyling.AddPanelBackground(background.transform, theme);
 
-            var title = CreateLabel(mainPanel.transform, "Dead Man Zone", 52, FontStyles.Bold);
-            SetAnchored(title.rectTransform, new Vector2(0.5f, 0.78f), new Vector2(700, 80));
-            title.color = theme.accentColor;
+            var titleGo = new GameObject("Title", typeof(RectTransform));
+            titleGo.transform.SetParent(mainPanel.transform, false);
+            var title = titleGo.AddComponent<TextMeshProUGUI>();
+            title.text = "Until The Trenches Fall";
+            title.fontSize = 52;
+            title.fontStyle = FontStyles.Bold;
+            title.alignment = TextAlignmentOptions.Center;
+            title.color = theme.textPrimary;
+            SetAnchored(title.rectTransform, new Vector2(0.5f, 0.78f), new Vector2(900, 80));
 
-            var subtitle = CreateLabel(mainPanel.transform, "", 22, FontStyles.Normal);
-            SetAnchored(subtitle.rectTransform, new Vector2(0.5f, 0.66f), new Vector2(640, 48));
-            UiThemeSceneStyling.StyleLabel(subtitle, theme, secondary: true);
-
-            var continueBtn = CreateButton(mainPanel.transform, "Continue", new Vector2(0.5f, 0.48f));
-            var newRunBtn = CreateButton(mainPanel.transform, "New Run", new Vector2(0.5f, 0.36f));
+            var buttonPanel = CreateStretchChild(mainPanel.transform, "MainMenuButtonPanel");
+            var continueBtn = CreateNamedButton(buttonPanel.transform, "ContinueButton", "Continue",
+                new Vector2(0.5f, 0.52f));
+            var newRunBtn = CreateNamedButton(buttonPanel.transform, "NewRunButton", "New Run",
+                new Vector2(0.5f, 0.42f));
+            var optionsBtn = CreateNamedButton(buttonPanel.transform, "OptionsButton", "Options",
+                new Vector2(0.5f, 0.32f));
+            var exitBtn = CreateNamedButton(buttonPanel.transform, "ExitButton", "Exit",
+                new Vector2(0.5f, 0.22f));
             UiThemeSceneStyling.StyleButton(continueBtn, theme, accent: true);
             UiThemeSceneStyling.StyleButton(newRunBtn, theme);
+            UiThemeSceneStyling.StyleButton(optionsBtn, theme);
+            UiThemeSceneStyling.StyleButton(exitBtn, theme);
+
+            var optionsPanel = CreateStretchChild(menuRoot.transform, "OptionsPanel");
+            optionsPanel.SetActive(false);
+            UiThemeSceneStyling.AddPanelBackground(optionsPanel.transform, theme);
+            var optionsTitle = CreateLabel(optionsPanel.transform, "Options — coming soon", 36, FontStyles.Bold,
+                new Vector2(0.5f, 0.55f), new Vector2(700, 60));
+            optionsTitle.color = theme.textPrimary;
+            var optionsBackBtn = CreateNamedButton(optionsPanel.transform, "OptionsBackButton", "Back",
+                new Vector2(0.5f, 0.35f));
+            UiThemeSceneStyling.StyleButton(optionsBackBtn, theme);
 
             var factionPanel = CreateStretchChild(menuRoot.transform, "FactionPanel");
             factionPanel.SetActive(false);
@@ -82,12 +122,12 @@ namespace DeadManZone.Presentation.Editor
                 new Vector2(0.5f, 0.72f), new Vector2(500, 60));
             factionTitle.color = theme.textPrimary;
             var ironBtn = CreateButton(factionPanel.transform, "Iron Vanguard", new Vector2(0.5f, 0.45f));
-            var backBtn = CreateButton(factionPanel.transform, "Back", new Vector2(0.5f, 0.28f));
+            var factionBackBtn = CreateButton(factionPanel.transform, "Back", new Vector2(0.5f, 0.28f));
             UiThemeSceneStyling.StyleButton(ironBtn, theme, accent: true);
-            UiThemeSceneStyling.StyleButton(backBtn, theme);
+            UiThemeSceneStyling.StyleButton(factionBackBtn, theme);
 
-            WireController(controller, mainPanel, continueBtn, newRunBtn, subtitle,
-                factionPanel, ironBtn, backBtn);
+            WireController(controller, mainPanel, continueBtn, newRunBtn, optionsBtn, exitBtn,
+                optionsPanel, optionsBackBtn, factionPanel, ironBtn, factionBackBtn);
 
             EditorSceneManager.SaveScene(scene, MainMenuPath);
         }
@@ -122,20 +162,37 @@ namespace DeadManZone.Presentation.Editor
             GameObject mainPanel,
             Button continueButton,
             Button newRunButton,
-            TMP_Text subtitle,
+            Button optionsButton,
+            Button exitButton,
+            GameObject optionsPanel,
+            Button optionsBackButton,
             GameObject factionPanel,
             Button ironButton,
-            Button backButton)
+            Button factionBackButton)
         {
             var serialized = new SerializedObject(controller);
             serialized.FindProperty("mainPanel").objectReferenceValue = mainPanel;
             serialized.FindProperty("continueButton").objectReferenceValue = continueButton;
             serialized.FindProperty("newRunButton").objectReferenceValue = newRunButton;
-            serialized.FindProperty("subtitleText").objectReferenceValue = subtitle;
+            serialized.FindProperty("optionsButton").objectReferenceValue = optionsButton;
+            serialized.FindProperty("exitButton").objectReferenceValue = exitButton;
+            serialized.FindProperty("optionsPanel").objectReferenceValue = optionsPanel;
+            serialized.FindProperty("optionsBackButton").objectReferenceValue = optionsBackButton;
             serialized.FindProperty("factionPanel").objectReferenceValue = factionPanel;
             serialized.FindProperty("ironVanguardButton").objectReferenceValue = ironButton;
-            serialized.FindProperty("factionBackButton").objectReferenceValue = backButton;
+            serialized.FindProperty("factionBackButton").objectReferenceValue = factionBackButton;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static Button CreateNamedButton(
+            Transform parent,
+            string objectName,
+            string label,
+            Vector2 anchor)
+        {
+            var button = CreateButton(parent, label, anchor);
+            button.gameObject.name = objectName;
+            return button;
         }
 
         private static void UpdateBuildSettings()

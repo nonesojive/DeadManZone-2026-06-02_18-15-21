@@ -30,16 +30,15 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void Deserialize_MigratesLegacyGoldAndRequisition()
         {
-            const string legacyJson = """
-                {
-                  "FightIndex": 2,
-                  "Gold": 88,
-                  "Requisition": 5,
-                  "RunSeed": 42,
-                  "FactionId": "iron_vanguard",
-                  "Phase": "Build"
-                }
-                """;
+            const string legacyJson =
+                "{\n" +
+                "  \"FightIndex\": 2,\n" +
+                "  \"Gold\": 88,\n" +
+                "  \"Requisition\": 5,\n" +
+                "  \"RunSeed\": 42,\n" +
+                "  \"FactionId\": \"iron_vanguard\",\n" +
+                "  \"Phase\": \"Build\"\n" +
+                "}";
 
             var loaded = RunSaveSerializer.Deserialize(legacyJson);
 
@@ -87,7 +86,7 @@ namespace DeadManZone.Core.Tests
                         new ShopOffer
                         {
                             OfferId = "general_rifle_0",
-                            Lane = ShopLane.General,
+                            Lane = ShopLane.Offensive,
                             PieceId = "rifle_squad",
                             GoldPrice = 10,
                             RequisitionPrice = 0

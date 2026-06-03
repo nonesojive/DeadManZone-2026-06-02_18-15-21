@@ -22,7 +22,7 @@ namespace DeadManZone.Game
         private readonly ShopGenerator _shopGenerator;
         private readonly CommandProcessor _commandProcessor = new();
 
-        private PhasedCombatRun _activeCombat;
+        private TickCombatRun _activeCombat;
 
         public RunState State { get; private set; }
         public FactionSO Faction { get; private set; }
@@ -103,6 +103,9 @@ namespace DeadManZone.Game
                 throw new InvalidOperationException(failureReason);
 
             var playerBoard = GetPlayerBoard();
+            int upkeep = ManpowerCalculator.ComputeUpkeep(playerBoard, _registry);
+            State.Manpower -= upkeep;
+
             var enemyTemplate = _content.GetEnemyTemplate(State.FightIndex);
             if (enemyTemplate == null)
                 throw new InvalidOperationException($"No enemy template for fight {State.FightIndex}.");
@@ -116,11 +119,12 @@ namespace DeadManZone.Game
                 CombatSeed = combatSeed,
                 EnemyBoard = BoardSnapshotMapper.FromBoard(enemyBoard, Faction.rearCols, Faction.supportCols),
                 Requisition = State.Authority,
+                Authority = State.Authority,
                 SubmittedCommands = new List<PhaseCommand>(),
                 EventLog = new List<CombatEventRecord>()
             };
 
-            _activeCombat = PhasedCombatRun.Start(playerBoard, enemyBoard, combatSeed, State.Authority);
+            _activeCombat = TickCombatRun.Start(playerBoard, enemyBoard, combatSeed, State.Authority);
             var firstStep = _activeCombat.Continue(Array.Empty<PhaseCommand>());
             SyncCombatFromRunner(firstStep);
             Persist();
@@ -280,6 +284,11 @@ namespace DeadManZone.Game
         {
             _activeCombat = null;
             bool playerWon = result.PlayerWon;
+            var playerBoard = GetPlayerBoard();
+            State.Manpower += ManpowerCalculator.RefundSurvivors(
+                playerBoard,
+                result.SurvivingPlayerCombatantIds,
+                _registry);
 
             if (!playerWon)
             {
@@ -335,6 +344,9 @@ namespace DeadManZone.Game
         private void SyncCombatFromRunner(CombatAdvanceResult step)
         {
             State.Combat.Requisition = _activeCombat.Requisition;
+            State.Combat.Authority = _activeCombat.Authority;
+            State.Combat.ActiveSegment = (int)_activeCombat.ActiveSegment;
+            State.Combat.SegmentTick = _activeCombat.SegmentTick;
             State.Combat.CompletedPhase = _activeCombat.LastCompletedPhase;
             State.Combat.AwaitingCommand = step.Status == CombatAdvanceStatus.AwaitingCommand;
             State.Combat.EventLog = _activeCombat.Log.Events
@@ -358,11 +370,11 @@ namespace DeadManZone.Game
 
             var playerBoard = GetPlayerBoard();
             var enemyBoard = BoardSnapshotMapper.ToBoard(State.Combat.EnemyBoard, _registry);
-            _activeCombat = PhasedCombatRun.Start(
+            _activeCombat = TickCombatRun.Start(
                 playerBoard,
                 enemyBoard,
                 State.Combat.CombatSeed,
-                State.Combat.Requisition);
+                State.Combat.Authority > 0 ? State.Combat.Authority : State.Combat.Requisition);
 
             _activeCombat.FastForwardToCheckpoint(
                 State.Combat.CompletedPhase,

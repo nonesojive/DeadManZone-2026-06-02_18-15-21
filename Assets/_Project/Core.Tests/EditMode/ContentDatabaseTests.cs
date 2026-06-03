@@ -19,7 +19,7 @@ namespace DeadManZone.Core.Tests
             piece.maxHp = 10;
             piece.baseDamage = 2;
             piece.goldCost = 5;
-            piece.shopLane = ShopLane.General;
+            piece.shopLane = ShopLane.Offensive;
 
             var core = piece.ToCore();
 
@@ -40,14 +40,14 @@ namespace DeadManZone.Core.Tests
             rifle.displayName = "Rifle Squad";
             rifle.category = PieceCategory.Unit;
             rifle.shapeCells = new[] { Vector2Int.zero };
-            rifle.shopLane = ShopLane.General;
+            rifle.shopLane = ShopLane.Offensive;
 
             var bunker = ScriptableObject.CreateInstance<Data.PieceDefinitionSO>();
             bunker.id = "command_bunker";
             bunker.displayName = "Command Bunker";
             bunker.category = PieceCategory.Building;
             bunker.shapeCells = new[] { Vector2Int.zero };
-            bunker.shopLane = ShopLane.Engineers;
+            bunker.shopLane = ShopLane.Defensive;
 
             typeof(Data.ContentDatabase)
                 .GetField("pieces", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
@@ -56,7 +56,7 @@ namespace DeadManZone.Core.Tests
             var registry = database.BuildRegistry();
 
             Assert.AreEqual("rifle_squad", registry.GetById("rifle_squad").Id);
-            Assert.AreEqual(1, registry.GetPool(ShopLane.Engineers).Count);
+            Assert.AreEqual(1, registry.GetPool(ShopLane.Defensive).Count);
 
             Object.DestroyImmediate(rifle);
             Object.DestroyImmediate(bunker);

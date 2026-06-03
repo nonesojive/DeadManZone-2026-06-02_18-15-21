@@ -178,6 +178,26 @@ namespace DeadManZone.Game
             return ok;
         }
 
+        public bool CanStartBattle(out string failureReason)
+        {
+            if (_orchestrator == null)
+            {
+                failureReason = "No active run.";
+                return false;
+            }
+
+            return _orchestrator.CanStartBattle(out failureReason);
+        }
+
+        public bool TryEmergencyDraft()
+        {
+            EnsureOrchestrator();
+            bool ok = _orchestrator.TryEmergencyDraft();
+            if (ok)
+                NotifyStateChanged();
+            return ok;
+        }
+
         public void BeginCombat()
         {
             EnsureOrchestrator();

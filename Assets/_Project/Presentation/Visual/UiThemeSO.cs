@@ -71,9 +71,9 @@ namespace DeadManZone.Presentation.Visual
         public Color GetLaneTint(ShopLane lane) =>
             lane switch
             {
-                ShopLane.General => generalLaneTint,
-                ShopLane.Engineers => engineersLaneTint,
-                ShopLane.Requisition => requisitionLaneTint,
+                ShopLane.Offensive => generalLaneTint,
+                ShopLane.Defensive => engineersLaneTint,
+                ShopLane.Specialty => requisitionLaneTint,
                 _ => generalLaneTint
             };
 

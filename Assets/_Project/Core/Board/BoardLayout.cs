@@ -21,6 +21,9 @@ namespace DeadManZone.Core.Board
             SpecialTiles = specialTiles;
         }
 
+        public static BoardLayout CreateFromZoneMap(int width, int height, ZoneType[,] zones, GridCoord[] specialTiles = null) =>
+            new BoardLayout(width, height, zones, specialTiles?.ToList() ?? new List<GridCoord>());
+
         public static BoardLayout CreateHorizontalZones(
             int width,
             int height,

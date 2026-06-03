@@ -11,16 +11,17 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private TMP_Text statusText;
         [SerializeField] private TMP_Text currenciesText;
 
-        public void Refresh(RunState state)
+        public void Refresh(RunState state, string battleGateMessage = null)
         {
             if (state == null)
                 return;
 
             if (statusText != null)
             {
+                string gateLine = string.IsNullOrEmpty(battleGateMessage) ? "" : $"\n{battleGateMessage}";
                 statusText.text =
                     $"Fight {state.FightIndex} / {RunOrchestrator.MaxFights}\n" +
-                    $"Phase: {state.Phase}";
+                    $"Phase: {state.Phase}{gateLine}";
             }
 
             if (currenciesText != null)

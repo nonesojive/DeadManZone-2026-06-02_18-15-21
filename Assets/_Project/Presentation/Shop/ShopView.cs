@@ -30,11 +30,11 @@ namespace DeadManZone.Presentation.Shop
         private void Awake()
         {
             if (rerollGeneralButton != null)
-                rerollGeneralButton.onClick.AddListener(() => OnRerollClicked(ShopLane.General));
+                rerollGeneralButton.onClick.AddListener(() => OnRerollClicked(ShopLane.Offensive));
             if (rerollEngineersButton != null)
-                rerollEngineersButton.onClick.AddListener(() => OnRerollClicked(ShopLane.Engineers));
+                rerollEngineersButton.onClick.AddListener(() => OnRerollClicked(ShopLane.Defensive));
             if (rerollRequisitionButton != null)
-                rerollRequisitionButton.onClick.AddListener(() => OnRerollClicked(ShopLane.Requisition));
+                rerollRequisitionButton.onClick.AddListener(() => OnRerollClicked(ShopLane.Specialty));
         }
 
         private void OnEnable()
@@ -55,9 +55,9 @@ namespace DeadManZone.Presentation.Shop
             if (state == null)
                 return;
 
-            RebuildLane(generalLaneRoot, state, ShopLane.General);
-            RebuildLane(engineersLaneRoot, state, ShopLane.Engineers);
-            RebuildLane(requisitionLaneRoot, state, ShopLane.Requisition);
+            RebuildLane(generalLaneRoot, state, ShopLane.Offensive);
+            RebuildLane(engineersLaneRoot, state, ShopLane.Defensive);
+            RebuildLane(requisitionLaneRoot, state, ShopLane.Specialty);
             UpdateModifierTooltip(state.Modifiers, nextEnemyTag);
             UpdateCurrencyText();
         }
