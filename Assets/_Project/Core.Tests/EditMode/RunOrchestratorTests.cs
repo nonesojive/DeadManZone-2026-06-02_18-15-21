@@ -280,7 +280,7 @@ namespace DeadManZone.Core.Tests
 
         private int FindWinningSeed(BoardState board, int startSeed)
         {
-            for (int seed = startSeed; seed < startSeed + 50; seed++)
+            for (int seed = startSeed; seed < startSeed + 100; seed++)
             {
                 if (BoardBeatsGauntlet(board, seed))
                     return seed;

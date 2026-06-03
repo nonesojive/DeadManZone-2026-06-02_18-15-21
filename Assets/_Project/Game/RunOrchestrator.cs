@@ -13,7 +13,7 @@ namespace DeadManZone.Game
     /// <summary>Pure run flow logic used by RunManager and tests.</summary>
     public sealed partial class RunOrchestrator
     {
-        public const int MaxFights = 5;
+        public const int MaxFights = 10;
         public const int BenchLimit = 3;
         public const int BaseRerollCost = 1;
 
@@ -62,6 +62,7 @@ namespace DeadManZone.Game
                 Faction.startingMorale);
             State.PlayerBoard = Faction.CreateEmptyBoardSnapshot();
             State.RerollCountThisRound = 0;
+            ResetAuthorityForBuildRound();
             RefreshShop();
             _activeCombat = null;
             Persist();
@@ -299,14 +300,15 @@ namespace DeadManZone.Game
 
                 State.Phase = RunPhase.Build;
                 State.RerollCountThisRound = 0;
+                ResetAuthorityForBuildRound();
                 RefreshShop();
                 Persist();
                 return;
             }
 
             var reward = FightRewardTable.GetReward(State.FightIndex);
-            State.Supplies += reward.Gold;
-            State.Authority += reward.Requisition;
+            State.Supplies += reward.Supplies;
+            State.Manpower += reward.BonusManpower;
             State.Combat = null;
 
             if (State.FightIndex >= MaxFights)
@@ -319,9 +321,15 @@ namespace DeadManZone.Game
             State.FightIndex++;
             State.Phase = RunPhase.Aftermath;
             State.RerollCountThisRound = 0;
+            ResetAuthorityForBuildRound();
             RefreshShop();
             State.Phase = RunPhase.Build;
             Persist();
+        }
+
+        private void ResetAuthorityForBuildRound()
+        {
+            State.Authority = AuthorityCalculator.ComputeRoundPool(GetPlayerBoard());
         }
 
         private void SyncCombatFromRunner(CombatAdvanceResult step)

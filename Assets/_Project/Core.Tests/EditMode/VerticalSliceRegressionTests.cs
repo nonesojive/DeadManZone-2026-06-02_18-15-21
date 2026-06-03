@@ -31,7 +31,7 @@ namespace DeadManZone.Core.Tests
         public void TearDown() => SaveManager.DeleteSave();
 
         [Test]
-        public void Content_HasFiveEnemyTemplates()
+        public void Content_HasEnemyTemplatesForAllFights()
         {
             for (int fight = 1; fight <= RunOrchestrator.MaxFights; fight++)
             {
