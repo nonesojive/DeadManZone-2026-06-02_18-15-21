@@ -78,10 +78,28 @@ namespace DeadManZone.Game
             Persist();
         }
 
+        public bool CanStartBattle(out string failureReason)
+        {
+            var playerBoard = GetPlayerBoard();
+            int upkeep = ManpowerCalculator.ComputeUpkeep(playerBoard, _registry);
+            if (ManpowerCalculator.CanStartBattle(playerBoard, State.Manpower, _registry))
+            {
+                failureReason = null;
+                return true;
+            }
+
+            failureReason =
+                $"Insufficient manpower: board upkeep is {upkeep} but only {State.Manpower} available.";
+            return false;
+        }
+
         public void BeginCombat()
         {
             if (State.Phase != RunPhase.Build)
                 throw new InvalidOperationException("Combat can only start from the build phase.");
+
+            if (!CanStartBattle(out string failureReason))
+                throw new InvalidOperationException(failureReason);
 
             var playerBoard = GetPlayerBoard();
             var enemyTemplate = _content.GetEnemyTemplate(State.FightIndex);

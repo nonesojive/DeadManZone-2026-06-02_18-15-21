@@ -15,7 +15,8 @@ namespace DeadManZone.Core.Tests
             MaxHp = 10,
             BaseDamage = 2,
             CooldownTicks = 3,
-            GoldCost = 10
+            GoldCost = 10,
+            ManpowerCost = 1
         };
 
         public static PieceDefinition CommandBunker() => new()
@@ -77,6 +78,7 @@ namespace DeadManZone.Core.Tests
             BaseDamage = 4,
             GoldCost = 5,
             RequisitionCost = 3,
+            ManpowerCost = 1,
             CommandActions = CommandActionFlags.CallStrike
         };
 
@@ -89,7 +91,8 @@ namespace DeadManZone.Core.Tests
             Tags = new[] { "Infantry", GameTags.Combatant },
             MaxHp = 3,
             BaseDamage = 1,
-            CooldownTicks = 4
+            CooldownTicks = 4,
+            ManpowerCost = 1
         };
     }
 }
