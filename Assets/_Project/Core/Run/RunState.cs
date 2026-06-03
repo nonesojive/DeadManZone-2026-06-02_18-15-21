@@ -27,9 +27,13 @@ namespace DeadManZone.Core.Run
 
     public sealed class RunState
     {
+        public int SaveSchemaVersion { get; set; } = 2;
         public int FightIndex { get; set; } = 1;
-        public int Gold { get; set; }
-        public int Requisition { get; set; }
+        public int Supplies { get; set; }
+        public int Manpower { get; set; }
+        public int Authority { get; set; }
+        public int Morale { get; set; }
+        public bool EmergencyDraftUsed { get; set; }
         public int RerollCountThisRound { get; set; }
         public int RunSeed { get; set; }
         public string FactionId { get; set; }
@@ -41,17 +45,27 @@ namespace DeadManZone.Core.Run
         public ShopOfferRecord LockedOffer { get; set; }
         public CombatSaveState Combat { get; set; }
 
-        public static RunState CreateNew(string factionId, int runSeed, int startingGold, int startingRequisition)
+        public static RunState CreateNew(
+            string factionId,
+            int runSeed,
+            int startingSupplies,
+            int startingManpower,
+            int startingAuthority,
+            int startingMorale)
         {
             return new RunState
             {
                 FactionId = factionId,
                 RunSeed = runSeed,
-                Gold = startingGold,
-                Requisition = startingRequisition,
+                Supplies = startingSupplies,
+                Manpower = startingManpower,
+                Authority = startingAuthority,
+                Morale = startingMorale,
                 Phase = RunPhase.Build,
-                FightIndex = 1
+                FightIndex = 1,
+                SaveSchemaVersion = 2
             };
         }
     }
 }
+

@@ -16,7 +16,7 @@ namespace DeadManZone.Game
             if (offer == null)
                 return false;
 
-            return State.Gold >= offer.GoldPrice && State.Requisition >= offer.RequisitionPrice;
+            return State.Supplies >= offer.GoldPrice && State.Authority >= offer.RequisitionPrice;
         }
 
         public bool IsOfferLocked(ShopOffer offer) =>
@@ -112,7 +112,7 @@ namespace DeadManZone.Game
             var piece = _registry.GetById(pieceId);
             int refund = Math.Max(0, piece.GoldCost / 2);
             State.BenchPieceIds.RemoveAt(benchIndex);
-            State.Gold += refund;
+            State.Supplies += refund;
             Persist();
             return true;
         }
@@ -136,8 +136,8 @@ namespace DeadManZone.Game
 
         private void PayOffer(ShopOffer offer)
         {
-            State.Gold -= offer.GoldPrice;
-            State.Requisition -= offer.RequisitionPrice;
+            State.Supplies -= offer.GoldPrice;
+            State.Authority -= offer.RequisitionPrice;
         }
 
         private void RemoveOffer(string offerId)

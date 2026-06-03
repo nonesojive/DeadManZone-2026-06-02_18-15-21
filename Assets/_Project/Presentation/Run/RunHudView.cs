@@ -27,7 +27,8 @@ namespace DeadManZone.Presentation.Run
             {
                 int rerollCost = RunOrchestrator.BaseRerollCost + state.RerollCountThisRound;
                 currenciesText.text =
-                    $"Gold: {state.Gold}   Requisition: {state.Requisition}   Reroll: {rerollCost}G";
+                    $"Supplies: {state.Supplies}   Manpower: {state.Manpower}   " +
+                    $"Authority: {state.Authority}   Morale: {state.Morale}   Reroll: {rerollCost}S";
             }
         }
 

@@ -21,8 +21,10 @@ namespace DeadManZone.Data
             new Vector2Int(4, 2),
             new Vector2Int(6, 2)
         };
-        public int startingGold = 100;
-        public int startingRequisition = 2;
+        public int startingSupplies = 100;
+        public int startingManpower = 10;
+        public int startingAuthority = 2;
+        public int startingMorale = 100;
 
         public BoardLayout CreateBoardLayout()
         {
@@ -53,3 +55,4 @@ namespace DeadManZone.Data
         }
     }
 }
+

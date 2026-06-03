@@ -9,13 +9,57 @@ namespace DeadManZone.Core.Tests
     public class RunSaveSerializerTests
     {
         [Test]
-        public void SerializeDeserialize_PreservesGoldAndFightIndex()
+        public void SerializeDeserialize_PreservesFourResources()
+        {
+            var state = new RunState
+            {
+                Supplies = 120,
+                Manpower = 8,
+                Authority = 3,
+                Morale = 45,
+                SaveSchemaVersion = 2
+            };
+            var json = RunSaveSerializer.Serialize(state);
+            var loaded = RunSaveSerializer.Deserialize(json);
+            Assert.AreEqual(120, loaded.Supplies);
+            Assert.AreEqual(8, loaded.Manpower);
+            Assert.AreEqual(3, loaded.Authority);
+            Assert.AreEqual(45, loaded.Morale);
+        }
+
+        [Test]
+        public void Deserialize_MigratesLegacyGoldAndRequisition()
+        {
+            const string legacyJson = """
+                {
+                  "FightIndex": 2,
+                  "Gold": 88,
+                  "Requisition": 5,
+                  "RunSeed": 42,
+                  "FactionId": "iron_vanguard",
+                  "Phase": "Build"
+                }
+                """;
+
+            var loaded = RunSaveSerializer.Deserialize(legacyJson);
+
+            Assert.AreEqual(2, loaded.SaveSchemaVersion);
+            Assert.AreEqual(88, loaded.Supplies);
+            Assert.AreEqual(5, loaded.Authority);
+            Assert.AreEqual(10, loaded.Manpower);
+            Assert.AreEqual(100, loaded.Morale);
+        }
+
+        [Test]
+        public void SerializeDeserialize_PreservesSuppliesAndFightIndex()
         {
             var state = new RunState
             {
                 FightIndex = 3,
-                Gold = 120,
-                Requisition = 4,
+                Supplies = 120,
+                Authority = 4,
+                Manpower = 10,
+                Morale = 100,
                 RunSeed = 777,
                 FactionId = "iron_vanguard",
                 Phase = RunPhase.Build
@@ -25,8 +69,8 @@ namespace DeadManZone.Core.Tests
             var loaded = RunSaveSerializer.FromJson(json);
 
             Assert.AreEqual(3, loaded.FightIndex);
-            Assert.AreEqual(120, loaded.Gold);
-            Assert.AreEqual(4, loaded.Requisition);
+            Assert.AreEqual(120, loaded.Supplies);
+            Assert.AreEqual(4, loaded.Authority);
             Assert.AreEqual(RunPhase.Build, loaded.Phase);
         }
 

@@ -132,7 +132,9 @@ namespace DeadManZone.Presentation.Shop
 
             var state = RunManager.Instance.State;
             int rerollCost = RunOrchestrator.BaseRerollCost + state.RerollCountThisRound;
-            currenciesText.text = $"Gold: {state.Gold}   Requisition: {state.Requisition}   Reroll: {rerollCost}G";
+            currenciesText.text =
+                $"Supplies: {state.Supplies}   Manpower: {state.Manpower}   " +
+                $"Authority: {state.Authority}   Morale: {state.Morale}   Reroll: {rerollCost}S";
         }
 
         private void UpdateModifierTooltip(ShopModifiers modifiers, string nextEnemyTag)
