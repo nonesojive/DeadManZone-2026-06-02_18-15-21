@@ -37,6 +37,8 @@ namespace DeadManZone.Core.Tests
             {
                 var template = _database.GetEnemyTemplate(fight);
                 Assert.NotNull(template, $"Missing enemy template for fight {fight}.");
+                Assert.AreEqual(fight, template.fightNumber,
+                    $"Expected dedicated enemy template for fight {fight}. Regenerate content via DeadManZone → Generate Vertical Slice Content.");
             }
         }
 
@@ -197,6 +199,7 @@ namespace DeadManZone.Core.Tests
                         EnemyBoard = enemyTemplate.ToBoardSnapshot(),
                         CompletedPhase = CombatPhase.Deployment,
                         AwaitingCommand = true,
+                        Authority = 4,
                         Requisition = 4,
                         SubmittedCommands = new List<PhaseCommand>
                         {
@@ -267,6 +270,9 @@ namespace DeadManZone.Core.Tests
                     Assert.AreEqual(expected.Combat.CombatSeed, actual.Combat.CombatSeed);
                     Assert.AreEqual(expected.Combat.AwaitingCommand, actual.Combat.AwaitingCommand);
                     Assert.AreEqual(expected.Combat.CompletedPhase, actual.Combat.CompletedPhase);
+                    Assert.AreEqual(
+                        expected.Combat.Authority > 0 ? expected.Combat.Authority : expected.Combat.Requisition,
+                        actual.Combat.Authority > 0 ? actual.Combat.Authority : actual.Combat.Requisition);
                     Assert.AreEqual(expected.Combat.SubmittedCommands.Count, actual.Combat.SubmittedCommands.Count);
                     Assert.AreEqual(expected.Combat.EventLog.Count, actual.Combat.EventLog.Count);
                     break;

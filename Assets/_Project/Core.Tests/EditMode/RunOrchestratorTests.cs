@@ -111,7 +111,7 @@ namespace DeadManZone.Core.Tests
         public void TryAcquireOfferToBench_RemovesOfferAndAddsToBench()
         {
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 303);
-            var offer = _orchestrator.State.Shop.Offers.First();
+            var offer = _orchestrator.State.Shop.Offers.First(o => _orchestrator.CanAffordOffer(o.OfferId));
             int suppliesBefore = _orchestrator.State.Supplies;
             int offerCountBefore = _orchestrator.State.Shop.Offers.Count;
 
