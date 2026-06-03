@@ -18,7 +18,7 @@ namespace DeadManZone.PlayMode.Tests
             yield return null;
 
             manager.StartNewRun("iron_vanguard");
-            manager.Orchestrator.State.Gold = 55;
+            manager.Orchestrator.State.Supplies = 55;
             manager.SaveAndExit();
 
             Object.Destroy(managerObject);
@@ -29,7 +29,7 @@ namespace DeadManZone.PlayMode.Tests
             yield return null;
 
             Assert.IsTrue(reloaded.TryContinueRun());
-            Assert.AreEqual(55, reloaded.State.Gold);
+            Assert.AreEqual(55, reloaded.State.Supplies);
 
             Object.Destroy(reloadObject);
             SaveManager.DeleteSave();

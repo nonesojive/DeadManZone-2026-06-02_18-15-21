@@ -53,7 +53,13 @@ namespace DeadManZone.Game
                 throw new InvalidOperationException($"Unknown faction '{factionId}'.");
 
             int seed = runSeed ?? Environment.TickCount;
-            State = RunState.CreateNew(factionId, seed, Faction.startingGold, Faction.startingRequisition);
+            State = RunState.CreateNew(
+                factionId,
+                seed,
+                Faction.startingSupplies,
+                Faction.startingManpower,
+                Faction.startingAuthority,
+                Faction.startingMorale);
             State.PlayerBoard = Faction.CreateEmptyBoardSnapshot();
             State.RerollCountThisRound = 0;
             RefreshShop();
@@ -90,12 +96,12 @@ namespace DeadManZone.Game
             {
                 CombatSeed = combatSeed,
                 EnemyBoard = BoardSnapshotMapper.FromBoard(enemyBoard, Faction.rearRows, Faction.supportRows),
-                Requisition = State.Requisition,
+                Requisition = State.Authority,
                 SubmittedCommands = new List<PhaseCommand>(),
                 EventLog = new List<CombatEventRecord>()
             };
 
-            _activeCombat = PhasedCombatRun.Start(playerBoard, enemyBoard, combatSeed, State.Requisition);
+            _activeCombat = PhasedCombatRun.Start(playerBoard, enemyBoard, combatSeed, State.Authority);
             var firstStep = _activeCombat.Continue(Array.Empty<PhaseCommand>());
             SyncCombatFromRunner(firstStep);
             Persist();
@@ -162,11 +168,11 @@ namespace DeadManZone.Game
         public bool TryRerollLane(ShopLane lane)
         {
             int cost = BaseRerollCost + State.RerollCountThisRound;
-            if (State.Gold < cost)
+            if (State.Supplies < cost)
                 return false;
 
             var previousShop = State.Shop;
-            State.Gold -= cost;
+            State.Supplies -= cost;
             State.RerollCountThisRound++;
             RefreshShop();
             ReplaceNonRerolledLanes(previousShop, lane);
@@ -184,7 +190,7 @@ namespace DeadManZone.Game
                 return false;
 
             int refund = removed.Definition.GoldCost / 2;
-            State.Gold += refund;
+            State.Supplies += refund;
             SavePlayerBoard(board);
             return true;
         }
@@ -248,8 +254,8 @@ namespace DeadManZone.Game
             }
 
             var reward = FightRewardTable.GetReward(State.FightIndex);
-            State.Gold += reward.Gold;
-            State.Requisition += reward.Requisition;
+            State.Supplies += reward.Gold;
+            State.Authority += reward.Requisition;
             State.Combat = null;
 
             if (State.FightIndex >= MaxFights)

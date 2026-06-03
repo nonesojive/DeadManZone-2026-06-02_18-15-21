@@ -130,7 +130,7 @@ namespace DeadManZone.Core.Tests
             var orchestrator = new RunOrchestrator(_database);
             orchestrator.StartNewRun("iron_vanguard", runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
             orchestrator.SavePlayerBoard(VerticalSliceTestFixtures.BuildGauntletBoard(_database));
-            int gold = orchestrator.State.Gold;
+            int supplies = orchestrator.State.Supplies;
             int offerCount = orchestrator.State.Shop.Offers.Count;
 
             orchestrator.SaveAndExit();
@@ -138,7 +138,7 @@ namespace DeadManZone.Core.Tests
             var reloaded = new RunOrchestrator(_database);
             Assert.IsTrue(reloaded.TryLoadSavedRun());
             Assert.AreEqual(RunPhase.Build, reloaded.State.Phase);
-            Assert.AreEqual(gold, reloaded.State.Gold);
+            Assert.AreEqual(supplies, reloaded.State.Supplies);
             Assert.AreEqual(offerCount, reloaded.State.Shop.Offers.Count);
             Assert.AreEqual(8, reloaded.GetPlayerBoard().Pieces.Count);
         }
@@ -151,13 +151,15 @@ namespace DeadManZone.Core.Tests
             var state = RunState.CreateNew(
                 "iron_vanguard",
                 VerticalSliceTestFixtures.RegressionRunSeed,
-                faction.startingGold,
-                faction.startingRequisition);
+                faction.startingSupplies,
+                faction.startingManpower,
+                faction.startingAuthority,
+                faction.startingMorale);
             state.PlayerBoard = BoardSnapshotMapper.FromBoard(board, faction.rearRows, faction.supportRows);
             state.Phase = phase;
             state.FightIndex = 2;
-            state.Gold = 37;
-            state.Requisition = 5;
+            state.Supplies = 37;
+            state.Authority = 5;
             state.BenchPieceIds.Add("rifle_squad");
 
             switch (phase)
@@ -230,7 +232,7 @@ namespace DeadManZone.Core.Tests
                     break;
 
                 case RunPhase.Defeat:
-                    state.Gold = 0;
+                    state.Supplies = 0;
                     break;
             }
 
@@ -240,8 +242,10 @@ namespace DeadManZone.Core.Tests
         private static void AssertRepresentativeStatePreserved(RunState expected, RunState actual, RunPhase phase)
         {
             Assert.AreEqual(expected.FightIndex, actual.FightIndex);
-            Assert.AreEqual(expected.Gold, actual.Gold);
-            Assert.AreEqual(expected.Requisition, actual.Requisition);
+            Assert.AreEqual(expected.Supplies, actual.Supplies);
+            Assert.AreEqual(expected.Manpower, actual.Manpower);
+            Assert.AreEqual(expected.Authority, actual.Authority);
+            Assert.AreEqual(expected.Morale, actual.Morale);
             Assert.AreEqual(expected.RunSeed, actual.RunSeed);
             Assert.AreEqual(expected.FactionId, actual.FactionId);
             Assert.AreEqual(expected.BenchPieceIds.Count, actual.BenchPieceIds.Count);
