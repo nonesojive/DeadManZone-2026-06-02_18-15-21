@@ -11,7 +11,7 @@ namespace DeadManZone.Core.Tests
             DisplayName = "Rifle Squad",
             Category = PieceCategory.Unit,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
-            Tags = new[] { "Infantry" },
+            Tags = new[] { "Infantry", GameTags.Combatant },
             MaxHp = 10,
             BaseDamage = 2,
             CooldownTicks = 3,
@@ -29,6 +29,16 @@ namespace DeadManZone.Core.Tests
             GoldCost = 8,
             CommandActions = CommandActionFlags.ChangeStance,
             ShopModifiers = ShopModifierFlags.ExtraGeneralSlot
+        };
+
+        public static PieceDefinition HqPiece() => new()
+        {
+            Id = "hq",
+            DisplayName = "HQ",
+            Category = PieceCategory.Building,
+            Shape = new PieceShape(new[] { new GridCoord(0, 0), new GridCoord(1, 0) }),
+            Tags = new[] { GameTags.Hq },
+            MaxHp = 25
         };
 
         public static PieceDefinition SupplyDepot() => new()
@@ -62,7 +72,7 @@ namespace DeadManZone.Core.Tests
             DisplayName = "Gas Drone",
             Category = PieceCategory.Hybrid,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
-            Tags = new[] { "Gas" },
+            Tags = new[] { "Gas", GameTags.Combatant },
             MaxHp = 8,
             BaseDamage = 4,
             GoldCost = 5,
@@ -76,7 +86,7 @@ namespace DeadManZone.Core.Tests
             DisplayName = "Weak Conscript",
             Category = PieceCategory.Unit,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
-            Tags = new[] { "Infantry" },
+            Tags = new[] { "Infantry", GameTags.Combatant },
             MaxHp = 3,
             BaseDamage = 1,
             CooldownTicks = 4
