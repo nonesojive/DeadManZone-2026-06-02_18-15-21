@@ -103,12 +103,20 @@ namespace DeadManZone.Presentation.Board
             if (registry == null)
                 throw new ArgumentNullException(nameof(registry));
 
-            var layout = BoardLayout.CreateStandard(
-                snapshot.Width,
-                snapshot.Height,
-                snapshot.RearRows,
-                snapshot.SupportRows,
-                snapshot.SpecialTiles.Select(s => new GridCoord(s.X, s.Y)).ToArray());
+            var specialTiles = snapshot.SpecialTiles.Select(s => new GridCoord(s.X, s.Y)).ToArray();
+            var layout = snapshot.RearCols > 0 || snapshot.SupportCols > 0
+                ? BoardLayout.CreateHorizontalZones(
+                    snapshot.Width,
+                    snapshot.Height,
+                    snapshot.RearCols,
+                    snapshot.SupportCols,
+                    specialTiles)
+                : BoardLayout.CreateStandard(
+                    snapshot.Width,
+                    snapshot.Height,
+                    snapshot.RearRows,
+                    snapshot.SupportRows,
+                    specialTiles);
 
             BuildBoard(layout);
 

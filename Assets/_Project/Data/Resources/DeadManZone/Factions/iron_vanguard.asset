@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   factionId: iron_vanguard
   displayName: Iron Vanguard
-  boardWidth: 8
+  boardWidth: 9
   boardHeight: 6
-  rearRows: 2
-  supportRows: 2
+  rearCols: 3
+  supportCols: 3
   specialTileCoords:
   - {x: 1, y: 2}
   - {x: 4, y: 2}

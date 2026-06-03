@@ -75,7 +75,7 @@ namespace DeadManZone.Game
 
         public void SavePlayerBoard(BoardState board)
         {
-            State.PlayerBoard = BoardSnapshotMapper.FromBoard(board, Faction.rearRows, Faction.supportRows);
+            State.PlayerBoard = BoardSnapshotMapper.FromBoard(board, Faction.rearCols, Faction.supportCols);
             Persist();
         }
 
@@ -114,7 +114,7 @@ namespace DeadManZone.Game
             State.Combat = new CombatSaveState
             {
                 CombatSeed = combatSeed,
-                EnemyBoard = BoardSnapshotMapper.FromBoard(enemyBoard, Faction.rearRows, Faction.supportRows),
+                EnemyBoard = BoardSnapshotMapper.FromBoard(enemyBoard, Faction.rearCols, Faction.supportCols),
                 Requisition = State.Authority,
                 SubmittedCommands = new List<PhaseCommand>(),
                 EventLog = new List<CombatEventRecord>()

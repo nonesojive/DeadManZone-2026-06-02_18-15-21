@@ -139,25 +139,25 @@ namespace DeadManZone.Data.Editor
             return new[]
             {
                 SaveEnemy(1, "Rifle Line", "Infantry",
-                    new[] { Placement(byId["rifle_squad"], 0, 4), Placement(byId["rifle_squad"], 2, 4) }),
+                    new[] { Placement(byId["rifle_squad"], 6, 4), Placement(byId["rifle_squad"], 8, 4) }),
                 SaveEnemy(2, "MG Nest", "Heavy Fire",
-                    new[] { Placement(byId["mg_team"], 1, 4), Placement(byId["rifle_squad"], 3, 4) }),
+                    new[] { Placement(byId["mg_team"], 6, 4), Placement(byId["rifle_squad"], 4, 4) }),
                 SaveEnemy(3, "Artillery Barrage", "Artillery",
-                    new[] { Placement(byId["field_gun_nest"], 0, 0), Placement(byId["mortar_crew"], 2, 4) }),
+                    new[] { Placement(byId["field_gun_nest"], 0, 0), Placement(byId["mortar_crew"], 6, 3) }),
                 SaveEnemy(4, "Gas And Armor", "Gas",
-                    new[] { Placement(byId["gas_drone"], 1, 4), Placement(byId["diesel_walker"], 4, 4) }),
+                    new[] { Placement(byId["gas_drone"], 7, 4), Placement(byId["diesel_walker"], 5, 4) }),
                 SaveEnemy(5, "Siege Crawler", "Boss",
-                    new[] { Placement(byId["diesel_walker"], 2, 4), Placement(byId["mg_team"], 0, 4), Placement(byId["field_gun_nest"], 0, 0) }),
+                    new[] { Placement(byId["diesel_walker"], 7, 4), Placement(byId["mg_team"], 6, 4), Placement(byId["field_gun_nest"], 0, 0) }),
                 SaveEnemy(6, "Reinforced Line", "Infantry",
-                    new[] { Placement(byId["mg_team"], 0, 4), Placement(byId["rifle_squad"], 2, 4), Placement(byId["rifle_squad"], 4, 4) }),
+                    new[] { Placement(byId["mg_team"], 6, 4), Placement(byId["rifle_squad"], 7, 4), Placement(byId["rifle_squad"], 5, 4) }),
                 SaveEnemy(7, "Heavy Battery", "Artillery",
-                    new[] { Placement(byId["field_gun_nest"], 0, 0), Placement(byId["mortar_crew"], 2, 4), Placement(byId["mortar_crew"], 5, 4) }),
+                    new[] { Placement(byId["field_gun_nest"], 0, 0), Placement(byId["mortar_crew"], 6, 3), Placement(byId["mortar_crew"], 5, 4) }),
                 SaveEnemy(8, "Armored Push", "Mechanical",
-                    new[] { Placement(byId["diesel_walker"], 1, 4), Placement(byId["diesel_walker"], 4, 4), Placement(byId["mg_team"], 6, 4) }),
+                    new[] { Placement(byId["diesel_walker"], 7, 4), Placement(byId["diesel_walker"], 5, 4), Placement(byId["mg_team"], 6, 4) }),
                 SaveEnemy(9, "Chemical Front", "Gas",
-                    new[] { Placement(byId["gas_drone"], 0, 4), Placement(byId["gas_drone"], 3, 4), Placement(byId["armored_sapper"], 5, 4) }),
+                    new[] { Placement(byId["gas_drone"], 6, 4), Placement(byId["gas_drone"], 4, 4), Placement(byId["armored_sapper"], 5, 4) }),
                 SaveEnemy(10, "Final Assault", "Boss",
-                    new[] { Placement(byId["diesel_walker"], 2, 4), Placement(byId["mobile_artillery"], 0, 0), Placement(byId["mg_team"], 5, 4), Placement(byId["mortar_crew"], 6, 3) })
+                    new[] { Placement(byId["diesel_walker"], 7, 4), Placement(byId["mobile_artillery"], 6, 3), Placement(byId["mg_team"], 5, 4), Placement(byId["mortar_crew"], 8, 3) })
             };
         }
 

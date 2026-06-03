@@ -155,7 +155,7 @@ namespace DeadManZone.Core.Tests
                 faction.startingManpower,
                 faction.startingAuthority,
                 faction.startingMorale);
-            state.PlayerBoard = BoardSnapshotMapper.FromBoard(board, faction.rearRows, faction.supportRows);
+            state.PlayerBoard = BoardSnapshotMapper.FromBoard(board, faction.rearCols, faction.supportCols);
             state.Phase = phase;
             state.FightIndex = 2;
             state.Supplies = 37;

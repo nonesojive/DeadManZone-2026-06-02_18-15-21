@@ -36,17 +36,17 @@ namespace DeadManZone.PlayMode.Tests
             tileView.SetOverlay(new Color(0f, 0f, 0f, 0f), false, false);
 
             view.InitializeForTests(_root.transform, grid, tilePrefab, tileView);
-            var layout = BoardLayout.CreateStandard(
-                width: 8,
+            var layout = BoardLayout.CreateHorizontalZones(
+                width: 9,
                 height: 6,
-                rearRows: 2,
-                supportRows: 2,
+                rearCols: 3,
+                supportCols: 3,
                 specialTiles: new[] { new GridCoord(1, 2) });
             view.BuildBoard(layout);
 
             yield return null;
 
-            Assert.AreEqual(8 * 6, view.TileCount);
+            Assert.AreEqual(9 * 6, view.TileCount);
             var specialTile = view.GetTile(new GridCoord(1, 2));
             Assert.NotNull(specialTile);
             Assert.IsTrue(specialTile.IsSpecial);
