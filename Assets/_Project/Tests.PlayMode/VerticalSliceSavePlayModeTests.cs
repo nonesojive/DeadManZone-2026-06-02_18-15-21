@@ -8,11 +8,12 @@ namespace DeadManZone.PlayMode.Tests
 {
     public sealed class VerticalSliceSavePlayModeTests
     {
-        [UnityTest]
-        public IEnumerator SaveAndLoad_PreservesGoldInPlayMode()
-        {
-            SaveManager.DeleteSave();
+        [SetUp]
+        public void SetUp() => PlayModeTestHelpers.CleanupPersistentManagers();
 
+        [UnityTest]
+        public IEnumerator SaveAndLoad_PreservesSuppliesInPlayMode()
+        {
             var managerObject = new GameObject("RunManager_Test");
             var manager = managerObject.AddComponent<RunManager>();
             yield return null;
@@ -21,7 +22,7 @@ namespace DeadManZone.PlayMode.Tests
             manager.Orchestrator.State.Supplies = 55;
             manager.SaveAndExit();
 
-            Object.Destroy(managerObject);
+            Object.DestroyImmediate(managerObject);
             yield return null;
 
             var reloadObject = new GameObject("RunManager_Reload");
@@ -31,8 +32,10 @@ namespace DeadManZone.PlayMode.Tests
             Assert.IsTrue(reloaded.TryContinueRun());
             Assert.AreEqual(55, reloaded.State.Supplies);
 
-            Object.Destroy(reloadObject);
-            SaveManager.DeleteSave();
+            Object.DestroyImmediate(reloadObject);
         }
+
+        [TearDown]
+        public void TearDown() => PlayModeTestHelpers.CleanupPersistentManagers();
     }
 }

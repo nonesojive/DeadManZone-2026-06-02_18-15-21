@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: ContentDatabase
   m_EditorClassIdentifier: 
   pieces:
+  - {fileID: 11400000, guid: a09195287ae98b44490baf1a5d3e1a68, type: 2}
   - {fileID: 11400000, guid: 723be3e53e7eb00408c103a9d4b1e1e8, type: 2}
   - {fileID: 11400000, guid: ee6b934080063644aa7945a89189ffa5, type: 2}
   - {fileID: 11400000, guid: 61e2d02cbaaf6dd4db3db70d5a5a6366, type: 2}
@@ -35,3 +36,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 39980a716394176449baf074a30320d2, type: 2}
   - {fileID: 11400000, guid: 4250e3062f1d54f4ba15d0f920f43e63, type: 2}
   - {fileID: 11400000, guid: f757a9b3b80b6d64ca8de0c6f3f05edf, type: 2}
+  - {fileID: 11400000, guid: b28fa4773da8d2a4a82507c849d46179, type: 2}
+  - {fileID: 11400000, guid: 5dd94f9ac2e9db74e8efb37abca21f39, type: 2}
+  - {fileID: 11400000, guid: ad9c942755ea2da439fcc36d5eecbb55, type: 2}
+  - {fileID: 11400000, guid: 862bbd2e4391d9a45bd5ce6a920bcc5f, type: 2}
+  - {fileID: 11400000, guid: 797a5ef23660bb045bf61ff8538593e3, type: 2}

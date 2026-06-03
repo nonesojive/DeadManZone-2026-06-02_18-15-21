@@ -124,10 +124,14 @@ namespace DeadManZone.Presentation.Combat
 
         private static string ResolvePieceName(string instanceId)
         {
-            if (string.IsNullOrEmpty(instanceId) || RunManager.Instance == null)
+            if (string.IsNullOrEmpty(instanceId))
                 return instanceId;
 
-            var piece = RunManager.Instance.Orchestrator.GetPlayerBoard().Pieces
+            var manager = RunManager.Instance;
+            if (manager == null || !manager.HasActiveRun)
+                return instanceId;
+
+            var piece = manager.Orchestrator.GetPlayerBoard().Pieces
                 .FirstOrDefault(p => p.InstanceId == instanceId);
             if (piece?.Definition == null)
                 return instanceId;

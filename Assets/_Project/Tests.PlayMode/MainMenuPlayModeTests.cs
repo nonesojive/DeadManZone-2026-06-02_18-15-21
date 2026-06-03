@@ -29,5 +29,8 @@ namespace DeadManZone.PlayMode.Tests
             Assert.IsFalse(controller.ContinueButtonRoot.activeSelf,
                 "Continue should be hidden when no save file exists.");
         }
+
+        [TearDown]
+        public void TearDown() => PlayModeTestHelpers.CleanupPersistentManagers();
     }
 }

@@ -13,6 +13,9 @@ namespace DeadManZone.PlayMode.Tests
     {
         private GameObject _root;
 
+        [SetUp]
+        public void SetUp() => PlayModeTestHelpers.CleanupPersistentManagers();
+
         [TearDown]
         public void TearDown()
         {
@@ -40,9 +43,9 @@ namespace DeadManZone.PlayMode.Tests
             panel.ShowCommands(commands, CombatPhase.Deployment, 1, 2);
             yield return null;
 
-            StringAssert.Contains("ChangeStance", text.text);
-            StringAssert.Contains("SpendRequisitionBuff", text.text);
-            StringAssert.Contains("Budget 1/2", text.text);
+            StringAssert.Contains("All-Out Assault", text.text);
+            StringAssert.Contains("Spend Requisition", text.text);
+            StringAssert.Contains("(1/2)", text.text);
         }
     }
 }

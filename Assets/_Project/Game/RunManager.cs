@@ -42,6 +42,12 @@ namespace DeadManZone.Game
             RunSaveBootstrap.GetActiveRunState = () => _orchestrator?.State;
         }
 
+        private void OnDestroy()
+        {
+            if (Instance == this)
+                Instance = null;
+        }
+
         private void OnDisable()
         {
             RunSaveBootstrap.GetActiveRunState = null;

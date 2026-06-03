@@ -40,7 +40,7 @@ namespace DeadManZone.Data
                 DisplayName = displayName,
                 Category = category,
                 Shape = new PieceShape(cells),
-                Tags = tags ?? System.Array.Empty<string>(),
+                Tags = NormalizeTags(tags, category, baseDamage),
                 MaxHp = maxHp,
                 BaseDamage = baseDamage,
                 CooldownTicks = cooldownTicks,
@@ -50,6 +50,23 @@ namespace DeadManZone.Data
                 ShopModifiers = shopModifiers,
                 CommandActions = commandActions
             };
+        }
+
+        private static string[] NormalizeTags(string[] tags, PieceCategory category, int baseDamage)
+        {
+            var list = new List<string>(tags ?? System.Array.Empty<string>());
+            if (category is PieceCategory.Unit or PieceCategory.Hybrid)
+            {
+                if (!list.Contains(GameTags.Combatant))
+                    list.Add(GameTags.Combatant);
+            }
+            else if (category == PieceCategory.Building && baseDamage > 0)
+            {
+                if (!list.Contains(GameTags.Combatant))
+                    list.Add(GameTags.Combatant);
+            }
+
+            return list.ToArray();
         }
     }
 }

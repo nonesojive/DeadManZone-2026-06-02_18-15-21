@@ -34,6 +34,7 @@ namespace DeadManZone.Core.Run
             else
             {
                 MigrateShopLaneNames(root);
+                MigrateCombatSave(root);
                 json = root.ToString();
             }
 
@@ -70,6 +71,7 @@ namespace DeadManZone.Core.Run
 
             root.Remove("Gold");
             root.Remove("Requisition");
+            MigrateCombatSave(root);
             MigrateShopLaneNames(root);
             root["SaveSchemaVersion"] = CurrentSchemaVersion;
             return root;
@@ -94,6 +96,15 @@ namespace DeadManZone.Core.Run
                     _ => lane
                 };
             }
+        }
+
+        private static void MigrateCombatSave(JObject root)
+        {
+            if (root["Combat"] is not JObject combat)
+                return;
+
+            if (combat["Authority"] == null && combat["Requisition"] != null)
+                combat["Authority"] = combat["Requisition"];
         }
     }
 }

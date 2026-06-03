@@ -69,8 +69,8 @@ namespace DeadManZone.Core.Run
                 ? BoardLayout.CreateHorizontalZones(
                     snapshot.Width,
                     snapshot.Height,
-                    snapshot.RearCols,
-                    snapshot.SupportCols,
+                    snapshot.RearCols > 0 ? snapshot.RearCols : 3,
+                    snapshot.SupportCols > 0 ? snapshot.SupportCols : 3,
                     specialTiles)
                 : BoardLayout.CreateStandard(
                     snapshot.Width,
@@ -80,10 +80,16 @@ namespace DeadManZone.Core.Run
                     specialTiles);
 
             var board = new BoardState(layout);
-            foreach (var record in snapshot.Pieces)
+            foreach (var record in snapshot.Pieces.OrderBy(p => p.InstanceId))
             {
                 var definition = registry.GetById(record.PieceId);
-                board.TryPlace(definition, new GridCoord(record.AnchorX, record.AnchorY), record.InstanceId);
+                var result = board.TryPlace(
+                    definition,
+                    new GridCoord(record.AnchorX, record.AnchorY),
+                    record.InstanceId);
+                if (!result.Success)
+                    throw new System.InvalidOperationException(
+                        $"Failed to restore '{record.PieceId}' at ({record.AnchorX},{record.AnchorY}): {result.Reason}");
             }
 
             return board;

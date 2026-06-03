@@ -17,17 +17,19 @@ namespace DeadManZone.Core.Combat
 
             return stance switch
             {
-                StanceType.FocusWeakest => alive.OrderBy(e => e.CurrentHp).First(),
+                StanceType.FocusWeakest => alive.OrderBy(e => e.CurrentHp).ThenBy(e => e.InstanceId).First(),
                 StanceType.HoldTheLine => alive
                     .OrderByDescending(e => e.Definition.Category == PieceCategory.Building)
                     .ThenBy(e => e.CurrentHp)
+                    .ThenBy(e => e.InstanceId)
                     .First(),
                 StanceType.SupportPriority => alive
                     .OrderByDescending(e => e.Definition.Category == PieceCategory.Building)
                     .ThenByDescending(e => e.CurrentHp)
+                    .ThenBy(e => e.InstanceId)
                     .First(),
-                StanceType.AllOutAssault => alive.OrderByDescending(e => e.CurrentHp).First(),
-                _ => alive[0]
+                StanceType.AllOutAssault => alive.OrderByDescending(e => e.CurrentHp).ThenBy(e => e.InstanceId).First(),
+                _ => alive.OrderBy(e => e.InstanceId).First()
             };
         }
     }

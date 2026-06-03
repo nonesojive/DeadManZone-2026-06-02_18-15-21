@@ -19,11 +19,13 @@ MonoBehaviour:
   - {x: 0, y: 0}
   tags:
   - Infantry
+  - Combatant
   maxHp: 8
   baseDamage: 3
   cooldownTicks: 2
   goldCost: 6
   requisitionCost: 0
+  manpowerCost: 1
   shopModifiers: 0
   commandActions: 0
   shopLane: 0
