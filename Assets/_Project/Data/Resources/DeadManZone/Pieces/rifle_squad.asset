@@ -20,11 +20,13 @@ MonoBehaviour:
   tags:
   - Infantry
   - Vanguard
+  - Combatant
   maxHp: 10
   baseDamage: 2
   cooldownTicks: 3
   goldCost: 5
   requisitionCost: 0
+  manpowerCost: 1
   shopModifiers: 0
   commandActions: 0
   shopLane: 0

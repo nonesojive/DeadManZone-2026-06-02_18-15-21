@@ -177,8 +177,10 @@ namespace DeadManZone.Game
             if (_activeCombat == null)
                 throw new InvalidOperationException("No active combat.");
 
-            var commands = State.Combat.SubmittedCommands;
-            var result = _activeCombat.Continue(commands);
+            var pending = State.Combat.SubmittedCommands
+                .Where(c => c.AfterPhase == State.Combat.CompletedPhase)
+                .ToList();
+            var result = _activeCombat.Continue(pending);
             SyncCombatFromRunner(result);
 
             if (result.Status == CombatAdvanceStatus.Completed)

@@ -69,8 +69,8 @@ namespace DeadManZone.Core.Run
                 ? BoardLayout.CreateHorizontalZones(
                     snapshot.Width,
                     snapshot.Height,
-                    snapshot.RearCols,
-                    snapshot.SupportCols,
+                    snapshot.RearCols > 0 ? snapshot.RearCols : 3,
+                    snapshot.SupportCols > 0 ? snapshot.SupportCols : 3,
                     specialTiles)
                 : BoardLayout.CreateStandard(
                     snapshot.Width,

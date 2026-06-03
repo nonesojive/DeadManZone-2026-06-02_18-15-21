@@ -24,6 +24,7 @@ MonoBehaviour:
   cooldownTicks: 3
   goldCost: 6
   requisitionCost: 0
+  manpowerCost: 1
   shopModifiers: 2
   commandActions: 2
   shopLane: 1

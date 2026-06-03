@@ -40,6 +40,9 @@ namespace DeadManZone.Game
 
         public bool TryAcquireOfferToBench(string offerId)
         {
+            if (State.Phase != RunPhase.Build)
+                return false;
+
             if (State.BenchPieceIds.Count >= BenchLimit || !CanAffordOffer(offerId))
                 return false;
 
@@ -66,6 +69,9 @@ namespace DeadManZone.Game
 
         public bool TryAcquireOfferToBoard(string offerId, GridCoord anchor, string instanceId = null)
         {
+            if (State.Phase != RunPhase.Build)
+                return false;
+
             if (!CanAcquireOfferToBoard(offerId, anchor))
                 return false;
 

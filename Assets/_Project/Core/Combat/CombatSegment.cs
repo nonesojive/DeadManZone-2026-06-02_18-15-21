@@ -9,8 +9,9 @@ namespace DeadManZone.Core.Combat
 
     public static class SegmentTickBudget
     {
-        public const int Opening = 100;
-        public const int MainFight = 500;
-        public const int GasFinal = 200;
+        // Sim ticks per segment (~10 tps presentation pacing in CombatDirector).
+        public const int Opening = 10;
+        public const int MainFight = 50;
+        public const int GasFinal = 20;
     }
 }

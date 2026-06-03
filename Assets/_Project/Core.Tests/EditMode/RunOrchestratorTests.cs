@@ -111,7 +111,10 @@ namespace DeadManZone.Core.Tests
         public void TryAcquireOfferToBench_RemovesOfferAndAddsToBench()
         {
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 303);
-            var offer = _orchestrator.State.Shop.Offers.First(o => _orchestrator.CanAffordOffer(o.OfferId));
+            var offer = _orchestrator.State.Shop.Offers.First(o =>
+                o.Lane == Core.Shop.ShopLane.Offensive &&
+                o.RequisitionPrice == 0 &&
+                _orchestrator.CanAffordOffer(o.OfferId));
             int suppliesBefore = _orchestrator.State.Supplies;
             int offerCountBefore = _orchestrator.State.Shop.Offers.Count;
 
@@ -125,12 +128,16 @@ namespace DeadManZone.Core.Tests
         public void TryAcquireOfferToBoard_InvalidZone_DoesNotCharge()
         {
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 404);
-            var offer = _orchestrator.State.Shop.Offers.First(o => o.PieceId == "rifle_squad");
+            var offer = _orchestrator.State.Shop.Offers.First(o =>
+            {
+                var piece = _database.Pieces.First(p => p.id == o.PieceId);
+                return piece.category == PieceCategory.Building;
+            });
             int suppliesBefore = _orchestrator.State.Supplies;
 
             bool placed = _orchestrator.TryAcquireOfferToBoard(
                 offer.OfferId,
-                new Core.Common.GridCoord(0, 0));
+                TestBoards.FrontLineAnchor(4));
 
             Assert.IsFalse(placed);
             Assert.AreEqual(suppliesBefore, _orchestrator.State.Supplies);
@@ -280,7 +287,7 @@ namespace DeadManZone.Core.Tests
 
         private int FindWinningSeed(BoardState board, int startSeed)
         {
-            for (int seed = startSeed; seed < startSeed + 100; seed++)
+            for (int seed = startSeed; seed < startSeed + 500; seed++)
             {
                 if (BoardBeatsGauntlet(board, seed))
                     return seed;
@@ -375,9 +382,14 @@ namespace DeadManZone.Core.Tests
                 if (submitted >= budget)
                     break;
 
-                if (cmd.Type == CommandType.SpendRequisitionBuff &&
-                    _orchestrator.State.Combat.Requisition < cmd.RequisitionCost)
-                    continue;
+                if (cmd.Type == CommandType.SpendRequisitionBuff)
+                {
+                    int pool = _orchestrator.State.Combat.Authority > 0
+                        ? _orchestrator.State.Combat.Authority
+                        : _orchestrator.State.Combat.Requisition;
+                    if (pool < cmd.RequisitionCost)
+                        continue;
+                }
 
                 _orchestrator.SubmitCombatCommand(new PhaseCommand
                 {
