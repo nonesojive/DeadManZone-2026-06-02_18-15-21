@@ -71,9 +71,9 @@ namespace DeadManZone.Core.Tests
             var shopWithout = generator.Generate(boardWithout, "iron_vanguard", round: 1, seed: 50);
             var shopWith = generator.Generate(boardWith, "iron_vanguard", round: 1, seed: 50);
 
-            var generalWithout = shopWithout.Offers.First(o => o.Lane == ShopLane.General && o.GoldPrice > 0);
+            var generalWithout = shopWithout.Offers.First(o => o.Lane == ShopLane.Offensive && o.GoldPrice > 0);
             var matchingWith = shopWith.Offers.First(o =>
-                o.Lane == ShopLane.General && o.PieceId == generalWithout.PieceId);
+                o.Lane == ShopLane.Offensive && o.PieceId == generalWithout.PieceId);
 
             Assert.That(matchingWith.GoldPrice, Is.LessThan(generalWithout.GoldPrice));
         }
@@ -85,14 +85,38 @@ namespace DeadManZone.Core.Tests
             board.TryPlace(TestPieces.FieldWorkshop(), new GridCoord(1, 0));
 
             var registry = new ContentRegistry();
-            registry.Register(TestPieces.RifleSquad(), ShopLane.General);
-            registry.Register(TestPieces.CommandBunker(), ShopLane.General);
+            registry.Register(TestPieces.RifleSquad(), ShopLane.Offensive);
+            registry.Register(TestPieces.CommandBunker(), ShopLane.Offensive);
 
             var generator = new ShopGenerator(registry);
             var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 7);
 
-            Assert.That(shop.Offers.Any(o => o.Lane == ShopLane.Engineers), Is.True);
+            Assert.That(shop.Offers.Any(o => o.Lane == ShopLane.Defensive), Is.True);
             Assert.IsTrue(shop.Modifiers.GuaranteeEngineerOffer);
+        }
+
+        [Test]
+        public void SpecialtyLocked_ReturnsNoSpecialtyOffers()
+        {
+            var board = new BoardState(DefaultLayout());
+            var registry = TestContentRegistry.Create();
+            var generator = new ShopGenerator(registry);
+
+            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 42);
+
+            Assert.That(shop.Offers.Any(o => o.Lane == ShopLane.Specialty), Is.False);
+        }
+
+        [Test]
+        public void SpecialtyUnlocked_RollsSpecialtyOffers()
+        {
+            var board = new BoardState(DefaultLayout());
+            var registry = TestContentRegistry.Create();
+            var generator = new ShopGenerator(registry);
+
+            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 42, specialtyUnlocked: true);
+
+            Assert.That(shop.Offers.Any(o => o.Lane == ShopLane.Specialty), Is.True);
         }
     }
 }

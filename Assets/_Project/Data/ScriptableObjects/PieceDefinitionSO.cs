@@ -19,9 +19,10 @@ namespace DeadManZone.Data
         public int cooldownTicks = 3;
         public int goldCost = 5;
         public int requisitionCost;
+        public int manpowerCost = 1;
         public ShopModifierFlags shopModifiers;
         public CommandActionFlags commandActions;
-        public ShopLane shopLane = ShopLane.General;
+        public ShopLane shopLane = ShopLane.Offensive;
 
         [Header("Visuals")]
         public Sprite icon;
@@ -45,6 +46,7 @@ namespace DeadManZone.Data
                 CooldownTicks = cooldownTicks,
                 GoldCost = goldCost,
                 RequisitionCost = requisitionCost,
+                ManpowerCost = manpowerCost,
                 ShopModifiers = shopModifiers,
                 CommandActions = commandActions
             };
