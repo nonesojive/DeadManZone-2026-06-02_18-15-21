@@ -138,9 +138,78 @@ namespace DeadManZone.Presentation.Board
             if (database == null)
                 return;
 
-            var snapshot = RunManager.Instance.State.PlayerBoard;
-            if (snapshot != null)
-                LoadSnapshot(snapshot, database.BuildRegistry());
+            var state = RunManager.Instance.State;
+            if (state.Phase == RunPhase.Combat && state.Combat?.EnemyBoard != null)
+            {
+                RefreshCombatFromRunManager(database);
+                return;
+            }
+
+            if (state.PlayerBoard != null)
+                LoadSnapshot(state.PlayerBoard, database.BuildRegistry());
+        }
+
+        public void RefreshCombatFromRunManager(ContentDatabase database = null)
+        {
+            database ??= ContentDatabase.Load();
+            if (database == null || RunManager.Instance == null)
+                return;
+
+            var state = RunManager.Instance.State;
+            if (state?.Combat?.EnemyBoard == null || state.PlayerBoard == null)
+                return;
+
+            var registry = database.BuildRegistry();
+            var playerBoard = BoardSnapshotMapper.ToBoard(state.PlayerBoard, registry);
+            var enemyBoard = BoardSnapshotMapper.ToBoard(state.Combat.EnemyBoard, registry);
+            var battlefield = BattlefieldState.FromBoards(playerBoard, enemyBoard);
+
+            var layout = BoardLayout.CreateFromZoneMap(
+                battlefield.Layout.TotalWidth,
+                battlefield.Layout.Height,
+                CreateCombatZoneMap(battlefield.Layout));
+
+            BuildBoard(layout);
+            _boardState = new BoardState(layout);
+
+            foreach (var cell in battlefield.Cells)
+            {
+                var piece = playerBoard.Pieces.FirstOrDefault(p => p.InstanceId == cell.InstanceId)
+                    ?? enemyBoard.Pieces.FirstOrDefault(p => p.InstanceId == cell.InstanceId);
+                if (piece != null)
+                    _boardState.TryPlace(piece.Definition, cell.Position, piece.InstanceId);
+            }
+
+            RefreshOccupancyVisuals();
+        }
+
+        private static ZoneType[,] CreateCombatZoneMap(BattlefieldLayout bf)
+        {
+            var zones = new ZoneType[bf.TotalWidth, bf.Height];
+            for (int x = 0; x < bf.TotalWidth; x++)
+            {
+                ZoneType zone = ZoneType.Support;
+                if (x < bf.PlayerHalfWidth)
+                {
+                    int rearEnd = bf.PlayerHalfWidth / 3;
+                    int supportEnd = rearEnd + (bf.PlayerHalfWidth - rearEnd) / 2;
+                    zone = x < rearEnd ? ZoneType.Rear : x < supportEnd ? ZoneType.Support : ZoneType.Front;
+                }
+                else if (bf.IsNeutralColumn(x))
+                    zone = ZoneType.Support;
+                else
+                {
+                    int ex = x - bf.EnemyOriginX;
+                    int rearEnd = bf.EnemyHalfWidth / 3;
+                    int supportEnd = rearEnd + (bf.EnemyHalfWidth - rearEnd) / 2;
+                    zone = ex < rearEnd ? ZoneType.Rear : ex < supportEnd ? ZoneType.Support : ZoneType.Front;
+                }
+
+                for (int y = 0; y < bf.Height; y++)
+                    zones[x, y] = zone;
+            }
+
+            return zones;
         }
 
         public void SelectPieceForPlacement(PieceDefinition definition) => _selectedPiece = definition;

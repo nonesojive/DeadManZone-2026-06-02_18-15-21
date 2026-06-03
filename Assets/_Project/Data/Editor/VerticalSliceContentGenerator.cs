@@ -32,50 +32,53 @@ namespace DeadManZone.Data.Editor
         {
             return new[]
             {
-                SavePiece("command_bunker", "Command Bunker", PieceCategory.Building, ShopLane.Engineers,
+                SavePiece("hq_command", "Command HQ", PieceCategory.Building, ShopLane.Defensive,
+                    new[] { Vector2Int.zero, Vector2Int.right }, new[] { "HQ" },
+                    maxHp: 25, goldCost: 0, manpowerCost: 0),
+                SavePiece("command_bunker", "Command Bunker", PieceCategory.Building, ShopLane.Defensive,
                     new[] { Vector2Int.zero, Vector2Int.right }, new[] { "Command" },
                     maxHp: 20, goldCost: 8, shopModifiers: ShopModifierFlags.ExtraGeneralSlot,
                     commandActions: CommandActionFlags.ChangeStance),
-                SavePiece("supply_depot", "Supply Depot", PieceCategory.Building, ShopLane.Engineers,
+                SavePiece("supply_depot", "Supply Depot", PieceCategory.Building, ShopLane.Defensive,
                     new[] { Vector2Int.zero }, new[] { "Supply" },
                     maxHp: 15, goldCost: 6, shopModifiers: ShopModifierFlags.GoldDiscount10,
                     commandActions: CommandActionFlags.SpendRequisitionBuff),
-                SavePiece("field_gun_nest", "Field Gun Nest", PieceCategory.Building, ShopLane.Engineers,
+                SavePiece("field_gun_nest", "Field Gun Nest", PieceCategory.Building, ShopLane.Defensive,
                     new[] { Vector2Int.zero, new Vector2Int(0, 1) }, new[] { "Artillery" },
                     maxHp: 18, baseDamage: 3, cooldownTicks: 4, goldCost: 9),
-                SavePiece("radio_array", "Radio Array", PieceCategory.Building, ShopLane.Engineers,
+                SavePiece("radio_array", "Radio Array", PieceCategory.Building, ShopLane.Defensive,
                     new[] { Vector2Int.zero }, new[] { "Command" },
                     maxHp: 12, goldCost: 7, shopModifiers: ShopModifierFlags.EnemyTagPreview),
-                SavePiece("field_workshop", "Field Workshop", PieceCategory.Building, ShopLane.Engineers,
+                SavePiece("field_workshop", "Field Workshop", PieceCategory.Building, ShopLane.Defensive,
                     new[] { Vector2Int.zero }, new[] { "Mechanical" },
                     maxHp: 12, goldCost: 7, shopModifiers: ShopModifierFlags.GuaranteeEngineerOffer),
-                SavePiece("rifle_squad", "Rifle Squad", PieceCategory.Unit, ShopLane.General,
-                    new[] { Vector2Int.zero }, new[] { "Infantry", "Vanguard" },
+                SavePiece("rifle_squad", "Rifle Squad", PieceCategory.Unit, ShopLane.Offensive,
+                    new[] { Vector2Int.zero }, new[] { "Infantry", "Vanguard", "Combatant" },
                     maxHp: 10, baseDamage: 2, cooldownTicks: 3, goldCost: 5),
-                SavePiece("mg_team", "MG Team", PieceCategory.Unit, ShopLane.General,
+                SavePiece("mg_team", "MG Team", PieceCategory.Unit, ShopLane.Offensive,
                     new[] { Vector2Int.zero, Vector2Int.right }, new[] { "Infantry" },
                     maxHp: 14, baseDamage: 3, cooldownTicks: 4, goldCost: 8),
-                SavePiece("trench_raider", "Trench Raider", PieceCategory.Unit, ShopLane.General,
+                SavePiece("trench_raider", "Trench Raider", PieceCategory.Unit, ShopLane.Offensive,
                     new[] { Vector2Int.zero }, new[] { "Infantry" },
                     maxHp: 8, baseDamage: 3, cooldownTicks: 2, goldCost: 6),
-                SavePiece("diesel_walker", "Diesel Walker", PieceCategory.Unit, ShopLane.General,
+                SavePiece("diesel_walker", "Diesel Walker", PieceCategory.Unit, ShopLane.Offensive,
                     new[] { Vector2Int.zero, Vector2Int.right, new Vector2Int(0, 1), new Vector2Int(1, 1) },
                     new[] { "Mechanical", "Vanguard" },
                     maxHp: 25, baseDamage: 4, cooldownTicks: 5, goldCost: 12),
-                SavePiece("mortar_crew", "Mortar Crew", PieceCategory.Unit, ShopLane.General,
+                SavePiece("mortar_crew", "Mortar Crew", PieceCategory.Unit, ShopLane.Offensive,
                     new[] { Vector2Int.zero, Vector2Int.right }, new[] { "Artillery" },
                     maxHp: 12, baseDamage: 4, cooldownTicks: 5, goldCost: 9),
-                SavePiece("mobile_artillery", "Mobile Artillery", PieceCategory.Hybrid, ShopLane.Requisition,
+                SavePiece("mobile_artillery", "Mobile Artillery", PieceCategory.Hybrid, ShopLane.Specialty,
                     new[] { Vector2Int.zero, Vector2Int.right }, new[] { "Artillery", "Mechanical" },
                     maxHp: 16, baseDamage: 5, cooldownTicks: 5, goldCost: 10, requisitionCost: 2),
-                SavePiece("gas_drone", "Gas Drone", PieceCategory.Hybrid, ShopLane.Requisition,
+                SavePiece("gas_drone", "Gas Drone", PieceCategory.Hybrid, ShopLane.Specialty,
                     new[] { Vector2Int.zero }, new[] { "Gas" },
                     maxHp: 8, baseDamage: 4, cooldownTicks: 4, goldCost: 8, requisitionCost: 3,
                     commandActions: CommandActionFlags.CallStrike),
-                SavePiece("armored_sapper", "Armored Sapper", PieceCategory.Hybrid, ShopLane.Requisition,
+                SavePiece("armored_sapper", "Armored Sapper", PieceCategory.Hybrid, ShopLane.Specialty,
                     new[] { Vector2Int.zero, new Vector2Int(0, 1) }, new[] { "Mechanical", "Infantry" },
                     maxHp: 20, baseDamage: 3, cooldownTicks: 4, goldCost: 11, requisitionCost: 2),
-                SavePiece("weak_conscript", "Weak Conscript", PieceCategory.Unit, ShopLane.General,
+                SavePiece("weak_conscript", "Weak Conscript", PieceCategory.Unit, ShopLane.Offensive,
                     new[] { Vector2Int.zero }, new[] { "Infantry" },
                     maxHp: 3, baseDamage: 1, cooldownTicks: 4, goldCost: 2)
             };
@@ -93,6 +96,7 @@ namespace DeadManZone.Data.Editor
             int cooldownTicks = 3,
             int goldCost = 5,
             int requisitionCost = 0,
+            int manpowerCost = 1,
             ShopModifierFlags shopModifiers = ShopModifierFlags.None,
             CommandActionFlags commandActions = CommandActionFlags.None)
         {
@@ -109,6 +113,7 @@ namespace DeadManZone.Data.Editor
             asset.cooldownTicks = cooldownTicks;
             asset.goldCost = goldCost;
             asset.requisitionCost = requisitionCost;
+            asset.manpowerCost = manpowerCost;
             asset.shopModifiers = shopModifiers;
             asset.commandActions = commandActions;
             asset.categoryTint = category switch

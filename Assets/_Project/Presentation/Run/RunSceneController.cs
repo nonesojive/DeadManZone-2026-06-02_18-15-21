@@ -84,7 +84,17 @@ namespace DeadManZone.Presentation.Run
 
             SetBuildPanelAlpha(inCombat && !runEnded ? 0.4f : 1f);
 
-            runHudView?.Refresh(state);
+            if (inBuild && RunManager.Instance?.Orchestrator != null)
+            {
+                bool canStart = RunManager.Instance.Orchestrator.CanStartBattle(out string failureReason);
+                if (beginFightButton != null)
+                    beginFightButton.interactable = canStart;
+                runHudView?.Refresh(state, failureReason);
+            }
+            else
+            {
+                runHudView?.Refresh(state);
+            }
 
             if (runEnded)
             {

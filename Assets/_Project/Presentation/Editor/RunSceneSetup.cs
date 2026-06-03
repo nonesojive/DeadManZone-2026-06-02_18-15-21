@@ -188,9 +188,9 @@ namespace DeadManZone.Presentation.Editor
                 new Vector2(0.5f, 0.96f), new Vector2(700f, 28f));
             UiThemeSceneStyling.StyleLabel(currencies, theme, secondary: true);
 
-            var (generalRoot, rerollGeneral) = CreateLaneColumn(parent, "General", 0.17f, theme);
-            var (engineerRoot, rerollEngineers) = CreateLaneColumn(parent, "Engineers", 0.5f, theme);
-            var (reqRoot, rerollReq) = CreateLaneColumn(parent, "Requisition", 0.83f, theme);
+            var (generalRoot, rerollGeneral) = CreateLaneColumn(parent, "Offensive", 0.17f, theme);
+            var (engineerRoot, rerollEngineers) = CreateLaneColumn(parent, "Defensive", 0.5f, theme);
+            var (reqRoot, rerollReq) = CreateLaneColumn(parent, "Specialty", 0.83f, theme);
 
             var offerPrefab = CreateOfferCardPrefab(theme);
             offerPrefab.transform.SetParent(parent, false);
@@ -221,8 +221,8 @@ namespace DeadManZone.Presentation.Editor
             var laneBg = column.AddComponent<Image>();
             laneBg.color = title switch
             {
-                "General" => theme.generalLaneTint,
-                "Engineers" => theme.engineersLaneTint,
+                "Offensive" => theme.generalLaneTint,
+                "Defensive" => theme.engineersLaneTint,
                 _ => theme.requisitionLaneTint
             };
             laneBg.raycastTarget = false;
