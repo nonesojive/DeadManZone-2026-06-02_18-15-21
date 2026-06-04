@@ -172,6 +172,49 @@ namespace DeadManZone.Game
             return budget;
         }
 
+        public CombatPauseContext GetCombatPauseContext()
+        {
+            if (_activeCombat == null || State?.Combat == null || !_activeCombat.AwaitingCommand)
+                return null;
+
+            var board = GetPlayerBoard();
+            var abilities = GetAvailableCommands()
+                .Where(c => c.Type == CommandType.UseAbility)
+                .ToList();
+
+            return new CombatPauseContext
+            {
+                CompletedPhase = _activeCombat.LastCompletedPhase,
+                Authority = _activeCombat.Requisition,
+                ActiveTactic = _activeCombat.PlayerTactic,
+                HqAlive = _activeCombat.IsPlayerHqAlive,
+                HasCommandPiece = board.Pieces.Any(p =>
+                    p.Definition.Tags.Contains(GameTags.Command)),
+                AvailableAbilities = abilities,
+                PendingSelectedTactic = State.Combat.PendingSelectedTactic,
+                PendingSelectedAbilities = State.Combat.PendingSelectedAbilities
+            };
+        }
+
+        public void SavePauseDraft(TacticType selectedTactic, IReadOnlyList<GrantedAbility> abilities)
+        {
+            if (State?.Combat == null || _activeCombat == null || !_activeCombat.AwaitingCommand)
+                return;
+
+            State.Combat.PendingSelectedTactic = selectedTactic;
+            State.Combat.PendingSelectedAbilities = abilities?.ToList() ?? new List<GrantedAbility>();
+            Persist();
+        }
+
+        public void ClearPauseDraft()
+        {
+            if (State?.Combat == null)
+                return;
+
+            State.Combat.PendingSelectedTactic = null;
+            State.Combat.PendingSelectedAbilities = new List<GrantedAbility>();
+        }
+
         public void SubmitCombatCommand(PhaseCommand command)
         {
             if (_activeCombat == null || !_activeCombat.AwaitingCommand)
@@ -192,6 +235,7 @@ namespace DeadManZone.Game
             foreach (var command in commands)
                 State.Combat.SubmittedCommands.Add(command);
 
+            ClearPauseDraft();
             Persist();
         }
 
@@ -394,6 +438,7 @@ namespace DeadManZone.Game
         {
             State.Combat.Requisition = _activeCombat.Requisition;
             State.Combat.Authority = _activeCombat.Authority;
+            State.Combat.PlayerTactic = _activeCombat.PlayerTactic;
             State.Combat.ActiveSegment = (int)_activeCombat.ActiveSegment;
             State.Combat.SegmentTick = _activeCombat.SegmentTick;
             State.Combat.CompletedPhase = _activeCombat.LastCompletedPhase;
@@ -428,6 +473,9 @@ namespace DeadManZone.Game
             _activeCombat.FastForwardToCheckpoint(
                 State.Combat.CompletedPhase,
                 State.Combat.SubmittedCommands);
+
+            if (State.Combat.PlayerTactic != default)
+                _activeCombat.SetPlayerTactic(State.Combat.PlayerTactic);
         }
 
         private void Persist() => SaveManager.Save(State);

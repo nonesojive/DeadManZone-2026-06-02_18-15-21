@@ -33,6 +33,13 @@ namespace DeadManZone.Core.Combat
             !IsFightOver &&
             (LastCompletedPhase == CombatPhase.Deployment || LastCompletedPhase == CombatPhase.Grind);
 
+        public TacticType PlayerTactic => _tactics.PlayerTactic;
+
+        public bool IsPlayerHqAlive =>
+            _playerCombatants.Any(c => c.HasTag(GameTags.Hq) && c.IsAlive);
+
+        public void SetPlayerTactic(TacticType tactic) => _tactics.PlayerTactic = tactic;
+
         private TickCombatRun(
             BoardState playerBoard,
             BoardState enemyBoard,

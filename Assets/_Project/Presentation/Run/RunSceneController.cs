@@ -21,6 +21,7 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private ShopView shopView;
         [SerializeField] private ReservesView reservesView;
         [SerializeField] private CombatDirector combatDirector;
+        [SerializeField] private TacticPausePanel tacticPausePanel;
         [SerializeField] private PhaseCommandPanel phaseCommandPanel;
         [SerializeField] private RunHudView runHudView;
         [SerializeField] private RunEndOverlayView runEndOverlay;
@@ -96,6 +97,7 @@ namespace DeadManZone.Presentation.Run
 
             if (runEnded)
             {
+                tacticPausePanel?.Hide();
                 if (phaseCommandPanel != null)
                     phaseCommandPanel.Hide();
                 pauseMenuView?.Hide();
@@ -110,6 +112,7 @@ namespace DeadManZone.Presentation.Run
                 boardView?.RefreshFromRunManager();
                 reservesView?.Refresh();
                 shopView?.RefreshFromRunManager();
+                tacticPausePanel?.Hide();
                 if (phaseCommandPanel != null)
                     phaseCommandPanel.Hide();
             }

@@ -5,6 +5,18 @@ using DeadManZone.Core.Shop;
 
 namespace DeadManZone.Core.Run
 {
+    public sealed class CombatPauseContext
+    {
+        public CombatPhase CompletedPhase { get; init; }
+        public int Authority { get; init; }
+        public TacticType ActiveTactic { get; init; }
+        public bool HqAlive { get; init; }
+        public bool HasCommandPiece { get; init; }
+        public IReadOnlyList<AvailableCommand> AvailableAbilities { get; init; }
+        public TacticType? PendingSelectedTactic { get; init; }
+        public IReadOnlyList<GrantedAbility> PendingSelectedAbilities { get; init; }
+    }
+
     public sealed class CombatSaveState
     {
         public int CombatSeed { get; set; }
@@ -15,6 +27,9 @@ namespace DeadManZone.Core.Run
         public int Authority { get; set; }
         public int ActiveSegment { get; set; }
         public int SegmentTick { get; set; }
+        public TacticType PlayerTactic { get; set; } = TacticType.DisciplinedFire;
+        public TacticType? PendingSelectedTactic { get; set; }
+        public List<GrantedAbility> PendingSelectedAbilities { get; set; } = new();
         public List<PhaseCommand> SubmittedCommands { get; set; } = new();
         public List<CombatEventRecord> EventLog { get; set; } = new();
     }
@@ -31,7 +46,7 @@ namespace DeadManZone.Core.Run
 
     public sealed class RunState
     {
-        public int SaveSchemaVersion { get; set; } = 3;
+        public int SaveSchemaVersion { get; set; } = 4;
         public int FightIndex { get; set; } = 1;
         public int Supplies { get; set; }
         public int Manpower { get; set; }
@@ -68,7 +83,7 @@ namespace DeadManZone.Core.Run
                 Morale = startingMorale,
                 Phase = RunPhase.Build,
                 FightIndex = 1,
-                SaveSchemaVersion = 3,
+                SaveSchemaVersion = 4,
                 Reserves = new ReservesSnapshot
                 {
                     Width = ReservesState.Width,
