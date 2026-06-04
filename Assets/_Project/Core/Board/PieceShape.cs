@@ -13,10 +13,16 @@ namespace DeadManZone.Core.Board
             _cells = cells.ToArray();
         }
 
-        public IEnumerable<GridCoord> GetCells(GridCoord anchor)
+        public IEnumerable<GridCoord> GetCells(GridCoord anchor) =>
+            GetCells(anchor, PieceRotation.R0);
+
+        public IEnumerable<GridCoord> GetCells(GridCoord anchor, PieceRotation rotation)
         {
             foreach (var cell in _cells)
-                yield return new GridCoord(anchor.X + cell.X, anchor.Y + cell.Y);
+            {
+                var rotated = ShapeTransforms.RotateOffset(cell, rotation);
+                yield return new GridCoord(anchor.X + rotated.X, anchor.Y + rotated.Y);
+            }
         }
     }
 }
