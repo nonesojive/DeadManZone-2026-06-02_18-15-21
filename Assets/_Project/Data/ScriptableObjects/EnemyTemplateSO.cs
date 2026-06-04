@@ -32,8 +32,8 @@ namespace DeadManZone.Data
             var snapshot = new BoardSnapshot
             {
                 Width = 9,
-                Height = 6,
-                RearCols = 3,
+                Height = 10,
+                RearCols = 4,
                 SupportCols = 3,
                 SpecialTiles = new System.Collections.Generic.List<GridCoordRecord>()
             };

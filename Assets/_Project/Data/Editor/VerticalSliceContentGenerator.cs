@@ -158,7 +158,7 @@ namespace DeadManZone.Data.Editor
                 SaveEnemy(7, "Heavy Battery", "Artillery",
                     new[] { Placement(byId["field_gun_nest"], 0, 0), Placement(byId["mortar_crew"], 6, 3), Placement(byId["mortar_crew"], 5, 4) }),
                 SaveEnemy(8, "Armored Push", "Mechanical",
-                    new[] { Placement(byId["diesel_walker"], 7, 4), Placement(byId["diesel_walker"], 5, 4), Placement(byId["mg_team"], 3, 4) }),
+                    new[] { Placement(byId["diesel_walker"], 7, 4), Placement(byId["diesel_walker"], 5, 5), Placement(byId["mg_team"], 4, 4) }),
                 SaveEnemy(9, "Chemical Front", "Gas",
                     new[] { Placement(byId["gas_drone"], 6, 4), Placement(byId["gas_drone"], 4, 4), Placement(byId["armored_sapper"], 5, 4) }),
                 SaveEnemy(10, "Final Assault", "Boss",
