@@ -17,6 +17,13 @@ namespace DeadManZone.Core.Board
         public int ManpowerCost { get; init; }
         public ShopModifierFlags ShopModifiers { get; init; }
         public CommandActionFlags CommandActions { get; init; }
+        public AttackSpeedTier AttackSpeed { get; init; } = AttackSpeedTier.Medium;
+        public AttackRangeTier AttackRange { get; init; } = AttackRangeTier.Medium;
+        public MovementSpeedTier MovementSpeed { get; init; } = MovementSpeedTier.Medium;
+        public ArmorType ArmorType { get; init; } = ArmorType.Light;
+        public AttackType AttackType { get; init; } = AttackType.Ballistic;
+        public GrantedAbility GrantedAbility { get; init; } = GrantedAbility.None;
+        public string FactionId { get; init; } = "neutral";
     }
 
     [System.Flags]

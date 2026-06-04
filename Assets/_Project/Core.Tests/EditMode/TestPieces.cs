@@ -16,8 +16,40 @@ namespace DeadManZone.Core.Tests
             BaseDamage = 2,
             CooldownTicks = 3,
             GoldCost = 10,
-            ManpowerCost = 1
+            ManpowerCost = 1,
+            FactionId = "iron_vanguard"
         };
+
+        public static PieceDefinition With(
+            PieceDefinition source,
+            int? baseDamage = null,
+            AttackType? attackType = null,
+            ArmorType? armorType = null,
+            AttackRangeTier? attackRange = null,
+            GrantedAbility? grantedAbility = null) =>
+            new()
+            {
+                Id = source.Id,
+                DisplayName = source.DisplayName,
+                Category = source.Category,
+                Shape = source.Shape,
+                Tags = source.Tags,
+                MaxHp = source.MaxHp,
+                BaseDamage = baseDamage ?? source.BaseDamage,
+                CooldownTicks = source.CooldownTicks,
+                GoldCost = source.GoldCost,
+                RequisitionCost = source.RequisitionCost,
+                ManpowerCost = source.ManpowerCost,
+                ShopModifiers = source.ShopModifiers,
+                CommandActions = source.CommandActions,
+                AttackSpeed = source.AttackSpeed,
+                AttackRange = attackRange ?? source.AttackRange,
+                MovementSpeed = source.MovementSpeed,
+                ArmorType = armorType ?? source.ArmorType,
+                AttackType = attackType ?? source.AttackType,
+                GrantedAbility = grantedAbility ?? source.GrantedAbility,
+                FactionId = source.FactionId
+            };
 
         public static PieceDefinition CommandBunker() => new()
         {

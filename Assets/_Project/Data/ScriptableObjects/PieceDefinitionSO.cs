@@ -24,6 +24,15 @@ namespace DeadManZone.Data
         public CommandActionFlags commandActions;
         public ShopLane shopLane = ShopLane.Offensive;
 
+        [Header("Combat Stats")]
+        public AttackSpeedTier attackSpeed = AttackSpeedTier.Medium;
+        public AttackRangeTier attackRange = AttackRangeTier.Medium;
+        public MovementSpeedTier movementSpeed = MovementSpeedTier.Medium;
+        public ArmorType armorType = ArmorType.Light;
+        public AttackType attackType = AttackType.Ballistic;
+        public GrantedAbility grantedAbility = GrantedAbility.None;
+        public string factionId = "neutral";
+
         [Header("Visuals")]
         public Sprite icon;
         public Color categoryTint = Color.white;
@@ -48,7 +57,14 @@ namespace DeadManZone.Data
                 RequisitionCost = requisitionCost,
                 ManpowerCost = manpowerCost,
                 ShopModifiers = shopModifiers,
-                CommandActions = commandActions
+                CommandActions = commandActions,
+                AttackSpeed = attackSpeed,
+                AttackRange = attackRange,
+                MovementSpeed = movementSpeed,
+                ArmorType = armorType,
+                AttackType = attackType,
+                GrantedAbility = grantedAbility,
+                FactionId = factionId
             };
         }
 
