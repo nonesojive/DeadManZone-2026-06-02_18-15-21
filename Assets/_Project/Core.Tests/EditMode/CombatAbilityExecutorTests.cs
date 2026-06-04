@@ -1,5 +1,7 @@
+using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
+using DeadManZone.Core.Common;
 using DeadManZone.Core.Tests;
 using NUnit.Framework;
 
@@ -38,7 +40,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 targetCell: enemy.Position);
 
             Assert.IsTrue(result.Success);
-            Assert.IsTrue(log.Entries.Exists(e => e.ActionType == "grenade_lob"));
+            Assert.IsTrue(log.Events.Exists(e => e.ActionType == "grenade_lob"));
         }
 
         [Test]

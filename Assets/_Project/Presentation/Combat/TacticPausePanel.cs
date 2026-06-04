@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
+using DeadManZone.Core.Run;
 using DeadManZone.Game;
 using DeadManZone.Presentation.Visual;
 using TMPro;
