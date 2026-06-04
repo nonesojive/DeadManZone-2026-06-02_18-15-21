@@ -43,6 +43,21 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(RunPhase.Build, _orchestrator.State.Phase);
             Assert.AreEqual(1, _orchestrator.State.FightIndex);
             Assert.Greater(_orchestrator.State.Shop.Offers.Count, 0);
+            Assert.AreEqual(3, _orchestrator.State.SaveSchemaVersion);
+            Assert.AreEqual(ReservesState.Width, _orchestrator.State.Reserves.Width);
+            Assert.AreEqual(ReservesState.Height, _orchestrator.State.Reserves.Height);
+            Assert.IsEmpty(_orchestrator.State.Reserves.Pieces);
+        }
+
+        [Test]
+        public void TryLoadSavedRun_RejectsSchemaBelowV3()
+        {
+            _orchestrator.StartNewRun("iron_vanguard", runSeed: 111);
+            _orchestrator.State.SaveSchemaVersion = 2;
+            _orchestrator.SaveAndExit();
+
+            var loaded = new RunOrchestrator(_database);
+            Assert.IsFalse(loaded.TryLoadSavedRun());
         }
 
         [Test]
@@ -108,7 +123,7 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
-        public void TryAcquireOfferToBench_RemovesOfferAndAddsToBench()
+        public void TryAcquireOfferToReserves_RemovesOfferAndPlacesOnReserves()
         {
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 303);
             var offer = _orchestrator.State.Shop.Offers.First(o =>
@@ -118,10 +133,12 @@ namespace DeadManZone.Core.Tests
             int suppliesBefore = _orchestrator.State.Supplies;
             int offerCountBefore = _orchestrator.State.Shop.Offers.Count;
 
-            Assert.IsTrue(_orchestrator.TryAcquireOfferToBench(offer.OfferId));
+            Assert.IsTrue(_orchestrator.TryAcquireOfferToReserves(
+                offer.OfferId,
+                new Core.Common.GridCoord(0, 0)));
             Assert.AreEqual(suppliesBefore - offer.GoldPrice, _orchestrator.State.Supplies);
             Assert.AreEqual(offerCountBefore - 1, _orchestrator.State.Shop.Offers.Count);
-            Assert.Contains(offer.PieceId, _orchestrator.State.BenchPieceIds);
+            Assert.IsTrue(_orchestrator.State.Reserves.Pieces.Any(p => p.PieceId == offer.PieceId));
         }
 
         [Test]
@@ -161,7 +178,7 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
-        public void TryMoveBoardToBench_RemovesFromBoardAndFillsBench()
+        public void TryMoveBoardToReserves_RemovesFromBoardAndPlacesOnReserves()
         {
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 606);
             var board = _orchestrator.GetPlayerBoard();
@@ -169,9 +186,12 @@ namespace DeadManZone.Core.Tests
             Assert.IsTrue(board.TryPlace(bunker, new Core.Common.GridCoord(1, 4), "bunker_1").Success);
             _orchestrator.SavePlayerBoard(board);
 
-            Assert.IsTrue(_orchestrator.TryMoveBoardToBench("bunker_1", 0));
+            Assert.IsTrue(_orchestrator.TryMoveBoardToReserves(
+                "bunker_1",
+                new Core.Common.GridCoord(0, 0)));
             Assert.AreEqual(0, _orchestrator.GetPlayerBoard().Pieces.Count());
-            Assert.Contains(bunker.Id, _orchestrator.State.BenchPieceIds);
+            Assert.IsTrue(_orchestrator.State.Reserves.Pieces.Any(p =>
+                p.InstanceId == "bunker_1" && p.PieceId == bunker.Id));
         }
 
         [Test]
@@ -198,17 +218,20 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
-        public void SaveMidBuild_RestoresGoldAndBench()
+        public void SaveMidBuild_RestoresGoldAndReserves()
         {
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 808);
             _orchestrator.State.Supplies = 42;
-            _orchestrator.State.BenchPieceIds.Add("rifle_squad");
+            var reserves = _orchestrator.GetReserves();
+            var rifle = TestPieces.RifleSquad();
+            Assert.IsTrue(reserves.TryPlace(rifle, new Core.Common.GridCoord(0, 0), "reserve_rifle").Success);
+            _orchestrator.SaveReserves(reserves);
             _orchestrator.SaveAndExit();
 
             var reloaded = new RunOrchestrator(_database);
             Assert.IsTrue(reloaded.TryLoadSavedRun());
             Assert.AreEqual(42, reloaded.State.Supplies);
-            Assert.Contains("rifle_squad", reloaded.State.BenchPieceIds);
+            Assert.IsTrue(reloaded.State.Reserves.Pieces.Any(p => p.PieceId == rifle.Id));
         }
 
         [Test]

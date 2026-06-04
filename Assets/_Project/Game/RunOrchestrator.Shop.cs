@@ -39,20 +39,30 @@ namespace DeadManZone.Game
             Persist();
         }
 
-        public bool TryAcquireOfferToBench(string offerId)
+        public bool TryAcquireOfferToReserves(string offerId, GridCoord anchor, PieceRotation rotation = PieceRotation.R0)
         {
-            if (State.Phase != RunPhase.Build)
-                return false;
-
-            if (State.BenchPieceIds.Count >= BenchLimit || !CanAffordOffer(offerId))
+            if (State.Phase != RunPhase.Build || !CanAffordOffer(offerId))
                 return false;
 
             var offer = FindOffer(offerId);
             if (offer == null)
                 return false;
 
+            var piece = _registry.GetById(offer.PieceId);
+            var reserves = GetReserves();
+            if (!reserves.CanPlace(piece, anchor, rotation))
+                return false;
+
             PayOffer(offer);
-            State.BenchPieceIds.Add(offer.PieceId);
+
+            var place = reserves.TryPlace(piece, anchor, Guid.NewGuid().ToString("N"), rotation);
+            if (!place.Success)
+            {
+                RefundOffer(offer);
+                return false;
+            }
+
+            State.Reserves = ReservesSnapshotMapper.FromReserves(reserves);
             RemoveOffer(offerId);
             Persist();
             return true;
@@ -96,45 +106,78 @@ namespace DeadManZone.Game
             return true;
         }
 
-        public bool TryPlaceFromBench(int benchIndex, GridCoord anchor)
+        public bool TryPlaceFromReserves(
+            string instanceId,
+            GridCoord boardAnchor,
+            PieceRotation rotation = PieceRotation.R0)
         {
             if (State.Phase != RunPhase.Build)
                 return false;
 
-            if (benchIndex < 0 || benchIndex >= State.BenchPieceIds.Count)
+            var reserves = GetReserves();
+            if (!reserves.TryRemove(instanceId, out var removed))
                 return false;
 
-            var pieceId = State.BenchPieceIds[benchIndex];
-            var piece = _registry.GetById(pieceId);
             var board = GetPlayerBoard();
-            var place = board.TryPlace(piece, anchor, Guid.NewGuid().ToString("N"));
+            var place = board.TryPlace(removed.Definition, boardAnchor, removed.InstanceId, rotation);
             if (!place.Success)
+            {
+                reserves.TryPlace(removed.Definition, removed.Anchor, removed.InstanceId, removed.Rotation);
                 return false;
+            }
 
-            State.BenchPieceIds.RemoveAt(benchIndex);
+            SaveReserves(reserves);
             SavePlayerBoard(board);
-            Persist();
             return true;
         }
 
-        public bool TrySellFromBench(int benchIndex)
+        public bool TrySellFromReserves(string instanceId)
         {
             if (State.Phase != RunPhase.Build)
                 return false;
 
-            if (benchIndex < 0 || benchIndex >= State.BenchPieceIds.Count)
+            var reserves = GetReserves();
+            if (!reserves.TryRemove(instanceId, out var removed))
                 return false;
 
-            var pieceId = State.BenchPieceIds[benchIndex];
-            var piece = _registry.GetById(pieceId);
-            int refund = Math.Max(0, piece.GoldCost / 2);
-            State.BenchPieceIds.RemoveAt(benchIndex);
+            int refund = Math.Max(0, removed.Definition.GoldCost / 2);
             State.Supplies += refund;
+            SaveReserves(reserves);
             Persist();
             return true;
         }
 
-        public bool TryPurchaseOffer(string offerId) => TryAcquireOfferToBench(offerId);
+        public bool TryMoveBoardToReserves(
+            string boardInstanceId,
+            GridCoord reservesAnchor,
+            PieceRotation rotation = PieceRotation.R0)
+        {
+            if (State.Phase != RunPhase.Build)
+                return false;
+
+            var board = GetPlayerBoard();
+            if (!board.TryRemove(boardInstanceId, out var removed))
+                return false;
+
+            var reserves = GetReserves();
+            var place = reserves.TryPlace(
+                removed.Definition,
+                reservesAnchor,
+                removed.InstanceId,
+                rotation);
+            if (!place.Success)
+            {
+                board.TryPlace(removed.Definition, removed.Anchor, removed.InstanceId, removed.Rotation);
+                return false;
+            }
+
+            SavePlayerBoard(board);
+            SaveReserves(reserves);
+            return true;
+        }
+
+        public bool TryPurchaseOffer(string offerId) =>
+            TryAcquireOfferToReserves(offerId, new GridCoord(0, 0), PieceRotation.R0);
 
         public void SetFrozenOffer(string offerId)
         {

@@ -17,7 +17,7 @@ namespace DeadManZone.Core.Tests
                 Manpower = 8,
                 Authority = 3,
                 Morale = 45,
-                SaveSchemaVersion = 2
+                SaveSchemaVersion = 3
             };
             var json = RunSaveSerializer.Serialize(state);
             var loaded = RunSaveSerializer.Deserialize(json);

@@ -15,7 +15,6 @@ namespace DeadManZone.Game
     public sealed partial class RunOrchestrator
     {
         public const int MaxFights = 10;
-        public const int BenchLimit = 3;
         public const int BaseRerollCost = 1;
 
         private readonly ContentDatabase _content;
@@ -39,6 +38,9 @@ namespace DeadManZone.Game
         {
             var loaded = SaveManager.Load();
             if (loaded == null)
+                return false;
+
+            if (loaded.SaveSchemaVersion < 3 || loaded.Reserves == null)
                 return false;
 
             State = loaded;
@@ -82,6 +84,20 @@ namespace DeadManZone.Game
         public void SavePlayerBoard(BoardState board)
         {
             State.PlayerBoard = BoardSnapshotMapper.FromBoard(board, Faction.rearCols, Faction.supportCols);
+            Persist();
+        }
+
+        public ReservesState GetReserves()
+        {
+            if (State?.Reserves == null)
+                return new ReservesState();
+
+            return ReservesSnapshotMapper.ToReserves(State.Reserves, _registry);
+        }
+
+        public void SaveReserves(ReservesState reserves)
+        {
+            State.Reserves = ReservesSnapshotMapper.FromReserves(reserves);
             Persist();
         }
 
@@ -251,30 +267,6 @@ namespace DeadManZone.Game
             if (!result.Success)
                 return false;
 
-            SavePlayerBoard(board);
-            Persist();
-            return true;
-        }
-
-        public bool TryMoveBoardToBench(string instanceId, int benchIndex)
-        {
-            if (State.Phase != RunPhase.Build)
-                return false;
-
-            if (benchIndex < 0 || benchIndex >= BenchLimit)
-                return false;
-
-            if (benchIndex < State.BenchPieceIds.Count)
-                return false;
-
-            if (State.BenchPieceIds.Count >= BenchLimit)
-                return false;
-
-            var board = GetPlayerBoard();
-            if (!board.TryRemove(instanceId, out var removed))
-                return false;
-
-            State.BenchPieceIds.Add(removed.Definition.Id);
             SavePlayerBoard(board);
             Persist();
             return true;

@@ -162,7 +162,23 @@ namespace DeadManZone.Core.Tests
             state.FightIndex = 2;
             state.Supplies = 37;
             state.Authority = 5;
-            state.BenchPieceIds.Add("rifle_squad");
+            state.SaveSchemaVersion = 3;
+            state.Reserves = new ReservesSnapshot
+            {
+                Width = ReservesState.Width,
+                Height = ReservesState.Height,
+                Pieces = new List<PlacedPieceRecord>
+                {
+                    new()
+                    {
+                        InstanceId = "reserve_rifle",
+                        PieceId = "rifle_squad",
+                        AnchorX = 0,
+                        AnchorY = 0,
+                        RotationDegrees = 0
+                    }
+                }
+            };
 
             switch (phase)
             {
@@ -252,7 +268,10 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(expected.Morale, actual.Morale);
             Assert.AreEqual(expected.RunSeed, actual.RunSeed);
             Assert.AreEqual(expected.FactionId, actual.FactionId);
-            Assert.AreEqual(expected.BenchPieceIds.Count, actual.BenchPieceIds.Count);
+            Assert.AreEqual(expected.Reserves.Pieces.Count, actual.Reserves.Pieces.Count);
+            Assert.AreEqual(
+                expected.Reserves.Pieces[0].PieceId,
+                actual.Reserves.Pieces[0].PieceId);
 
             Assert.NotNull(actual.PlayerBoard);
             Assert.AreEqual(expected.PlayerBoard.Pieces.Count, actual.PlayerBoard.Pieces.Count);

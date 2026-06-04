@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Shop;
 
@@ -30,7 +31,7 @@ namespace DeadManZone.Core.Run
 
     public sealed class RunState
     {
-        public int SaveSchemaVersion { get; set; } = 2;
+        public int SaveSchemaVersion { get; set; } = 3;
         public int FightIndex { get; set; } = 1;
         public int Supplies { get; set; }
         public int Manpower { get; set; }
@@ -42,7 +43,7 @@ namespace DeadManZone.Core.Run
         public string FactionId { get; set; }
         public RunPhase Phase { get; set; } = RunPhase.Build;
         public BoardSnapshot PlayerBoard { get; set; }
-        public List<string> BenchPieceIds { get; set; } = new();
+        public ReservesSnapshot Reserves { get; set; }
         public ShopState Shop { get; set; }
         public string FrozenOfferId { get; set; }
         public ShopOfferRecord LockedOffer { get; set; }
@@ -66,9 +67,15 @@ namespace DeadManZone.Core.Run
                 Morale = startingMorale,
                 Phase = RunPhase.Build,
                 FightIndex = 1,
-                SaveSchemaVersion = 2
+                SaveSchemaVersion = 3,
+                Reserves = new ReservesSnapshot
+                {
+                    Width = ReservesState.Width,
+                    Height = ReservesState.Height,
+                    Pieces = new List<PlacedPieceRecord>()
+                }
             };
         }
     }
 }
-
+

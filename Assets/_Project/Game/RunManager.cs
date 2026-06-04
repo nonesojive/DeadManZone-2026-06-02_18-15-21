@@ -130,10 +130,13 @@ namespace DeadManZone.Game
             NotifyStateChanged();
         }
 
-        public bool TryAcquireOfferToBench(string offerId)
+        public bool TryAcquireOfferToReserves(
+            string offerId,
+            Core.Common.GridCoord anchor,
+            Core.Common.PieceRotation rotation = Core.Common.PieceRotation.R0)
         {
             EnsureOrchestrator();
-            bool ok = _orchestrator.TryAcquireOfferToBench(offerId);
+            bool ok = _orchestrator.TryAcquireOfferToReserves(offerId, anchor, rotation);
             if (ok)
                 NotifyStateChanged();
             return ok;
@@ -148,19 +151,22 @@ namespace DeadManZone.Game
             return ok;
         }
 
-        public bool TryPlaceFromBench(int benchIndex, Core.Common.GridCoord anchor)
+        public bool TryPlaceFromReserves(
+            string instanceId,
+            Core.Common.GridCoord boardAnchor,
+            Core.Common.PieceRotation rotation = Core.Common.PieceRotation.R0)
         {
             EnsureOrchestrator();
-            bool ok = _orchestrator.TryPlaceFromBench(benchIndex, anchor);
+            bool ok = _orchestrator.TryPlaceFromReserves(instanceId, boardAnchor, rotation);
             if (ok)
                 NotifyStateChanged();
             return ok;
         }
 
-        public bool TrySellFromBench(int benchIndex)
+        public bool TrySellFromReserves(string instanceId)
         {
             EnsureOrchestrator();
-            bool ok = _orchestrator.TrySellFromBench(benchIndex);
+            bool ok = _orchestrator.TrySellFromReserves(instanceId);
             if (ok)
                 NotifyStateChanged();
             return ok;
@@ -175,10 +181,13 @@ namespace DeadManZone.Game
             return ok;
         }
 
-        public bool TryMoveBoardToBench(string instanceId, int benchIndex)
+        public bool TryMoveBoardToReserves(
+            string boardInstanceId,
+            Core.Common.GridCoord reservesAnchor,
+            Core.Common.PieceRotation rotation = Core.Common.PieceRotation.R0)
         {
             EnsureOrchestrator();
-            bool ok = _orchestrator.TryMoveBoardToBench(instanceId, benchIndex);
+            bool ok = _orchestrator.TryMoveBoardToReserves(boardInstanceId, reservesAnchor, rotation);
             if (ok)
                 NotifyStateChanged();
             return ok;

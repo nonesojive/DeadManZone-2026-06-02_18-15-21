@@ -6,7 +6,8 @@ namespace DeadManZone.Core.Run
 {
     public static class RunSaveSerializer
     {
-        private const int CurrentSchemaVersion = 2;
+        private const int CurrentSchemaVersion = 3;
+        private const int LegacyMigrationTargetVersion = 2;
         private const int LegacyDefaultManpower = 10;
         private const int LegacyDefaultMorale = 100;
 
@@ -29,7 +30,7 @@ namespace DeadManZone.Core.Run
             var root = JObject.Parse(json);
             int schemaVersion = root.Value<int?>("SaveSchemaVersion") ?? 1;
 
-            if (schemaVersion < CurrentSchemaVersion)
+            if (schemaVersion < LegacyMigrationTargetVersion)
                 json = MigrateLegacySave(root).ToString();
             else
             {
@@ -73,7 +74,7 @@ namespace DeadManZone.Core.Run
             root.Remove("Requisition");
             MigrateCombatSave(root);
             MigrateShopLaneNames(root);
-            root["SaveSchemaVersion"] = CurrentSchemaVersion;
+            root["SaveSchemaVersion"] = LegacyMigrationTargetVersion;
             return root;
         }
 
