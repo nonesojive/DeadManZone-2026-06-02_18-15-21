@@ -2,6 +2,7 @@
   "name": "DeadManZone.Presentation.Editor",
   "rootNamespace": "DeadManZone.Presentation.Editor",
   "references": [
+    "DeadManZone.Core",
     "DeadManZone.Presentation",
     "DeadManZone.Game",
     "DeadManZone.Data",

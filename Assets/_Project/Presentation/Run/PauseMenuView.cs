@@ -41,7 +41,7 @@ namespace DeadManZone.Presentation.Run
 
         public void Open()
         {
-            RunManager.Instance?.Orchestrator?.Persist();
+            RunManager.Instance?.SaveAndExit();
             ShowMain();
             if (root != null)
                 root.SetActive(true);
@@ -91,13 +91,13 @@ namespace DeadManZone.Presentation.Run
 
         private void OnMainMenu()
         {
-            RunManager.Instance?.Orchestrator?.Persist();
+            RunManager.Instance?.SaveAndExit();
             GameScenes.LoadMainMenu();
         }
 
         private void OnExit()
         {
-            RunManager.Instance?.Orchestrator?.Persist();
+            RunManager.Instance?.SaveAndExit();
 #if UNITY_EDITOR
             EditorApplication.isPlaying = false;
 #else

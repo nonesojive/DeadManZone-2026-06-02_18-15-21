@@ -53,10 +53,27 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log("DeadManZone: MainMenu scene refreshed.");
         }
 
+        [MenuItem("DeadManZone/Refresh Run Scene")]
+        public static void RefreshRunScene()
+        {
+            UiThemeEditor.EnsureThemeAsset();
+            EnsureFolder(ScenesFolder);
+            CreateRunScene();
+            AssetDatabase.SaveAssets();
+            Debug.Log("DeadManZone: Run scene refreshed.");
+        }
+
         /// <summary>Invoked from Unity batch mode to regenerate MainMenu without touching Run scene.</summary>
         public static void BatchRefreshMainMenuScene()
         {
             RefreshMainMenuScene();
+            EditorApplication.Exit(0);
+        }
+
+        /// <summary>Invoked from Unity batch mode to regenerate Run scene from RunSceneSetup.</summary>
+        public static void BatchRefreshRunScene()
+        {
+            RefreshRunScene();
             EditorApplication.Exit(0);
         }
 
