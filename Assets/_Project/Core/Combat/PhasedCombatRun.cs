@@ -35,7 +35,7 @@ namespace DeadManZone.Core.Combat
         private readonly Rng _rng;
         private readonly List<CombatantState> _playerCombatants;
         private readonly List<CombatantState> _enemyCombatants;
-        private readonly StanceState _stances = new();
+        private readonly TacticState _tactics = new();
         private readonly CombatEventLog _log = new();
 
         public BoardState PlayerBoard => _playerBoard;
@@ -205,7 +205,7 @@ namespace DeadManZone.Core.Combat
                     command,
                     _playerBoard,
                     ref requisition,
-                    _stances,
+                    _tactics,
                     _playerCombatants,
                     _enemyCombatants,
                     _log,
@@ -226,17 +226,17 @@ namespace DeadManZone.Core.Combat
                     break;
 
                 foreach (var combatant in _playerCombatants.Where(c => c.IsAlive))
-                    Act(combatant, _enemyCombatants, _stances.PlayerStance, _stances.PlayerDamageBuff, phase, tick, damageScale);
+                    Act(combatant, _enemyCombatants, _tactics.PlayerTactic, _tactics.PlayerDamageBuff, phase, tick, damageScale);
 
                 foreach (var combatant in _enemyCombatants.Where(c => c.IsAlive))
-                    Act(combatant, _playerCombatants, _stances.EnemyStance, _stances.EnemyDamageBuff, phase, tick, damageScale);
+                    Act(combatant, _playerCombatants, _tactics.EnemyTactic, _tactics.EnemyDamageBuff, phase, tick, damageScale);
             }
         }
 
         private void Act(
             CombatantState actor,
             IList<CombatantState> enemies,
-            StanceType stance,
+            TacticType tactic,
             int damageBuff,
             CombatPhase phase,
             int tick,
@@ -254,7 +254,7 @@ namespace DeadManZone.Core.Combat
                 return;
             }
 
-            var target = CombatTargeting.SelectTarget(actor, enemies.ToList(), stance);
+            var target = TacticTargeting.SelectTarget(actor, enemies.ToList(), tactic);
             if (target == null)
                 return;
 

@@ -115,7 +115,7 @@ namespace DeadManZone.Presentation.Combat
             string pieceName = ResolvePieceName(cmd.SourcePieceId);
             return cmd.Type switch
             {
-                CommandType.ChangeStance => $"All-Out Assault — {pieceName}",
+                CommandType.SetTactic => $"All-Out Assault — {pieceName}",
                 CommandType.SpendRequisitionBuff => $"Spend Requisition (+buff) — {pieceName} ({cmd.RequisitionCost}R)",
                 CommandType.CallStrike => $"Call Strike — {pieceName} ({cmd.RequisitionCost}R)",
                 _ => $"{cmd.Type} — {pieceName}"
@@ -165,7 +165,7 @@ namespace DeadManZone.Presentation.Combat
                     Type = cmd.Type,
                     SourcePieceId = cmd.SourcePieceId,
                     Cost = cmd.RequisitionCost,
-                    Stance = StanceType.AllOutAssault
+                    Tactic = TacticType.Advance
                 });
                 submitted++;
             }

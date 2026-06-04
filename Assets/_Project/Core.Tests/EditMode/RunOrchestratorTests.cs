@@ -340,15 +340,15 @@ namespace DeadManZone.Core.Tests
                 commands.Add(new PhaseCommand
                 {
                     AfterPhase = CombatPhase.Deployment,
-                    Type = CommandType.ChangeStance,
-                    Stance = StanceType.AllOutAssault,
+                    Type = CommandType.SetTactic,
+                    Tactic = TacticType.Advance,
                     SourcePieceId = bunkerId
                 });
                 commands.Add(new PhaseCommand
                 {
                     AfterPhase = CombatPhase.Grind,
-                    Type = CommandType.ChangeStance,
-                    Stance = StanceType.AllOutAssault,
+                    Type = CommandType.SetTactic,
+                    Tactic = TacticType.Advance,
                     SourcePieceId = bunkerId
                 });
             }
@@ -359,7 +359,7 @@ namespace DeadManZone.Core.Tests
                 {
                     AfterPhase = CombatPhase.Deployment,
                     Type = CommandType.SpendRequisitionBuff,
-                    Stance = StanceType.AllOutAssault,
+                    Tactic = TacticType.Advance,
                     SourcePieceId = depotId,
                     Cost = 1
                 });
@@ -367,7 +367,7 @@ namespace DeadManZone.Core.Tests
                 {
                     AfterPhase = CombatPhase.Grind,
                     Type = CommandType.SpendRequisitionBuff,
-                    Stance = StanceType.AllOutAssault,
+                    Tactic = TacticType.Advance,
                     SourcePieceId = depotId,
                     Cost = 1
                 });
@@ -404,7 +404,7 @@ namespace DeadManZone.Core.Tests
                 {
                     AfterPhase = completedPhase,
                     Type = cmd.Type,
-                    Stance = StanceType.AllOutAssault,
+                    Tactic = TacticType.Advance,
                     SourcePieceId = cmd.SourcePieceId,
                     Cost = cmd.RequisitionCost
                 });

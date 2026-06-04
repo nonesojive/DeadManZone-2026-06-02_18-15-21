@@ -14,7 +14,7 @@ namespace DeadManZone.Core.Combat
         private readonly Rng _rng;
         private readonly List<CombatantState> _playerCombatants;
         private readonly List<CombatantState> _enemyCombatants;
-        private readonly StanceState _stances = new();
+        private readonly TacticState _tactics = new();
         private readonly CombatEventLog _log = new();
         private readonly HashSet<GridCoord> _occupied = new();
 
@@ -86,7 +86,11 @@ namespace DeadManZone.Core.Combat
                 if (TryEndFight())
                     return CompleteResult();
 
-                RunSegment(CombatSegment.GasFinal, CombatPhase.FinalPush, SegmentTickBudget.GasFinal, 1.2f);
+                RunSegment(CombatSegment.BriefPush, CombatPhase.FinalPush, CombatPacingConfig.BriefPushTicks, 1.0f);
+                if (TryEndFight())
+                    return CompleteResult();
+
+                RunGasUntilEnd();
                 LastCompletedPhase = CombatPhase.FinalPush;
                 return CompleteFight();
             }
@@ -112,6 +116,34 @@ namespace DeadManZone.Core.Combat
             Continue(FilterCommands(submittedCommands, CombatPhase.Grind));
         }
 
+        private void RunGasUntilEnd()
+        {
+            ActiveSegment = CombatSegment.GasFinal;
+            for (SegmentTick = 0; SegmentTick < CombatPacingConfig.MaxGasTicks; SegmentTick++)
+            {
+                if (TryEndFight())
+                    break;
+
+                TryMoveSide(_playerCombatants, _enemyCombatants, ActiveSegment, CombatPhase.FinalPush);
+                TryMoveSide(_enemyCombatants, _playerCombatants, ActiveSegment, CombatPhase.FinalPush);
+                ApplyGas(CombatPhase.FinalPush);
+                ResolveAttacks(
+                    _playerCombatants,
+                    _enemyCombatants,
+                    _tactics.PlayerTactic,
+                    _tactics.PlayerDamageBuff,
+                    CombatPhase.FinalPush,
+                    1.2f);
+                ResolveAttacks(
+                    _enemyCombatants,
+                    _playerCombatants,
+                    _tactics.EnemyTactic,
+                    _tactics.EnemyDamageBuff,
+                    CombatPhase.FinalPush,
+                    1.2f);
+            }
+        }
+
         private void RunSegment(CombatSegment segment, CombatPhase phase, int tickBudget, float damageScale)
         {
             ActiveSegment = segment;
@@ -126,8 +158,8 @@ namespace DeadManZone.Core.Combat
                 if (segment == CombatSegment.GasFinal)
                     ApplyGas(phase);
 
-                ResolveAttacks(_playerCombatants, _enemyCombatants, _stances.PlayerStance, _stances.PlayerDamageBuff, phase, damageScale);
-                ResolveAttacks(_enemyCombatants, _playerCombatants, _stances.EnemyStance, _stances.EnemyDamageBuff, phase, damageScale);
+                ResolveAttacks(_playerCombatants, _enemyCombatants, _tactics.PlayerTactic, _tactics.PlayerDamageBuff, phase, damageScale);
+                ResolveAttacks(_enemyCombatants, _playerCombatants, _tactics.EnemyTactic, _tactics.EnemyDamageBuff, phase, damageScale);
             }
         }
 
@@ -173,7 +205,7 @@ namespace DeadManZone.Core.Combat
         private void ResolveAttacks(
             IList<CombatantState> attackers,
             IList<CombatantState> defenders,
-            StanceType stance,
+            TacticType tactic,
             int damageBuff,
             CombatPhase phase,
             float damageScale)
@@ -186,7 +218,7 @@ namespace DeadManZone.Core.Combat
                     continue;
                 }
 
-                var target = CombatTargeting.SelectTarget(actor, defenders.ToList(), stance);
+                var target = TacticTargeting.SelectTarget(actor, defenders.ToList(), tactic);
                 if (target == null)
                     continue;
 
@@ -204,6 +236,28 @@ namespace DeadManZone.Core.Combat
             }
         }
 
+        private void ApplyCommands(IReadOnlyList<PhaseCommand> commands, CombatPhase completedPhase)
+        {
+            var phaseCommands = FilterCommands(commands, completedPhase);
+            if (phaseCommands.Count == 0)
+                return;
+
+            int authority = Authority;
+            _commandProcessor.TryApplyBatch(
+                phaseCommands,
+                _playerBoard,
+                ref authority,
+                _tactics,
+                _playerCombatants,
+                _enemyCombatants,
+                _log,
+                completedPhase);
+            Authority = authority;
+
+            foreach (var combatant in _playerCombatants)
+                combatant.ArmorBuffSteps = 0;
+        }
+
         private bool TryEndFight()
         {
             var (fightOver, playerWon) = CombatWinChecker.Evaluate(_playerCombatants, _enemyCombatants);
@@ -219,28 +273,6 @@ namespace DeadManZone.Core.Combat
         {
             TryEndFight();
             return CompleteResult();
-        }
-
-        private void ApplyCommands(IReadOnlyList<PhaseCommand> commands, CombatPhase completedPhase)
-        {
-            if (commands == null)
-                return;
-
-            int authority = Authority;
-            foreach (var command in commands.Where(c => c.AfterPhase == completedPhase))
-            {
-                _commandProcessor.TryApply(
-                    command,
-                    _playerBoard,
-                    ref authority,
-                    _stances,
-                    _playerCombatants,
-                    _enemyCombatants,
-                    _log,
-                    completedPhase);
-            }
-
-            Authority = authority;
         }
 
         private CombatAdvanceResult AwaitingResult(CombatPhase phase) =>

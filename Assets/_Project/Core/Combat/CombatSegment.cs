@@ -4,14 +4,15 @@ namespace DeadManZone.Core.Combat
     {
         Opening = 1,
         MainFight = 2,
-        GasFinal = 3
+        BriefPush = 3,
+        GasFinal = 4
     }
 
     public static class SegmentTickBudget
     {
-        // Sim ticks per segment (~10 tps presentation pacing in CombatDirector).
-        public const int Opening = 10;
-        public const int MainFight = 50;
-        public const int GasFinal = 20;
+        public const int Opening = CombatPacingConfig.OpeningTicks;
+        public const int MainFight = CombatPacingConfig.MainFightTicks;
+        public const int BriefPush = CombatPacingConfig.BriefPushTicks;
+        public const int GasFinal = CombatPacingConfig.GasRampReferenceTicks;
     }
 }

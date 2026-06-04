@@ -11,7 +11,7 @@ namespace DeadManZone.Core.Combat
 
         public static int GetDamage(GridCoord position, int segmentTick, BattlefieldLayout layout)
         {
-            float ramp = 1f + segmentTick / (float)SegmentTickBudget.GasFinal;
+            float ramp = 1f + segmentTick / (float)CombatPacingConfig.GasRampReferenceTicks;
             int baseDamage = layout.IsNeutralColumn(position.X) ? NeutralGasBase : FrontGasBase;
             return System.Math.Max(1, (int)(baseDamage * ramp));
         }

@@ -35,10 +35,10 @@ namespace DeadManZone.Core.Tests.EditMode
                 CurrentHp = 3
             };
 
-            var target = CombatTargeting.SelectTarget(
+            var target = TacticTargeting.SelectTarget(
                 attacker,
                 new[] { far, near },
-                StanceType.FocusWeakest);
+                TacticType.DisciplinedFire);
 
             Assert.AreEqual("e1", target.InstanceId);
         }

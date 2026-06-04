@@ -1,7 +1,11 @@
+using DeadManZone.Core.Board;
+
 namespace DeadManZone.Core.Combat
 {
     public enum CommandType
     {
+        SetTactic,
+        UseAbility,
         ChangeStance,
         SpendRequisitionBuff,
         CallStrike
@@ -11,9 +15,18 @@ namespace DeadManZone.Core.Combat
     {
         public CombatPhase AfterPhase { get; set; }
         public CommandType Type { get; set; }
-        public StanceType Stance { get; set; }
+        public TacticType Tactic { get; set; }
+        public GrantedAbility Ability { get; set; }
         public int Cost { get; set; }
         public string SourcePieceId { get; set; }
+        public GridCoord? TargetCell { get; set; }
+
+        // Legacy alias for older saves/tests.
+        public TacticType Stance
+        {
+            get => Tactic;
+            set => Tactic = value;
+        }
     }
 
     public sealed class AvailableCommand
@@ -21,6 +34,7 @@ namespace DeadManZone.Core.Combat
         public CommandType Type { get; init; }
         public string SourcePieceId { get; init; }
         public int RequisitionCost { get; init; }
+        public GrantedAbility Ability { get; init; }
     }
 
     public readonly struct CommandResult

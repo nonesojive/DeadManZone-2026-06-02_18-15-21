@@ -4,12 +4,12 @@ using DeadManZone.Core.Board;
 
 namespace DeadManZone.Core.Combat
 {
-    public static class CombatTargeting
+    public static class TacticTargeting
     {
         public static CombatantState SelectTarget(
             CombatantState attacker,
             IReadOnlyList<CombatantState> enemies,
-            StanceType stance)
+            TacticType tactic)
         {
             var alive = enemies.Where(e => e.IsAlive).ToList();
             if (alive.Count == 0)
@@ -21,20 +21,20 @@ namespace DeadManZone.Core.Combat
             if (inRange.Count == 0)
                 return null;
 
-            return stance switch
+            return tactic switch
             {
-                StanceType.FocusWeakest => inRange.OrderBy(e => e.CurrentHp).ThenBy(e => e.InstanceId).First(),
-                StanceType.HoldTheLine => inRange
+                TacticType.DisciplinedFire => inRange.OrderBy(e => e.CurrentHp).ThenBy(e => e.InstanceId).First(),
+                TacticType.StandGround => inRange
                     .OrderByDescending(e => e.Definition.Category == PieceCategory.Building)
                     .ThenBy(e => e.CurrentHp)
                     .ThenBy(e => e.InstanceId)
                     .First(),
-                StanceType.SupportPriority => inRange
+                TacticType.ProtectSupport => inRange
                     .OrderByDescending(e => e.Definition.Category == PieceCategory.Building)
                     .ThenByDescending(e => e.CurrentHp)
                     .ThenBy(e => e.InstanceId)
                     .First(),
-                StanceType.AllOutAssault => inRange.OrderByDescending(e => e.CurrentHp).ThenBy(e => e.InstanceId).First(),
+                TacticType.Advance => inRange.OrderByDescending(e => e.CurrentHp).ThenBy(e => e.InstanceId).First(),
                 _ => inRange.OrderBy(e => e.InstanceId).First()
             };
         }

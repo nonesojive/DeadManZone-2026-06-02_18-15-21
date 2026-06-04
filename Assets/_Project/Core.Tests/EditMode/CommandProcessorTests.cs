@@ -9,13 +9,18 @@ namespace DeadManZone.Core.Tests
     public class CommandProcessorTests
     {
         [Test]
-        public void ChangeStance_RequiresCommandBuilding()
+        public void GrantedAbility_AppearsWhenPieceHasAbility()
         {
-            var board = TestBoards.WithCommandBunker();
+            var board = new BoardState(TestBoards.Layout);
+            var grenadeThrower = TestPieces.With(
+                TestPieces.RifleSquad(),
+                grantedAbility: GrantedAbility.GrenadeLob);
+            board.TryPlace(grenadeThrower, TestBoards.FrontLineAnchor());
+
             var processor = new CommandProcessor();
             var available = processor.GetAvailableCommands(board, requisition: 2, CombatPhase.Deployment);
 
-            Assert.That(available.Any(c => c.Type == CommandType.ChangeStance), Is.True);
+            Assert.That(available.Any(c => c.Type == CommandType.UseAbility && c.Ability == GrantedAbility.GrenadeLob), Is.True);
         }
 
         [Test]
@@ -25,7 +30,7 @@ namespace DeadManZone.Core.Tests
             board.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 0));
 
             var processor = new CommandProcessor();
-            var stances = new StanceState();
+            var tactics = new TacticState();
             int requisition = 0;
             var command = new PhaseCommand
             {
@@ -39,7 +44,7 @@ namespace DeadManZone.Core.Tests
                 command,
                 board,
                 ref requisition,
-                stances,
+                tactics,
                 playerCombatants: new System.Collections.Generic.List<CombatantState>(),
                 enemyCombatants: new System.Collections.Generic.List<CombatantState>(),
                 log: new CombatEventLog(),
@@ -50,13 +55,13 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
-        public void CommandOnSpecialTile_GrantsBonusActionSlot()
+        public void BonusActionSlots_AreDisabledInDemo()
         {
             var board = new BoardState(TestBoards.Layout);
             board.TryPlace(TestPieces.CommandBunker(), new GridCoord(1, 4));
 
             var processor = new CommandProcessor();
-            Assert.That(processor.GetBonusActionSlots(board), Is.EqualTo(1));
+            Assert.That(processor.GetBonusActionSlots(board), Is.EqualTo(0));
         }
     }
 }

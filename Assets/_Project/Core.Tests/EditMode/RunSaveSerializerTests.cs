@@ -122,8 +122,8 @@ namespace DeadManZone.Core.Tests
                         new PhaseCommand
                         {
                             AfterPhase = CombatPhase.Deployment,
-                            Type = CommandType.ChangeStance,
-                            Stance = StanceType.AllOutAssault,
+                            Type = CommandType.SetTactic,
+                            Tactic = TacticType.Advance,
                             SourcePieceId = "bunker_1"
                         }
                     },
@@ -147,7 +147,7 @@ namespace DeadManZone.Core.Tests
             Assert.IsTrue(loaded.Combat.AwaitingCommand);
             Assert.AreEqual(CombatPhase.Deployment, loaded.Combat.CompletedPhase);
             Assert.AreEqual(1, loaded.Combat.SubmittedCommands.Count);
-            Assert.AreEqual(StanceType.AllOutAssault, loaded.Combat.SubmittedCommands[0].Stance);
+            Assert.AreEqual(TacticType.Advance, loaded.Combat.SubmittedCommands[0].Tactic);
             Assert.AreEqual(1, loaded.Combat.EventLog.Count);
         }
 

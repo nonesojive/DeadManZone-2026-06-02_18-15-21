@@ -1,32 +1,42 @@
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
+using DeadManZone.Core.Common;
 
 namespace DeadManZone.Core.Combat
 {
     public sealed class CommandProcessor
     {
+        private readonly TacticPauseValidator _tacticValidator = new();
+
         public IReadOnlyList<AvailableCommand> GetAvailableCommands(
             BoardState board,
             int requisition,
             CombatPhase completedPhase)
         {
             var list = new List<AvailableCommand>();
+            var usedAbilities = new HashSet<GrantedAbility>();
 
             foreach (var piece in board.Pieces)
             {
+                var ability = piece.Definition.GrantedAbility;
+                if (ability != GrantedAbility.None &&
+                    !usedAbilities.Contains(ability) &&
+                    CombatAbilityExecutor.CanUseAtPause(ability, completedPhase))
+                {
+                    usedAbilities.Add(ability);
+                    list.Add(new AvailableCommand
+                    {
+                        Type = CommandType.UseAbility,
+                        SourcePieceId = piece.InstanceId,
+                        Ability = ability,
+                        RequisitionCost = CombatAbilityExecutor.GetAuthorityCost(ability, completedPhase)
+                    });
+                }
+
                 var actions = piece.Definition.CommandActions;
                 if (actions == CommandActionFlags.None)
                     continue;
-
-                if (actions.HasFlag(CommandActionFlags.ChangeStance))
-                {
-                    list.Add(new AvailableCommand
-                    {
-                        Type = CommandType.ChangeStance,
-                        SourcePieceId = piece.InstanceId
-                    });
-                }
 
                 if (actions.HasFlag(CommandActionFlags.SpendRequisitionBuff))
                 {
@@ -52,20 +62,129 @@ namespace DeadManZone.Core.Combat
             return list;
         }
 
-        public int GetBonusActionSlots(BoardState board)
-        {
-            bool commandOnSpecial = board.Pieces.Any(piece =>
-                piece.Definition.CommandActions.HasFlag(CommandActionFlags.ChangeStance) &&
-                board.IsOnSpecialTile(piece.InstanceId));
+        public int GetBonusActionSlots(BoardState board) => 0;
 
-            return commandOnSpecial ? 1 : 0;
+        public CommandResult TryApplyBatch(
+            IReadOnlyList<PhaseCommand> commands,
+            BoardState board,
+            ref int authority,
+            TacticState tactics,
+            IList<CombatantState> playerCombatants,
+            IList<CombatantState> enemyCombatants,
+            CombatEventLog log,
+            CombatPhase completedPhase)
+        {
+            int authoritySnapshot = authority;
+            var tacticCommand = commands?.FirstOrDefault(c =>
+                c.Type == CommandType.SetTactic || c.Type == CommandType.ChangeStance);
+            if (tacticCommand != null)
+            {
+                bool hqAlive = playerCombatants.Any(c => c.HasTag(GameTags.Hq) && c.IsAlive);
+                bool hasCommand = board.Pieces.Any(p => p.Definition.Tags.Contains("Command"));
+                var previous = tactics.PlayerTactic;
+
+                if (!_tacticValidator.CanContinue(
+                        tacticCommand.Tactic,
+                        previous,
+                        hqAlive,
+                        hasCommand,
+                        completedPhase,
+                        ref authority,
+                        out var reason))
+                {
+                    authority = authoritySnapshot;
+                    return CommandResult.Fail(reason);
+                }
+
+                tactics.PlayerTactic = tacticCommand.Tactic;
+                log.Append(completedPhase, tick: -1, "tactic", null, "tactic_set", (int)tacticCommand.Tactic);
+            }
+
+            var usedAbilities = new HashSet<GrantedAbility>();
+            foreach (var command in commands.Where(c => c.Type == CommandType.UseAbility))
+            {
+                if (usedAbilities.Contains(command.Ability))
+                    return CommandResult.Fail("Duplicate ability");
+
+                usedAbilities.Add(command.Ability);
+                int cost = CombatAbilityExecutor.GetAuthorityCost(command.Ability, completedPhase);
+                if (authority < cost)
+                {
+                    authority = authoritySnapshot;
+                    return CommandResult.Fail("Insufficient Authority");
+                }
+
+                var result = CombatAbilityExecutor.Execute(
+                    command.Ability,
+                    command.SourcePieceId,
+                    board,
+                    playerCombatants,
+                    enemyCombatants,
+                    log,
+                    completedPhase,
+                    command.TargetCell);
+                if (!result.Success)
+                {
+                    authority = authoritySnapshot;
+                    return result;
+                }
+
+                authority -= cost;
+            }
+
+            foreach (var command in commands.Where(c =>
+                         c.Type is CommandType.SpendRequisitionBuff or CommandType.CallStrike))
+            {
+                var legacy = TryApplyLegacy(command, board, ref authority, tactics, playerCombatants, enemyCombatants, log, completedPhase);
+                if (!legacy.Success)
+                {
+                    authority = authoritySnapshot;
+                    return legacy;
+                }
+            }
+
+            return CommandResult.Ok();
         }
 
         public CommandResult TryApply(
             PhaseCommand command,
             BoardState board,
             ref int requisition,
-            StanceState stances,
+            TacticState tactics,
+            IList<CombatantState> playerCombatants,
+            IList<CombatantState> enemyCombatants,
+            CombatEventLog log,
+            CombatPhase completedPhase)
+        {
+            if (command.Type is CommandType.SpendRequisitionBuff or CommandType.CallStrike)
+            {
+                return TryApplyLegacy(
+                    command,
+                    board,
+                    ref requisition,
+                    tactics,
+                    playerCombatants,
+                    enemyCombatants,
+                    log,
+                    completedPhase);
+            }
+
+            return TryApplyBatch(
+                new[] { command },
+                board,
+                ref requisition,
+                tactics,
+                playerCombatants,
+                enemyCombatants,
+                log,
+                completedPhase);
+        }
+
+        private CommandResult TryApplyLegacy(
+            PhaseCommand command,
+            BoardState board,
+            ref int requisition,
+            TacticState tactics,
             IList<CombatantState> playerCombatants,
             IList<CombatantState> enemyCombatants,
             CombatEventLog log,
@@ -77,20 +196,13 @@ namespace DeadManZone.Core.Combat
 
             switch (command.Type)
             {
-                case CommandType.ChangeStance:
-                    if (!source.Definition.CommandActions.HasFlag(CommandActionFlags.ChangeStance))
-                        return CommandResult.Fail("Piece cannot change stance");
-                    stances.PlayerStance = command.Stance;
-                    log.Append(completedPhase, tick: -1, source.InstanceId, "stance_change", null, (int)command.Stance);
-                    return CommandResult.Ok();
-
                 case CommandType.SpendRequisitionBuff:
                     if (!source.Definition.CommandActions.HasFlag(CommandActionFlags.SpendRequisitionBuff))
                         return CommandResult.Fail("Piece cannot spend requisition");
                     if (requisition < command.Cost)
                         return CommandResult.Fail("Insufficient requisition");
                     requisition -= command.Cost;
-                    stances.PlayerDamageBuff += 2;
+                    tactics.PlayerDamageBuff += 2;
                     log.Append(completedPhase, tick: -1, source.InstanceId, "requisition_buff", null, 2);
                     return CommandResult.Ok();
 

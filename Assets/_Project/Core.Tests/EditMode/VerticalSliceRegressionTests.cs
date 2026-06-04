@@ -223,8 +223,8 @@ namespace DeadManZone.Core.Tests
                             new()
                             {
                                 AfterPhase = CombatPhase.Deployment,
-                                Type = CommandType.ChangeStance,
-                                Stance = StanceType.AllOutAssault,
+                                Type = CommandType.SetTactic,
+                                Tactic = TacticType.Advance,
                                 SourcePieceId = "bunker_1"
                             }
                         },

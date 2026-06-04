@@ -49,15 +49,15 @@ namespace DeadManZone.Core.Tests
                 new PhaseCommand
                 {
                     AfterPhase = CombatPhase.Deployment,
-                    Type = CommandType.ChangeStance,
-                    Stance = StanceType.AllOutAssault,
+                    Type = CommandType.SetTactic,
+                    Tactic = TacticType.Advance,
                     SourcePieceId = player.Pieces.First(p => p.Definition.Id == "command_bunker").InstanceId
                 }
             };
 
             var result = resolver.Resolve(player, enemy, seed: 7, commands: commands);
 
-            Assert.IsTrue(result.EventLog.Events.Any(e => e.ActionType == "stance_change"));
+            Assert.IsTrue(result.EventLog.Events.Any(e => e.ActionType == "tactic_set"));
         }
     }
 }
