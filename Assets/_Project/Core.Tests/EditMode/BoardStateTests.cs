@@ -80,7 +80,7 @@ namespace DeadManZone.Core.Tests
             var bunker = TestPieces.CommandBunker();
             Assert.IsTrue(board.TryPlace(bunker, new GridCoord(1, 4), "bunker_1").Success);
 
-            var result = board.TryRelocate("bunker_1", new GridCoord(0, 4));
+            var result = board.TryRelocate("bunker_1", new GridCoord(0, 4), PieceRotation.R0);
 
             Assert.IsTrue(result.Success, result.Reason);
             Assert.AreEqual(1, board.Pieces.Count);
@@ -95,7 +95,7 @@ namespace DeadManZone.Core.Tests
             var anchor = new GridCoord(1, 4);
             Assert.IsTrue(board.TryPlace(bunker, anchor, "bunker_1").Success);
 
-            var result = board.TryRelocate("bunker_1", new GridCoord(7, 4));
+            var result = board.TryRelocate("bunker_1", new GridCoord(7, 4), PieceRotation.R0);
 
             Assert.IsFalse(result.Success);
             Assert.AreEqual(anchor, board.Pieces.First().Anchor);

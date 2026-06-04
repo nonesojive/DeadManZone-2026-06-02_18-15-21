@@ -1,4 +1,3 @@
-using DeadManZone.Core.Common;
 using DeadManZone.Game;
 using DeadManZone.Presentation.Board;
 using UnityEngine;
@@ -23,15 +22,16 @@ namespace DeadManZone.Presentation.DragDrop
                 return false;
 
             var anchor = _tile.Coord;
+            var rotation = payload.Rotation;
 
             switch (payload.SourceKind)
             {
                 case DragSourceKind.ShopOffer:
-                    return RunManager.Instance.TryAcquireOfferToBoard(payload.OfferId, anchor);
-                case DragSourceKind.BenchPiece:
-                    return _boardView.TryPlaceFromBench(payload.BenchIndex, anchor);
+                    return _boardView.TryAcquireOfferToBoard(payload.OfferId, anchor, rotation);
+                case DragSourceKind.ReservesPiece:
+                    return _boardView.TryPlaceFromReserves(payload.ReservesInstanceId, anchor, rotation);
                 case DragSourceKind.BoardPiece:
-                    return _boardView.TryMovePlacedPiece(payload.BoardInstanceId, anchor);
+                    return _boardView.TryMovePlacedPiece(payload.BoardInstanceId, anchor, rotation);
                 default:
                     return false;
             }

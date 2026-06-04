@@ -79,22 +79,29 @@ namespace DeadManZone.Game
             return GetPlayerBoard().CanPlace(piece, anchor);
         }
 
-        public bool TryAcquireOfferToBoard(string offerId, GridCoord anchor, string instanceId = null)
+        public bool TryAcquireOfferToBoard(
+            string offerId,
+            GridCoord anchor,
+            string instanceId = null,
+            PieceRotation rotation = PieceRotation.R0)
         {
             if (State.Phase != RunPhase.Build)
                 return false;
 
-            if (!CanAcquireOfferToBoard(offerId, anchor))
+            var offer = FindOffer(offerId);
+            if (offer == null || !CanAffordOffer(offerId))
                 return false;
 
-            var offer = FindOffer(offerId);
             var piece = _registry.GetById(offer.PieceId);
             var board = GetPlayerBoard();
+            if (!board.CanPlace(piece, anchor, rotation))
+                return false;
+
             instanceId ??= Guid.NewGuid().ToString("N");
 
             PayOffer(offer);
 
-            var place = board.TryPlace(piece, anchor, instanceId);
+            var place = board.TryPlace(piece, anchor, instanceId, rotation);
             if (!place.Success)
             {
                 RefundOffer(offer);

@@ -1,6 +1,7 @@
+using DeadManZone.Core.Board;
 using DeadManZone.Game;
-using DeadManZone.Presentation.Bench;
 using DeadManZone.Presentation.Board;
+using DeadManZone.Presentation.Reserves;
 using DeadManZone.Presentation.Combat;
 using DeadManZone.Presentation.DragDrop;
 using DeadManZone.Presentation.Run;
@@ -39,30 +40,23 @@ namespace DeadManZone.Presentation.Editor
             UiThemeSceneStyling.AddPanelBackground(topBar.transform, theme);
 
             var hud = topBar.AddComponent<RunHudView>();
-            var fightStatus = MenuSceneSetup.CreateLabelPublic(
-                topBar.transform, "", 20, FontStyles.Bold,
-                new Vector2(0.28f, 0.5f), new Vector2(360f, 56f));
-            var currencies = MenuSceneSetup.CreateLabelPublic(
-                topBar.transform, "", 18, FontStyles.Normal,
-                new Vector2(0.55f, 0.5f), new Vector2(420f, 56f));
-            UiThemeSceneStyling.StyleLabel(fightStatus, theme);
-            UiThemeSceneStyling.StyleLabel(currencies, theme, secondary: true);
+            var statusBlock = MenuSceneSetup.CreateLabelPublic(
+                topBar.transform, "", 18, FontStyles.Bold,
+                new Vector2(0.02f, 0.5f), new Vector2(520f, 72f));
+            statusBlock.alignment = TextAlignmentOptions.TopLeft;
+            UiThemeSceneStyling.StyleLabel(statusBlock, theme);
             var hudSerialized = new SerializedObject(hud);
-            hudSerialized.FindProperty("statusText").objectReferenceValue = fightStatus;
-            hudSerialized.FindProperty("currenciesText").objectReferenceValue = currencies;
+            hudSerialized.FindProperty("statusText").objectReferenceValue = statusBlock;
             hudSerialized.ApplyModifiedPropertiesWithoutUndo();
             hud.ApplyTheme(theme);
 
             var tooltip = MenuSceneSetup.CreateLabelPublic(
                 topBar.transform, "", 16, FontStyles.Italic,
-                new Vector2(0.78f, 0.5f), new Vector2(400f, 56f));
+                new Vector2(0.62f, 0.5f), new Vector2(360f, 56f));
             UiThemeSceneStyling.StyleLabel(tooltip, theme, secondary: true);
 
-            var saveBtn = MenuSceneSetup.CreateSmallButtonPublic(
-                topBar.transform, "Save & Exit", new Vector2(0.06f, 0.5f), new Vector2(140f, 40f));
             var menuBtn = MenuSceneSetup.CreateSmallButtonPublic(
-                topBar.transform, "Main Menu", new Vector2(0.14f, 0.5f), new Vector2(140f, 40f));
-            UiThemeSceneStyling.StyleButton(saveBtn, theme);
+                topBar.transform, "MENU", new Vector2(0.94f, 0.5f), new Vector2(100f, 40f));
             UiThemeSceneStyling.StyleButton(menuBtn, theme);
 
             var mainRow = CreateRegion(buildPanel.transform, "MainRow", new Vector2(0f, 0.16f), new Vector2(1f, 0.92f));
@@ -78,10 +72,10 @@ namespace DeadManZone.Presentation.Editor
 
             var boardView = CreateBoardSection(boardArea.transform, theme);
             var shopView = CreateShopSection(shopArea.transform, tooltip, theme);
-            var benchView = CreateBenchSection(bottomBar.transform, theme);
+            var reservesView = CreateReservesSection(bottomBar.transform, theme);
             var sellZone = CreateSellZone(bottomBar.transform, theme);
-
-            var endOverlay = CreateRunEndOverlay(buildPanel.transform, theme, menuBtn);
+            var pauseMenu = CreatePauseMenu(buildPanel.transform, theme);
+            var endOverlay = CreateRunEndOverlay(buildPanel.transform, theme);
 
             var combatPanel = CreateRegion(controllerRoot.transform, "CombatPanel", Vector2.zero, Vector2.one);
             combatPanel.SetActive(false);
@@ -97,7 +91,7 @@ namespace DeadManZone.Presentation.Editor
             WireFlowPresenter(flowPresenter, combatDirector, phasePanel);
             WireCombatBoardPresenter(combatBoard, combatDirector, boardView, bannerText, bannerGroup);
             WireController(controller, buildPanel, buildCanvasGroup, combatPanel, boardView, shopView,
-                benchView, combatDirector, phasePanel, hud, endOverlay, beginFight, saveBtn, menuBtn);
+                reservesView, combatDirector, phasePanel, hud, endOverlay, pauseMenu, beginFight, menuBtn);
 
             var panelSerialized = new SerializedObject(phasePanel);
             panelSerialized.FindProperty("combatDirector").objectReferenceValue = combatDirector;
@@ -110,24 +104,47 @@ namespace DeadManZone.Presentation.Editor
 
         private static BoardView CreateBoardSection(Transform parent, UiThemeSO theme)
         {
-            CreateZoneLabel(parent, "REAR", new Vector2(0.02f, 0.88f), theme.textSecondary);
-            CreateZoneLabel(parent, "SUPPORT", new Vector2(0.02f, 0.55f), theme.textSecondary);
-            CreateZoneLabel(parent, "FRONT", new Vector2(0.02f, 0.22f), theme.textSecondary);
+            const int boardWidth = 9;
+            const int rearCols = 4;
+            const int supportCols = 3;
+            float gridLeft = 0.02f;
+            float gridRight = 0.98f;
+            float gridWidth = gridRight - gridLeft;
+
+            CreateZoneHeader(parent, "REAR", gridLeft, gridLeft + gridWidth * rearCols / boardWidth, 0.90f, 0.98f, theme);
+            CreateZoneHeader(
+                parent,
+                "SUPPORT",
+                gridLeft + gridWidth * rearCols / boardWidth,
+                gridLeft + gridWidth * (rearCols + supportCols) / boardWidth,
+                0.90f,
+                0.98f,
+                theme);
+            CreateZoneHeader(
+                parent,
+                "FRONT",
+                gridLeft + gridWidth * (rearCols + supportCols) / boardWidth,
+                gridRight,
+                0.90f,
+                0.98f,
+                theme);
 
             var gridRoot = new GameObject("TileGrid", typeof(RectTransform));
             gridRoot.transform.SetParent(parent, false);
             var gridRect = gridRoot.GetComponent<RectTransform>();
-            gridRect.anchorMin = new Vector2(0.08f, 0f);
-            gridRect.anchorMax = Vector2.one;
+            gridRect.anchorMin = new Vector2(gridLeft, 0.05f);
+            gridRect.anchorMax = new Vector2(gridRight, 0.89f);
             gridRect.offsetMin = Vector2.zero;
             gridRect.offsetMax = Vector2.zero;
 
             var grid = gridRoot.AddComponent<GridLayoutGroup>();
             grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            grid.constraintCount = 8;
-            grid.cellSize = new Vector2(52, 52);
+            grid.constraintCount = boardWidth;
+            grid.cellSize = new Vector2(48, 48);
             grid.spacing = new Vector2(3, 3);
-            grid.padding = new RectOffset(8, 8, 8, 8);
+            grid.padding = new RectOffset(4, 4, 4, 4);
+
+            CreateZoneColorStrip(parent, theme, gridLeft, gridRight, rearCols, supportCols, boardWidth);
 
             var tilePrefab = CreateTilePrefab(theme);
             tilePrefab.transform.SetParent(parent, false);
@@ -143,11 +160,68 @@ namespace DeadManZone.Presentation.Editor
             return boardView;
         }
 
-        private static void CreateZoneLabel(Transform parent, string text, Vector2 anchor, Color color)
+        private static void CreateZoneHeader(
+            Transform parent,
+            string text,
+            float anchorMinX,
+            float anchorMaxX,
+            float anchorMinY,
+            float anchorMaxY,
+            UiThemeSO theme)
         {
-            var label = MenuSceneSetup.CreateLabelPublic(parent, text, 14, FontStyles.Bold, anchor, new Vector2(72f, 24f));
-            label.color = color;
-            label.alignment = TextAlignmentOptions.MidlineLeft;
+            var header = CreateRegion(
+                parent,
+                text + "Header",
+                new Vector2(anchorMinX, anchorMinY),
+                new Vector2(anchorMaxX, anchorMaxY));
+            var label = MenuSceneSetup.CreateLabelPublic(
+                header.transform, text, 13, FontStyles.Bold,
+                new Vector2(0.5f, 0.5f), new Vector2(120f, 22f));
+            label.color = theme.textSecondary;
+            label.alignment = TextAlignmentOptions.Center;
+        }
+
+        private static void CreateZoneColorStrip(
+            Transform parent,
+            UiThemeSO theme,
+            float gridLeft,
+            float gridRight,
+            int rearCols,
+            int supportCols,
+            int boardWidth)
+        {
+            float gridWidth = gridRight - gridLeft;
+            float yMin = 0f;
+            float yMax = 0.04f;
+            AddZoneStripSegment(parent, theme.rearZoneColor, gridLeft, gridLeft + gridWidth * rearCols / boardWidth, yMin, yMax);
+            AddZoneStripSegment(
+                parent,
+                theme.supportZoneColor,
+                gridLeft + gridWidth * rearCols / boardWidth,
+                gridLeft + gridWidth * (rearCols + supportCols) / boardWidth,
+                yMin,
+                yMax);
+            AddZoneStripSegment(
+                parent,
+                theme.frontZoneColor,
+                gridLeft + gridWidth * (rearCols + supportCols) / boardWidth,
+                gridRight,
+                yMin,
+                yMax);
+        }
+
+        private static void AddZoneStripSegment(
+            Transform parent,
+            Color color,
+            float anchorMinX,
+            float anchorMaxX,
+            float anchorMinY,
+            float anchorMaxY)
+        {
+            var segment = CreateRegion(parent, "ZoneStrip", new Vector2(anchorMinX, anchorMinY), new Vector2(anchorMaxX, anchorMaxY));
+            var image = segment.AddComponent<Image>();
+            image.color = color;
+            image.raycastTarget = false;
         }
 
         private static GameObject CreateTilePrefab(UiThemeSO theme)
@@ -183,11 +257,6 @@ namespace DeadManZone.Presentation.Editor
 
         private static ShopView CreateShopSection(Transform parent, TMP_Text sharedTooltip, UiThemeSO theme)
         {
-            var currencies = MenuSceneSetup.CreateLabelPublic(
-                parent, "", 18, FontStyles.Normal,
-                new Vector2(0.5f, 0.96f), new Vector2(700f, 28f));
-            UiThemeSceneStyling.StyleLabel(currencies, theme, secondary: true);
-
             var (generalRoot, rerollGeneral) = CreateLaneColumn(parent, "Offensive", 0.17f, theme);
             var (engineerRoot, rerollEngineers) = CreateLaneColumn(parent, "Defensive", 0.5f, theme);
             var (reqRoot, rerollReq) = CreateLaneColumn(parent, "Specialty", 0.83f, theme);
@@ -203,7 +272,6 @@ namespace DeadManZone.Presentation.Editor
             serialized.FindProperty("requisitionLaneRoot").objectReferenceValue = reqRoot;
             serialized.FindProperty("offerCardPrefab").objectReferenceValue = offerPrefab;
             serialized.FindProperty("modifiersTooltipText").objectReferenceValue = sharedTooltip;
-            serialized.FindProperty("currenciesText").objectReferenceValue = currencies;
             serialized.FindProperty("rerollGeneralButton").objectReferenceValue = rerollGeneral;
             serialized.FindProperty("rerollEngineersButton").objectReferenceValue = rerollEngineers;
             serialized.FindProperty("rerollRequisitionButton").objectReferenceValue = rerollReq;
@@ -309,62 +377,116 @@ namespace DeadManZone.Presentation.Editor
             return card;
         }
 
-        private static BenchView CreateBenchSection(Transform bottomBar, UiThemeSO theme)
+        private static ReservesView CreateReservesSection(Transform bottomBar, UiThemeSO theme)
         {
-            var benchRegion = CreateRegion(bottomBar.transform, "BenchRegion",
+            var reservesRegion = CreateRegion(bottomBar.transform, "ReservesRegion",
                 new Vector2(0f, 0f), new Vector2(0.56f, 1f));
 
-            var layout = benchRegion.AddComponent<HorizontalLayoutGroup>();
-            layout.spacing = 12f;
-            layout.padding = new RectOffset(12, 12, 8, 8);
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
+            var title = MenuSceneSetup.CreateLabelPublic(
+                reservesRegion.transform, "Reserves", 18, FontStyles.Bold,
+                new Vector2(0.08f, 0.88f), new Vector2(140f, 28f));
+            UiThemeSceneStyling.StyleLabel(title, theme);
 
-            var slots = new BenchSlotView[RunOrchestrator.BenchLimit];
-            for (int i = 0; i < RunOrchestrator.BenchLimit; i++)
-                slots[i] = CreateBenchSlot(benchRegion.transform, i, theme);
+            var gridRoot = new GameObject("ReservesGrid", typeof(RectTransform));
+            gridRoot.transform.SetParent(reservesRegion.transform, false);
+            var gridRect = gridRoot.GetComponent<RectTransform>();
+            gridRect.anchorMin = new Vector2(0.04f, 0.08f);
+            gridRect.anchorMax = new Vector2(0.96f, 0.82f);
+            gridRect.offsetMin = Vector2.zero;
+            gridRect.offsetMax = Vector2.zero;
 
-            var benchView = benchRegion.AddComponent<BenchView>();
-            var serialized = new SerializedObject(benchView);
-            serialized.FindProperty("slots").arraySize = RunOrchestrator.BenchLimit;
-            for (int i = 0; i < RunOrchestrator.BenchLimit; i++)
-                serialized.FindProperty("slots").GetArrayElementAtIndex(i).objectReferenceValue = slots[i];
+            var grid = gridRoot.AddComponent<GridLayoutGroup>();
+            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            grid.constraintCount = ReservesState.Width;
+            grid.cellSize = new Vector2(44f, 44f);
+            grid.spacing = new Vector2(3f, 3f);
+            grid.padding = new RectOffset(4, 4, 4, 4);
+
+            var tilePrefab = CreateReservesTilePrefab(theme);
+            tilePrefab.transform.SetParent(reservesRegion.transform, false);
+            tilePrefab.SetActive(false);
+
+            var reservesView = reservesRegion.AddComponent<ReservesView>();
+            var serialized = new SerializedObject(reservesView);
+            serialized.FindProperty("tileRoot").objectReferenceValue = gridRoot.transform;
+            serialized.FindProperty("gridLayout").objectReferenceValue = grid;
+            serialized.FindProperty("tilePrefab").objectReferenceValue = tilePrefab;
+            serialized.FindProperty("theme").objectReferenceValue = theme;
             serialized.ApplyModifiedPropertiesWithoutUndo();
-            return benchView;
+            return reservesView;
         }
 
-        private static BenchSlotView CreateBenchSlot(Transform parent, int index, UiThemeSO theme)
+        private static GameObject CreateReservesTilePrefab(UiThemeSO theme)
         {
-            var slot = new GameObject($"BenchSlot{index + 1}", typeof(RectTransform));
-            slot.transform.SetParent(parent, false);
-            var rect = slot.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(180f, 72f);
-
-            var layout = slot.AddComponent<LayoutElement>();
-            layout.minWidth = 180f;
-            layout.minHeight = 72f;
-
-            var bg = slot.AddComponent<Image>();
-            UiThemeApplicator.ApplyCard(bg, theme);
-
-            var chipRoot = new GameObject("ChipRoot", typeof(RectTransform));
-            chipRoot.transform.SetParent(slot.transform, false);
-            Stretch(chipRoot.GetComponent<RectTransform>());
-
-            var label = MenuSceneSetup.CreateLabelPublic(
-                slot.transform, $"Bench {index + 1}", 16, FontStyles.Normal,
-                new Vector2(0.5f, 0.5f), new Vector2(160f, 40f));
-            UiThemeSceneStyling.StyleLabel(label, theme, secondary: true);
-
-            var slotView = slot.AddComponent<BenchSlotView>();
-            var serialized = new SerializedObject(slotView);
-            serialized.FindProperty("slotIndex").intValue = index;
-            serialized.FindProperty("label").objectReferenceValue = label;
-            serialized.FindProperty("background").objectReferenceValue = bg;
-            serialized.FindProperty("chipRoot").objectReferenceValue = chipRoot.transform;
+            var tile = new GameObject("ReservesTilePrefab", typeof(RectTransform));
+            var image = tile.AddComponent<Image>();
+            image.color = theme.cardColor;
+            tile.AddComponent<ReservesTileView>();
+            var serialized = new SerializedObject(tile.GetComponent<ReservesTileView>());
+            serialized.FindProperty("baseImage").objectReferenceValue = image;
             serialized.ApplyModifiedPropertiesWithoutUndo();
-            return slotView;
+            return tile;
+        }
+
+        private static PauseMenuView CreatePauseMenu(Transform buildPanel, UiThemeSO theme)
+        {
+            var root = CreateRegion(buildPanel, "PauseMenu", Vector2.zero, Vector2.one);
+            root.SetActive(false);
+            var dim = root.AddComponent<Image>();
+            dim.color = new Color(0f, 0f, 0f, 0.65f);
+            var overlayGroup = root.AddComponent<CanvasGroup>();
+
+            var mainCard = CreatePauseCard(root.transform, "MainCard", theme, true);
+            var optionsCard = CreatePauseCard(root.transform, "OptionsCard", theme, false);
+            optionsCard.SetActive(false);
+
+            MenuSceneSetup.CreateLabelPublic(
+                mainCard.transform, "Paused", 32, FontStyles.Bold,
+                new Vector2(0.5f, 0.78f), new Vector2(320f, 48f));
+
+            var resume = MenuSceneSetup.CreateSmallButtonPublic(
+                mainCard.transform, "Resume", new Vector2(0.5f, 0.58f), new Vector2(220f, 44f));
+            var options = MenuSceneSetup.CreateSmallButtonPublic(
+                mainCard.transform, "Options", new Vector2(0.5f, 0.44f), new Vector2(220f, 44f));
+            var mainMenu = MenuSceneSetup.CreateSmallButtonPublic(
+                mainCard.transform, "Main Menu", new Vector2(0.5f, 0.30f), new Vector2(220f, 44f));
+            var exit = MenuSceneSetup.CreateSmallButtonPublic(
+                mainCard.transform, "Exit", new Vector2(0.5f, 0.16f), new Vector2(220f, 44f));
+            UiThemeSceneStyling.StyleButton(resume, theme, accent: true);
+            UiThemeSceneStyling.StyleButton(options, theme);
+            UiThemeSceneStyling.StyleButton(mainMenu, theme);
+            UiThemeSceneStyling.StyleButton(exit, theme);
+
+            var optionsBody = MenuSceneSetup.CreateLabelPublic(
+                optionsCard.transform, "Options — coming soon", 22, FontStyles.Normal,
+                new Vector2(0.5f, 0.55f), new Vector2(360f, 80f));
+            UiThemeSceneStyling.StyleLabel(optionsBody, theme, secondary: true);
+            var optionsBack = MenuSceneSetup.CreateSmallButtonPublic(
+                optionsCard.transform, "Back", new Vector2(0.5f, 0.22f), new Vector2(160f, 40f));
+            UiThemeSceneStyling.StyleButton(optionsBack, theme);
+
+            var view = root.AddComponent<PauseMenuView>();
+            var serialized = new SerializedObject(view);
+            serialized.FindProperty("root").objectReferenceValue = root;
+            serialized.FindProperty("overlayGroup").objectReferenceValue = overlayGroup;
+            serialized.FindProperty("mainPanel").objectReferenceValue = mainCard;
+            serialized.FindProperty("optionsPanel").objectReferenceValue = optionsCard;
+            serialized.FindProperty("resumeButton").objectReferenceValue = resume;
+            serialized.FindProperty("optionsButton").objectReferenceValue = options;
+            serialized.FindProperty("mainMenuButton").objectReferenceValue = mainMenu;
+            serialized.FindProperty("exitButton").objectReferenceValue = exit;
+            serialized.FindProperty("optionsBackButton").objectReferenceValue = optionsBack;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            view.ApplyTheme(theme);
+            return view;
+        }
+
+        private static GameObject CreatePauseCard(Transform parent, string name, UiThemeSO theme, bool active)
+        {
+            var card = CreateRegion(parent, name, new Vector2(0.35f, 0.32f), new Vector2(0.65f, 0.68f));
+            card.SetActive(active);
+            UiThemeSceneStyling.AddPanelBackground(card.transform, theme);
+            return card;
         }
 
         private static SellDropZone CreateSellZone(Transform bottomBar, UiThemeSO theme)
@@ -381,7 +503,7 @@ namespace DeadManZone.Presentation.Editor
             return sell.AddComponent<SellDropZone>();
         }
 
-        private static RunEndOverlayView CreateRunEndOverlay(Transform parent, UiThemeSO theme, Button menuButton)
+        private static RunEndOverlayView CreateRunEndOverlay(Transform parent, UiThemeSO theme)
         {
             var root = CreateRegion(parent, "RunEndOverlay", Vector2.zero, Vector2.one);
             root.SetActive(false);
@@ -400,12 +522,16 @@ namespace DeadManZone.Presentation.Editor
             UiThemeSceneStyling.StyleLabel(title, theme);
             UiThemeSceneStyling.StyleLabel(body, theme, secondary: true);
 
+            var endMenuBtn = MenuSceneSetup.CreateSmallButtonPublic(
+                card.transform, "Main Menu", new Vector2(0.5f, 0.22f), new Vector2(200f, 44f));
+            UiThemeSceneStyling.StyleButton(endMenuBtn, theme, accent: true);
+
             var overlay = root.AddComponent<RunEndOverlayView>();
             var serialized = new SerializedObject(overlay);
             serialized.FindProperty("root").objectReferenceValue = root;
             serialized.FindProperty("titleText").objectReferenceValue = title;
             serialized.FindProperty("bodyText").objectReferenceValue = body;
-            serialized.FindProperty("mainMenuButton").objectReferenceValue = menuButton;
+            serialized.FindProperty("mainMenuButton").objectReferenceValue = endMenuBtn;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             overlay.ApplyTheme(theme);
             return overlay;
@@ -488,13 +614,13 @@ namespace DeadManZone.Presentation.Editor
             GameObject combatPanel,
             BoardView boardView,
             ShopView shopView,
-            BenchView benchView,
+            ReservesView reservesView,
             CombatDirector combatDirector,
             PhaseCommandPanel phasePanel,
             RunHudView hud,
             RunEndOverlayView endOverlay,
+            PauseMenuView pauseMenu,
             Button beginFight,
-            Button save,
             Button menu)
         {
             var serialized = new SerializedObject(controller);
@@ -503,14 +629,14 @@ namespace DeadManZone.Presentation.Editor
             serialized.FindProperty("combatPanel").objectReferenceValue = combatPanel;
             serialized.FindProperty("boardView").objectReferenceValue = boardView;
             serialized.FindProperty("shopView").objectReferenceValue = shopView;
-            serialized.FindProperty("benchView").objectReferenceValue = benchView;
+            serialized.FindProperty("reservesView").objectReferenceValue = reservesView;
             serialized.FindProperty("combatDirector").objectReferenceValue = combatDirector;
             serialized.FindProperty("phaseCommandPanel").objectReferenceValue = phasePanel;
             serialized.FindProperty("runHudView").objectReferenceValue = hud;
             serialized.FindProperty("runEndOverlay").objectReferenceValue = endOverlay;
+            serialized.FindProperty("pauseMenuView").objectReferenceValue = pauseMenu;
             serialized.FindProperty("beginFightButton").objectReferenceValue = beginFight;
-            serialized.FindProperty("saveAndExitButton").objectReferenceValue = save;
-            serialized.FindProperty("backToMenuButton").objectReferenceValue = menu;
+            serialized.FindProperty("menuButton").objectReferenceValue = menu;
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 

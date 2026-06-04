@@ -1,5 +1,4 @@
 using DeadManZone.Game;
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -17,8 +16,8 @@ namespace DeadManZone.Presentation.DragDrop
 
             switch (payload.SourceKind)
             {
-                case DragSourceKind.BenchPiece:
-                    return RunManager.Instance.TrySellFromBench(payload.BenchIndex);
+                case DragSourceKind.ReservesPiece:
+                    return RunManager.Instance.TrySellFromReserves(payload.ReservesInstanceId);
                 case DragSourceKind.BoardPiece:
                     return RunManager.Instance.TrySellPlacedPiece(payload.BoardInstanceId);
                 default:

@@ -255,13 +255,16 @@ namespace DeadManZone.Game
             return true;
         }
 
-        public bool TryMovePlacedPiece(string instanceId, Core.Common.GridCoord newAnchor)
+        public bool TryMovePlacedPiece(
+            string instanceId,
+            GridCoord newAnchor,
+            PieceRotation rotation = PieceRotation.R0)
         {
             if (State.Phase != RunPhase.Build)
                 return false;
 
             var board = GetPlayerBoard();
-            var result = board.TryRelocate(instanceId, newAnchor);
+            var result = board.TryRelocate(instanceId, newAnchor, rotation);
             if (!result.Success)
                 return false;
 

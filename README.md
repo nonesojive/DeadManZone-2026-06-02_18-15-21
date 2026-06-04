@@ -23,10 +23,12 @@ UI colors and board zone tints live in [`UiThemeSO`](Assets/_Project/Presentatio
 
 1. Press Play (from Main Menu scene recommended).
 2. **New Run** → Iron Vanguard.
-3. Drag shop offers to the bench or board; use **Lock** and lane **Reroll** as needed.
-4. Drag pieces on the board to reposition or move to bench; drop on **Sell** to refund.
+3. Drag shop offers to **Reserves** (2×9 grid) or the main board; use **Lock** and lane **Reroll** as needed. Press **R** / **Q** while dragging to rotate.
+4. Drag pieces between board and reserves; drop on **Sell** to refund.
 5. **Begin Fight** → issue between-phase commands → advance combat.
-6. **Save & Exit** returns to the main menu; **Continue** restores the run.
+6. **MENU** (top-right) → **Main Menu** or **Exit**; the run auto-saves. **Continue** restores the run.
+
+**Save schema v3:** runs use spatial reserves instead of the old bench list. Saves from before this layout update are invalid—start a **New Run** after updating.
 
 ## Running tests
 

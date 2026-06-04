@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DeadManZone.Core.Board;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -28,6 +29,17 @@ namespace DeadManZone.Presentation.DragDrop
                 rootCanvas = GetComponentInParent<Canvas>();
         }
 
+        private void Update()
+        {
+            if (_activePayload == null)
+                return;
+
+            if (Input.GetKeyDown(KeyCode.R))
+                ApplyRotation(PieceRotationUtil.RotateClockwise(_activePayload.Rotation));
+            else if (Input.GetKeyDown(KeyCode.Q))
+                ApplyRotation(PieceRotationUtil.RotateCounterClockwise(_activePayload.Rotation));
+        }
+
         public void BeginDrag(DragPayload payload, Transform returnParent, PointerEventData eventData)
         {
             _activePayload = payload;
@@ -42,6 +54,7 @@ namespace DeadManZone.Presentation.DragDrop
                 canvasTransform,
                 payload.PieceId ?? payload.Offer?.PieceId ?? "piece",
                 payload.Definition);
+            _ghost.SetRotation(payload.Rotation);
             FollowPointer(eventData);
         }
 
@@ -66,6 +79,15 @@ namespace DeadManZone.Presentation.DragDrop
 
             _activePayload = null;
             _returnParent = null;
+        }
+
+        private void ApplyRotation(PieceRotation rotation)
+        {
+            if (_activePayload == null)
+                return;
+
+            _activePayload.Rotation = rotation;
+            _ghost?.SetRotation(rotation);
         }
 
         private void FollowPointer(PointerEventData eventData)

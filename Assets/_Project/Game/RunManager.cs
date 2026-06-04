@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
+using DeadManZone.Core.Common;
 using DeadManZone.Core.Run;
 using DeadManZone.Core.Shop;
 using DeadManZone.Data;
@@ -132,8 +134,8 @@ namespace DeadManZone.Game
 
         public bool TryAcquireOfferToReserves(
             string offerId,
-            Core.Common.GridCoord anchor,
-            Core.Common.PieceRotation rotation = Core.Common.PieceRotation.R0)
+            GridCoord anchor,
+            PieceRotation rotation = PieceRotation.R0)
         {
             EnsureOrchestrator();
             bool ok = _orchestrator.TryAcquireOfferToReserves(offerId, anchor, rotation);
@@ -142,10 +144,13 @@ namespace DeadManZone.Game
             return ok;
         }
 
-        public bool TryAcquireOfferToBoard(string offerId, Core.Common.GridCoord anchor)
+        public bool TryAcquireOfferToBoard(
+            string offerId,
+            GridCoord anchor,
+            PieceRotation rotation = PieceRotation.R0)
         {
             EnsureOrchestrator();
-            bool ok = _orchestrator.TryAcquireOfferToBoard(offerId, anchor);
+            bool ok = _orchestrator.TryAcquireOfferToBoard(offerId, anchor, rotation: rotation);
             if (ok)
                 NotifyStateChanged();
             return ok;
@@ -153,8 +158,8 @@ namespace DeadManZone.Game
 
         public bool TryPlaceFromReserves(
             string instanceId,
-            Core.Common.GridCoord boardAnchor,
-            Core.Common.PieceRotation rotation = Core.Common.PieceRotation.R0)
+            GridCoord boardAnchor,
+            PieceRotation rotation = PieceRotation.R0)
         {
             EnsureOrchestrator();
             bool ok = _orchestrator.TryPlaceFromReserves(instanceId, boardAnchor, rotation);
@@ -172,10 +177,13 @@ namespace DeadManZone.Game
             return ok;
         }
 
-        public bool TryMovePlacedPiece(string instanceId, Core.Common.GridCoord newAnchor)
+        public bool TryMovePlacedPiece(
+            string instanceId,
+            GridCoord newAnchor,
+            PieceRotation rotation = PieceRotation.R0)
         {
             EnsureOrchestrator();
-            bool ok = _orchestrator.TryMovePlacedPiece(instanceId, newAnchor);
+            bool ok = _orchestrator.TryMovePlacedPiece(instanceId, newAnchor, rotation);
             if (ok)
                 NotifyStateChanged();
             return ok;
@@ -183,8 +191,8 @@ namespace DeadManZone.Game
 
         public bool TryMoveBoardToReserves(
             string boardInstanceId,
-            Core.Common.GridCoord reservesAnchor,
-            Core.Common.PieceRotation rotation = Core.Common.PieceRotation.R0)
+            GridCoord reservesAnchor,
+            PieceRotation rotation = PieceRotation.R0)
         {
             EnsureOrchestrator();
             bool ok = _orchestrator.TryMoveBoardToReserves(boardInstanceId, reservesAnchor, rotation);

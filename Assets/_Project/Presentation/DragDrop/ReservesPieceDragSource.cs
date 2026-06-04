@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 namespace DeadManZone.Presentation.DragDrop
 {
-    public sealed class BoardPieceDragSource : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public sealed class ReservesPieceDragSource : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         [SerializeField] private string instanceId;
         [SerializeField] private string pieceId;
@@ -34,8 +34,8 @@ namespace DeadManZone.Presentation.DragDrop
 
             var payload = new DragPayload
             {
-                SourceKind = DragSourceKind.BoardPiece,
-                BoardInstanceId = instanceId,
+                SourceKind = DragSourceKind.ReservesPiece,
+                ReservesInstanceId = instanceId,
                 PieceId = pieceId,
                 BoardAnchor = anchor,
                 Definition = _definition,

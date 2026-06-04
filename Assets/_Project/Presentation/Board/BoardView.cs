@@ -74,23 +74,34 @@ namespace DeadManZone.Presentation.Board
             }
         }
 
-        public bool TryPlaceFromBench(int benchIndex, GridCoord anchor)
+        public bool TryPlaceFromReserves(string instanceId, GridCoord anchor, PieceRotation rotation)
         {
             if (RunManager.Instance == null)
                 return false;
 
-            bool placed = RunManager.Instance.TryPlaceFromBench(benchIndex, anchor);
+            bool placed = RunManager.Instance.TryPlaceFromReserves(instanceId, anchor, rotation);
             if (placed)
                 RefreshFromRunManager();
             return placed;
         }
 
-        public bool TryMovePlacedPiece(string instanceId, GridCoord anchor)
+        public bool TryAcquireOfferToBoard(string offerId, GridCoord anchor, PieceRotation rotation)
         {
             if (RunManager.Instance == null)
                 return false;
 
-            bool moved = RunManager.Instance.TryMovePlacedPiece(instanceId, anchor);
+            bool placed = RunManager.Instance.TryAcquireOfferToBoard(offerId, anchor, rotation);
+            if (placed)
+                RefreshFromRunManager();
+            return placed;
+        }
+
+        public bool TryMovePlacedPiece(string instanceId, GridCoord anchor, PieceRotation rotation)
+        {
+            if (RunManager.Instance == null)
+                return false;
+
+            bool moved = RunManager.Instance.TryMovePlacedPiece(instanceId, anchor, rotation);
             if (moved)
                 RefreshFromRunManager();
             return moved;
@@ -123,7 +134,12 @@ namespace DeadManZone.Presentation.Board
             foreach (var record in snapshot.Pieces)
             {
                 var definition = registry.GetById(record.PieceId);
-                _boardState.TryPlace(definition, new GridCoord(record.AnchorX, record.AnchorY), record.InstanceId);
+                var rotation = RotationFromDegrees(record.RotationDegrees);
+                _boardState.TryPlace(
+                    definition,
+                    new GridCoord(record.AnchorX, record.AnchorY),
+                    record.InstanceId,
+                    rotation);
             }
 
             RefreshOccupancyVisuals();
@@ -302,7 +318,7 @@ namespace DeadManZone.Presentation.Board
 
             foreach (var piece in _boardState.Pieces)
             {
-                foreach (var cell in piece.Definition.Shape.GetCells(piece.Anchor))
+                foreach (var cell in piece.Definition.Shape.GetCells(piece.Anchor, piece.Rotation))
                 {
                     if (_tiles.TryGetValue(cell, out var tile))
                         tile.SetOccupied(piece.InstanceId, true);
@@ -313,7 +329,12 @@ namespace DeadManZone.Presentation.Board
                     var drag = anchorTile.GetComponent<BoardPieceDragSource>();
                     if (drag == null)
                         drag = anchorTile.gameObject.AddComponent<BoardPieceDragSource>();
-                    drag.Configure(piece.InstanceId, piece.Definition.Id, piece.Anchor, piece.Definition);
+                    drag.Configure(
+                        piece.InstanceId,
+                        piece.Definition.Id,
+                        piece.Anchor,
+                        piece.Definition,
+                        piece.Rotation);
 
                     var source = PieceVisualLookup.GetSource(piece.Definition.Id);
                     var chip = PieceChipView.Create(anchorTile.transform, piece.Definition, source);
@@ -356,6 +377,15 @@ namespace DeadManZone.Presentation.Board
         private UiThemeSO Theme => theme != null ? theme : UiThemeProvider.Current;
 
         private Color GetZoneColor(ZoneType zone) => Theme.GetZoneColor(zone);
+
+        private static PieceRotation RotationFromDegrees(int degrees) =>
+            degrees switch
+            {
+                90 => PieceRotation.R90,
+                180 => PieceRotation.R180,
+                270 => PieceRotation.R270,
+                _ => PieceRotation.R0
+            };
 
         private void ClearTiles()
         {

@@ -1,3 +1,4 @@
+using DeadManZone.Core.Board;
 using DeadManZone.Core.Shop;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -20,7 +21,8 @@ namespace DeadManZone.Presentation.DragDrop
                 SourceKind = DragSourceKind.ShopOffer,
                 OfferId = _offer.OfferId,
                 PieceId = _offer.PieceId,
-                Offer = _offer
+                Offer = _offer,
+                Rotation = PieceRotation.R0
             };
             DragDropController.Instance.BeginDrag(payload, transform, eventData);
         }

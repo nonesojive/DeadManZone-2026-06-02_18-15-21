@@ -18,6 +18,13 @@ namespace DeadManZone.Presentation.DragDrop
                 label.text = text;
         }
 
+        public void SetRotation(PieceRotation rotation)
+        {
+            var rect = GetComponent<RectTransform>();
+            if (rect != null)
+                rect.localEulerAngles = new Vector3(0f, 0f, -(int)rotation);
+        }
+
         public static DragGhost Create(Transform parent, string pieceId, PieceDefinition definition = null)
         {
             var theme = UiThemeProvider.Current;

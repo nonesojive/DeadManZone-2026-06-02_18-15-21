@@ -99,24 +99,24 @@ namespace DeadManZone.Core.Board
             return true;
         }
 
-        public PlacementResult TryRelocate(string instanceId, GridCoord newAnchor)
+        public PlacementResult TryRelocate(string instanceId, GridCoord newAnchor, PieceRotation rotation)
         {
             if (!_pieces.TryGetValue(instanceId, out var piece))
                 return new PlacementResult { Success = false, Reason = "Piece not found" };
 
-            if (piece.Anchor.X == newAnchor.X && piece.Anchor.Y == newAnchor.Y)
+            if (piece.Anchor.X == newAnchor.X && piece.Anchor.Y == newAnchor.Y && piece.Rotation == rotation)
                 return new PlacementResult { Success = true };
 
             if (!TryRemove(instanceId, out var removed))
                 return new PlacementResult { Success = false, Reason = "Piece not found" };
 
-            if (!CanPlace(removed.Definition, newAnchor, removed.Rotation))
+            if (!CanPlace(removed.Definition, newAnchor, rotation))
             {
                 TryPlace(removed.Definition, removed.Anchor, removed.InstanceId, removed.Rotation);
                 return new PlacementResult { Success = false, Reason = "Invalid placement" };
             }
 
-            return TryPlace(removed.Definition, newAnchor, removed.InstanceId, removed.Rotation);
+            return TryPlace(removed.Definition, newAnchor, removed.InstanceId, rotation);
         }
 
         private static bool IsCategoryAllowed(PieceCategory category, ZoneType zone) =>
