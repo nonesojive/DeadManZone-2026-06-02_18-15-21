@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Common;
@@ -20,6 +21,28 @@ namespace DeadManZone.Core.Board
             SpecialTiles = specialTiles;
         }
 
+        public static BoardLayout CreateHorizontalZones(
+            int width,
+            int height,
+            int rearCols,
+            int supportCols,
+            GridCoord[] specialTiles)
+        {
+            var zones = new ZoneType[width, height];
+            for (int x = 0; x < width; x++)
+            {
+                var zone = x < rearCols ? ZoneType.Rear
+                    : x < rearCols + supportCols ? ZoneType.Support
+                    : ZoneType.Front;
+
+                for (int y = 0; y < height; y++)
+                    zones[x, y] = zone;
+            }
+
+            return new BoardLayout(width, height, zones, specialTiles.ToList());
+        }
+
+        [Obsolete("Use CreateHorizontalZones for column-based zones (Rear left, Front right).")]
         public static BoardLayout CreateStandard(
             int width,
             int height,

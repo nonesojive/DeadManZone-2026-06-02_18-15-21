@@ -31,10 +31,10 @@ namespace DeadManZone.Data
 
             var snapshot = new BoardSnapshot
             {
-                Width = 8,
+                Width = 9,
                 Height = 6,
-                RearRows = 2,
-                SupportRows = 2,
+                RearCols = 3,
+                SupportCols = 3,
                 SpecialTiles = new System.Collections.Generic.List<GridCoordRecord>()
             };
 
@@ -62,8 +62,8 @@ namespace DeadManZone.Data
             var snapshot = ToBoardSnapshot();
             snapshot.Width = faction.boardWidth;
             snapshot.Height = faction.boardHeight;
-            snapshot.RearRows = faction.rearRows;
-            snapshot.SupportRows = faction.supportRows;
+            snapshot.RearCols = faction.rearCols;
+            snapshot.SupportCols = faction.supportCols;
             snapshot.SpecialTiles = faction.specialTileCoords
                 .Select(c => new GridCoordRecord { X = c.x, Y = c.y })
                 .ToList();

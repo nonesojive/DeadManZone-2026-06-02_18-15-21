@@ -8,16 +8,24 @@ namespace DeadManZone.Core.Tests
     public class BoardStateTests
     {
         private static BoardLayout DefaultLayout() =>
-            BoardLayout.CreateStandard(
-                width: 8,
-                height: 6,
-                rearRows: 2,
-                supportRows: 2,
+            BoardLayout.CreateHorizontalZones(
+                width: TestBoards.DefaultWidth,
+                height: TestBoards.DefaultHeight,
+                rearCols: TestBoards.DefaultRearCols,
+                supportCols: TestBoards.DefaultSupportCols,
                 specialTiles: new[]
                 {
                     new GridCoord(1, 2),
                     new GridCoord(4, 2)
                 });
+
+        [Test]
+        public void CreateHorizontalZones_RearIsLeftmostColumn()
+        {
+            var layout = BoardLayout.CreateHorizontalZones(9, 6, rearCols: 3, supportCols: 3, new[] { new GridCoord(1, 2) });
+            Assert.AreEqual(ZoneType.Rear, layout.GetZone(new GridCoord(0, 3)));
+            Assert.AreEqual(ZoneType.Front, layout.GetZone(new GridCoord(8, 3)));
+        }
 
         [Test]
         public void CanPlace_ReturnsFalseForInvalidZone()
@@ -82,10 +90,11 @@ namespace DeadManZone.Core.Tests
             var anchor = new GridCoord(1, 2);
             Assert.IsTrue(board.TryPlace(bunker, anchor, "bunker_1").Success);
 
-            var result = board.TryRelocate("bunker_1", new GridCoord(0, 4));
+            var result = board.TryRelocate("bunker_1", new GridCoord(7, 2));
 
             Assert.IsFalse(result.Success);
             Assert.AreEqual(anchor, board.Pieces.First().Anchor);
         }
     }
 }
+

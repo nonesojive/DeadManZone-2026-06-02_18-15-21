@@ -9,13 +9,7 @@ namespace DeadManZone.Core.Tests
 {
     public class ShopGeneratorTests
     {
-        private static BoardLayout DefaultLayout() =>
-            BoardLayout.CreateStandard(
-                width: 8,
-                height: 6,
-                rearRows: 2,
-                supportRows: 2,
-                specialTiles: new[] { new GridCoord(1, 2) });
+        private static BoardLayout DefaultLayout() => TestBoards.Layout;
 
         private static BoardState BuildBoardWithSupplyDepot()
         {

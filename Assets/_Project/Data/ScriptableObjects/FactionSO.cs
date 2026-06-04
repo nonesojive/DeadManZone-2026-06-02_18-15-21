@@ -11,10 +11,10 @@ namespace DeadManZone.Data
     {
         public string factionId = "iron_vanguard";
         public string displayName = "Iron Vanguard";
-        public int boardWidth = 8;
+        public int boardWidth = 9;
         public int boardHeight = 6;
-        public int rearRows = 2;
-        public int supportRows = 2;
+        public int rearCols = 3;
+        public int supportCols = 3;
         public Vector2Int[] specialTileCoords =
         {
             new Vector2Int(1, 2),
@@ -32,11 +32,11 @@ namespace DeadManZone.Data
             for (int i = 0; i < specialTileCoords.Length; i++)
                 specialTiles[i] = new GridCoord(specialTileCoords[i].x, specialTileCoords[i].y);
 
-            return BoardLayout.CreateStandard(
+            return BoardLayout.CreateHorizontalZones(
                 boardWidth,
                 boardHeight,
-                rearRows,
-                supportRows,
+                rearCols,
+                supportCols,
                 specialTiles);
         }
 
@@ -46,8 +46,8 @@ namespace DeadManZone.Data
             {
                 Width = boardWidth,
                 Height = boardHeight,
-                RearRows = rearRows,
-                SupportRows = supportRows,
+                RearCols = rearCols,
+                SupportCols = supportCols,
                 SpecialTiles = specialTileCoords
                     .Select(c => new GridCoordRecord { X = c.x, Y = c.y })
                     .ToList()
