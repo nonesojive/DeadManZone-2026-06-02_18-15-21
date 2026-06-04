@@ -10,9 +10,12 @@ namespace DeadManZone.Core.Content
         private readonly Dictionary<string, PieceDefinition> _piecesById = new();
         private readonly Dictionary<ShopLane, List<PieceDefinition>> _pools = new();
 
-        public void Register(PieceDefinition piece, ShopLane lane)
+        public void Register(PieceDefinition piece, ShopLane lane, bool includeInShopPool = true)
         {
             _piecesById[piece.Id] = piece;
+            if (!includeInShopPool)
+                return;
+
             if (!_pools.TryGetValue(lane, out var pool))
             {
                 pool = new List<PieceDefinition>();

@@ -10,35 +10,37 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
-  m_Name: diesel_walker
+  m_Name: mobile_cannon
   m_EditorClassIdentifier: 
-  id: diesel_walker
-  displayName: Diesel Walker
+  id: mobile_cannon
+  displayName: Mobile Cannon
   category: 1
   shapeCells:
   - {x: 0, y: 0}
   - {x: 1, y: 0}
+  - {x: 2, y: 0}
   - {x: 0, y: 1}
   - {x: 1, y: 1}
+  - {x: 2, y: 1}
   tags:
   - Vehicle
-  - Tank
-  - Vanguard
-  maxHp: 320
-  baseDamage: 35
+  - Artillery
+  - Neutral
+  maxHp: 300
+  baseDamage: 40
   cooldownTicks: 5
-  goldCost: 140
+  goldCost: 180
   requisitionCost: 0
   manpowerCost: 1
   shopModifiers: 0
   commandActions: 0
-  shopLane: 0
+  shopLane: 2
   attackSpeed: 0
-  attackRange: 1
+  attackRange: 2
   movementSpeed: 1
-  armorType: 3
-  attackType: 3
-  grantedAbility: 0
-  factionId: iron_vanguard
+  armorType: 2
+  attackType: 2
+  grantedAbility: 3
+  factionId: neutral
   icon: {fileID: 0}
-  categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  categoryTint: {r: 0.45, g: 0.48, b: 0.42, a: 1}

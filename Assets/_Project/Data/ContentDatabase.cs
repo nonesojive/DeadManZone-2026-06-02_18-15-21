@@ -10,6 +10,19 @@ namespace DeadManZone.Data
     {
         private const string ResourcesPath = "DeadManZone/ContentDatabase";
 
+        /// <summary>Demo shop roster (8 pieces). HQ and legacy pieces register by id only.</summary>
+        public static readonly HashSet<string> DemoShopPieceIds = new()
+        {
+            "conscript_rifleman",
+            "grenade_thrower",
+            "field_medic",
+            "armored_transport",
+            "mobile_cannon",
+            "rifle_squad",
+            "diesel_walker",
+            "radio_array"
+        };
+
         [SerializeField] private PieceDefinitionSO[] pieces = System.Array.Empty<PieceDefinitionSO>();
         [SerializeField] private FactionSO[] factions = System.Array.Empty<FactionSO>();
         [SerializeField] private EnemyTemplateSO[] enemyTemplates = System.Array.Empty<EnemyTemplateSO>();
@@ -22,7 +35,10 @@ namespace DeadManZone.Data
         {
             var registry = new ContentRegistry();
             foreach (var piece in pieces.Where(p => p != null))
-                registry.Register(piece.ToCore(), piece.shopLane);
+            {
+                bool inShop = DemoShopPieceIds.Contains(piece.id);
+                registry.Register(piece.ToCore(), piece.shopLane, includeInShopPool: inShop);
+            }
 
             return registry;
         }
