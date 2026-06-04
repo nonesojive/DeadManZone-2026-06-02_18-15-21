@@ -233,11 +233,9 @@ namespace DeadManZone.Game
             if (State.Supplies < cost)
                 return false;
 
-            var previousShop = State.Shop;
             State.Supplies -= cost;
             State.RerollCountThisRound++;
-            RefreshShop();
-            ReplaceNonRerolledLanes(previousShop, lane);
+            RerollLaneOffers(lane);
             Persist();
             return true;
         }

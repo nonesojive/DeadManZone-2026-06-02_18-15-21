@@ -112,14 +112,22 @@ namespace DeadManZone.Core.Tests
             var toLock = _orchestrator.State.Shop.Offers.First(o => o.Lane == Core.Shop.ShopLane.Offensive);
             _orchestrator.SetLockedOffer(toLock, locked: true);
             string lockedPieceId = toLock.PieceId;
+            int lockedSlotIndex = toLock.SlotIndex;
+            Assert.AreEqual(lockedSlotIndex, _orchestrator.State.LockedOffer.SlotIndex);
 
             Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.Offensive));
             Assert.IsTrue(_orchestrator.State.Shop.Offers.Any(o =>
-                o.Lane == Core.Shop.ShopLane.Offensive && o.PieceId == lockedPieceId));
+                o.Lane == Core.Shop.ShopLane.Offensive &&
+                o.PieceId == lockedPieceId &&
+                o.SlotIndex == lockedSlotIndex));
+            Assert.AreEqual(lockedSlotIndex, _orchestrator.State.LockedOffer.SlotIndex);
 
             Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.Offensive));
             Assert.IsTrue(_orchestrator.State.Shop.Offers.Any(o =>
-                o.Lane == Core.Shop.ShopLane.Offensive && o.PieceId == lockedPieceId));
+                o.Lane == Core.Shop.ShopLane.Offensive &&
+                o.PieceId == lockedPieceId &&
+                o.SlotIndex == lockedSlotIndex));
+            Assert.AreEqual(lockedSlotIndex, _orchestrator.State.LockedOffer.SlotIndex);
         }
 
         [Test]

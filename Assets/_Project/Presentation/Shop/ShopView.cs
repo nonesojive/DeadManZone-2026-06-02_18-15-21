@@ -93,7 +93,7 @@ namespace DeadManZone.Presentation.Shop
                 return;
 
             ClearChildren(laneRoot);
-            var offers = state.Offers.Where(o => o.Lane == lane);
+            var offers = state.Offers.Where(o => o.Lane == lane).OrderBy(o => o.SlotIndex);
             foreach (var offer in offers)
             {
                 var cardObject = Instantiate(offerCardPrefab, laneRoot);

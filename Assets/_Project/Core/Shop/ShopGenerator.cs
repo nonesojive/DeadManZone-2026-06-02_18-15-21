@@ -10,7 +10,7 @@ namespace DeadManZone.Core.Shop
     public sealed class ShopGenerator
     {
         private const int MaxGoldDiscountPercent = 25;
-        private const int OffersPerLane = 3;
+        public const int OffersPerLane = 3;
 
         private readonly ContentRegistry _registry;
 
@@ -80,6 +80,18 @@ namespace DeadManZone.Core.Shop
             };
         }
 
+        public List<ShopOffer> RollLaneOffers(
+            ShopLane lane,
+            int slotCount,
+            ShopModifiers modifiers,
+            int seed,
+            int round,
+            IReadOnlyDictionary<int, ShopOffer> fixedSlots = null)
+        {
+            var rng = new Rng(seed);
+            return RollLane(lane, slotCount, modifiers, rng, round, fixedSlots);
+        }
+
         private void RollLane(
             ShopLane lane,
             int slotCount,
@@ -88,19 +100,58 @@ namespace DeadManZone.Core.Shop
             List<ShopOffer> offers,
             int round)
         {
+            foreach (var rolled in RollLane(lane, slotCount, modifiers, rng, round, fixedSlots: null))
+                offers.Add(rolled);
+        }
+
+        private List<ShopOffer> RollLane(
+            ShopLane lane,
+            int slotCount,
+            ShopModifiers modifiers,
+            Rng rng,
+            int round,
+            IReadOnlyDictionary<int, ShopOffer> fixedSlots)
+        {
+            fixedSlots ??= new Dictionary<int, ShopOffer>();
+            var results = new List<ShopOffer>();
             var pool = _registry.GetPool(lane);
             if (pool.Count == 0)
-                return;
+                return results;
 
             var available = pool.ToList();
-            for (int i = 0; i < slotCount && available.Count > 0; i++)
+            foreach (var fixedOffer in fixedSlots.Values)
+                available.RemoveAll(p => p.Id == fixedOffer.PieceId);
+
+            for (int i = 0; i < slotCount; i++)
             {
+                if (fixedSlots.TryGetValue(i, out var fixedOffer))
+                {
+                    results.Add(CopyFixedOffer(fixedOffer, i));
+                    continue;
+                }
+
+                if (available.Count == 0)
+                    break;
+
                 int index = rng.NextInt(0, available.Count);
                 var piece = available[index];
                 available.RemoveAt(index);
-                offers.Add(CreateOffer(lane, piece, modifiers, rng, round, offers.Count));
+                results.Add(CreateOffer(lane, piece, modifiers, rng, round, i));
             }
+
+            return results;
         }
+
+        private static ShopOffer CopyFixedOffer(ShopOffer source, int slotIndex) =>
+            new ShopOffer
+            {
+                OfferId = source.OfferId,
+                Lane = source.Lane,
+                SlotIndex = slotIndex,
+                PieceId = source.PieceId,
+                GoldPrice = source.GoldPrice,
+                RequisitionPrice = source.RequisitionPrice
+            };
 
         private void InjectDefensiveOffer(
             List<ShopOffer> offers,
@@ -113,7 +164,7 @@ namespace DeadManZone.Core.Shop
                 return;
 
             var piece = buildings[rng.NextInt(0, buildings.Count)];
-            offers.Add(CreateOffer(ShopLane.Defensive, piece, modifiers, rng, round, offers.Count));
+            offers.Add(CreateOffer(ShopLane.Defensive, piece, modifiers, rng, round, slotIndex: 0));
         }
 
         private ShopOffer CreateOffer(
@@ -122,7 +173,7 @@ namespace DeadManZone.Core.Shop
             ShopModifiers modifiers,
             Rng rng,
             int round,
-            int offerIndex)
+            int slotIndex)
         {
             int gold = ApplyGoldDiscount(piece.GoldCost, modifiers.GoldDiscountPercent);
             int requisition = piece.RequisitionCost;
@@ -132,8 +183,9 @@ namespace DeadManZone.Core.Shop
 
             return new ShopOffer
             {
-                OfferId = $"{lane}_{piece.Id}_{offerIndex}",
+                OfferId = $"{lane}_{piece.Id}_{slotIndex}",
                 Lane = lane,
+                SlotIndex = slotIndex,
                 PieceId = piece.Id,
                 GoldPrice = gold,
                 RequisitionPrice = requisition

@@ -4,6 +4,7 @@ namespace DeadManZone.Core.Shop
     {
         public string OfferId { get; set; }
         public ShopLane Lane { get; set; }
+        public int SlotIndex { get; set; }
         public string PieceId { get; set; }
         public int GoldPrice { get; set; }
         public int RequisitionPrice { get; set; }
