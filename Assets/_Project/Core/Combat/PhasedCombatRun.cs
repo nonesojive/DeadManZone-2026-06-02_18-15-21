@@ -17,6 +17,9 @@ namespace DeadManZone.Core.Combat
         public CombatPhase CompletedPhase { get; init; }
         public bool PlayerWon { get; init; }
         public CombatEventLog EventLog { get; init; }
+        public int PlayerCombatantsTotal { get; init; }
+        public int PlayerCombatantsLost { get; init; }
+        public bool PlayerHqDamaged { get; init; }
     }
 
     public sealed class PhasedCombatRun
@@ -131,14 +134,45 @@ namespace DeadManZone.Core.Combat
                 EventLog = _log
             };
 
-        private CombatAdvanceResult CompleteResult() =>
-            new CombatAdvanceResult
+        private CombatAdvanceResult CompleteResult()
+        {
+            var (total, lost, hqDamaged) = ComputePlayerLossStats();
+            return new CombatAdvanceResult
             {
                 Status = CombatAdvanceStatus.Completed,
                 CompletedPhase = LastCompletedPhase,
                 PlayerWon = PlayerWon,
-                EventLog = _log
+                EventLog = _log,
+                PlayerCombatantsTotal = total,
+                PlayerCombatantsLost = lost,
+                PlayerHqDamaged = hqDamaged
             };
+        }
+
+        private (int total, int lost, bool hqDamaged) ComputePlayerLossStats()
+        {
+            int total = 0;
+            int lost = 0;
+            bool hqDamaged = false;
+
+            foreach (var combatant in _playerCombatants)
+            {
+                if (HasTag(combatant, GameTags.Combatant))
+                {
+                    total++;
+                    if (!combatant.IsAlive)
+                        lost++;
+                }
+
+                if (HasTag(combatant, GameTags.Hq) && combatant.CurrentHp < combatant.Definition.MaxHp)
+                    hqDamaged = true;
+            }
+
+            return (total, lost, hqDamaged);
+        }
+
+        private static bool HasTag(CombatantState combatant, string tag) =>
+            combatant.Definition?.Tags?.Contains(tag) == true;
 
         private CombatAdvanceResult CompleteFight()
         {

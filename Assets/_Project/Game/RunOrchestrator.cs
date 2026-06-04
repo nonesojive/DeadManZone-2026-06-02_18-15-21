@@ -53,7 +53,13 @@ namespace DeadManZone.Game
                 throw new InvalidOperationException($"Unknown faction '{factionId}'.");
 
             int seed = runSeed ?? Environment.TickCount;
-            State = RunState.CreateNew(factionId, seed, Faction.startingGold, Faction.startingRequisition);
+            State = RunState.CreateNew(
+                factionId,
+                seed,
+                Faction.startingSupplies,
+                Faction.startingManpower,
+                Faction.startingAuthority,
+                Faction.startingMorale);
             State.PlayerBoard = Faction.CreateEmptyBoardSnapshot();
             State.RerollCountThisRound = 0;
             RefreshShop();
@@ -72,10 +78,28 @@ namespace DeadManZone.Game
             Persist();
         }
 
+        public bool CanStartBattle(out string failureReason)
+        {
+            var playerBoard = GetPlayerBoard();
+            int upkeep = ManpowerCalculator.ComputeUpkeep(playerBoard, _registry);
+            if (ManpowerCalculator.CanStartBattle(playerBoard, State.Manpower, _registry))
+            {
+                failureReason = null;
+                return true;
+            }
+
+            failureReason =
+                $"Insufficient manpower: board upkeep is {upkeep} but only {State.Manpower} available.";
+            return false;
+        }
+
         public void BeginCombat()
         {
             if (State.Phase != RunPhase.Build)
                 throw new InvalidOperationException("Combat can only start from the build phase.");
+
+            if (!CanStartBattle(out string failureReason))
+                throw new InvalidOperationException(failureReason);
 
             var playerBoard = GetPlayerBoard();
             var enemyTemplate = _content.GetEnemyTemplate(State.FightIndex);
@@ -90,12 +114,12 @@ namespace DeadManZone.Game
             {
                 CombatSeed = combatSeed,
                 EnemyBoard = BoardSnapshotMapper.FromBoard(enemyBoard, Faction.rearRows, Faction.supportRows),
-                Requisition = State.Requisition,
+                Requisition = State.Authority,
                 SubmittedCommands = new List<PhaseCommand>(),
                 EventLog = new List<CombatEventRecord>()
             };
 
-            _activeCombat = PhasedCombatRun.Start(playerBoard, enemyBoard, combatSeed, State.Requisition);
+            _activeCombat = PhasedCombatRun.Start(playerBoard, enemyBoard, combatSeed, State.Authority);
             var firstStep = _activeCombat.Continue(Array.Empty<PhaseCommand>());
             SyncCombatFromRunner(firstStep);
             Persist();
@@ -153,20 +177,35 @@ namespace DeadManZone.Game
             SyncCombatFromRunner(result);
 
             if (result.Status == CombatAdvanceStatus.Completed)
-                CompleteCombat(result.PlayerWon);
+                CompleteCombat(result);
 
             Persist();
             return result;
         }
 
+        public bool TryEmergencyDraft()
+        {
+            var board = GetPlayerBoard();
+            int upkeep = ManpowerCalculator.ComputeUpkeep(board, _registry);
+            int shortfall = upkeep - State.Manpower;
+            if (shortfall <= 0)
+                return false;
+
+            if (!EmergencyDraft.TryUse(State, shortfall))
+                return false;
+
+            Persist();
+            return true;
+        }
+
         public bool TryRerollLane(ShopLane lane)
         {
             int cost = BaseRerollCost + State.RerollCountThisRound;
-            if (State.Gold < cost)
+            if (State.Supplies < cost)
                 return false;
 
             var previousShop = State.Shop;
-            State.Gold -= cost;
+            State.Supplies -= cost;
             State.RerollCountThisRound++;
             RefreshShop();
             ReplaceNonRerolledLanes(previousShop, lane);
@@ -184,7 +223,7 @@ namespace DeadManZone.Game
                 return false;
 
             int refund = removed.Definition.GoldCost / 2;
-            State.Gold += refund;
+            State.Supplies += refund;
             SavePlayerBoard(board);
             return true;
         }
@@ -236,20 +275,38 @@ namespace DeadManZone.Game
             return next?.previewTag;
         }
 
-        private void CompleteCombat(bool playerWon)
+        private void CompleteCombat(CombatAdvanceResult result)
         {
             _activeCombat = null;
+            bool playerWon = result.PlayerWon;
 
             if (!playerWon)
             {
-                State.Phase = RunPhase.Defeat;
+                int moraleLoss = MoraleCalculator.ComputeLoss(
+                    State.FightIndex,
+                    result.PlayerCombatantsLost,
+                    result.PlayerCombatantsTotal,
+                    result.PlayerHqDamaged);
+                State.Morale -= moraleLoss;
+                State.Combat = null;
+
+                if (State.Morale <= 0)
+                {
+                    State.Phase = RunPhase.Defeat;
+                    Persist();
+                    return;
+                }
+
+                State.Phase = RunPhase.Build;
+                State.RerollCountThisRound = 0;
+                RefreshShop();
                 Persist();
                 return;
             }
 
             var reward = FightRewardTable.GetReward(State.FightIndex);
-            State.Gold += reward.Gold;
-            State.Requisition += reward.Requisition;
+            State.Supplies += reward.Gold;
+            State.Authority += reward.Requisition;
             State.Combat = null;
 
             if (State.FightIndex >= MaxFights)
