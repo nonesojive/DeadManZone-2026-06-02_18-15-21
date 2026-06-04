@@ -11,7 +11,13 @@ namespace DeadManZone.Presentation.MainMenu
         [SerializeField] private GameObject mainPanel;
         [SerializeField] private Button continueButton;
         [SerializeField] private Button newRunButton;
+        [SerializeField] private Button optionsButton;
+        [SerializeField] private Button exitButton;
         [SerializeField] private TMP_Text subtitleText;
+
+        [Header("Options")]
+        [SerializeField] private GameObject optionsPanel;
+        [SerializeField] private Button optionsBackButton;
 
         [Header("Faction select")]
         [SerializeField] private GameObject factionPanel;
@@ -27,6 +33,15 @@ namespace DeadManZone.Presentation.MainMenu
 
             if (newRunButton != null)
                 newRunButton.onClick.AddListener(OnNewRunClicked);
+
+            if (optionsButton != null)
+                optionsButton.onClick.AddListener(ShowOptionsPanel);
+
+            if (exitButton != null)
+                exitButton.onClick.AddListener(OnExitClicked);
+
+            if (optionsBackButton != null)
+                optionsBackButton.onClick.AddListener(ShowMainPanel);
 
             if (ironVanguardButton != null)
                 ironVanguardButton.onClick.AddListener(OnIronVanguardClicked);
@@ -74,6 +89,8 @@ namespace DeadManZone.Presentation.MainMenu
                 factionPanel.SetActive(true);
             if (mainPanel != null)
                 mainPanel.SetActive(false);
+            if (optionsPanel != null)
+                optionsPanel.SetActive(false);
         }
 
         private void OnIronVanguardClicked()
@@ -83,10 +100,31 @@ namespace DeadManZone.Presentation.MainMenu
             GameScenes.LoadRun();
         }
 
+        private void OnExitClicked()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
+
+        private void ShowOptionsPanel()
+        {
+            if (mainPanel != null)
+                mainPanel.SetActive(false);
+            if (factionPanel != null)
+                factionPanel.SetActive(false);
+            if (optionsPanel != null)
+                optionsPanel.SetActive(true);
+        }
+
         private void ShowMainPanel()
         {
             if (factionPanel != null)
                 factionPanel.SetActive(false);
+            if (optionsPanel != null)
+                optionsPanel.SetActive(false);
             if (mainPanel != null)
                 mainPanel.SetActive(true);
             Refresh();

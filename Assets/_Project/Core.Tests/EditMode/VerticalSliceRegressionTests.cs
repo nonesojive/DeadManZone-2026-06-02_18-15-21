@@ -173,7 +173,7 @@ namespace DeadManZone.Core.Tests
                             new()
                             {
                                 OfferId = "general_test_0",
-                                Lane = Core.Shop.ShopLane.General,
+                                Lane = Core.Shop.ShopLane.Offensive,
                                 PieceId = "rifle_squad",
                                 GoldPrice = 5,
                                 RequisitionPrice = 0
@@ -182,7 +182,7 @@ namespace DeadManZone.Core.Tests
                     };
                     state.LockedOffer = new ShopOfferRecord
                     {
-                        Lane = Core.Shop.ShopLane.General,
+                        Lane = Core.Shop.ShopLane.Offensive,
                         PieceId = "rifle_squad",
                         GoldPrice = 5,
                         RequisitionPrice = 0
