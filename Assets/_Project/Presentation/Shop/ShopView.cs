@@ -100,8 +100,8 @@ namespace DeadManZone.Presentation.Shop
                 cardObject.SetActive(true);
                 ConfigureOfferCardLayout(cardObject);
                 var card = cardObject.GetComponent<ShopOfferView>() ?? cardObject.AddComponent<ShopOfferView>();
-                bool isLocked = RunManager.Instance != null &&
-                    RunManager.Instance.Orchestrator.IsOfferLocked(offer);
+                bool isLocked = RunManager.Instance is { HasActiveRun: true } manager &&
+                    manager.Orchestrator.IsOfferLocked(offer);
                 card.Bind(offer, isLocked);
                 card.LockToggled += OnLockToggled;
             }

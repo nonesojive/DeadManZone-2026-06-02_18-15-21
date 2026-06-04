@@ -23,11 +23,13 @@ MonoBehaviour:
   tags:
   - Mechanical
   - Vanguard
+  - Combatant
   maxHp: 25
   baseDamage: 4
   cooldownTicks: 5
   goldCost: 12
   requisitionCost: 0
+  manpowerCost: 1
   shopModifiers: 0
   commandActions: 0
   shopLane: 0

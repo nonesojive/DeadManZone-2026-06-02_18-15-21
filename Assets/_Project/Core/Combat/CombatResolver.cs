@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using DeadManZone.Core.Board;
 
 namespace DeadManZone.Core.Combat
@@ -14,8 +15,12 @@ namespace DeadManZone.Core.Combat
         {
             var run = TickCombatRun.Start(playerBoard, enemyBoard, seed, requisition);
             run.Continue(System.Array.Empty<PhaseCommand>());
-            run.Continue(commands);
-            run.Continue(commands);
+
+            var deploymentCommands = FilterCommands(commands, CombatPhase.Deployment);
+            run.Continue(deploymentCommands);
+
+            var grindCommands = FilterCommands(commands, CombatPhase.Grind);
+            run.Continue(grindCommands);
 
             return new CombatResult
             {
@@ -23,5 +28,11 @@ namespace DeadManZone.Core.Combat
                 PlayerWon = run.PlayerWon
             };
         }
+
+        private static IReadOnlyList<PhaseCommand> FilterCommands(
+            IReadOnlyList<PhaseCommand> commands,
+            CombatPhase phase) =>
+            commands?.Where(c => c.AfterPhase == phase).ToList()
+            ?? (IReadOnlyList<PhaseCommand>)System.Array.Empty<PhaseCommand>();
     }
 }

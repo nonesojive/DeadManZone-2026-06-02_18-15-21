@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
+using DeadManZone.Core.Common;
 using DeadManZone.Core.Content;
 using DeadManZone.Core.Run;
 using DeadManZone.Core.Shop;
@@ -68,10 +69,15 @@ namespace DeadManZone.Game
             Persist();
         }
 
-        public BoardState GetPlayerBoard() =>
-            State.PlayerBoard == null
+        public BoardState GetPlayerBoard()
+        {
+            if (Faction == null)
+                return new BoardState(BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>()));
+
+            return State.PlayerBoard == null
                 ? new BoardState(Faction.CreateBoardLayout())
                 : BoardSnapshotMapper.ToBoard(State.PlayerBoard, _registry);
+        }
 
         public void SavePlayerBoard(BoardState board)
         {
@@ -177,8 +183,10 @@ namespace DeadManZone.Game
             if (_activeCombat == null)
                 throw new InvalidOperationException("No active combat.");
 
-            var commands = State.Combat.SubmittedCommands;
-            var result = _activeCombat.Continue(commands);
+            var pending = State.Combat.SubmittedCommands
+                .Where(c => c.AfterPhase == State.Combat.CompletedPhase)
+                .ToList();
+            var result = _activeCombat.Continue(pending);
             SyncCombatFromRunner(result);
 
             if (result.Status == CombatAdvanceStatus.Completed)

@@ -66,7 +66,7 @@ namespace DeadManZone.Core.Combat
             {
                 RunSegment(CombatSegment.Opening, CombatPhase.Deployment, SegmentTickBudget.Opening, 0.2f);
                 LastCompletedPhase = CombatPhase.Deployment;
-                return AwaitingResult(CombatPhase.Deployment);
+                return IsFightOver ? CompleteResult() : AwaitingResult(CombatPhase.Deployment);
             }
 
             if (LastCompletedPhase == CombatPhase.Deployment)
@@ -77,7 +77,7 @@ namespace DeadManZone.Core.Combat
 
                 RunSegment(CombatSegment.MainFight, CombatPhase.Grind, SegmentTickBudget.MainFight, 1.0f);
                 LastCompletedPhase = CombatPhase.Grind;
-                return AwaitingResult(CombatPhase.Grind);
+                return IsFightOver ? CompleteResult() : AwaitingResult(CombatPhase.Grind);
             }
 
             if (LastCompletedPhase == CombatPhase.Grind)
@@ -137,14 +137,14 @@ namespace DeadManZone.Core.Combat
             CombatSegment segment,
             CombatPhase phase)
         {
-            var targetPositions = targets.Where(t => t.IsAlive).Select(t => t.Position).ToList();
-            if (targetPositions.Count == 0)
+            var aliveTargets = targets.Where(t => t.IsAlive).OrderBy(t => t.InstanceId).ToList();
+            if (aliveTargets.Count == 0)
                 return;
 
-            var goal = targetPositions[0];
+            var goal = aliveTargets[0].Position;
             var blocked = new HashSet<GridCoord>(_occupied);
 
-            foreach (var mover in movers.Where(m => m.IsAlive && m.HasTag(GameTags.Combatant)))
+            foreach (var mover in movers.Where(m => m.IsAlive && m.HasTag(GameTags.Combatant)).OrderBy(m => m.InstanceId))
             {
                 var next = CombatMovement.StepTowardTarget(mover.Position, goal, _layout, segment, blocked);
                 if (next == null || next.Value.Equals(mover.Position))
@@ -159,7 +159,7 @@ namespace DeadManZone.Core.Combat
 
         private void ApplyGas(CombatPhase phase)
         {
-            foreach (var combatant in _playerCombatants.Concat(_enemyCombatants).Where(c => c.IsAlive))
+            foreach (var combatant in _playerCombatants.Concat(_enemyCombatants).Where(c => c.IsAlive).OrderBy(c => c.InstanceId))
             {
                 if (GasDamageSystem.IsMitigated(combatant.Definition))
                     continue;
@@ -178,7 +178,7 @@ namespace DeadManZone.Core.Combat
             CombatPhase phase,
             float damageScale)
         {
-            foreach (var actor in attackers.Where(a => a.IsAlive && a.CanAttack))
+            foreach (var actor in attackers.Where(a => a.IsAlive && a.CanAttack).OrderBy(a => a.InstanceId))
             {
                 if (actor.CooldownRemaining > 0)
                 {
@@ -296,6 +296,7 @@ namespace DeadManZone.Core.Combat
 
         private static List<CombatantState> SpawnCombatants(BoardState board, CombatSide side, int xOffset) =>
             board.Pieces
+                .OrderBy(p => p.InstanceId)
                 .Where(p => p.Definition.MaxHp > 0)
                 .Select(p => new CombatantState
                 {

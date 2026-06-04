@@ -23,6 +23,12 @@ namespace DeadManZone.Game
             DontDestroyOnLoad(gameObject);
         }
 
+        private void OnDestroy()
+        {
+            if (Instance == this)
+                Instance = null;
+        }
+
         private void OnApplicationPause(bool paused)
         {
             if (paused)

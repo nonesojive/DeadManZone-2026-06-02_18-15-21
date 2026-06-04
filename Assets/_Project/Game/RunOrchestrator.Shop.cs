@@ -16,11 +16,18 @@ namespace DeadManZone.Game
             if (offer == null)
                 return false;
 
-            return State.Supplies >= offer.GoldPrice && State.Authority >= offer.RequisitionPrice;
+            if (State.Supplies < offer.GoldPrice)
+                return false;
+
+            if (offer.Lane == ShopLane.Specialty && offer.RequisitionPrice > 0)
+                return State.Authority >= offer.RequisitionPrice;
+
+            return true;
         }
 
         public bool IsOfferLocked(ShopOffer offer) =>
             offer != null &&
+            State != null &&
             State.LockedOffer != null &&
             State.LockedOffer.Lane == offer.Lane &&
             State.LockedOffer.PieceId == offer.PieceId;
@@ -34,6 +41,9 @@ namespace DeadManZone.Game
 
         public bool TryAcquireOfferToBench(string offerId)
         {
+            if (State.Phase != RunPhase.Build)
+                return false;
+
             if (State.BenchPieceIds.Count >= BenchLimit || !CanAffordOffer(offerId))
                 return false;
 
@@ -60,6 +70,9 @@ namespace DeadManZone.Game
 
         public bool TryAcquireOfferToBoard(string offerId, GridCoord anchor, string instanceId = null)
         {
+            if (State.Phase != RunPhase.Build)
+                return false;
+
             if (!CanAcquireOfferToBoard(offerId, anchor))
                 return false;
 
@@ -68,11 +81,15 @@ namespace DeadManZone.Game
             var board = GetPlayerBoard();
             instanceId ??= Guid.NewGuid().ToString("N");
 
+            PayOffer(offer);
+
             var place = board.TryPlace(piece, anchor, instanceId);
             if (!place.Success)
+            {
+                RefundOffer(offer);
                 return false;
+            }
 
-            PayOffer(offer);
             SavePlayerBoard(board);
             RemoveOffer(offerId);
             Persist();
@@ -137,7 +154,15 @@ namespace DeadManZone.Game
         private void PayOffer(ShopOffer offer)
         {
             State.Supplies -= offer.GoldPrice;
-            State.Authority -= offer.RequisitionPrice;
+            if (offer.Lane == ShopLane.Specialty && offer.RequisitionPrice > 0)
+                State.Authority -= offer.RequisitionPrice;
+        }
+
+        private void RefundOffer(ShopOffer offer)
+        {
+            State.Supplies += offer.GoldPrice;
+            if (offer.Lane == ShopLane.Specialty && offer.RequisitionPrice > 0)
+                State.Authority += offer.RequisitionPrice;
         }
 
         private void RemoveOffer(string offerId)
