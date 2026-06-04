@@ -117,6 +117,12 @@ namespace DeadManZone.Core.Tests
                     CompletedPhase = CombatPhase.Deployment,
                     AwaitingCommand = true,
                     Requisition = 3,
+                    PlayerTactic = TacticType.StandGround,
+                    PendingSelectedTactic = TacticType.Advance,
+                    PendingSelectedAbilities = new System.Collections.Generic.List<GrantedAbility>
+                    {
+                        GrantedAbility.GrenadeLob
+                    },
                     SubmittedCommands = new System.Collections.Generic.List<PhaseCommand>
                     {
                         new PhaseCommand
@@ -146,6 +152,9 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(RunPhase.Combat, loaded.Phase);
             Assert.IsTrue(loaded.Combat.AwaitingCommand);
             Assert.AreEqual(CombatPhase.Deployment, loaded.Combat.CompletedPhase);
+            Assert.AreEqual(TacticType.StandGround, loaded.Combat.PlayerTactic);
+            Assert.AreEqual(TacticType.Advance, loaded.Combat.PendingSelectedTactic);
+            Assert.AreEqual(GrantedAbility.GrenadeLob, loaded.Combat.PendingSelectedAbilities[0]);
             Assert.AreEqual(1, loaded.Combat.SubmittedCommands.Count);
             Assert.AreEqual(TacticType.Advance, loaded.Combat.SubmittedCommands[0].Tactic);
             Assert.AreEqual(1, loaded.Combat.EventLog.Count);

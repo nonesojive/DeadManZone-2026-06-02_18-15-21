@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
-using DeadManZone.Core.Common;
 using DeadManZone.Data;
 using NUnit.Framework;
 
@@ -20,14 +19,13 @@ namespace DeadManZone.Core.Tests
             Assert.NotNull(faction, "iron_vanguard faction required for regression tests.");
 
             var board = new BoardState(faction.CreateBoardLayout());
-            Place(board, database, "field_gun_nest", new GridCoord(0, 0), "gun_1");
-            Place(board, database, "supply_depot", new GridCoord(2, 0), "depot_1");
-            Place(board, database, "command_bunker", new GridCoord(1, 4), "bunker_1");
-            Place(board, database, "mortar_crew", new GridCoord(4, 3), "mortar_1");
-            Place(board, database, "mg_team", new GridCoord(5, 4), "mg_1");
-            Place(board, database, "mobile_artillery", new GridCoord(6, 3), "artillery_1");
-            Place(board, database, "diesel_walker", new GridCoord(7, 4), "walker_1");
-            // Walker is 2x2 at (7,4) -> through (8,5); rifle sits above that block at (8,3).
+            Place(board, database, "mobile_cannon", new GridCoord(0, 0), "cannon_1");
+            Place(board, database, "field_medic", new GridCoord(2, 0), "medic_1");
+            Place(board, database, "radio_array", new GridCoord(1, 4), "radio_1");
+            Place(board, database, "grenade_thrower", new GridCoord(4, 3), "grenade_1");
+            Place(board, database, "conscript_rifleman", new GridCoord(5, 4), "conscript_1");
+            Place(board, database, "armored_transport", new GridCoord(3, 2), "transport_1");
+            Place(board, database, "diesel_walker", new GridCoord(6, 4), "walker_1");
             Place(board, database, "rifle_squad", new GridCoord(8, 3), "rifle_1");
             return board;
         }
@@ -35,46 +33,22 @@ namespace DeadManZone.Core.Tests
         public static List<PhaseCommand> BuildAggressiveCommands(BoardState board)
         {
             var commands = new List<PhaseCommand>();
-            string bunkerId = board.Pieces.FirstOrDefault(p => p.Definition.Id == "command_bunker")?.InstanceId;
-            string depotId = board.Pieces.FirstOrDefault(p => p.Definition.Id == "supply_depot")?.InstanceId;
+            string radioId = board.Pieces.FirstOrDefault(p => p.Definition.Id == "radio_array")?.InstanceId;
 
-            if (bunkerId != null)
+            commands.Add(new PhaseCommand
             {
-                commands.Add(new PhaseCommand
-                {
-                    AfterPhase = CombatPhase.Deployment,
-                    Type = CommandType.SetTactic,
-                    Tactic = TacticType.Advance,
-                    SourcePieceId = bunkerId
-                });
-                commands.Add(new PhaseCommand
-                {
-                    AfterPhase = CombatPhase.Grind,
-                    Type = CommandType.SetTactic,
-                    Tactic = TacticType.Advance,
-                    SourcePieceId = bunkerId
-                });
-            }
-
-            if (depotId != null)
+                AfterPhase = CombatPhase.Deployment,
+                Type = CommandType.SetTactic,
+                Tactic = TacticType.Advance,
+                SourcePieceId = radioId ?? "player_tactic"
+            });
+            commands.Add(new PhaseCommand
             {
-                commands.Add(new PhaseCommand
-                {
-                    AfterPhase = CombatPhase.Deployment,
-                    Type = CommandType.SpendRequisitionBuff,
-                    Tactic = TacticType.Advance,
-                    SourcePieceId = depotId,
-                    Cost = 1
-                });
-                commands.Add(new PhaseCommand
-                {
-                    AfterPhase = CombatPhase.Grind,
-                    Type = CommandType.SpendRequisitionBuff,
-                    Tactic = TacticType.Advance,
-                    SourcePieceId = depotId,
-                    Cost = 1
-                });
-            }
+                AfterPhase = CombatPhase.Grind,
+                Type = CommandType.SetTactic,
+                Tactic = TacticType.Advance,
+                SourcePieceId = radioId ?? "player_tactic"
+            });
 
             return commands;
         }

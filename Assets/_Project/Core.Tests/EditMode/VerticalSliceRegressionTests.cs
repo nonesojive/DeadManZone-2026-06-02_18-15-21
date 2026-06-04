@@ -162,7 +162,7 @@ namespace DeadManZone.Core.Tests
             state.FightIndex = 2;
             state.Supplies = 37;
             state.Authority = 5;
-            state.SaveSchemaVersion = 3;
+            state.SaveSchemaVersion = 4;
             state.Reserves = new ReservesSnapshot
             {
                 Width = ReservesState.Width,

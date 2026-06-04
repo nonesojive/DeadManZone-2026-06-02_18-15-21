@@ -43,7 +43,7 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(RunPhase.Build, _orchestrator.State.Phase);
             Assert.AreEqual(1, _orchestrator.State.FightIndex);
             Assert.Greater(_orchestrator.State.Shop.Offers.Count, 0);
-            Assert.AreEqual(3, _orchestrator.State.SaveSchemaVersion);
+            Assert.AreEqual(4, _orchestrator.State.SaveSchemaVersion);
             Assert.AreEqual(ReservesState.Width, _orchestrator.State.Reserves.Width);
             Assert.AreEqual(ReservesState.Height, _orchestrator.State.Reserves.Height);
             Assert.IsEmpty(_orchestrator.State.Reserves.Pieces);
@@ -81,13 +81,13 @@ namespace DeadManZone.Core.Tests
             int startingSupplies = _orchestrator.State.Supplies;
 
             var board = _orchestrator.GetPlayerBoard();
-            var bunker = _database.Pieces.First(p => p.id == "command_bunker").ToCore();
-            var place = board.TryPlace(bunker, new Core.Common.GridCoord(1, 4), "bunker_1");
+            var rifle = _database.Pieces.First(p => p.id == "rifle_squad").ToCore();
+            var place = board.TryPlace(rifle, new Core.Common.GridCoord(5, 4), "rifle_1");
             Assert.IsTrue(place.Success, place.Reason);
             _orchestrator.SavePlayerBoard(board);
 
-            int refund = bunker.GoldCost / 2;
-            Assert.IsTrue(_orchestrator.TrySellPlacedPiece("bunker_1"));
+            int refund = rifle.GoldCost / 2;
+            Assert.IsTrue(_orchestrator.TrySellPlacedPiece("rifle_1"));
             Assert.AreEqual(startingSupplies + refund, _orchestrator.State.Supplies);
             Assert.IsEmpty(_orchestrator.GetPlayerBoard().Pieces);
         }
@@ -374,6 +374,58 @@ namespace DeadManZone.Core.Tests
             }
 
             return commands;
+        }
+
+        [Test]
+        public void SaveMidPause_SameCommands_ProducesIdenticalCombatLog()
+        {
+            _orchestrator.StartNewRun("iron_vanguard", runSeed: 4242);
+            var board = _orchestrator.GetPlayerBoard();
+            Assert.IsTrue(board.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(), "rifle_1").Success);
+            _orchestrator.SavePlayerBoard(board);
+
+            _orchestrator.BeginCombat();
+            var baselineLog = _orchestrator.State.Combat.EventLog.ToList();
+            _orchestrator.SavePauseDraft(TacticType.Advance, new List<GrantedAbility>());
+            _orchestrator.SaveAndExit();
+
+            var reloaded = new RunOrchestrator(_database);
+            Assert.IsTrue(reloaded.TryLoadSavedRun());
+            Assert.AreEqual(TacticType.Advance, reloaded.State.Combat.PendingSelectedTactic);
+
+            reloaded.SubmitCombatCommands(new List<PhaseCommand>
+            {
+                new PhaseCommand
+                {
+                    AfterPhase = CombatPhase.Deployment,
+                    Type = CommandType.SetTactic,
+                    Tactic = TacticType.Advance,
+                    SourcePieceId = "player_tactic"
+                }
+            });
+            reloaded.AdvanceCombat();
+
+            var fresh = new RunOrchestrator(_database);
+            fresh.StartNewRun("iron_vanguard", runSeed: 4242);
+            var freshBoard = fresh.GetPlayerBoard();
+            Assert.IsTrue(freshBoard.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(), "rifle_1").Success);
+            fresh.SavePlayerBoard(freshBoard);
+            fresh.BeginCombat();
+            fresh.SubmitCombatCommands(new List<PhaseCommand>
+            {
+                new PhaseCommand
+                {
+                    AfterPhase = CombatPhase.Deployment,
+                    Type = CommandType.SetTactic,
+                    Tactic = TacticType.Advance,
+                    SourcePieceId = "player_tactic"
+                }
+            });
+            fresh.AdvanceCombat();
+
+            Assert.AreEqual(
+                fresh.State.Combat.EventLog.Count,
+                reloaded.State.Combat.EventLog.Count);
         }
 
         private void SubmitCombatCommandsForCurrentWindow()
