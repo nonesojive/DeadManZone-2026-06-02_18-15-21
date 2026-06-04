@@ -53,7 +53,7 @@ namespace DeadManZone.Core.Tests
         public void CommandOnSpecialTile_GrantsBonusActionSlot()
         {
             var board = new BoardState(TestBoards.Layout);
-            board.TryPlace(TestPieces.CommandBunker(), new GridCoord(1, 2));
+            board.TryPlace(TestPieces.CommandBunker(), new GridCoord(1, 4));
 
             var processor = new CommandProcessor();
             Assert.That(processor.GetBonusActionSlots(board), Is.EqualTo(1));

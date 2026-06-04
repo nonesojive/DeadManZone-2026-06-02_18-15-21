@@ -15,16 +15,21 @@ namespace DeadManZone.Core.Tests
                 supportCols: TestBoards.DefaultSupportCols,
                 specialTiles: new[]
                 {
-                    new GridCoord(1, 2),
-                    new GridCoord(4, 2)
+                    new GridCoord(1, 4),
+                    new GridCoord(4, 4)
                 });
 
         [Test]
         public void CreateHorizontalZones_RearIsLeftmostColumn()
         {
-            var layout = BoardLayout.CreateHorizontalZones(9, 6, rearCols: 3, supportCols: 3, new[] { new GridCoord(1, 2) });
-            Assert.AreEqual(ZoneType.Rear, layout.GetZone(new GridCoord(0, 3)));
-            Assert.AreEqual(ZoneType.Front, layout.GetZone(new GridCoord(8, 3)));
+            var layout = BoardLayout.CreateHorizontalZones(
+                9,
+                10,
+                rearCols: 4,
+                supportCols: 3,
+                new[] { new GridCoord(1, 4) });
+            Assert.AreEqual(ZoneType.Rear, layout.GetZone(new GridCoord(0, 5)));
+            Assert.AreEqual(ZoneType.Front, layout.GetZone(new GridCoord(8, 5)));
         }
 
         [Test]
@@ -48,7 +53,7 @@ namespace DeadManZone.Core.Tests
         {
             var board = new BoardState(DefaultLayout());
             var bunker = TestPieces.CommandBunker();
-            Assert.IsTrue(board.TryPlace(bunker, new GridCoord(1, 2)).Success);
+            Assert.IsTrue(board.TryPlace(bunker, new GridCoord(1, 4)).Success);
             Assert.IsTrue(board.IsOnSpecialTile(board.Pieces.First().InstanceId));
         }
 
@@ -57,7 +62,7 @@ namespace DeadManZone.Core.Tests
         {
             var board = new BoardState(DefaultLayout());
             var bunker = TestPieces.CommandBunker();
-            var anchor = new GridCoord(1, 2);
+            var anchor = new GridCoord(1, 4);
             Assert.IsTrue(board.TryPlace(bunker, anchor, "bunker_1").Success);
 
             Assert.IsTrue(board.TryRemove("bunker_1", out var removed));
@@ -73,13 +78,13 @@ namespace DeadManZone.Core.Tests
         {
             var board = new BoardState(DefaultLayout());
             var bunker = TestPieces.CommandBunker();
-            Assert.IsTrue(board.TryPlace(bunker, new GridCoord(1, 2), "bunker_1").Success);
+            Assert.IsTrue(board.TryPlace(bunker, new GridCoord(1, 4), "bunker_1").Success);
 
-            var result = board.TryRelocate("bunker_1", new GridCoord(0, 2));
+            var result = board.TryRelocate("bunker_1", new GridCoord(0, 4));
 
             Assert.IsTrue(result.Success, result.Reason);
             Assert.AreEqual(1, board.Pieces.Count);
-            Assert.AreEqual(new GridCoord(0, 2), board.Pieces.First().Anchor);
+            Assert.AreEqual(new GridCoord(0, 4), board.Pieces.First().Anchor);
         }
 
         [Test]
@@ -87,14 +92,13 @@ namespace DeadManZone.Core.Tests
         {
             var board = new BoardState(DefaultLayout());
             var bunker = TestPieces.CommandBunker();
-            var anchor = new GridCoord(1, 2);
+            var anchor = new GridCoord(1, 4);
             Assert.IsTrue(board.TryPlace(bunker, anchor, "bunker_1").Success);
 
-            var result = board.TryRelocate("bunker_1", new GridCoord(7, 2));
+            var result = board.TryRelocate("bunker_1", new GridCoord(7, 4));
 
             Assert.IsFalse(result.Success);
             Assert.AreEqual(anchor, board.Pieces.First().Anchor);
         }
     }
 }
-

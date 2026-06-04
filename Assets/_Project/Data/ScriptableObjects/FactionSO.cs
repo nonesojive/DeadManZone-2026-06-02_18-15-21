@@ -12,14 +12,14 @@ namespace DeadManZone.Data
         public string factionId = "iron_vanguard";
         public string displayName = "Iron Vanguard";
         public int boardWidth = 9;
-        public int boardHeight = 6;
-        public int rearCols = 3;
+        public int boardHeight = 10;
+        public int rearCols = 4;
         public int supportCols = 3;
         public Vector2Int[] specialTileCoords =
         {
-            new Vector2Int(1, 2),
-            new Vector2Int(4, 2),
-            new Vector2Int(6, 2)
+            new Vector2Int(1, 4),
+            new Vector2Int(4, 4),
+            new Vector2Int(7, 4)
         };
         public int startingSupplies = 100;
         public int startingManpower = 10;
@@ -55,4 +55,3 @@ namespace DeadManZone.Data
         }
     }
 }
-

@@ -6,8 +6,8 @@ namespace DeadManZone.Core.Tests
     public static class TestBoards
     {
         public const int DefaultWidth = 9;
-        public const int DefaultHeight = 6;
-        public const int DefaultRearCols = 3;
+        public const int DefaultHeight = 10;
+        public const int DefaultRearCols = 4;
         public const int DefaultSupportCols = 3;
 
         public static BoardLayout Layout =>
@@ -16,10 +16,15 @@ namespace DeadManZone.Core.Tests
                 DefaultHeight,
                 DefaultRearCols,
                 DefaultSupportCols,
-                specialTiles: new[] { new GridCoord(1, 2), new GridCoord(4, 2) });
+                specialTiles: new[]
+                {
+                    new GridCoord(1, 4),
+                    new GridCoord(4, 4),
+                    new GridCoord(7, 4)
+                });
 
-        /// <summary>Front zone anchor for unit placement on the default horizontal layout.</summary>
-        public static GridCoord FrontLineAnchor(int y = 4) => new(6, y);
+        /// <summary>Front zone anchor for unit placement on the default horizontal layout (columns 7-8).</summary>
+        public static GridCoord FrontLineAnchor(int y = 5) => new(7, y);
 
         public static BoardState StandardPlayer()
         {

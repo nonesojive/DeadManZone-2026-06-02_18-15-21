@@ -11,16 +11,16 @@ namespace DeadManZone.Core.Tests.EditMode
         public void FromBoards_OffsetsEnemyToRightHalf()
         {
             var player = new BoardState(TestBoards.Layout);
-            player.TryPlace(TestPieces.RifleSquad(), new GridCoord(6, 2));
+            player.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor());
 
             var enemyLayout = TestBoards.Layout;
             var enemy = new BoardState(enemyLayout);
-            enemy.TryPlace(TestPieces.RifleSquad(), new GridCoord(6, 2));
+            enemy.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor());
 
             var battlefield = BattlefieldState.FromBoards(player, enemy);
             var enemyCell = battlefield.FindCell(enemy.Pieces.First().InstanceId);
 
-            Assert.AreEqual(battlefield.Layout.EnemyOriginX + 6, enemyCell.Position.X);
+            Assert.AreEqual(battlefield.Layout.EnemyOriginX + 7, enemyCell.Position.X);
         }
 
         [Test]

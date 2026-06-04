@@ -22,7 +22,7 @@ namespace DeadManZone.Core.Tests
             var board = new BoardState(faction.CreateBoardLayout());
             Place(board, database, "field_gun_nest", new GridCoord(0, 0), "gun_1");
             Place(board, database, "supply_depot", new GridCoord(2, 0), "depot_1");
-            Place(board, database, "command_bunker", new GridCoord(1, 2), "bunker_1");
+            Place(board, database, "command_bunker", new GridCoord(1, 4), "bunker_1");
             Place(board, database, "mortar_crew", new GridCoord(4, 3), "mortar_1");
             Place(board, database, "mg_team", new GridCoord(5, 4), "mg_1");
             Place(board, database, "mobile_artillery", new GridCoord(6, 3), "artillery_1");

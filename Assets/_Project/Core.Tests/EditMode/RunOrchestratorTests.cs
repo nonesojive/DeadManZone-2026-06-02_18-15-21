@@ -67,7 +67,7 @@ namespace DeadManZone.Core.Tests
 
             var board = _orchestrator.GetPlayerBoard();
             var bunker = _database.Pieces.First(p => p.id == "command_bunker").ToCore();
-            var place = board.TryPlace(bunker, new Core.Common.GridCoord(1, 2), "bunker_1");
+            var place = board.TryPlace(bunker, new Core.Common.GridCoord(1, 4), "bunker_1");
             Assert.IsTrue(place.Success, place.Reason);
             _orchestrator.SavePlayerBoard(board);
 
@@ -149,7 +149,7 @@ namespace DeadManZone.Core.Tests
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 505);
             var board = _orchestrator.GetPlayerBoard();
             var bunker = TestPieces.CommandBunker();
-            Assert.IsTrue(board.TryPlace(bunker, new Core.Common.GridCoord(1, 2), "bunker_1").Success);
+            Assert.IsTrue(board.TryPlace(bunker, new Core.Common.GridCoord(1, 4), "bunker_1").Success);
             _orchestrator.SavePlayerBoard(board);
 
             Assert.IsTrue(_orchestrator.TryMovePlacedPiece("bunker_1", new Core.Common.GridCoord(0, 2)));
@@ -166,7 +166,7 @@ namespace DeadManZone.Core.Tests
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 606);
             var board = _orchestrator.GetPlayerBoard();
             var bunker = TestPieces.CommandBunker();
-            Assert.IsTrue(board.TryPlace(bunker, new Core.Common.GridCoord(1, 2), "bunker_1").Success);
+            Assert.IsTrue(board.TryPlace(bunker, new Core.Common.GridCoord(1, 4), "bunker_1").Success);
             _orchestrator.SavePlayerBoard(board);
 
             Assert.IsTrue(_orchestrator.TryMoveBoardToBench("bunker_1", 0));
@@ -179,7 +179,7 @@ namespace DeadManZone.Core.Tests
         {
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 909);
             var board = _orchestrator.GetPlayerBoard();
-            Assert.IsTrue(board.TryPlace(TestPieces.CommandBunker(), new Core.Common.GridCoord(1, 2), "bunker_1").Success);
+            Assert.IsTrue(board.TryPlace(TestPieces.CommandBunker(), new Core.Common.GridCoord(1, 4), "bunker_1").Success);
             Assert.IsTrue(board.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(), "rifle_1").Success);
             _orchestrator.SavePlayerBoard(board);
 
