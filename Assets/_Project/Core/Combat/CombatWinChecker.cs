@@ -6,7 +6,7 @@ namespace DeadManZone.Core.Combat
 {
     public static class CombatWinChecker
     {
-        public static (bool fightOver, bool playerWon) Evaluate(
+        public static (bool fightOver, bool playerWon, bool isDraw) Evaluate(
             IReadOnlyList<CombatantState> playerCombatants,
             IReadOnlyList<CombatantState> enemyCombatants)
         {
@@ -14,21 +14,24 @@ namespace DeadManZone.Core.Combat
             bool enemyHasHq = enemyCombatants.Any(c => c.HasTag(GameTags.Hq));
 
             if (enemyHasHq && !HasLivingTag(enemyCombatants, GameTags.Hq))
-                return (true, true);
+                return (true, true, false);
 
             if (playerHasHq && !HasLivingTag(playerCombatants, GameTags.Hq))
-                return (true, false);
+                return (true, false, false);
 
             bool enemyCombatantsAlive = HasLivingTag(enemyCombatants, GameTags.Combatant);
             bool playerCombatantsAlive = HasLivingTag(playerCombatants, GameTags.Combatant);
 
+            if (!enemyCombatantsAlive && !playerCombatantsAlive)
+                return (true, true, true);
+
             if (!enemyCombatantsAlive)
-                return (true, true);
+                return (true, true, false);
 
             if (!playerCombatantsAlive)
-                return (true, false);
+                return (true, false, false);
 
-            return (false, false);
+            return (false, false, false);
         }
 
         private static bool HasLivingTag(IEnumerable<CombatantState> combatants, string tag) =>

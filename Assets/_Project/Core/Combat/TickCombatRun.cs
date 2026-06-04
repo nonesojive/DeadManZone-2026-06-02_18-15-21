@@ -27,6 +27,7 @@ namespace DeadManZone.Core.Combat
         public CombatEventLog Log => _log;
         public bool IsFightOver { get; private set; }
         public bool PlayerWon { get; private set; }
+        public bool IsDraw { get; private set; }
 
         public bool AwaitingCommand =>
             !IsFightOver &&
@@ -260,12 +261,13 @@ namespace DeadManZone.Core.Combat
 
         private bool TryEndFight()
         {
-            var (fightOver, playerWon) = CombatWinChecker.Evaluate(_playerCombatants, _enemyCombatants);
+            var (fightOver, playerWon, isDraw) = CombatWinChecker.Evaluate(_playerCombatants, _enemyCombatants);
             if (!fightOver)
                 return false;
 
             IsFightOver = true;
             PlayerWon = playerWon;
+            IsDraw = isDraw;
             return true;
         }
 
@@ -296,11 +298,19 @@ namespace DeadManZone.Core.Combat
                 Status = CombatAdvanceStatus.Completed,
                 CompletedPhase = LastCompletedPhase,
                 PlayerWon = PlayerWon,
+                IsDraw = IsDraw,
                 EventLog = _log,
                 PlayerCombatantsTotal = total,
                 PlayerCombatantsLost = lost,
                 PlayerHqDamaged = hqDamaged,
-                SurvivingPlayerCombatantIds = survivors
+                SurvivingPlayerCombatantIds = survivors,
+                BattleReport = BattleReportBuilder.Build(
+                    _playerCombatants,
+                    PlayerWon,
+                    IsDraw,
+                    manpowerRefunded: 0,
+                    suppliesEarned: 0,
+                    moraleDelta: 0)
             };
         }
 

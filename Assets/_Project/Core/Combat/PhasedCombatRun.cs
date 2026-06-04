@@ -16,6 +16,8 @@ namespace DeadManZone.Core.Combat
         public CombatAdvanceStatus Status { get; init; }
         public CombatPhase CompletedPhase { get; init; }
         public bool PlayerWon { get; init; }
+        public bool IsDraw { get; init; }
+        public BattleReport BattleReport { get; init; }
         public CombatEventLog EventLog { get; init; }
         public int PlayerCombatantsTotal { get; init; }
         public int PlayerCombatantsLost { get; init; }

@@ -48,6 +48,7 @@ namespace DeadManZone.Core.Run
         public string FrozenOfferId { get; set; }
         public ShopOfferRecord LockedOffer { get; set; }
         public CombatSaveState Combat { get; set; }
+        public BattleReport LastBattleReport { get; set; }
 
         public static RunState CreateNew(
             string factionId,
