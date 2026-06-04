@@ -100,5 +100,27 @@ namespace DeadManZone.Core.Tests
             Assert.IsFalse(result.Success);
             Assert.AreEqual(anchor, board.Pieces.First().Anchor);
         }
+
+        [Test]
+        public void CanPlace_R90UnitOccupiesRotatedCells()
+        {
+            var board = new BoardState(DefaultLayout());
+            var unit = new PieceDefinition
+            {
+                Id = "wide_unit",
+                DisplayName = "Wide Unit",
+                Category = PieceCategory.Unit,
+                Shape = new PieceShape(new[] { new GridCoord(0, 0), new GridCoord(1, 0) }),
+                MaxHp = 10
+            };
+            var anchor = TestBoards.FrontLineAnchor();
+
+            Assert.IsTrue(board.TryPlace(unit, anchor, "unit_1", PieceRotation.R90).Success);
+            Assert.AreEqual(PieceRotation.R90, board.Pieces.First().Rotation);
+
+            Assert.IsFalse(board.CanPlace(unit, anchor));
+            Assert.IsFalse(board.CanPlace(unit, new GridCoord(anchor.X, anchor.Y + 1)));
+            Assert.IsTrue(board.CanPlace(unit, new GridCoord(anchor.X, anchor.Y - 1)));
+        }
     }
 }

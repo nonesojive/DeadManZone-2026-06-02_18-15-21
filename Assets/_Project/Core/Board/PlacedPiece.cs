@@ -7,5 +7,6 @@ namespace DeadManZone.Core.Board
         public string InstanceId { get; init; }
         public PieceDefinition Definition { get; init; }
         public GridCoord Anchor { get; init; }
+        public PieceRotation Rotation { get; init; } = PieceRotation.R0;
     }
 }

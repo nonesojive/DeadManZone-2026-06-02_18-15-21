@@ -12,6 +12,7 @@ namespace DeadManZone.Core.Run
         public string PieceId { get; set; }
         public int AnchorX { get; set; }
         public int AnchorY { get; set; }
+        public int RotationDegrees { get; set; }
     }
 
     public sealed class BoardSnapshot
@@ -53,7 +54,8 @@ namespace DeadManZone.Core.Run
                     InstanceId = p.InstanceId,
                     PieceId = p.Definition.Id,
                     AnchorX = p.Anchor.X,
-                    AnchorY = p.Anchor.Y
+                    AnchorY = p.Anchor.Y,
+                    RotationDegrees = (int)p.Rotation
                 }).ToList()
             };
             return snapshot;
@@ -83,10 +85,12 @@ namespace DeadManZone.Core.Run
             foreach (var record in snapshot.Pieces.OrderBy(p => p.InstanceId))
             {
                 var definition = registry.GetById(record.PieceId);
+                var rotation = RotationFromDegrees(record.RotationDegrees);
                 var result = board.TryPlace(
                     definition,
                     new GridCoord(record.AnchorX, record.AnchorY),
-                    record.InstanceId);
+                    record.InstanceId,
+                    rotation);
                 if (!result.Success)
                     throw new System.InvalidOperationException(
                         $"Failed to restore '{record.PieceId}' at ({record.AnchorX},{record.AnchorY}): {result.Reason}");
@@ -94,5 +98,14 @@ namespace DeadManZone.Core.Run
 
             return board;
         }
+
+        private static PieceRotation RotationFromDegrees(int degrees) =>
+            degrees switch
+            {
+                90 => PieceRotation.R90,
+                180 => PieceRotation.R180,
+                270 => PieceRotation.R270,
+                _ => PieceRotation.R0
+            };
     }
 }

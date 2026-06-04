@@ -19,14 +19,14 @@ namespace DeadManZone.Core.Board
 
             foreach (var piece in pieceList)
             {
-                foreach (var cell in piece.Definition.Shape.GetCells(piece.Anchor))
+                foreach (var cell in piece.Definition.Shape.GetCells(piece.Anchor, piece.Rotation))
                     cellOwners[cell] = piece.InstanceId;
             }
 
             var seen = new HashSet<string>();
             foreach (var piece in pieceList)
             {
-                foreach (var cell in piece.Definition.Shape.GetCells(piece.Anchor))
+                foreach (var cell in piece.Definition.Shape.GetCells(piece.Anchor, piece.Rotation))
                 {
                     foreach (var offset in OrthogonalOffsets)
                     {

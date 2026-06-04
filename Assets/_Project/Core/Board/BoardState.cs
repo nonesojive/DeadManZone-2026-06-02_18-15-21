@@ -22,9 +22,9 @@ namespace DeadManZone.Core.Board
 
         public IReadOnlyCollection<PlacedPiece> Pieces => _pieces.Values;
 
-        public bool CanPlace(PieceDefinition definition, GridCoord anchor)
+        public bool CanPlace(PieceDefinition definition, GridCoord anchor, PieceRotation rotation = PieceRotation.R0)
         {
-            foreach (var cell in definition.Shape.GetCells(anchor))
+            foreach (var cell in definition.Shape.GetCells(anchor, rotation))
             {
                 if (cell.X < 0 || cell.Y < 0 || cell.X >= Layout.Width || cell.Y >= Layout.Height)
                     return false;
@@ -39,11 +39,15 @@ namespace DeadManZone.Core.Board
             return true;
         }
 
-        public PlacementResult TryPlace(PieceDefinition definition, GridCoord anchor, string instanceId = null)
+        public PlacementResult TryPlace(
+            PieceDefinition definition,
+            GridCoord anchor,
+            string instanceId = null,
+            PieceRotation rotation = PieceRotation.R0)
         {
             instanceId ??= Guid.NewGuid().ToString("N");
 
-            foreach (var cell in definition.Shape.GetCells(anchor))
+            foreach (var cell in definition.Shape.GetCells(anchor, rotation))
             {
                 if (cell.X < 0 || cell.Y < 0 || cell.X >= Layout.Width || cell.Y >= Layout.Height)
                     return new PlacementResult { Success = false, Reason = "Out of bounds" };
@@ -55,14 +59,15 @@ namespace DeadManZone.Core.Board
                     return new PlacementResult { Success = false, Reason = "Invalid zone for category" };
             }
 
-            foreach (var cell in definition.Shape.GetCells(anchor))
+            foreach (var cell in definition.Shape.GetCells(anchor, rotation))
                 _occupied.Add(cell);
 
             _pieces[instanceId] = new PlacedPiece
             {
                 InstanceId = instanceId,
                 Definition = definition,
-                Anchor = anchor
+                Anchor = anchor,
+                Rotation = rotation
             };
 
             return new PlacementResult { Success = true };
@@ -73,7 +78,7 @@ namespace DeadManZone.Core.Board
             if (!_pieces.TryGetValue(instanceId, out var piece))
                 return false;
 
-            return piece.Definition.Shape.GetCells(piece.Anchor)
+            return piece.Definition.Shape.GetCells(piece.Anchor, piece.Rotation)
                 .Any(cell => Layout.IsSpecialTile(cell));
         }
 
@@ -87,7 +92,7 @@ namespace DeadManZone.Core.Board
             if (!_pieces.TryGetValue(instanceId, out removedPiece))
                 return false;
 
-            foreach (var cell in removedPiece.Definition.Shape.GetCells(removedPiece.Anchor))
+            foreach (var cell in removedPiece.Definition.Shape.GetCells(removedPiece.Anchor, removedPiece.Rotation))
                 _occupied.Remove(cell);
 
             _pieces.Remove(instanceId);
@@ -105,13 +110,13 @@ namespace DeadManZone.Core.Board
             if (!TryRemove(instanceId, out var removed))
                 return new PlacementResult { Success = false, Reason = "Piece not found" };
 
-            if (!CanPlace(removed.Definition, newAnchor))
+            if (!CanPlace(removed.Definition, newAnchor, removed.Rotation))
             {
-                TryPlace(removed.Definition, removed.Anchor, removed.InstanceId);
+                TryPlace(removed.Definition, removed.Anchor, removed.InstanceId, removed.Rotation);
                 return new PlacementResult { Success = false, Reason = "Invalid placement" };
             }
 
-            return TryPlace(removed.Definition, newAnchor, removed.InstanceId);
+            return TryPlace(removed.Definition, newAnchor, removed.InstanceId, removed.Rotation);
         }
 
         private static bool IsCategoryAllowed(PieceCategory category, ZoneType zone) =>
