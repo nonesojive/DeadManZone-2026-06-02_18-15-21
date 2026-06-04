@@ -18,10 +18,9 @@ namespace DeadManZone.Presentation.Run
             int rerollCost = RunOrchestrator.BaseRerollCost + state.RerollCountThisRound;
             string gateLine = string.IsNullOrEmpty(battleGateMessage) ? "" : $"\n{battleGateMessage}";
             statusText.text =
-                $"Fight {state.FightIndex} / {RunOrchestrator.MaxFights}\n" +
-                $"Phase: {state.Phase}{gateLine}\n" +
-                $"Supplies: {state.Supplies}   Manpower: {state.Manpower}   " +
-                $"Authority: {state.Authority}   Morale: {state.Morale}   Reroll: {rerollCost}S";
+                $"Fight {state.FightIndex}/{RunOrchestrator.MaxFights} · {state.Phase}{gateLine}\n" +
+                $"Supplies {state.Supplies} · Manpower {state.Manpower} · " +
+                $"Authority {state.Authority} · Morale {state.Morale} · Reroll {rerollCost}g";
         }
 
         public void ApplyTheme(UiThemeSO theme)

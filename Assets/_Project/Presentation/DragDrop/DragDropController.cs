@@ -34,7 +34,7 @@ namespace DeadManZone.Presentation.DragDrop
             if (_activePayload == null)
                 return;
 
-            if (Input.GetKeyDown(KeyCode.R))
+            if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.R))
                 ApplyRotation(PieceRotationUtil.RotateClockwise(_activePayload.Rotation));
             else if (Input.GetKeyDown(KeyCode.Q))
                 ApplyRotation(PieceRotationUtil.RotateCounterClockwise(_activePayload.Rotation));
@@ -53,8 +53,8 @@ namespace DeadManZone.Presentation.DragDrop
             _ghost = DragGhost.Create(
                 canvasTransform,
                 payload.PieceId ?? payload.Offer?.PieceId ?? "piece",
-                payload.Definition);
-            _ghost.SetRotation(payload.Rotation);
+                payload.Definition,
+                payload.Rotation);
             FollowPointer(eventData);
         }
 

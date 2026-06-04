@@ -234,7 +234,14 @@ namespace DeadManZone.Presentation.Editor
 
         private static GameObject CreateCanvas(string name)
         {
-            var go = new GameObject(name);
+            var go = new GameObject(name, typeof(RectTransform));
+            var rect = go.GetComponent<RectTransform>();
+            rect.localScale = Vector3.one;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.zero;
+            rect.pivot = Vector2.zero;
+            rect.sizeDelta = Vector2.zero;
+
             var canvas = go.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             var scaler = go.AddComponent<CanvasScaler>();

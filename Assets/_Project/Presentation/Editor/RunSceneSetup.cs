@@ -41,9 +41,16 @@ namespace DeadManZone.Presentation.Editor
 
             var hud = topBar.AddComponent<RunHudView>();
             var statusBlock = MenuSceneSetup.CreateLabelPublic(
-                topBar.transform, "", 18, FontStyles.Bold,
-                new Vector2(0.02f, 0.5f), new Vector2(520f, 72f));
+                topBar.transform, "", 16, FontStyles.Bold,
+                new Vector2(0.02f, 0.5f), new Vector2(400f, 72f));
             statusBlock.alignment = TextAlignmentOptions.TopLeft;
+            statusBlock.enableWordWrapping = true;
+            var statusRect = statusBlock.rectTransform;
+            statusRect.anchorMin = new Vector2(0.012f, 0f);
+            statusRect.anchorMax = new Vector2(0.58f, 1f);
+            statusRect.pivot = new Vector2(0f, 0.5f);
+            statusRect.offsetMin = Vector2.zero;
+            statusRect.offsetMax = Vector2.zero;
             UiThemeSceneStyling.StyleLabel(statusBlock, theme);
             var hudSerialized = new SerializedObject(hud);
             hudSerialized.FindProperty("statusText").objectReferenceValue = statusBlock;
@@ -143,6 +150,10 @@ namespace DeadManZone.Presentation.Editor
             grid.cellSize = new Vector2(48, 48);
             grid.spacing = new Vector2(3, 3);
             grid.padding = new RectOffset(4, 4, 4, 4);
+
+            const int boardHeight = 10;
+            var gridFitter = gridRoot.AddComponent<GridLayoutCellFitter>();
+            gridFitter.Configure(boardWidth, boardHeight);
 
             CreateZoneColorStrip(parent, theme, gridLeft, gridRight, rearCols, supportCols, boardWidth);
 
@@ -401,6 +412,9 @@ namespace DeadManZone.Presentation.Editor
             grid.cellSize = new Vector2(44f, 44f);
             grid.spacing = new Vector2(3f, 3f);
             grid.padding = new RectOffset(4, 4, 4, 4);
+
+            var reservesFitter = gridRoot.AddComponent<GridLayoutCellFitter>();
+            reservesFitter.Configure(ReservesState.Width, ReservesState.Height);
 
             var tilePrefab = CreateReservesTilePrefab(theme);
             tilePrefab.transform.SetParent(reservesRegion.transform, false);

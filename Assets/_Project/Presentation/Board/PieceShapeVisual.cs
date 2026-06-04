@@ -1,0 +1,141 @@
+using System.Collections.Generic;
+using System.Linq;
+using DeadManZone.Core.Board;
+using DeadManZone.Core.Common;
+using DeadManZone.Data;
+using DeadManZone.Presentation.Visual;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace DeadManZone.Presentation.Board
+{
+    /// <summary>
+    /// Renders a multi-cell piece footprint with per-cell fills and a centered label.
+    /// </summary>
+    public sealed class PieceShapeVisual : MonoBehaviour
+    {
+        public static PieceShapeVisual Create(
+            RectTransform overlay,
+            GridLayoutGroup grid,
+            IReadOnlyList<GridCoord> cells,
+            PieceDefinition definition,
+            PieceDefinitionSO source)
+        {
+            if (overlay == null || grid == null || cells == null || cells.Count == 0 || definition == null)
+                return null;
+
+            var theme = UiThemeProvider.Current;
+            var tint = source != null && source.categoryTint.a > 0.01f
+                ? source.categoryTint
+                : theme.GetCategoryTint(definition.Category);
+
+            var footprint = ComputeFootprint(overlay, grid, cells);
+            if (footprint.size.sqrMagnitude < 1f)
+                return null;
+
+            var root = new GameObject("PieceShape", typeof(RectTransform));
+            root.transform.SetParent(overlay, false);
+            var rootRect = root.GetComponent<RectTransform>();
+
+            rootRect.pivot = new Vector2(0.5f, 0.5f);
+            rootRect.anchorMin = new Vector2(0.5f, 0.5f);
+            rootRect.anchorMax = new Vector2(0.5f, 0.5f);
+            rootRect.sizeDelta = footprint.size;
+            rootRect.localPosition = footprint.center;
+            rootRect.localEulerAngles = Vector3.zero;
+
+            float cellW = grid.cellSize.x;
+            float cellH = grid.cellSize.y;
+
+            foreach (var cell in cells)
+            {
+                var cellCenter = CellCenterInOverlay(overlay, grid, cell);
+                var block = new GameObject("Cell", typeof(RectTransform));
+                block.transform.SetParent(root.transform, false);
+                var blockRect = block.GetComponent<RectTransform>();
+                blockRect.pivot = new Vector2(0.5f, 0.5f);
+                blockRect.anchorMin = new Vector2(0.5f, 0.5f);
+                blockRect.anchorMax = new Vector2(0.5f, 0.5f);
+                blockRect.sizeDelta = new Vector2(cellW - 2f, cellH - 2f);
+                blockRect.localPosition = cellCenter - footprint.center;
+
+                var image = block.AddComponent<Image>();
+                image.color = Color.Lerp(tint, Color.white, 0.15f);
+                image.raycastTarget = false;
+
+                var outline = block.AddComponent<Outline>();
+                outline.effectColor = new Color(0f, 0f, 0f, 0.55f);
+                outline.effectDistance = new Vector2(1f, -1f);
+            }
+
+            var labelGo = new GameObject("Label", typeof(RectTransform));
+            labelGo.transform.SetParent(root.transform, false);
+            var labelRect = labelGo.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = new Vector2(2f, 2f);
+            labelRect.offsetMax = new Vector2(-2f, -2f);
+
+            var label = labelGo.AddComponent<TextMeshProUGUI>();
+            label.text = GetShortName(definition);
+            label.fontSize = Mathf.Clamp(Mathf.RoundToInt(Mathf.Min(footprint.size.x, footprint.size.y) * 0.22f), 9, 14);
+            label.alignment = TextAlignmentOptions.Center;
+            label.color = theme.textPrimary;
+            label.raycastTarget = false;
+            label.textWrappingMode = TextWrappingModes.Normal;
+
+            return root.AddComponent<PieceShapeVisual>();
+        }
+
+        private static (Vector2 center, Vector2 size) ComputeFootprint(
+            RectTransform overlay,
+            GridLayoutGroup grid,
+            IReadOnlyList<GridCoord> cells)
+        {
+            float minX = float.MaxValue;
+            float maxX = float.MinValue;
+            float minY = float.MaxValue;
+            float maxY = float.MinValue;
+            float halfW = grid.cellSize.x * 0.5f;
+            float halfH = grid.cellSize.y * 0.5f;
+
+            foreach (var cell in cells)
+            {
+                var cellCenter = CellCenterInOverlay(overlay, grid, cell);
+                minX = Mathf.Min(minX, cellCenter.x - halfW);
+                maxX = Mathf.Max(maxX, cellCenter.x + halfW);
+                minY = Mathf.Min(minY, cellCenter.y - halfH);
+                maxY = Mathf.Max(maxY, cellCenter.y + halfH);
+            }
+
+            var size = new Vector2(maxX - minX, maxY - minY);
+            var center = new Vector2((minX + maxX) * 0.5f, (minY + maxY) * 0.5f);
+            return (center, size);
+        }
+
+        /// <summary>
+        /// Center of a grid cell in overlay local space (overlay must match the TileGrid rect).
+        /// </summary>
+        internal static Vector2 CellCenterInOverlay(RectTransform overlay, GridLayoutGroup grid, GridCoord cell)
+        {
+            float strideX = grid.cellSize.x + grid.spacing.x;
+            float strideY = grid.cellSize.y + grid.spacing.y;
+            float left = -overlay.rect.width * overlay.pivot.x + grid.padding.left;
+            float top = overlay.rect.height * (1f - overlay.pivot.y) - grid.padding.top;
+
+            float x = left + cell.X * strideX + grid.cellSize.x * 0.5f;
+            float y = top - cell.Y * strideY - grid.cellSize.y * 0.5f;
+            return new Vector2(x, y);
+        }
+
+        private static string GetShortName(PieceDefinition definition)
+        {
+            if (!string.IsNullOrEmpty(definition.DisplayName))
+                return definition.DisplayName;
+
+            var id = definition.Id ?? string.Empty;
+            return id.Length <= 14 ? id : id.Substring(0, 12) + "…";
+        }
+    }
+}

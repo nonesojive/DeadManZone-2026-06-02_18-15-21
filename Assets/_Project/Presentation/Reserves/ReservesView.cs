@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Data;
@@ -19,7 +20,8 @@ namespace DeadManZone.Presentation.Reserves
         [SerializeField] private UiThemeSO theme;
 
         private readonly Dictionary<GridCoord, ReservesTileView> _tiles = new();
-        private readonly Dictionary<string, PieceChipView> _chipsByInstance = new();
+        private readonly Dictionary<string, PieceShapeVisual> _shapeVisualsByInstance = new();
+        private RectTransform _piecesOverlay;
         private ContentDatabase _database;
 
         private void Awake() => _database = ContentDatabase.Load();
@@ -54,6 +56,11 @@ namespace DeadManZone.Presentation.Reserves
             ClearOccupancy();
             ClearChips();
 
+            if (_piecesOverlay == null || gridLayout == null)
+                EnsurePiecesOverlay();
+
+            Canvas.ForceUpdateCanvases();
+
             foreach (var piece in reserves.Pieces)
             {
                 foreach (var cell in piece.Definition.Shape.GetCells(piece.Anchor, piece.Rotation))
@@ -62,25 +69,64 @@ namespace DeadManZone.Presentation.Reserves
                         tile.SetOccupied(piece.InstanceId, true);
                 }
 
-                if (_tiles.TryGetValue(piece.Anchor, out var anchorTile))
-                {
-                    var drag = anchorTile.GetComponent<ReservesPieceDragSource>();
-                    if (drag == null)
-                        drag = anchorTile.gameObject.AddComponent<ReservesPieceDragSource>();
-                    drag.Configure(
-                        piece.InstanceId,
-                        piece.Definition.Id,
-                        piece.Anchor,
-                        piece.Definition,
-                        piece.Rotation);
+                if (!_tiles.TryGetValue(piece.Anchor, out var anchorTile))
+                    continue;
 
-                    var chip = PieceChipView.Create(
-                        anchorTile.transform,
-                        piece.Definition,
-                        PieceVisualLookup.GetSource(piece.Definition.Id));
-                    _chipsByInstance[piece.InstanceId] = chip;
-                }
+                var drag = anchorTile.GetComponent<ReservesPieceDragSource>();
+                if (drag == null)
+                    drag = anchorTile.gameObject.AddComponent<ReservesPieceDragSource>();
+                drag.Configure(
+                    piece.InstanceId,
+                    piece.Definition.Id,
+                    piece.Anchor,
+                    piece.Definition,
+                    piece.Rotation);
+
+                var shapeCells = piece.Definition.Shape
+                    .GetCells(piece.Anchor, piece.Rotation)
+                    .ToList();
+
+                var shapeVisual = PieceShapeVisual.Create(
+                    _piecesOverlay,
+                    gridLayout,
+                    shapeCells,
+                    piece.Definition,
+                    PieceVisualLookup.GetSource(piece.Definition.Id));
+                if (shapeVisual != null)
+                    _shapeVisualsByInstance[piece.InstanceId] = shapeVisual;
             }
+        }
+
+        private void EnsurePiecesOverlay()
+        {
+            if (tileRoot == null || gridLayout == null)
+                return;
+
+            for (int i = tileRoot.childCount - 1; i >= 0; i--)
+            {
+                var child = tileRoot.GetChild(i);
+                if (child.name == "PiecesOverlay")
+                    Destroy(child.gameObject);
+            }
+
+            if (_piecesOverlay != null)
+                return;
+
+            var gridRect = gridLayout.GetComponent<RectTransform>();
+            var parent = gridRect.parent;
+
+            var overlayGo = new GameObject("PiecesOverlay", typeof(RectTransform));
+            overlayGo.transform.SetParent(parent, false);
+            overlayGo.transform.SetSiblingIndex(gridRect.GetSiblingIndex() + 1);
+
+            _piecesOverlay = overlayGo.GetComponent<RectTransform>();
+            _piecesOverlay.anchorMin = gridRect.anchorMin;
+            _piecesOverlay.anchorMax = gridRect.anchorMax;
+            _piecesOverlay.pivot = gridRect.pivot;
+            _piecesOverlay.anchoredPosition = gridRect.anchoredPosition;
+            _piecesOverlay.sizeDelta = gridRect.sizeDelta;
+            _piecesOverlay.offsetMin = gridRect.offsetMin;
+            _piecesOverlay.offsetMax = gridRect.offsetMax;
         }
 
         public bool TryRelocatePiece(string instanceId, GridCoord anchor, PieceRotation rotation)
@@ -110,7 +156,13 @@ namespace DeadManZone.Presentation.Reserves
                 return;
 
             if (gridLayout != null)
+            {
                 gridLayout.constraintCount = ReservesState.Width;
+                var fitter = gridLayout.GetComponent<GridLayoutCellFitter>();
+                if (fitter == null)
+                    fitter = gridLayout.gameObject.AddComponent<GridLayoutCellFitter>();
+                fitter.Configure(ReservesState.Width, ReservesState.Height);
+            }
 
             for (int y = 0; y < ReservesState.Height; y++)
             {
@@ -130,6 +182,9 @@ namespace DeadManZone.Presentation.Reserves
                     _tiles[coord] = tileView;
                 }
             }
+
+            EnsurePiecesOverlay();
+            Canvas.ForceUpdateCanvases();
         }
 
         private void ClearOccupancy()
@@ -140,13 +195,13 @@ namespace DeadManZone.Presentation.Reserves
 
         private void ClearChips()
         {
-            foreach (var chip in _chipsByInstance.Values)
+            foreach (var visual in _shapeVisualsByInstance.Values)
             {
-                if (chip != null)
-                    Destroy(chip.gameObject);
+                if (visual != null)
+                    Destroy(visual.gameObject);
             }
 
-            _chipsByInstance.Clear();
+            _shapeVisualsByInstance.Clear();
         }
 
         private UiThemeSO Theme => theme != null ? theme : UiThemeProvider.Current;

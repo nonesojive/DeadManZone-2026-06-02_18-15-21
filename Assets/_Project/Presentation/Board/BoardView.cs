@@ -25,7 +25,8 @@ namespace DeadManZone.Presentation.Board
         [SerializeField] private UiThemeSO theme;
 
         private readonly Dictionary<GridCoord, BoardTileView> _tiles = new();
-        private readonly Dictionary<string, PieceChipView> _chipsByInstance = new();
+        private readonly Dictionary<string, PieceShapeVisual> _shapeVisualsByInstance = new();
+        private RectTransform _piecesOverlay;
         private BoardLayout _layout;
         private BoardState _boardState;
         private PieceDefinition _selectedPiece;
@@ -45,7 +46,13 @@ namespace DeadManZone.Presentation.Board
                 throw new InvalidOperationException("BoardView requires tileRoot and tilePrefab.");
 
             if (gridLayout != null)
+            {
                 gridLayout.constraintCount = layout.Width;
+                var fitter = gridLayout.GetComponent<GridLayoutCellFitter>();
+                if (fitter == null)
+                    fitter = gridLayout.gameObject.AddComponent<GridLayoutCellFitter>();
+                fitter.Configure(layout.Width, layout.Height);
+            }
 
             for (int y = 0; y < layout.Height; y++)
             {
@@ -72,6 +79,9 @@ namespace DeadManZone.Presentation.Board
                     _tiles[coord] = tileView;
                 }
             }
+
+            EnsurePiecesOverlay();
+            Canvas.ForceUpdateCanvases();
         }
 
         public bool TryPlaceFromReserves(string instanceId, GridCoord anchor, PieceRotation rotation)
@@ -316,6 +326,11 @@ namespace DeadManZone.Presentation.Board
             if (_boardState == null)
                 return;
 
+            if (_piecesOverlay == null || gridLayout == null)
+                EnsurePiecesOverlay();
+
+            Canvas.ForceUpdateCanvases();
+
             foreach (var piece in _boardState.Pieces)
             {
                 foreach (var cell in piece.Definition.Shape.GetCells(piece.Anchor, piece.Rotation))
@@ -324,34 +339,84 @@ namespace DeadManZone.Presentation.Board
                         tile.SetOccupied(piece.InstanceId, true);
                 }
 
-                if (_tiles.TryGetValue(piece.Anchor, out var anchorTile))
-                {
-                    var drag = anchorTile.GetComponent<BoardPieceDragSource>();
-                    if (drag == null)
-                        drag = anchorTile.gameObject.AddComponent<BoardPieceDragSource>();
-                    drag.Configure(
-                        piece.InstanceId,
-                        piece.Definition.Id,
-                        piece.Anchor,
-                        piece.Definition,
-                        piece.Rotation);
+                if (!_tiles.TryGetValue(piece.Anchor, out var anchorTile))
+                    continue;
 
-                    var source = PieceVisualLookup.GetSource(piece.Definition.Id);
-                    var chip = PieceChipView.Create(anchorTile.transform, piece.Definition, source);
-                    _chipsByInstance[piece.InstanceId] = chip;
-                }
+                var drag = anchorTile.GetComponent<BoardPieceDragSource>();
+                if (drag == null)
+                    drag = anchorTile.gameObject.AddComponent<BoardPieceDragSource>();
+                drag.Configure(
+                    piece.InstanceId,
+                    piece.Definition.Id,
+                    piece.Anchor,
+                    piece.Definition,
+                    piece.Rotation);
+
+                var shapeCells = piece.Definition.Shape
+                    .GetCells(piece.Anchor, piece.Rotation)
+                    .ToList();
+
+                var source = PieceVisualLookup.GetSource(piece.Definition.Id);
+                var shapeVisual = PieceShapeVisual.Create(
+                    _piecesOverlay,
+                    gridLayout,
+                    shapeCells,
+                    piece.Definition,
+                    source);
+                if (shapeVisual != null)
+                    _shapeVisualsByInstance[piece.InstanceId] = shapeVisual;
+            }
+        }
+
+        private void EnsurePiecesOverlay()
+        {
+            if (tileRoot == null || gridLayout == null)
+                return;
+
+            RemoveStrayOverlayChildrenFromGrid();
+
+            if (_piecesOverlay != null)
+                return;
+
+            var gridRect = gridLayout.GetComponent<RectTransform>();
+            var parent = gridRect.parent;
+
+            var overlayGo = new GameObject("PiecesOverlay", typeof(RectTransform));
+            overlayGo.transform.SetParent(parent, false);
+            overlayGo.transform.SetSiblingIndex(gridRect.GetSiblingIndex() + 1);
+
+            _piecesOverlay = overlayGo.GetComponent<RectTransform>();
+            _piecesOverlay.anchorMin = gridRect.anchorMin;
+            _piecesOverlay.anchorMax = gridRect.anchorMax;
+            _piecesOverlay.pivot = gridRect.pivot;
+            _piecesOverlay.anchoredPosition = gridRect.anchoredPosition;
+            _piecesOverlay.sizeDelta = gridRect.sizeDelta;
+            _piecesOverlay.offsetMin = gridRect.offsetMin;
+            _piecesOverlay.offsetMax = gridRect.offsetMax;
+        }
+
+        private void RemoveStrayOverlayChildrenFromGrid()
+        {
+            if (tileRoot == null)
+                return;
+
+            for (int i = tileRoot.childCount - 1; i >= 0; i--)
+            {
+                var child = tileRoot.GetChild(i);
+                if (child.name == "PiecesOverlay")
+                    Destroy(child.gameObject);
             }
         }
 
         private void ClearPieceChips()
         {
-            foreach (var chip in _chipsByInstance.Values)
+            foreach (var visual in _shapeVisualsByInstance.Values)
             {
-                if (chip != null)
-                    Destroy(chip.gameObject);
+                if (visual != null)
+                    Destroy(visual.gameObject);
             }
 
-            _chipsByInstance.Clear();
+            _shapeVisualsByInstance.Clear();
         }
 
         public void InitializeForTests(
@@ -389,6 +454,13 @@ namespace DeadManZone.Presentation.Board
 
         private void ClearTiles()
         {
+            ClearPieceChips();
+            if (_piecesOverlay != null)
+            {
+                Destroy(_piecesOverlay.gameObject);
+                _piecesOverlay = null;
+            }
+
             if (tileRoot == null)
                 return;
 
