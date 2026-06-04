@@ -18,6 +18,9 @@ namespace DeadManZone.Core.Combat
         public int CurrentHp { get; set; }
         public int CooldownRemaining { get; set; }
         public int DamageBonus { get; set; }
+        public int ArmorBuffSteps { get; set; }
+        public int DamageDealtThisFight { get; set; }
+        public int DamageTakenThisFight { get; set; }
         public GridCoord Position { get; set; }
         public bool IsAlive => CurrentHp > 0;
 

@@ -190,8 +190,15 @@ namespace DeadManZone.Core.Combat
                 if (target == null)
                     continue;
 
-                int damage = System.Math.Max(1, (int)((actor.Definition.BaseDamage + actor.DamageBonus + damageBuff) * damageScale));
+                int damage = CombatDamageResolver.ComputeDamage(
+                    actor.Definition,
+                    target.Definition,
+                    damageScale,
+                    target.ArmorBuffSteps,
+                    actor.DamageBonus + damageBuff);
                 target.CurrentHp -= damage;
+                actor.DamageDealtThisFight += damage;
+                target.DamageTakenThisFight += damage;
                 _log.Append(phase, SegmentTick, actor.InstanceId, "damage", target.InstanceId, damage);
                 actor.CooldownRemaining = System.Math.Max(1, actor.Definition.CooldownTicks);
             }
