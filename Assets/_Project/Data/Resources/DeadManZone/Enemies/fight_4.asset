@@ -13,12 +13,15 @@ MonoBehaviour:
   m_Name: fight_4
   m_EditorClassIdentifier: 
   fightNumber: 4
-  displayName: Gas And Armor
-  previewTag: Gas
+  displayName: Mixed Skirmish
+  previewTag: Infantry
   placements:
-  - piece: {fileID: 11400000, guid: 883084d63818b85489e6c240250415b2, type: 2}
+  - piece: {fileID: 11400000, guid: a09195287ae98b44490baf1a5d3e1a68, type: 2}
     anchor: {x: 7, y: 4}
-    instanceId: 
-  - piece: {fileID: 11400000, guid: 05c51c0c32d885f4c8f973aea0e45007, type: 2}
+    instanceId: enemy_hq
+  - piece: {fileID: 11400000, guid: 8937bdc205c84fd4caaf1320ece884bd, type: 2}
     anchor: {x: 5, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
+    anchor: {x: 4, y: 4}
     instanceId: 

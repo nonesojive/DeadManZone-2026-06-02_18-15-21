@@ -13,12 +13,18 @@ MonoBehaviour:
   m_Name: fight_3
   m_EditorClassIdentifier: 
   fightNumber: 3
-  displayName: Artillery Barrage
-  previewTag: Artillery
+  displayName: Field Support
+  previewTag: Support
   placements:
-  - piece: {fileID: 11400000, guid: 61e2d02cbaaf6dd4db3db70d5a5a6366, type: 2}
-    anchor: {x: 0, y: 0}
+  - piece: {fileID: 11400000, guid: a09195287ae98b44490baf1a5d3e1a68, type: 2}
+    anchor: {x: 7, y: 4}
+    instanceId: enemy_hq
+  - piece: {fileID: 11400000, guid: f3a4b5c6d7e8498899aabbccddeeff03, type: 2}
+    anchor: {x: 5, y: 4}
     instanceId: 
-  - piece: {fileID: 11400000, guid: 6c7be0ff1715a3a4782b4b7c98c059f9, type: 2}
-    anchor: {x: 6, y: 3}
+  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
+    anchor: {x: 4, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: f2a3b4c5d6e7488899aabbccddeeff02, type: 2}
+    anchor: {x: 6, y: 2}
     instanceId: 

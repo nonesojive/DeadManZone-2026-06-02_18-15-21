@@ -13,12 +13,15 @@ MonoBehaviour:
   m_Name: fight_1
   m_EditorClassIdentifier: 
   fightNumber: 1
-  displayName: Rifle Line
+  displayName: Conscript Line
   previewTag: Infantry
   placements:
-  - piece: {fileID: 11400000, guid: 8937bdc205c84fd4caaf1320ece884bd, type: 2}
+  - piece: {fileID: 11400000, guid: a09195287ae98b44490baf1a5d3e1a68, type: 2}
+    anchor: {x: 7, y: 4}
+    instanceId: enemy_hq
+  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
     anchor: {x: 6, y: 4}
     instanceId: 
-  - piece: {fileID: 11400000, guid: 8937bdc205c84fd4caaf1320ece884bd, type: 2}
-    anchor: {x: 8, y: 4}
+  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
+    anchor: {x: 4, y: 4}
     instanceId: 
