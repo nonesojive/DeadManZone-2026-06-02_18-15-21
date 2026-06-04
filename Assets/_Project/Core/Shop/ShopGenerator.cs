@@ -134,8 +134,8 @@ namespace DeadManZone.Core.Shop
                     break;
 
                 int index = rng.NextInt(0, available.Count);
-                var piece = available[index];
-                available.RemoveAt(index);
+                var piece = ShopPoolFilter.PickWeighted(available, round, rng) ?? available[index];
+                available.RemoveAll(p => p.Id == piece.Id);
                 results.Add(CreateOffer(lane, piece, modifiers, rng, round, i));
             }
 
