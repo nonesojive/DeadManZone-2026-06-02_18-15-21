@@ -23,7 +23,7 @@ namespace DeadManZone.Presentation.Shop
         private bool _isLocked;
 
         public string OfferId => _offer?.OfferId;
-        public ShopLane Lane => _offer?.Lane ?? ShopLane.General;
+        public ShopLane Lane => _offer?.Lane ?? ShopLane.Offensive;
 
         public event Action<ShopOffer, bool> LockToggled;
 

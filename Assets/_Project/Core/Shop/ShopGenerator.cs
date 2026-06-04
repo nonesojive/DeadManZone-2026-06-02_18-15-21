@@ -10,9 +10,7 @@ namespace DeadManZone.Core.Shop
     public sealed class ShopGenerator
     {
         private const int MaxGoldDiscountPercent = 25;
-        private const int BaseGeneralSlots = 5;
-        private const int EngineersSlots = 4;
-        private const int RequisitionSlots = 4;
+        private const int OffersPerLane = 3;
 
         private readonly ContentRegistry _registry;
 
@@ -21,19 +19,27 @@ namespace DeadManZone.Core.Shop
             _registry = registry;
         }
 
-        public ShopState Generate(BoardState board, string factionId, int round, int seed)
+        public ShopState Generate(
+            BoardState board,
+            string factionId,
+            int round,
+            int seed,
+            bool? specialtyUnlocked = null)
         {
             var rng = new Rng(seed);
             var modifiers = ComputeModifiers(board);
             var offers = new List<ShopOffer>();
+            bool specialtyOpen = specialtyUnlocked ?? SpecialtyLaneUnlock.IsUnlocked(board, factionId, _registry);
 
-            RollLane(ShopLane.General, BaseGeneralSlots + modifiers.ExtraGeneralSlots, modifiers, rng, offers, round);
-            RollLane(ShopLane.Engineers, EngineersSlots, modifiers, rng, offers, round);
+            int offensiveSlots = OffersPerLane + modifiers.ExtraGeneralSlots;
+            RollLane(ShopLane.Offensive, offensiveSlots, modifiers, rng, offers, round);
+            RollLane(ShopLane.Defensive, OffersPerLane, modifiers, rng, offers, round);
 
-            if (modifiers.GuaranteeEngineerOffer && !offers.Any(o => o.Lane == ShopLane.Engineers))
-                InjectEngineerOffer(offers, modifiers, rng, round);
+            if (modifiers.GuaranteeEngineerOffer && !offers.Any(o => o.Lane == ShopLane.Defensive))
+                InjectDefensiveOffer(offers, modifiers, rng, round);
 
-            RollLane(ShopLane.Requisition, RequisitionSlots, modifiers, rng, offers, round);
+            if (specialtyOpen)
+                RollLane(ShopLane.Specialty, OffersPerLane, modifiers, rng, offers, round);
 
             return new ShopState
             {
@@ -96,7 +102,7 @@ namespace DeadManZone.Core.Shop
             }
         }
 
-        private void InjectEngineerOffer(
+        private void InjectDefensiveOffer(
             List<ShopOffer> offers,
             ShopModifiers modifiers,
             Rng rng,
@@ -107,7 +113,7 @@ namespace DeadManZone.Core.Shop
                 return;
 
             var piece = buildings[rng.NextInt(0, buildings.Count)];
-            offers.Add(CreateOffer(ShopLane.Engineers, piece, modifiers, rng, round, offers.Count));
+            offers.Add(CreateOffer(ShopLane.Defensive, piece, modifiers, rng, round, offers.Count));
         }
 
         private ShopOffer CreateOffer(
