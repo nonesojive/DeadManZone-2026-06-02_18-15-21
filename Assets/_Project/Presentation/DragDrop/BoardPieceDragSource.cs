@@ -32,6 +32,9 @@ namespace DeadManZone.Presentation.DragDrop
             if (string.IsNullOrEmpty(instanceId) || DragDropController.Instance == null)
                 return;
 
+            if (_definition?.Tags?.Contains(GameTags.Hq) == true)
+                return;
+
             var payload = new DragPayload
             {
                 SourceKind = DragSourceKind.BoardPiece,

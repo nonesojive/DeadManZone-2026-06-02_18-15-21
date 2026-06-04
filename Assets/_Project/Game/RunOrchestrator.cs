@@ -65,6 +65,7 @@ namespace DeadManZone.Game
                 Faction.startingMorale);
             State.PlayerBoard = Faction.CreateEmptyBoardSnapshot();
             State.RerollCountThisRound = 0;
+            PlaceStartingHq();
             ResetAuthorityForBuildRound();
             RefreshShop();
             _activeCombat = null;
@@ -285,11 +286,14 @@ namespace DeadManZone.Game
         {
             _activeCombat = null;
             bool playerWon = result.PlayerWon;
+            bool isDraw = result.IsDraw;
             var playerBoard = GetPlayerBoard();
+            int manpowerBefore = State.Manpower;
             State.Manpower += ManpowerCalculator.RefundSurvivors(
                 playerBoard,
                 result.SurvivingPlayerCombatantIds,
                 _registry);
+            int manpowerRefunded = State.Manpower - manpowerBefore;
 
             if (!playerWon)
             {
@@ -299,6 +303,13 @@ namespace DeadManZone.Game
                     result.PlayerCombatantsTotal,
                     result.PlayerHqDamaged);
                 State.Morale -= moraleLoss;
+                State.LastBattleReport = BattleReportBuilder.Build(
+                    System.Array.Empty<CombatantState>(),
+                    playerWon,
+                    isDraw,
+                    manpowerRefunded,
+                    suppliesEarned: 0,
+                    moraleDelta: -moraleLoss);
                 State.Combat = null;
 
                 if (State.Morale <= 0)
@@ -316,9 +327,30 @@ namespace DeadManZone.Game
                 return;
             }
 
-            var reward = FightRewardTable.GetReward(State.FightIndex);
+            var reward = FightRewardTable.GetReward(State.FightIndex, isDraw);
             State.Supplies += reward.Supplies;
             State.Manpower += reward.BonusManpower;
+            State.LastBattleReport = BattleReportBuilder.Build(
+                System.Array.Empty<CombatantState>(),
+                playerWon,
+                isDraw,
+                manpowerRefunded,
+                reward.Supplies,
+                moraleDelta: 0);
+            if (result.BattleReport != null)
+            {
+                State.LastBattleReport = new BattleReport
+                {
+                    PlayerWon = playerWon,
+                    IsDraw = isDraw,
+                    ManpowerRefunded = manpowerRefunded,
+                    SuppliesEarned = reward.Supplies,
+                    MoraleDelta = 0,
+                    TopDamageDealt = result.BattleReport.TopDamageDealt,
+                    TopDamageTaken = result.BattleReport.TopDamageTaken
+                };
+            }
+
             State.Combat = null;
 
             if (State.FightIndex >= MaxFights)
@@ -335,6 +367,22 @@ namespace DeadManZone.Game
             RefreshShop();
             State.Phase = RunPhase.Build;
             Persist();
+        }
+
+        private void PlaceStartingHq()
+        {
+            var board = GetPlayerBoard();
+            var hq = _registry.GetById(Faction.hqPieceId);
+            if (hq == null)
+                throw new InvalidOperationException($"HQ piece '{Faction.hqPieceId}' not found.");
+
+            var anchor = new GridCoord(Faction.hqSpawnAnchor.x, Faction.hqSpawnAnchor.y);
+            var rotation = (PieceRotation)Faction.hqSpawnRotation;
+            var result = board.TryPlace(hq, anchor, instanceId: "hq_player", rotation);
+            if (!result.Success)
+                throw new InvalidOperationException($"Failed to spawn HQ: {result.Reason}");
+
+            SavePlayerBoard(board);
         }
 
         private void ResetAuthorityForBuildRound()

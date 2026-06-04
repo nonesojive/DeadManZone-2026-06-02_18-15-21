@@ -26,6 +26,11 @@ namespace DeadManZone.Data
         public int startingAuthority = 2;
         public int startingMorale = 100;
 
+        [Header("HQ")]
+        public string hqPieceId = "hq_command";
+        public Vector2Int hqSpawnAnchor = new(0, 4);
+        public int hqSpawnRotation = 0;
+
         public BoardLayout CreateBoardLayout()
         {
             var specialTiles = new GridCoord[specialTileCoords.Length];
