@@ -12,7 +12,7 @@ namespace DeadManZone.Core.Combat
             IReadOnlyList<PhaseCommand> commands,
             int requisition = 0)
         {
-            var run = PhasedCombatRun.Start(playerBoard, enemyBoard, seed, requisition);
+            var run = TickCombatRun.Start(playerBoard, enemyBoard, seed, requisition);
             run.Continue(System.Array.Empty<PhaseCommand>());
             run.Continue(commands);
             run.Continue(commands);
