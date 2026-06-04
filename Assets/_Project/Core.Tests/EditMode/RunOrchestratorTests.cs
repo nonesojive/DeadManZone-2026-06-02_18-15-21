@@ -83,8 +83,8 @@ namespace DeadManZone.Core.Tests
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 101);
             int startingSupplies = _orchestrator.State.Supplies;
 
-            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.General));
-            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.Engineers));
+            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.Offensive));
+            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.Defensive));
 
             Assert.AreEqual(startingSupplies - 3, _orchestrator.State.Supplies);
             Assert.AreEqual(2, _orchestrator.State.RerollCountThisRound);
@@ -94,17 +94,17 @@ namespace DeadManZone.Core.Tests
         public void LockedOffer_PersistsAcrossMultipleRerolls()
         {
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 202);
-            var toLock = _orchestrator.State.Shop.Offers.First(o => o.Lane == Core.Shop.ShopLane.General);
+            var toLock = _orchestrator.State.Shop.Offers.First(o => o.Lane == Core.Shop.ShopLane.Offensive);
             _orchestrator.SetLockedOffer(toLock, locked: true);
             string lockedPieceId = toLock.PieceId;
 
-            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.General));
+            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.Offensive));
             Assert.IsTrue(_orchestrator.State.Shop.Offers.Any(o =>
-                o.Lane == Core.Shop.ShopLane.General && o.PieceId == lockedPieceId));
+                o.Lane == Core.Shop.ShopLane.Offensive && o.PieceId == lockedPieceId));
 
-            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.General));
+            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.Offensive));
             Assert.IsTrue(_orchestrator.State.Shop.Offers.Any(o =>
-                o.Lane == Core.Shop.ShopLane.General && o.PieceId == lockedPieceId));
+                o.Lane == Core.Shop.ShopLane.Offensive && o.PieceId == lockedPieceId));
         }
 
         [Test]
@@ -209,18 +209,18 @@ namespace DeadManZone.Core.Tests
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 303);
             var before = _orchestrator.State.Shop.Offers.ToList();
 
-            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.General));
+            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.Offensive));
             var after = _orchestrator.State.Shop.Offers;
 
-            var beforeEngineers = before.Where(o => o.Lane == Core.Shop.ShopLane.Engineers)
+            var beforeDefensive = before.Where(o => o.Lane == Core.Shop.ShopLane.Defensive)
                 .Select(o => o.OfferId)
                 .OrderBy(id => id)
                 .ToArray();
-            var afterEngineers = after.Where(o => o.Lane == Core.Shop.ShopLane.Engineers)
+            var afterDefensive = after.Where(o => o.Lane == Core.Shop.ShopLane.Defensive)
                 .Select(o => o.OfferId)
                 .OrderBy(id => id)
                 .ToArray();
-            CollectionAssert.AreEquivalent(beforeEngineers, afterEngineers);
+            CollectionAssert.AreEquivalent(beforeDefensive, afterDefensive);
         }
 
         [Test]

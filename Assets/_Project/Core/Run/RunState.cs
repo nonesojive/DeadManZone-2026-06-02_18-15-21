@@ -11,6 +11,9 @@ namespace DeadManZone.Core.Run
         public CombatPhase CompletedPhase { get; set; }
         public bool AwaitingCommand { get; set; }
         public int Requisition { get; set; }
+        public int Authority { get; set; }
+        public int ActiveSegment { get; set; }
+        public int SegmentTick { get; set; }
         public List<PhaseCommand> SubmittedCommands { get; set; } = new();
         public List<CombatEventRecord> EventLog { get; set; } = new();
     }
