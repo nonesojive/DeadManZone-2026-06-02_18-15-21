@@ -9,28 +9,19 @@ namespace DeadManZone.Presentation.Run
     public sealed class RunHudView : MonoBehaviour
     {
         [SerializeField] private TMP_Text statusText;
-        [SerializeField] private TMP_Text currenciesText;
 
         public void Refresh(RunState state, string battleGateMessage = null)
         {
-            if (state == null)
+            if (state == null || statusText == null)
                 return;
 
-            if (statusText != null)
-            {
-                string gateLine = string.IsNullOrEmpty(battleGateMessage) ? "" : $"\n{battleGateMessage}";
-                statusText.text =
-                    $"Fight {state.FightIndex} / {RunOrchestrator.MaxFights}\n" +
-                    $"Phase: {state.Phase}{gateLine}";
-            }
-
-            if (currenciesText != null)
-            {
-                int rerollCost = RunOrchestrator.BaseRerollCost + state.RerollCountThisRound;
-                currenciesText.text =
-                    $"Supplies: {state.Supplies}   Manpower: {state.Manpower}   " +
-                    $"Authority: {state.Authority}   Morale: {state.Morale}   Reroll: {rerollCost}S";
-            }
+            int rerollCost = RunOrchestrator.BaseRerollCost + state.RerollCountThisRound;
+            string gateLine = string.IsNullOrEmpty(battleGateMessage) ? "" : $"\n{battleGateMessage}";
+            statusText.text =
+                $"Fight {state.FightIndex} / {RunOrchestrator.MaxFights}\n" +
+                $"Phase: {state.Phase}{gateLine}\n" +
+                $"Supplies: {state.Supplies}   Manpower: {state.Manpower}   " +
+                $"Authority: {state.Authority}   Morale: {state.Morale}   Reroll: {rerollCost}S";
         }
 
         public void ApplyTheme(UiThemeSO theme)
@@ -39,7 +30,6 @@ namespace DeadManZone.Presentation.Run
                 return;
 
             UiThemeApplicator.ApplyLabel(statusText, secondary: false, theme);
-            UiThemeApplicator.ApplyLabel(currenciesText, secondary: true, theme);
         }
     }
 }

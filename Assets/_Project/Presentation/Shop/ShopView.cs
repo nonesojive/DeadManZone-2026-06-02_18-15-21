@@ -24,9 +24,6 @@ namespace DeadManZone.Presentation.Shop
         [SerializeField] private GameObject offerCardPrefab;
         [SerializeField] private TMP_Text modifiersTooltipText;
 
-        [Header("Summary")]
-        [SerializeField] private TMP_Text currenciesText;
-
         private void Awake()
         {
             if (rerollGeneralButton != null)
@@ -59,7 +56,6 @@ namespace DeadManZone.Presentation.Shop
             RebuildLane(engineersLaneRoot, state, ShopLane.Defensive);
             RebuildLane(requisitionLaneRoot, state, ShopLane.Specialty);
             UpdateModifierTooltip(state.Modifiers, nextEnemyTag);
-            UpdateCurrencyText();
         }
 
         public void InitializeForTests(
@@ -125,18 +121,6 @@ namespace DeadManZone.Presentation.Shop
             RefreshFromRunManager();
         }
 
-        private void UpdateCurrencyText()
-        {
-            if (currenciesText == null || RunManager.Instance?.State == null)
-                return;
-
-            var state = RunManager.Instance.State;
-            int rerollCost = RunOrchestrator.BaseRerollCost + state.RerollCountThisRound;
-            currenciesText.text =
-                $"Supplies: {state.Supplies}   Manpower: {state.Manpower}   " +
-                $"Authority: {state.Authority}   Morale: {state.Morale}   Reroll: {rerollCost}S";
-        }
-
         private void UpdateModifierTooltip(ShopModifiers modifiers, string nextEnemyTag)
         {
             if (modifiersTooltipText == null || modifiers == null)
@@ -153,7 +137,7 @@ namespace DeadManZone.Presentation.Shop
                 sb.AppendLine($"Enemy preview: {nextEnemyTag ?? "Unknown"}");
 
             modifiersTooltipText.text = sb.Length == 0
-                ? "Drag pieces to bench or board. Drop on Sell to refund."
+                ? "Drag pieces to reserves or board. Drop on Sell to refund."
                 : sb.ToString().TrimEnd();
         }
 

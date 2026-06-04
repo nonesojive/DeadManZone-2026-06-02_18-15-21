@@ -1,4 +1,5 @@
 using DeadManZone.Core.Run;
+using DeadManZone.Game;
 using DeadManZone.Presentation.Visual;
 using TMPro;
 using UnityEngine;
@@ -12,6 +13,12 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private TMP_Text titleText;
         [SerializeField] private TMP_Text bodyText;
         [SerializeField] private Button mainMenuButton;
+
+        private void Awake()
+        {
+            if (mainMenuButton != null)
+                mainMenuButton.onClick.AddListener(() => GameScenes.LoadMainMenu());
+        }
 
         public void Show(RunPhase phase)
         {

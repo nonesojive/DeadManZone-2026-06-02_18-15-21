@@ -1,10 +1,9 @@
 using DeadManZone.Core.Run;
 using DeadManZone.Game;
-using DeadManZone.Presentation.Bench;
 using DeadManZone.Presentation.Board;
 using DeadManZone.Presentation.Combat;
+using DeadManZone.Presentation.Reserves;
 using DeadManZone.Presentation.Shop;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,25 +19,23 @@ namespace DeadManZone.Presentation.Run
         [Header("Views")]
         [SerializeField] private BoardView boardView;
         [SerializeField] private ShopView shopView;
-        [SerializeField] private BenchView benchView;
+        [SerializeField] private ReservesView reservesView;
         [SerializeField] private CombatDirector combatDirector;
         [SerializeField] private PhaseCommandPanel phaseCommandPanel;
         [SerializeField] private RunHudView runHudView;
         [SerializeField] private RunEndOverlayView runEndOverlay;
+        [SerializeField] private PauseMenuView pauseMenuView;
 
         [Header("Hub")]
         [SerializeField] private Button beginFightButton;
-        [SerializeField] private Button saveAndExitButton;
-        [SerializeField] private Button backToMenuButton;
+        [SerializeField] private Button menuButton;
 
         private void Awake()
         {
             if (beginFightButton != null)
                 beginFightButton.onClick.AddListener(OnBeginFight);
-            if (saveAndExitButton != null)
-                saveAndExitButton.onClick.AddListener(OnSaveAndExit);
-            if (backToMenuButton != null)
-                backToMenuButton.onClick.AddListener(() => GameScenes.LoadMainMenu());
+            if (menuButton != null)
+                menuButton.onClick.AddListener(OnMenuClicked);
         }
 
         private void OnEnable()
@@ -63,6 +60,7 @@ namespace DeadManZone.Presentation.Run
             {
                 runHudView?.Refresh(null);
                 runEndOverlay?.Hide();
+                pauseMenuView?.Hide();
                 if (buildPanel != null)
                     buildPanel.SetActive(true);
                 if (combatPanel != null)
@@ -100,6 +98,7 @@ namespace DeadManZone.Presentation.Run
             {
                 if (phaseCommandPanel != null)
                     phaseCommandPanel.Hide();
+                pauseMenuView?.Hide();
                 runEndOverlay?.Show(state.Phase);
                 return;
             }
@@ -109,7 +108,7 @@ namespace DeadManZone.Presentation.Run
             if (inBuild)
             {
                 boardView?.RefreshFromRunManager();
-                benchView?.Refresh();
+                reservesView?.Refresh();
                 shopView?.RefreshFromRunManager();
                 if (phaseCommandPanel != null)
                     phaseCommandPanel.Hide();
@@ -134,10 +133,15 @@ namespace DeadManZone.Presentation.Run
             RunManager.Instance.BeginCombat();
         }
 
-        private void OnSaveAndExit()
+        private void OnMenuClicked()
         {
-            RunManager.Instance?.SaveAndExit();
-            GameScenes.LoadMainMenu();
+            if (pauseMenuView == null)
+                return;
+
+            if (pauseMenuView.IsOpen)
+                pauseMenuView.Close();
+            else
+                pauseMenuView.Open();
         }
 
         private static void EnsureRunManager()
