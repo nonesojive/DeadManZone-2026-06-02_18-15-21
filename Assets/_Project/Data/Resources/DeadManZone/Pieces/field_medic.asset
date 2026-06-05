@@ -22,9 +22,9 @@ MonoBehaviour:
   - Support
   - Utility
   - Neutral
-  maxHp: 130
-  baseDamage: 8
-  cooldownTicks: 2
+  maxHp: 240
+  baseDamage: 4
+  cooldownTicks: 3
   goldCost: 60
   requisitionCost: 0
   manpowerCost: 1

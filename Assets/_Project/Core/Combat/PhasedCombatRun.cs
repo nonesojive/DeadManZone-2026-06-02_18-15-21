@@ -263,7 +263,9 @@ namespace DeadManZone.Core.Combat
             int damage = CalculateDamage(actor, damageBuff, damageScale, phase);
             target.CurrentHp -= damage;
             _log.Append(phase, tick, actor.InstanceId, "damage", target.InstanceId, damage);
-            actor.CooldownRemaining = System.Math.Max(1, actor.Definition.CooldownTicks);
+            actor.CooldownRemaining = CombatAttackSpeed.GetEffectiveCooldown(
+                actor.Definition.CooldownTicks,
+                actor.Definition.AttackSpeed);
         }
 
         private static int CalculateDamage(CombatantState actor, int damageBuff, float damageScale, CombatPhase phase)

@@ -213,8 +213,10 @@ namespace DeadManZone.Core.Tests
             _orchestrator.SavePlayerBoard(board);
 
             _orchestrator.BeginCombat();
+            var openingStep = _orchestrator.AdvanceCombat();
 
             Assert.AreEqual(RunPhase.Combat, _orchestrator.State.Phase);
+            Assert.AreEqual(CombatAdvanceStatus.AwaitingCommand, openingStep.Status);
             Assert.IsTrue(_orchestrator.State.Combat.AwaitingCommand);
             Assert.AreEqual(CombatPhase.Deployment, _orchestrator.State.Combat.CompletedPhase);
 
@@ -283,7 +285,11 @@ namespace DeadManZone.Core.Tests
                     SubmitCombatCommandsForCurrentWindow();
                     var step = _orchestrator.AdvanceCombat();
                     if (step.Status == CombatAdvanceStatus.Completed)
+                    {
+                        _orchestrator.FinalizePendingCombat();
+                        _orchestrator.DismissAftermath();
                         break;
+                    }
                 }
 
                 if (_orchestrator.State.Phase == RunPhase.Victory)
@@ -311,6 +317,7 @@ namespace DeadManZone.Core.Tests
             _orchestrator.SavePlayerBoard(board);
 
             _orchestrator.BeginCombat();
+            _orchestrator.AdvanceCombat();
             _orchestrator.SavePauseDraft(TacticType.Advance, new List<GrantedAbility>());
             _orchestrator.SaveAndExit();
 
@@ -336,6 +343,7 @@ namespace DeadManZone.Core.Tests
             Assert.IsTrue(freshBoard.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(), "rifle_1").Success);
             fresh.SavePlayerBoard(freshBoard);
             fresh.BeginCombat();
+            fresh.AdvanceCombat();
             fresh.SubmitCombatCommands(new List<PhaseCommand>
             {
                 new PhaseCommand

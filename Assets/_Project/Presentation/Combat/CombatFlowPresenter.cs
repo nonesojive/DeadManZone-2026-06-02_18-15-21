@@ -12,6 +12,8 @@ namespace DeadManZone.Presentation.Combat
         [SerializeField] private CombatDirector combatDirector;
         [SerializeField] private TacticPausePanel tacticPausePanel;
         [SerializeField] private PhaseCommandPanel phaseCommandPanel;
+        [SerializeField] private BattleReportPresenter battleReportPresenter;
+        [SerializeField] private CombatLogPresenter combatLogPresenter;
         [SerializeField] private GameObject loadingOverlay;
         [SerializeField] private TMP_Text loadingText;
         [SerializeField] private float loadingDurationSeconds = 1f;
@@ -21,16 +23,30 @@ namespace DeadManZone.Presentation.Combat
         private void OnEnable()
         {
             if (combatDirector != null)
+            {
                 combatDirector.PausedForCommands += OnPausedForCommands;
+                combatDirector.CombatPresentationCompleted += OnCombatPresentationCompleted;
+            }
+
+            if (RunManager.Instance != null)
+                RunManager.Instance.RunStateChanged += OnRunStateChanged;
 
             if (RunManager.Instance?.State?.Phase == RunPhase.Combat)
                 BeginCombatPresentation();
+            else if (RunManager.Instance?.State?.Phase == RunPhase.Aftermath)
+                ShowBattleReport();
         }
 
         private void OnDisable()
         {
             if (combatDirector != null)
+            {
                 combatDirector.PausedForCommands -= OnPausedForCommands;
+                combatDirector.CombatPresentationCompleted -= OnCombatPresentationCompleted;
+            }
+
+            if (RunManager.Instance != null)
+                RunManager.Instance.RunStateChanged -= OnRunStateChanged;
 
             if (_loadingRoutine != null)
             {
@@ -41,11 +57,17 @@ namespace DeadManZone.Presentation.Combat
 
         public void BeginCombatPresentation()
         {
+            tacticPausePanel?.Hide();
+            battleReportPresenter?.Hide();
+            combatLogPresenter?.Hide();
+            if (phaseCommandPanel != null)
+                phaseCommandPanel.Hide();
+
             ShowLoadingOverlay();
-            _loadingRoutine = StartCoroutine(LoadingThenReplay());
+            _loadingRoutine = StartCoroutine(LoadingThenPresent());
         }
 
-        private IEnumerator LoadingThenReplay()
+        private IEnumerator LoadingThenPresent()
         {
             if (loadingDurationSeconds > 0f)
                 yield return new WaitForSeconds(loadingDurationSeconds);
@@ -53,14 +75,41 @@ namespace DeadManZone.Presentation.Combat
                 yield return null;
 
             HideLoadingOverlay();
-            combatDirector?.ReplayFromSaveAndPauseAtCheckpoint();
+            combatDirector?.PresentCombatAfterLoading();
             _loadingRoutine = null;
+        }
+
+        private void OnRunStateChanged(RunState state)
+        {
+            if (state?.Phase == RunPhase.Aftermath)
+                ShowBattleReport();
+        }
+
+        private void OnCombatPresentationCompleted()
+        {
+            if (RunManager.Instance == null)
+                return;
+
+            RunManager.Instance.FinalizePendingCombat();
+            ShowBattleReport();
+        }
+
+        private void ShowBattleReport()
+        {
+            tacticPausePanel?.Hide();
+            combatLogPresenter?.Hide();
+            if (phaseCommandPanel != null)
+                phaseCommandPanel.Hide();
+
+            battleReportPresenter?.ShowFromRunState();
         }
 
         private void OnPausedForCommands(DeadManZone.Core.Combat.CombatPhase completedPhase)
         {
             if (RunManager.Instance == null)
                 return;
+
+            HideLoadingOverlay();
 
             var context = RunManager.Instance.Orchestrator.GetCombatPauseContext();
             if (tacticPausePanel != null)

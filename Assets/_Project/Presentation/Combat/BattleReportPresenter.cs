@@ -18,8 +18,14 @@ namespace DeadManZone.Presentation.Combat
         private void Awake()
         {
             if (continueButton != null)
-                continueButton.onClick.AddListener(Hide);
+                continueButton.onClick.AddListener(OnContinueClicked);
             Hide();
+        }
+
+        private void OnContinueClicked()
+        {
+            Hide();
+            RunManager.Instance?.DismissAftermath();
         }
 
         public void Show(BattleReport report)

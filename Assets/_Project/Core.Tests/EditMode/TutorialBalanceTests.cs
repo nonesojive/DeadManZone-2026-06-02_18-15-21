@@ -11,27 +11,65 @@ namespace DeadManZone.Core.Tests.EditMode
         public void SetUp() => _database = ContentDatabase.Load();
 
         [Test]
-        public void Fight1_ReferenceBoard_ReachesPauseTwoOn90PercentOfSeeds()
+        public void Fight1_ReferenceBoard_SurvivedWithoutLossDuringGrind_On90PercentOfSeeds()
         {
-            float rate = TutorialBalanceFixtures.MeasurePauseTwoReachRate(1, _database);
-            Assert.GreaterOrEqual(rate, TutorialBalanceFixtures.MinPauseTwoReachRate,
-                $"Fight 1 pause #2 reach rate was {rate:P0}");
+            AssertReachRate(
+                1,
+                TutorialBalanceFixtures.MeasureSurvivalRate(1, _database),
+                "survival without grind loss");
         }
 
         [Test]
-        public void Fight2_ReferenceBoard_ReachesPauseTwoOn90PercentOfSeeds()
+        public void Fight2_ReferenceBoard_SurvivedWithoutLossDuringGrind_On90PercentOfSeeds()
         {
-            float rate = TutorialBalanceFixtures.MeasurePauseTwoReachRate(2, _database);
-            Assert.GreaterOrEqual(rate, TutorialBalanceFixtures.MinPauseTwoReachRate,
-                $"Fight 2 pause #2 reach rate was {rate:P0}");
+            AssertReachRate(
+                2,
+                TutorialBalanceFixtures.MeasureSurvivalRate(2, _database),
+                "survival without grind loss");
         }
 
         [Test]
-        public void Fight3_ReferenceBoard_ReachesPauseTwoOn90PercentOfSeeds()
+        public void Fight3_ReferenceBoard_SurvivedWithoutLossDuringGrind_On90PercentOfSeeds()
         {
-            float rate = TutorialBalanceFixtures.MeasurePauseTwoReachRate(3, _database);
-            Assert.GreaterOrEqual(rate, TutorialBalanceFixtures.MinPauseTwoReachRate,
-                $"Fight 3 pause #2 reach rate was {rate:P0}");
+            AssertReachRate(
+                3,
+                TutorialBalanceFixtures.MeasureSurvivalRate(3, _database),
+                "survival without grind loss");
+        }
+
+        [Test]
+        public void Fight1_ReferenceBoard_ReachesPauseTwo_On90PercentOfSeeds()
+        {
+            AssertReachRate(
+                1,
+                TutorialBalanceFixtures.MeasurePauseTwoReachRate(1, _database),
+                "pause #2");
+        }
+
+        [Test]
+        public void Fight2_ReferenceBoard_ReachesPauseTwo_On90PercentOfSeeds()
+        {
+            AssertReachRate(
+                2,
+                TutorialBalanceFixtures.MeasurePauseTwoReachRate(2, _database),
+                "pause #2");
+        }
+
+        [Test]
+        public void Fight3_ReferenceBoard_ReachesPauseTwo_On90PercentOfSeeds()
+        {
+            AssertReachRate(
+                3,
+                TutorialBalanceFixtures.MeasurePauseTwoReachRate(3, _database),
+                "pause #2");
+        }
+
+        private static void AssertReachRate(int fight, float rate, string metric)
+        {
+            Assert.GreaterOrEqual(
+                rate,
+                TutorialBalanceFixtures.MinReachRate,
+                $"Fight {fight} {metric} rate was {rate:P0} (need {TutorialBalanceFixtures.MinReachRate:P0}).");
         }
     }
 }

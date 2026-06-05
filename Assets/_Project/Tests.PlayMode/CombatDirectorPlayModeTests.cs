@@ -23,7 +23,7 @@ namespace DeadManZone.PlayMode.Tests
         {
             _root = new GameObject("CombatDirectorRoot");
             var director = _root.AddComponent<CombatDirector>();
-            director.SetTickDelayForTests(0f);
+            director.SetSecondsPerTickForTests(0f);
 
             var log = new CombatEventLog();
             log.Append(CombatPhase.Deployment, 0, "a", "move", "x", 0);

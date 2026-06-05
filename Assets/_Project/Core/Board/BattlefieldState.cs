@@ -45,7 +45,10 @@ namespace DeadManZone.Core.Board
                     Definition = piece.Definition,
                     Side = CombatSide.Enemy,
                     Position = new GridCoord(
-                        layout.EnemyOriginX + piece.Anchor.X,
+                        layout.EnemyOriginX + layout.MirrorEnemyAnchorX(
+                            piece.Anchor.X,
+                            piece.Definition.Shape,
+                            piece.Rotation),
                         piece.Anchor.Y)
                 });
             }

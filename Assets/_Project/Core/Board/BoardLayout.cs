@@ -71,5 +71,24 @@ namespace DeadManZone.Core.Board
 
         public bool IsSpecialTile(GridCoord coord) =>
             SpecialTiles.Any(tile => tile.X == coord.X && tile.Y == coord.Y);
+
+        /// <summary>Column counts for horizontal Rear|Support|Front layouts.</summary>
+        public void GetHorizontalZoneColumns(out int rearCols, out int supportCols)
+        {
+            rearCols = 0;
+            supportCols = 0;
+            for (int x = 0; x < Width; x++)
+            {
+                switch (_zones[x, 0])
+                {
+                    case ZoneType.Rear:
+                        rearCols++;
+                        break;
+                    case ZoneType.Support:
+                        supportCols++;
+                        break;
+                }
+            }
+        }
     }
 }

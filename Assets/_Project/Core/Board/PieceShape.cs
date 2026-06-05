@@ -24,5 +24,18 @@ namespace DeadManZone.Core.Board
                 yield return new GridCoord(anchor.X + rotated.X, anchor.Y + rotated.Y);
             }
         }
+
+        public int GetMaxOffsetX(PieceRotation rotation)
+        {
+            int max = int.MinValue;
+            foreach (var cell in _cells)
+            {
+                int x = ShapeTransforms.RotateOffset(cell, rotation).X;
+                if (x > max)
+                    max = x;
+            }
+
+            return max;
+        }
     }
 }

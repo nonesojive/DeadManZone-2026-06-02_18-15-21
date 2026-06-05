@@ -80,6 +80,8 @@ namespace DeadManZone.Presentation.Editor
             var boardView = CreateBoardSection(boardArea.transform, theme);
             var shopView = CreateShopSection(shopArea.transform, tooltip, theme);
             var reservesView = CreateReservesSection(bottomBar.transform, theme);
+            var lastLogReview = CreateLastBattleLogReview(buildPanel.transform, theme);
+            CreateLastBattleLogButton(bottomBar.transform, theme, lastLogReview);
             var sellZone = CreateSellZone(bottomBar.transform, theme);
             var pauseMenu = CreatePauseMenu(buildPanel.transform, theme);
             var endOverlay = CreateRunEndOverlay(buildPanel.transform, theme);
@@ -87,19 +89,23 @@ namespace DeadManZone.Presentation.Editor
             var combatPanel = CreateRegion(controllerRoot.transform, "CombatPanel", Vector2.zero, Vector2.one);
             combatPanel.SetActive(false);
             var combatOverlay = combatPanel.AddComponent<Image>();
-            combatOverlay.color = theme.combatOverlayColor;
+            var transparentOverlay = theme.combatOverlayColor;
+            transparentOverlay.a = 0f;
+            combatOverlay.color = transparentOverlay;
             combatOverlay.raycastTarget = false;
 
             var combatDirector = combatPanel.AddComponent<CombatDirector>();
             var combatBoard = combatPanel.AddComponent<CombatBoardPresenter>();
             var loadingOverlay = CreateCombatLoadingOverlay(combatPanel.transform, theme, out var loadingText);
             var tacticPanel = CreateTacticPausePanel(combatPanel.transform, theme, out var bannerText, out var bannerGroup);
+            var battleReport = CreateBattleReportPanel(combatPanel.transform, theme);
             var flowPresenter = combatPanel.AddComponent<CombatFlowPresenter>();
 
-            WireFlowPresenter(flowPresenter, combatDirector, tacticPanel, loadingOverlay, loadingText);
+            WireFlowPresenter(flowPresenter, combatDirector, tacticPanel, battleReport, loadingOverlay, loadingText);
             WireCombatBoardPresenter(combatBoard, combatDirector, boardView, bannerText, bannerGroup);
-            WireController(controller, buildPanel, buildCanvasGroup, combatPanel, boardView, shopView,
-                reservesView, combatDirector, tacticPanel, hud, endOverlay, pauseMenu, beginFight, menuBtn);
+            WireController(controller, buildPanel, buildCanvasGroup, combatPanel, boardArea, shopArea, bottomBar,
+                boardView, shopView, reservesView, combatDirector, tacticPanel, hud, endOverlay, pauseMenu,
+                beginFight, menuBtn);
 
             var panelSerialized = new SerializedObject(tacticPanel);
             panelSerialized.FindProperty("combatDirector").objectReferenceValue = combatDirector;
@@ -392,7 +398,7 @@ namespace DeadManZone.Presentation.Editor
         private static ReservesView CreateReservesSection(Transform bottomBar, UiThemeSO theme)
         {
             var reservesRegion = CreateRegion(bottomBar.transform, "ReservesRegion",
-                new Vector2(0f, 0f), new Vector2(0.56f, 1f));
+                new Vector2(0f, 0f), new Vector2(0.48f, 1f));
 
             var title = MenuSceneSetup.CreateLabelPublic(
                 reservesRegion.transform, "Reserves", 18, FontStyles.Bold,
@@ -502,6 +508,86 @@ namespace DeadManZone.Presentation.Editor
             card.SetActive(active);
             UiThemeSceneStyling.AddPanelBackground(card.transform, theme);
             return card;
+        }
+
+        private static Button CreateLastBattleLogButton(
+            Transform bottomBar,
+            UiThemeSO theme,
+            LastBattleLogReviewPresenter reviewPresenter)
+        {
+            var button = MenuSceneSetup.CreateSmallButtonPublic(
+                bottomBar.transform, "Last Log", new Vector2(0.54f, 0.5f), new Vector2(120f, 44f));
+            UiThemeSceneStyling.StyleButton(button, theme);
+
+            var bridge = button.gameObject.AddComponent<LastBattleLogReviewButton>();
+            var serialized = new SerializedObject(bridge);
+            serialized.FindProperty("reviewPresenter").objectReferenceValue = reviewPresenter;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return button;
+        }
+
+        private static LastBattleLogReviewPresenter CreateLastBattleLogReview(Transform buildPanel, UiThemeSO theme)
+        {
+            var root = CreateRegion(buildPanel, "LastBattleLogReview", Vector2.zero, Vector2.one);
+            root.SetActive(false);
+            var dim = root.AddComponent<Image>();
+            dim.color = new Color(0f, 0f, 0f, 0.7f);
+
+            var sheet = CreateRegion(root.transform, "LastBattleLogSheet", new Vector2(0.12f, 0.1f), new Vector2(0.88f, 0.9f));
+            var sheetBg = sheet.AddComponent<Image>();
+            UiThemeApplicator.ApplyPanel(sheetBg, theme);
+
+            var title = MenuSceneSetup.CreateLabelPublic(
+                sheet.transform, "Previous Battle Log (dev)", 22, FontStyles.Bold,
+                new Vector2(0.5f, 0.94f), new Vector2(520f, 32f));
+            UiThemeSceneStyling.StyleLabel(title, theme);
+
+            var scrollRoot = CreateRegion(sheet.transform, "LogScroll", new Vector2(0.04f, 0.12f), new Vector2(0.96f, 0.86f));
+            var scrollBg = scrollRoot.AddComponent<Image>();
+            scrollBg.color = new Color(0f, 0f, 0f, 0.25f);
+            var scroll = scrollRoot.AddComponent<ScrollRect>();
+            scroll.horizontal = false;
+            scroll.vertical = true;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 24f;
+
+            var viewport = CreateRegion(scrollRoot.transform, "Viewport", Vector2.zero, Vector2.one);
+            viewport.AddComponent<RectMask2D>();
+            scroll.viewport = viewport.GetComponent<RectTransform>();
+
+            var content = CreateRegion(viewport.transform, "Content", new Vector2(0f, 1f), new Vector2(1f, 1f));
+            var contentRect = content.GetComponent<RectTransform>();
+            contentRect.pivot = new Vector2(0.5f, 1f);
+            contentRect.anchoredPosition = Vector2.zero;
+            contentRect.sizeDelta = new Vector2(0f, 200f);
+            scroll.content = contentRect;
+
+            var logText = MenuSceneSetup.CreateLabelPublic(
+                content.transform, "", 14, FontStyles.Normal,
+                new Vector2(0.5f, 1f), new Vector2(300f, 200f));
+            logText.alignment = TextAlignmentOptions.TopLeft;
+            logText.enableWordWrapping = true;
+            var logRect = logText.rectTransform;
+            logRect.anchorMin = new Vector2(0f, 1f);
+            logRect.anchorMax = new Vector2(1f, 1f);
+            logRect.pivot = new Vector2(0.5f, 1f);
+            logRect.offsetMin = new Vector2(12f, -600f);
+            logRect.offsetMax = new Vector2(-12f, 0f);
+            UiThemeSceneStyling.StyleLabel(logText, theme, secondary: true);
+
+            var closeBtn = MenuSceneSetup.CreateSmallButtonPublic(
+                sheet.transform, "Close", new Vector2(0.5f, 0.04f), new Vector2(160f, 40f));
+            UiThemeSceneStyling.StyleButton(closeBtn, theme, accent: true);
+
+            var presenter = root.AddComponent<LastBattleLogReviewPresenter>();
+            var serialized = new SerializedObject(presenter);
+            serialized.FindProperty("overlayRoot").objectReferenceValue = root;
+            serialized.FindProperty("logText").objectReferenceValue = logText;
+            serialized.FindProperty("scrollRect").objectReferenceValue = scroll;
+            serialized.FindProperty("closeButton").objectReferenceValue = closeBtn;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            root.SetActive(false);
+            return presenter;
         }
 
         private static SellDropZone CreateSellZone(Transform bottomBar, UiThemeSO theme)
@@ -680,16 +766,59 @@ namespace DeadManZone.Presentation.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        private static BattleReportPresenter CreateBattleReportPanel(Transform parent, UiThemeSO theme)
+        {
+            var sheet = CreateRegion(parent, "BattleReportSheet", new Vector2(0.15f, 0.18f), new Vector2(0.85f, 0.82f));
+            var sheetBg = sheet.AddComponent<Image>();
+            UiThemeApplicator.ApplyPanel(sheetBg, theme);
+
+            var presenter = sheet.AddComponent<BattleReportPresenter>();
+            var outcome = MenuSceneSetup.CreateLabelPublic(
+                sheet.transform, "Victory", 32, FontStyles.Bold,
+                new Vector2(0.5f, 0.86f), new Vector2(700f, 44f));
+            var summary = MenuSceneSetup.CreateLabelPublic(
+                sheet.transform, "", 20, FontStyles.Normal,
+                new Vector2(0.5f, 0.62f), new Vector2(700f, 120f));
+            var dealt = MenuSceneSetup.CreateLabelPublic(
+                sheet.transform, "", 18, FontStyles.Normal,
+                new Vector2(0.3f, 0.32f), new Vector2(320f, 180f));
+            dealt.alignment = TextAlignmentOptions.TopLeft;
+            var taken = MenuSceneSetup.CreateLabelPublic(
+                sheet.transform, "", 18, FontStyles.Normal,
+                new Vector2(0.7f, 0.32f), new Vector2(320f, 180f));
+            taken.alignment = TextAlignmentOptions.TopLeft;
+            var continueBtn = MenuSceneSetup.CreateSmallButtonPublic(
+                sheet.transform, "Continue", new Vector2(0.5f, 0.08f), new Vector2(180f, 44f));
+            UiThemeSceneStyling.StyleLabel(outcome, theme);
+            UiThemeSceneStyling.StyleLabel(summary, theme);
+            UiThemeSceneStyling.StyleLabel(dealt, theme, secondary: true);
+            UiThemeSceneStyling.StyleLabel(taken, theme, secondary: true);
+            UiThemeSceneStyling.StyleButton(continueBtn, theme, accent: true);
+
+            var serialized = new SerializedObject(presenter);
+            serialized.FindProperty("panelRoot").objectReferenceValue = sheet;
+            serialized.FindProperty("outcomeText").objectReferenceValue = outcome;
+            serialized.FindProperty("summaryText").objectReferenceValue = summary;
+            serialized.FindProperty("dealtText").objectReferenceValue = dealt;
+            serialized.FindProperty("takenText").objectReferenceValue = taken;
+            serialized.FindProperty("continueButton").objectReferenceValue = continueBtn;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            sheet.SetActive(false);
+            return presenter;
+        }
+
         private static void WireFlowPresenter(
             CombatFlowPresenter presenter,
             CombatDirector director,
             TacticPausePanel panel,
+            BattleReportPresenter battleReport,
             GameObject loadingOverlay,
             TMP_Text loadingText)
         {
             var serialized = new SerializedObject(presenter);
             serialized.FindProperty("combatDirector").objectReferenceValue = director;
             serialized.FindProperty("tacticPausePanel").objectReferenceValue = panel;
+            serialized.FindProperty("battleReportPresenter").objectReferenceValue = battleReport;
             serialized.FindProperty("loadingOverlay").objectReferenceValue = loadingOverlay;
             serialized.FindProperty("loadingText").objectReferenceValue = loadingText;
             serialized.ApplyModifiedPropertiesWithoutUndo();
@@ -700,6 +829,9 @@ namespace DeadManZone.Presentation.Editor
             GameObject buildPanel,
             CanvasGroup buildCanvasGroup,
             GameObject combatPanel,
+            GameObject boardArea,
+            GameObject shopArea,
+            GameObject bottomBar,
             BoardView boardView,
             ShopView shopView,
             ReservesView reservesView,
@@ -715,6 +847,9 @@ namespace DeadManZone.Presentation.Editor
             serialized.FindProperty("buildPanel").objectReferenceValue = buildPanel;
             serialized.FindProperty("buildPanelCanvasGroup").objectReferenceValue = buildCanvasGroup;
             serialized.FindProperty("combatPanel").objectReferenceValue = combatPanel;
+            serialized.FindProperty("boardArea").objectReferenceValue = boardArea.GetComponent<RectTransform>();
+            serialized.FindProperty("shopArea").objectReferenceValue = shopArea;
+            serialized.FindProperty("bottomBar").objectReferenceValue = bottomBar;
             serialized.FindProperty("boardView").objectReferenceValue = boardView;
             serialized.FindProperty("shopView").objectReferenceValue = shopView;
             serialized.FindProperty("reservesView").objectReferenceValue = reservesView;

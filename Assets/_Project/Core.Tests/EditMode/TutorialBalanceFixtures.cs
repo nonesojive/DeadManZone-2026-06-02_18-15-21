@@ -11,7 +11,14 @@ namespace DeadManZone.Core.Tests.EditMode
     public static class TutorialBalanceFixtures
     {
         public const int SeedSweepCount = 40;
-        public const float MinPauseTwoReachRate = 0.90f;
+        public const float MinReachRate = 0.90f;
+
+        /// <summary>
+        /// Rough damage two conscripts focus-fire during in-range grind ticks (ballistic vs light, medium cooldown).
+        /// Use for content tuning: enemy HP pools should exceed ~60–70% of this to reach pause #2 before wipe.
+        /// </summary>
+        public static int EstimateTwoConscriptGrindDamage(int inRangeTicks = 170, int damagePerHit = 8) =>
+            (inRangeTicks / 3) * 2 * damagePerHit;
 
         public static BoardState BuildReferencePlayerBoard(ContentDatabase database)
         {
@@ -38,15 +45,67 @@ namespace DeadManZone.Core.Tests.EditMode
             return template.BuildBoard(faction, database.BuildRegistry());
         }
 
+        /// <summary>Grind finished and pause #2 is available (fight still active).</summary>
         public static bool ReachesPauseTwo(BoardState player, BoardState enemy, int seed)
+        {
+            var run = RunThroughGrind(player, enemy, seed);
+            return !run.IsFightOver
+                   && run.AwaitingCommand
+                   && run.LastCompletedPhase == CombatPhase.Grind;
+        }
+
+        /// <summary>Player was not eliminated during grind (early win or pause #2 both pass).</summary>
+        public static bool SurvivedWithoutLossDuringGrind(BoardState player, BoardState enemy, int seed)
+        {
+            var run = RunThroughGrind(player, enemy, seed);
+            if (run.LastCompletedPhase != CombatPhase.Grind)
+                return false;
+
+            if (!run.IsFightOver && run.AwaitingCommand)
+                return true;
+
+            return run.IsFightOver && run.PlayerWon && !run.IsDraw;
+        }
+
+        public static float MeasurePauseTwoReachRate(int fightIndex, ContentDatabase database, int seedBase = 5000)
+        {
+            var player = BuildReferencePlayerBoard(database);
+            var enemy = BuildEnemyBoard(database, fightIndex);
+            return MeasureRate((p, e, s) => ReachesPauseTwo(p, e, s), player, enemy, seedBase);
+        }
+
+        public static float MeasureSurvivalRate(int fightIndex, ContentDatabase database, int seedBase = 5000)
+        {
+            var player = BuildReferencePlayerBoard(database);
+            var enemy = BuildEnemyBoard(database, fightIndex);
+            return MeasureRate((p, e, s) => SurvivedWithoutLossDuringGrind(p, e, s), player, enemy, seedBase);
+        }
+
+        private static float MeasureRate(
+            System.Func<BoardState, BoardState, int, bool> predicate,
+            BoardState player,
+            BoardState enemy,
+            int seedBase)
+        {
+            int pass = 0;
+            for (int i = 0; i < SeedSweepCount; i++)
+            {
+                if (predicate(player, enemy, seedBase + i))
+                    pass++;
+            }
+
+            return pass / (float)SeedSweepCount;
+        }
+
+        private static TickCombatRun RunThroughGrind(BoardState player, BoardState enemy, int seed)
         {
             var run = TickCombatRun.Start(player, enemy, seed, authority: 0);
 
             run.Continue(new List<PhaseCommand>());
             if (run.IsFightOver)
-                return false;
+                return run;
 
-            var deploymentCommands = new List<PhaseCommand>
+            run.Continue(new List<PhaseCommand>
             {
                 new PhaseCommand
                 {
@@ -55,30 +114,9 @@ namespace DeadManZone.Core.Tests.EditMode
                     Tactic = TacticType.DisciplinedFire,
                     SourcePieceId = "player_tactic"
                 }
-            };
+            });
 
-            run.Continue(deploymentCommands);
-            if (run.LastCompletedPhase != CombatPhase.Grind)
-                return false;
-
-            // Spec allows early grind victory; only losses/draws fail reach.
-            return run.AwaitingCommand
-                   || (run.IsFightOver && run.PlayerWon && !run.IsDraw);
-        }
-
-        public static float MeasurePauseTwoReachRate(int fightIndex, ContentDatabase database, int seedBase = 5000)
-        {
-            var player = BuildReferencePlayerBoard(database);
-            var enemy = BuildEnemyBoard(database, fightIndex);
-            int pass = 0;
-
-            for (int i = 0; i < SeedSweepCount; i++)
-            {
-                if (ReachesPauseTwo(player, enemy, seedBase + i))
-                    pass++;
-            }
-
-            return pass / (float)SeedSweepCount;
+            return run;
         }
 
         private static PieceDefinition GetPiece(ContentDatabase database, string pieceId) =>

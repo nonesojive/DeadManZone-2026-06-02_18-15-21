@@ -15,6 +15,9 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private GameObject buildPanel;
         [SerializeField] private GameObject combatPanel;
         [SerializeField] private CanvasGroup buildPanelCanvasGroup;
+        [SerializeField] private RectTransform boardArea;
+        [SerializeField] private GameObject shopArea;
+        [SerializeField] private GameObject bottomBar;
 
         [Header("Views")]
         [SerializeField] private BoardView boardView;
@@ -31,8 +34,14 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private Button beginFightButton;
         [SerializeField] private Button menuButton;
 
+        private Vector2 _buildBoardAnchorMax = new(0.56f, 1f);
+        private bool _buildLayoutCaptured;
+
         private void Awake()
         {
+            EnsureLayoutReferences();
+            CaptureBuildLayout();
+
             if (beginFightButton != null)
                 beginFightButton.onClick.AddListener(OnBeginFight);
             if (menuButton != null)
@@ -73,15 +82,18 @@ namespace DeadManZone.Presentation.Run
             var state = RunManager.Instance.State;
             bool inBuild = state.Phase == RunPhase.Build;
             bool inCombat = state.Phase == RunPhase.Combat;
+            bool aftermath = state.Phase == RunPhase.Aftermath;
             bool runEnded = state.Phase == RunPhase.Victory || state.Phase == RunPhase.Defeat;
 
             if (buildPanel != null)
                 buildPanel.SetActive(true);
 
             if (combatPanel != null)
-                combatPanel.SetActive(inCombat || runEnded);
+                combatPanel.SetActive(inCombat || aftermath || runEnded);
 
-            SetBuildPanelAlpha(inCombat && !runEnded ? 0.4f : 1f);
+            bool showBattlefield = inCombat || aftermath;
+            SetBuildPanelAlpha(1f);
+            SetCombatPresentationLayout(showBattlefield);
 
             if (inBuild && RunManager.Instance?.Orchestrator != null)
             {
@@ -116,6 +128,74 @@ namespace DeadManZone.Presentation.Run
                 if (phaseCommandPanel != null)
                     phaseCommandPanel.Hide();
             }
+            else if (inCombat || aftermath)
+            {
+                tacticPausePanel?.Hide();
+                if (phaseCommandPanel != null)
+                    phaseCommandPanel.Hide();
+            }
+        }
+
+        private void EnsureLayoutReferences()
+        {
+            if (buildPanel == null)
+                return;
+
+            if (boardArea == null)
+            {
+                var board = buildPanel.transform.Find("MainRow/BoardArea");
+                if (board != null)
+                    boardArea = board.GetComponent<RectTransform>();
+            }
+
+            if (shopArea == null)
+            {
+                var shop = buildPanel.transform.Find("MainRow/ShopArea");
+                if (shop != null)
+                    shopArea = shop.gameObject;
+            }
+
+            if (bottomBar == null)
+            {
+                var bottom = buildPanel.transform.Find("BottomBar");
+                if (bottom != null)
+                    bottomBar = bottom.gameObject;
+            }
+        }
+
+        private void CaptureBuildLayout()
+        {
+            if (_buildLayoutCaptured || boardArea == null)
+                return;
+
+            _buildBoardAnchorMax = boardArea.anchorMax;
+            _buildLayoutCaptured = true;
+        }
+
+        private void SetCombatPresentationLayout(bool combatActive)
+        {
+            if (shopArea != null)
+                shopArea.SetActive(!combatActive);
+
+            if (bottomBar != null)
+                bottomBar.SetActive(!combatActive);
+
+            if (boardArea == null)
+                return;
+
+            if (combatActive)
+            {
+                boardArea.anchorMin = Vector2.zero;
+                boardArea.anchorMax = Vector2.one;
+                boardArea.offsetMin = Vector2.zero;
+                boardArea.offsetMax = Vector2.zero;
+                return;
+            }
+
+            boardArea.anchorMin = Vector2.zero;
+            boardArea.anchorMax = _buildBoardAnchorMax;
+            boardArea.offsetMin = Vector2.zero;
+            boardArea.offsetMax = Vector2.zero;
         }
 
         private void SetBuildPanelAlpha(float alpha)

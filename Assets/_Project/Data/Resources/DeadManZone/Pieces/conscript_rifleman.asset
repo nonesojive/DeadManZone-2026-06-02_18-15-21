@@ -22,8 +22,8 @@ MonoBehaviour:
   - Assault
   - Scout
   - Neutral
-  maxHp: 120
-  baseDamage: 18
+  maxHp: 700
+  baseDamage: 6
   cooldownTicks: 3
   goldCost: 50
   requisitionCost: 0

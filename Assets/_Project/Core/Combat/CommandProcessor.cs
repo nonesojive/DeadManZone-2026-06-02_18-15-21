@@ -234,6 +234,8 @@ namespace DeadManZone.Core.Combat
 
             target.CurrentHp -= damage;
             log.Append(phase, tick: -1, actorId, "call_strike", target.InstanceId, damage);
+            if (!target.IsAlive)
+                log.Append(phase, tick: -1, target.InstanceId, "destroyed", actorId, 0);
         }
     }
 }

@@ -18,6 +18,15 @@ namespace DeadManZone.Core.Combat
             return NormalMoveCost;
         }
 
+        public static int GetStepChargeCost(
+            GridCoord from,
+            GridCoord to,
+            BattlefieldLayout layout,
+            CombatSegment segment) =>
+            GetMoveCost(from, to, layout, segment) == NeutralMoveCost
+                ? CombatMovementSpeed.NeutralStepChargeCost
+                : CombatMovementSpeed.NormalStepChargeCost;
+
         public static GridCoord? StepTowardTarget(
             GridCoord current,
             GridCoord target,

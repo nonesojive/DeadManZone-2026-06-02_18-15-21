@@ -164,6 +164,8 @@ namespace DeadManZone.Core.Combat
                 source.DamageDealtThisFight += damage;
                 target.DamageTakenThisFight += damage;
                 log.Append(phase, tick: -1, source.InstanceId, actionType, target.InstanceId, damage);
+                if (!target.IsAlive)
+                    log.Append(phase, tick: -1, target.InstanceId, "destroyed", source.InstanceId, 0);
             }
         }
 
@@ -187,6 +189,8 @@ namespace DeadManZone.Core.Combat
             source.DamageDealtThisFight += damage;
             target.DamageTakenThisFight += damage;
             log.Append(phase, tick: -1, source.InstanceId, actionType, target.InstanceId, damage);
+            if (!target.IsAlive)
+                log.Append(phase, tick: -1, target.InstanceId, "destroyed", source.InstanceId, 0);
         }
 
         private static bool HasInfantryTag(PieceDefinition definition) =>

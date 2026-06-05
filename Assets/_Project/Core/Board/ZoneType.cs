@@ -4,7 +4,8 @@ namespace DeadManZone.Core.Board
     {
         Rear,
         Support,
-        Front
+        Front,
+        Neutral
     }
 
     public enum PieceCategory

@@ -11,15 +11,18 @@ namespace DeadManZone.Presentation.Combat
 {
     public sealed class CombatDirector : MonoBehaviour
     {
-        [SerializeField] private float tickDelaySeconds = 0.15f;
-        [SerializeField] private bool autoAdvanceAfterCommands = true;
+        [SerializeField] private bool autoAdvanceAfterCommands = false;
 
         private Coroutine _playbackRoutine;
         private bool _continueAfterPlayback;
+        private float _secondsPerTick = CombatSegmentPlayback.SecondsPerTick;
+        private CombatAdvanceStatus _playbackAdvanceStatus;
+        private CombatPhase _playbackSegmentPhase;
 
         public bool IsPlaying => _playbackRoutine != null;
         public event Action<CombatEvent> EventReplayed;
         public event Action<CombatPhase> PausedForCommands;
+        public event Action CombatPresentationCompleted;
 
         private void OnEnable()
         {
@@ -33,34 +36,25 @@ namespace DeadManZone.Presentation.Combat
                 RunManager.Instance.CombatAdvanced -= OnCombatAdvanced;
         }
 
-        public void PlayLog(CombatEventLog eventLog, CombatPhase upToPhase)
+        public void PresentCombatAfterLoading()
         {
-            StopPlayback();
-            _playbackRoutine = StartCoroutine(PlaybackRoutine(eventLog?.Events, upToPhase));
-        }
-
-        public void ReplayFromSaveAndPauseAtCheckpoint()
-        {
-            if (RunManager.Instance?.State?.Combat?.EventLog == null)
+            if (RunManager.Instance?.State?.Combat == null)
                 return;
 
-            var events = RunManager.Instance.State.Combat.EventLog
-                .Select(e => new CombatEvent
-                {
-                    Phase = e.Phase,
-                    Tick = e.Tick,
-                    ActorId = e.ActorId,
-                    ActionType = e.ActionType,
-                    TargetId = e.TargetId,
-                    Value = e.Value
-                })
-                .ToList();
+            var combat = RunManager.Instance.State.Combat;
+            if (combat.CompletedPhase == default && !combat.AwaitingCommand)
+            {
+                AdvanceCombatNow();
+                return;
+            }
 
-            var log = new CombatEventLog();
-            foreach (var e in events)
-                log.Append(e.Phase, e.Tick, e.ActorId, e.ActionType, e.TargetId, e.Value);
+            if (combat.AwaitingCommand)
+                PlaySegmentFromSave(combat.CompletedPhase, CombatAdvanceStatus.AwaitingCommand);
+        }
 
-            PlayLog(log, RunManager.Instance.State.Combat.CompletedPhase);
+        public void PlayLog(CombatEventLog eventLog, CombatPhase segmentPhase)
+        {
+            PlaySegment(eventLog?.Events, segmentPhase, CombatAdvanceStatus.AwaitingCommand);
         }
 
         public void ContinueCombat()
@@ -77,42 +71,103 @@ namespace DeadManZone.Presentation.Combat
             AdvanceCombatNow();
         }
 
-        public void SetTickDelayForTests(float delay) => tickDelaySeconds = delay;
+        public void SetSecondsPerTickForTests(float seconds) => _secondsPerTick = seconds;
 
         private void OnCombatAdvanced(CombatAdvanceResult result)
         {
-            PlayLog(result.EventLog, result.CompletedPhase);
-
-            if (result.Status == CombatAdvanceStatus.AwaitingCommand)
-                PausedForCommands?.Invoke(result.CompletedPhase);
+            PlaySegment(result.EventLog?.Events, result.CompletedPhase, result.Status);
         }
 
-        private IEnumerator PlaybackRoutine(IEnumerable<CombatEvent> events, CombatPhase upToPhase)
+        private void PlaySegmentFromSave(CombatPhase segmentPhase, CombatAdvanceStatus status)
         {
-            if (events != null)
-            {
-                var filtered = events.Where(e => e.Phase <= upToPhase)
-                    .OrderBy(e => e.Phase)
-                    .ThenBy(e => e.Tick)
-                    .ToList();
+            if (RunManager.Instance?.State?.Combat?.EventLog == null)
+                return;
 
-                foreach (var combatEvent in filtered)
+            var events = RunManager.Instance.State.Combat.EventLog
+                .Select(e => new CombatEvent
                 {
-                    EventReplayed?.Invoke(combatEvent);
-                    if (tickDelaySeconds > 0f)
-                        yield return new WaitForSeconds(tickDelaySeconds);
-                    else
-                        yield return null;
+                    Phase = e.Phase,
+                    Tick = e.Tick,
+                    ActorId = e.ActorId,
+                    ActionType = e.ActionType,
+                    TargetId = e.TargetId,
+                    Value = e.Value
+                })
+                .ToList();
+
+            PlaySegment(events, segmentPhase, status);
+        }
+
+        private void PlaySegment(
+            IEnumerable<CombatEvent> events,
+            CombatPhase segmentPhase,
+            CombatAdvanceStatus status)
+        {
+            StopPlayback();
+            _playbackAdvanceStatus = status;
+            _playbackSegmentPhase = segmentPhase;
+            _playbackRoutine = StartCoroutine(PlaybackSegmentRoutine(events, segmentPhase, status));
+        }
+
+        private IEnumerator PlaybackSegmentRoutine(
+            IEnumerable<CombatEvent> events,
+            CombatPhase segmentPhase,
+            CombatAdvanceStatus status)
+        {
+            var eventsByTick = CombatSegmentPlayback.GroupEventsByTick(segmentPhase, events);
+            bool segmentEndsFight = status == CombatAdvanceStatus.Completed ||
+                                    CombatSegmentPlayback.SegmentContainsFightEnd(events, segmentPhase);
+            int lastTick = CombatSegmentPlayback.ResolveLastTick(segmentPhase, events, segmentEndsFight);
+            bool fightEnded = false;
+
+            for (int tick = 0; tick <= lastTick && !fightEnded; tick++)
+            {
+                if (eventsByTick.TryGetValue(tick, out var tickEvents))
+                {
+                    foreach (var combatEvent in tickEvents)
+                    {
+                        EventReplayed?.Invoke(combatEvent);
+                        if (combatEvent.ActionType == "fight_end")
+                        {
+                            fightEnded = true;
+                            break;
+                        }
+                    }
                 }
+
+                if (fightEnded)
+                    break;
+
+                if (_secondsPerTick > 0f)
+                    yield return new WaitForSeconds(_secondsPerTick);
+                else
+                    yield return null;
             }
 
             _playbackRoutine = null;
+            FinishPlayback();
+        }
 
+        private void FinishPlayback()
+        {
             if (_continueAfterPlayback)
             {
                 _continueAfterPlayback = false;
                 AdvanceCombatNow();
-                yield break;
+                return;
+            }
+
+            if (_playbackAdvanceStatus == CombatAdvanceStatus.AwaitingCommand &&
+                ShouldPauseAfterPlayback(_playbackSegmentPhase))
+            {
+                PausedForCommands?.Invoke(_playbackSegmentPhase);
+                return;
+            }
+
+            if (_playbackAdvanceStatus == CombatAdvanceStatus.Completed)
+            {
+                CombatPresentationCompleted?.Invoke();
+                return;
             }
 
             if (autoAdvanceAfterCommands &&
@@ -123,14 +178,18 @@ namespace DeadManZone.Presentation.Combat
             }
         }
 
+        private static bool ShouldPauseAfterPlayback(CombatPhase segmentPhase)
+        {
+            var combat = RunManager.Instance?.State?.Combat;
+            return combat is { AwaitingCommand: true } && combat.CompletedPhase == segmentPhase;
+        }
+
         private void AdvanceCombatNow()
         {
             if (RunManager.Instance == null)
                 return;
 
-            var result = RunManager.Instance.AdvanceCombat();
-            if (result.Status == CombatAdvanceStatus.AwaitingCommand)
-                PausedForCommands?.Invoke(result.CompletedPhase);
+            RunManager.Instance.AdvanceCombat();
         }
 
         private void StopPlayback()

@@ -65,6 +65,9 @@ namespace DeadManZone.Core.Run
         public CombatSaveState Combat { get; set; }
         public BattleReport LastBattleReport { get; set; }
 
+        /// <summary>DEV-ONLY: formatted log from the most recently completed fight.</summary>
+        public string LastCombatLogText { get; set; }
+
         public static RunState CreateNew(
             string factionId,
             int runSeed,

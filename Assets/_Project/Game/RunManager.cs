@@ -226,9 +226,6 @@ namespace DeadManZone.Game
             EnsureOrchestrator();
             _orchestrator.BeginCombat();
             NotifyStateChanged();
-
-            if (_orchestrator.State.Phase == RunPhase.Combat)
-                CombatAdvanced?.Invoke(BuildCombatAdvanceSnapshot());
         }
 
         private CombatAdvanceResult BuildCombatAdvanceSnapshot()
@@ -278,6 +275,20 @@ namespace DeadManZone.Game
             NotifyStateChanged();
             CombatAdvanced?.Invoke(result);
             return result;
+        }
+
+        public void FinalizePendingCombat()
+        {
+            EnsureOrchestrator();
+            _orchestrator.FinalizePendingCombat();
+            NotifyStateChanged();
+        }
+
+        public void DismissAftermath()
+        {
+            EnsureOrchestrator();
+            _orchestrator.DismissAftermath();
+            NotifyStateChanged();
         }
 
         private static void EnsureBootstrap()

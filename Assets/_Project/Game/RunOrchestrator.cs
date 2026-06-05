@@ -23,6 +23,7 @@ namespace DeadManZone.Game
         private readonly CommandProcessor _commandProcessor = new();
 
         private TickCombatRun _activeCombat;
+        private CombatAdvanceResult _pendingCombatCompletion;
 
         public RunState State { get; private set; }
         public FactionSO Faction { get; private set; }
@@ -148,8 +149,28 @@ namespace DeadManZone.Game
             };
 
             _activeCombat = TickCombatRun.Start(playerBoard, enemyBoard, combatSeed, State.Authority);
-            var firstStep = _activeCombat.Continue(Array.Empty<PhaseCommand>());
-            SyncCombatFromRunner(firstStep);
+            State.Combat.AwaitingCommand = false;
+            State.Combat.CompletedPhase = default;
+            Persist();
+        }
+
+        public bool HasPendingCombatCompletion => _pendingCombatCompletion != null;
+
+        public void FinalizePendingCombat()
+        {
+            if (_pendingCombatCompletion == null)
+                return;
+
+            CompleteCombat(_pendingCombatCompletion);
+            _pendingCombatCompletion = null;
+        }
+
+        public void DismissAftermath()
+        {
+            if (State.Phase != RunPhase.Aftermath)
+                return;
+
+            State.Phase = RunPhase.Build;
             Persist();
         }
 
@@ -251,7 +272,7 @@ namespace DeadManZone.Game
             SyncCombatFromRunner(result);
 
             if (result.Status == CombatAdvanceStatus.Completed)
-                CompleteCombat(result);
+                _pendingCombatCompletion = result;
 
             Persist();
             return result;
@@ -328,6 +349,7 @@ namespace DeadManZone.Game
 
         private void CompleteCombat(CombatAdvanceResult result)
         {
+            State.LastCombatLogText = CombatLogFormatter.FormatAll(result.EventLog?.Events);
             _activeCombat = null;
             bool playerWon = result.PlayerWon;
             bool isDraw = result.IsDraw;
@@ -363,7 +385,7 @@ namespace DeadManZone.Game
                     return;
                 }
 
-                State.Phase = RunPhase.Build;
+                State.Phase = RunPhase.Aftermath;
                 State.RerollCountThisRound = 0;
                 ResetAuthorityForBuildRound();
                 RefreshShop();
@@ -409,7 +431,6 @@ namespace DeadManZone.Game
             State.RerollCountThisRound = 0;
             ResetAuthorityForBuildRound();
             RefreshShop();
-            State.Phase = RunPhase.Build;
             Persist();
         }
 

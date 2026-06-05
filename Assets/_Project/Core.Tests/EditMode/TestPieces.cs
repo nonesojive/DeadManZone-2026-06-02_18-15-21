@@ -26,6 +26,8 @@ namespace DeadManZone.Core.Tests
             AttackType? attackType = null,
             ArmorType? armorType = null,
             AttackRangeTier? attackRange = null,
+            MovementSpeedTier? movementSpeed = null,
+            AttackSpeedTier? attackSpeed = null,
             GrantedAbility? grantedAbility = null) =>
             new()
             {
@@ -42,9 +44,9 @@ namespace DeadManZone.Core.Tests
                 ManpowerCost = source.ManpowerCost,
                 ShopModifiers = source.ShopModifiers,
                 CommandActions = source.CommandActions,
-                AttackSpeed = source.AttackSpeed,
                 AttackRange = attackRange ?? source.AttackRange,
-                MovementSpeed = source.MovementSpeed,
+                MovementSpeed = movementSpeed ?? source.MovementSpeed,
+                AttackSpeed = attackSpeed ?? source.AttackSpeed,
                 ArmorType = armorType ?? source.ArmorType,
                 AttackType = attackType ?? source.AttackType,
                 GrantedAbility = grantedAbility ?? source.GrantedAbility,

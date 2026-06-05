@@ -80,7 +80,7 @@ namespace DeadManZone.Core.Combat
             if (LastCompletedPhase == CombatPhase.Deployment)
             {
                 ApplyCommands(commands, CombatPhase.Deployment);
-                if (TryEndFight())
+                if (TryEndFight(CombatPhase.Deployment))
                     return CompleteResult();
 
                 RunSegment(CombatSegment.MainFight, CombatPhase.Grind, SegmentTickBudget.MainFight, 1.0f);
@@ -91,11 +91,11 @@ namespace DeadManZone.Core.Combat
             if (LastCompletedPhase == CombatPhase.Grind)
             {
                 ApplyCommands(commands, CombatPhase.Grind);
-                if (TryEndFight())
+                if (TryEndFight(CombatPhase.Grind))
                     return CompleteResult();
 
                 RunSegment(CombatSegment.BriefPush, CombatPhase.FinalPush, CombatPacingConfig.BriefPushTicks, 1.0f);
-                if (TryEndFight())
+                if (TryEndFight(CombatPhase.FinalPush))
                     return CompleteResult();
 
                 RunGasUntilEnd();
@@ -129,12 +129,18 @@ namespace DeadManZone.Core.Combat
             ActiveSegment = CombatSegment.GasFinal;
             for (SegmentTick = 0; SegmentTick < CombatPacingConfig.MaxGasTicks; SegmentTick++)
             {
-                if (TryEndFight())
+                if (TryEndFight(CombatPhase.FinalPush))
                     break;
 
                 TryMoveSide(_playerCombatants, _enemyCombatants, ActiveSegment, CombatPhase.FinalPush);
                 TryMoveSide(_enemyCombatants, _playerCombatants, ActiveSegment, CombatPhase.FinalPush);
+                if (TryEndFight(CombatPhase.FinalPush))
+                    break;
+
                 ApplyGas(CombatPhase.FinalPush);
+                if (TryEndFight(CombatPhase.FinalPush))
+                    break;
+
                 ResolveAttacks(
                     _playerCombatants,
                     _enemyCombatants,
@@ -142,6 +148,9 @@ namespace DeadManZone.Core.Combat
                     _tactics.PlayerDamageBuff,
                     CombatPhase.FinalPush,
                     1.2f);
+                if (TryEndFight(CombatPhase.FinalPush))
+                    break;
+
                 ResolveAttacks(
                     _enemyCombatants,
                     _playerCombatants,
@@ -157,17 +166,28 @@ namespace DeadManZone.Core.Combat
             ActiveSegment = segment;
             for (SegmentTick = 0; SegmentTick < tickBudget; SegmentTick++)
             {
-                if (TryEndFight())
+                if (TryEndFight(phase))
                     break;
 
                 TryMoveSide(_playerCombatants, _enemyCombatants, segment, phase);
                 TryMoveSide(_enemyCombatants, _playerCombatants, segment, phase);
 
+                if (TryEndFight(phase))
+                    break;
+
                 if (segment == CombatSegment.GasFinal)
                     ApplyGas(phase);
 
+                if (TryEndFight(phase))
+                    break;
+
                 ResolveAttacks(_playerCombatants, _enemyCombatants, _tactics.PlayerTactic, _tactics.PlayerDamageBuff, phase, damageScale);
+                if (TryEndFight(phase))
+                    break;
+
                 ResolveAttacks(_enemyCombatants, _playerCombatants, _tactics.EnemyTactic, _tactics.EnemyDamageBuff, phase, damageScale);
+                if (TryEndFight(phase))
+                    break;
             }
         }
 
@@ -177,23 +197,45 @@ namespace DeadManZone.Core.Combat
             CombatSegment segment,
             CombatPhase phase)
         {
-            var aliveTargets = targets.Where(t => t.IsAlive).OrderBy(t => t.InstanceId).ToList();
+            var aliveTargets = targets.Where(t => t.IsAlive).ToList();
             if (aliveTargets.Count == 0)
                 return;
 
-            var goal = aliveTargets[0].Position;
             var blocked = new HashSet<GridCoord>(_occupied);
 
             foreach (var mover in movers.Where(m => m.IsAlive && m.HasTag(GameTags.Combatant)).OrderBy(m => m.InstanceId))
             {
+                if (mover.Definition.MovementSpeed == MovementSpeedTier.None)
+                    continue;
+
+                mover.MoveCharge += CombatMovementSpeed.GetChargePerTick(
+                    mover.Definition.MovementSpeed,
+                    mover.Side == CombatSide.Player ? _tactics.PlayerTactic : _tactics.EnemyTactic);
+
+                if (!CombatMovementRules.ShouldAttemptMove(mover, aliveTargets))
+                    continue;
+
+                var goal = CombatMovementRules.SelectNearestEnemyPosition(mover.Position, aliveTargets);
                 var next = CombatMovement.StepTowardTarget(mover.Position, goal, _layout, segment, blocked);
                 if (next == null || next.Value.Equals(mover.Position))
                     continue;
 
+                int cost = CombatMovement.GetStepChargeCost(mover.Position, next.Value, _layout, segment);
+                if (mover.MoveCharge < cost)
+                    continue;
+
+                mover.MoveCharge -= cost;
                 _occupied.Remove(mover.Position);
                 mover.Position = next.Value;
                 _occupied.Add(mover.Position);
-                _log.Append(phase, SegmentTick, mover.InstanceId, "move", null, 0);
+                blocked.Add(mover.Position);
+                _log.Append(
+                    phase,
+                    SegmentTick,
+                    mover.InstanceId,
+                    "move",
+                    $"{next.Value.X},{next.Value.Y}",
+                    0);
             }
         }
 
@@ -207,6 +249,8 @@ namespace DeadManZone.Core.Combat
                 int damage = GasDamageSystem.GetDamage(combatant.Position, SegmentTick, _layout);
                 combatant.CurrentHp -= damage;
                 _log.Append(phase, SegmentTick, "gas", combatant.InstanceId, "gas_damage", damage);
+                if (!combatant.IsAlive)
+                    LogDestroyed(phase, combatant.InstanceId, "gas");
             }
         }
 
@@ -240,7 +284,11 @@ namespace DeadManZone.Core.Combat
                 actor.DamageDealtThisFight += damage;
                 target.DamageTakenThisFight += damage;
                 _log.Append(phase, SegmentTick, actor.InstanceId, "damage", target.InstanceId, damage);
-                actor.CooldownRemaining = System.Math.Max(1, actor.Definition.CooldownTicks);
+                if (!target.IsAlive)
+                    LogDestroyed(phase, target.InstanceId, actor.InstanceId);
+                actor.CooldownRemaining = CombatAttackSpeed.GetEffectiveCooldown(
+                    actor.Definition.CooldownTicks,
+                    actor.Definition.AttackSpeed);
             }
         }
 
@@ -266,7 +314,7 @@ namespace DeadManZone.Core.Combat
                 combatant.ArmorBuffSteps = 0;
         }
 
-        private bool TryEndFight()
+        private bool TryEndFight(CombatPhase phase)
         {
             var (fightOver, playerWon, isDraw) = CombatWinChecker.Evaluate(_playerCombatants, _enemyCombatants);
             if (!fightOver)
@@ -275,12 +323,17 @@ namespace DeadManZone.Core.Combat
             IsFightOver = true;
             PlayerWon = playerWon;
             IsDraw = isDraw;
+            string outcome = isDraw ? "draw" : playerWon ? "victory" : "defeat";
+            _log.Append(phase, SegmentTick, "combat", "fight_end", outcome, 0);
             return true;
         }
 
+        private void LogDestroyed(CombatPhase phase, string victimId, string sourceId) =>
+            _log.Append(phase, SegmentTick, victimId, "destroyed", sourceId, 0);
+
         private CombatAdvanceResult CompleteFight()
         {
-            TryEndFight();
+            TryEndFight(CombatPhase.FinalPush);
             return CompleteResult();
         }
 
@@ -350,20 +403,33 @@ namespace DeadManZone.Core.Combat
                 _occupied.Add(c.Position);
         }
 
-        private static List<CombatantState> SpawnCombatants(BoardState board, CombatSide side, int xOffset) =>
-            board.Pieces
+        private static List<CombatantState> SpawnCombatants(BoardState board, CombatSide side, int xOffset)
+        {
+            int halfWidth = board.Layout.Width;
+            return board.Pieces
                 .OrderBy(p => p.InstanceId)
                 .Where(p => p.Definition.MaxHp > 0)
-                .Select(p => new CombatantState
+                .Select(p =>
                 {
-                    InstanceId = p.InstanceId,
-                    Side = side,
-                    Definition = p.Definition,
-                    CurrentHp = p.Definition.MaxHp,
-                    CooldownRemaining = 0,
-                    Position = new GridCoord(xOffset + p.Anchor.X, p.Anchor.Y)
+                    int localX = side == CombatSide.Enemy
+                        ? BattlefieldLayout.MirrorEnemyAnchorX(
+                            p.Anchor.X,
+                            p.Definition.Shape,
+                            halfWidth,
+                            p.Rotation)
+                        : p.Anchor.X;
+                    return new CombatantState
+                    {
+                        InstanceId = p.InstanceId,
+                        Side = side,
+                        Definition = p.Definition,
+                        CurrentHp = p.Definition.MaxHp,
+                        CooldownRemaining = 0,
+                        Position = new GridCoord(xOffset + localX, p.Anchor.Y)
+                    };
                 })
                 .ToList();
+        }
 
         private static void ApplyAdjacencyBonuses(BoardState board, IList<CombatantState> combatants)
         {

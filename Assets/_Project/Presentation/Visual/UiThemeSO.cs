@@ -29,9 +29,10 @@ namespace DeadManZone.Presentation.Visual
         public Color buttonPressed = new(0.14f, 0.15f, 0.18f, 1f);
 
         [Header("Board zones")]
-        public Color rearZoneColor = new(0.17f, 0.19f, 0.23f, 1f);
-        public Color supportZoneColor = new(0.18f, 0.22f, 0.19f, 1f);
-        public Color frontZoneColor = new(0.26f, 0.18f, 0.18f, 1f);
+        public Color rearZoneColor = new(0.20f, 0.34f, 0.52f, 1f);
+        public Color supportZoneColor = new(0.22f, 0.42f, 0.30f, 1f);
+        public Color frontZoneColor = new(0.52f, 0.24f, 0.24f, 1f);
+        public Color neutralZoneColor = new(0.38f, 0.30f, 0.24f, 1f);
         public Color specialTileColor = new(0.55f, 0.48f, 0.22f, 0.45f);
         public Color tileHoverColor = new(0.35f, 0.38f, 0.45f, 0.5f);
         public Color invalidPlacementColor = new(0.8f, 0.15f, 0.12f, 0.55f);
@@ -56,6 +57,7 @@ namespace DeadManZone.Presentation.Visual
                 ZoneType.Rear => rearZoneColor,
                 ZoneType.Support => supportZoneColor,
                 ZoneType.Front => frontZoneColor,
+                ZoneType.Neutral => neutralZoneColor,
                 _ => supportZoneColor
             };
 

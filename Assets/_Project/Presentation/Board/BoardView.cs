@@ -193,7 +193,7 @@ namespace DeadManZone.Presentation.Board
             var layout = BoardLayout.CreateFromZoneMap(
                 battlefield.Layout.TotalWidth,
                 battlefield.Layout.Height,
-                CreateCombatZoneMap(battlefield.Layout));
+                BattlefieldZoneMap.Create(battlefield.Layout, playerBoard.Layout));
 
             BuildBoard(layout);
             _boardState = new BoardState(layout);
@@ -207,35 +207,6 @@ namespace DeadManZone.Presentation.Board
             }
 
             RefreshOccupancyVisuals();
-        }
-
-        private static ZoneType[,] CreateCombatZoneMap(BattlefieldLayout bf)
-        {
-            var zones = new ZoneType[bf.TotalWidth, bf.Height];
-            for (int x = 0; x < bf.TotalWidth; x++)
-            {
-                ZoneType zone = ZoneType.Support;
-                if (x < bf.PlayerHalfWidth)
-                {
-                    int rearEnd = bf.PlayerHalfWidth / 3;
-                    int supportEnd = rearEnd + (bf.PlayerHalfWidth - rearEnd) / 2;
-                    zone = x < rearEnd ? ZoneType.Rear : x < supportEnd ? ZoneType.Support : ZoneType.Front;
-                }
-                else if (bf.IsNeutralColumn(x))
-                    zone = ZoneType.Support;
-                else
-                {
-                    int ex = x - bf.EnemyOriginX;
-                    int rearEnd = bf.EnemyHalfWidth / 3;
-                    int supportEnd = rearEnd + (bf.EnemyHalfWidth - rearEnd) / 2;
-                    zone = ex < rearEnd ? ZoneType.Rear : ex < supportEnd ? ZoneType.Support : ZoneType.Front;
-                }
-
-                for (int y = 0; y < bf.Height; y++)
-                    zones[x, y] = zone;
-            }
-
-            return zones;
         }
 
         public void SelectPieceForPlacement(PieceDefinition definition) => _selectedPiece = definition;
@@ -265,6 +236,108 @@ namespace DeadManZone.Presentation.Board
         }
 
         public BoardTileView GetTile(GridCoord coord) => _tiles.TryGetValue(coord, out var tile) ? tile : null;
+
+        public void RemovePieceVisual(string instanceId)
+        {
+            if (string.IsNullOrEmpty(instanceId))
+                return;
+
+            ClearFootprintTiles(instanceId);
+            if (_shapeVisualsByInstance.TryGetValue(instanceId, out var visual))
+            {
+                Destroy(visual.gameObject);
+                _shapeVisualsByInstance.Remove(instanceId);
+            }
+        }
+
+        public void RepositionPieceVisual(
+            string instanceId,
+            PieceDefinition definition,
+            GridCoord newAnchor,
+            PieceRotation rotation)
+        {
+            if (string.IsNullOrEmpty(instanceId) || definition == null || _layout == null)
+                return;
+
+            ClearFootprintTiles(instanceId);
+            if (_shapeVisualsByInstance.TryGetValue(instanceId, out var visual))
+            {
+                Destroy(visual.gameObject);
+                _shapeVisualsByInstance.Remove(instanceId);
+            }
+
+            if (_piecesOverlay == null || gridLayout == null)
+                EnsurePiecesOverlay();
+
+            MarkFootprint(instanceId, definition, newAnchor, rotation);
+            CreateShapeVisual(instanceId, definition, newAnchor, rotation);
+        }
+
+        public void SyncCombatPiecePositions(
+            IReadOnlyDictionary<string, GridCoord> anchors,
+            IReadOnlyDictionary<string, PieceDefinition> definitions,
+            IReadOnlyDictionary<string, PieceRotation> rotations)
+        {
+            if (anchors == null || definitions == null)
+                return;
+
+            foreach (var instanceId in _shapeVisualsByInstance.Keys.ToList())
+            {
+                if (!anchors.ContainsKey(instanceId))
+                    RemovePieceVisual(instanceId);
+            }
+
+            foreach (var pair in anchors)
+            {
+                if (!definitions.TryGetValue(pair.Key, out var definition))
+                    continue;
+
+                var rotation = rotations != null && rotations.TryGetValue(pair.Key, out var stored)
+                    ? stored
+                    : PieceRotation.R0;
+                RepositionPieceVisual(pair.Key, definition, pair.Value, rotation);
+            }
+        }
+
+        private void ClearFootprintTiles(string instanceId)
+        {
+            foreach (var tile in _tiles.Values)
+            {
+                if (tile.OccupyingInstanceId == instanceId)
+                    tile.SetOccupied(null, false);
+            }
+        }
+
+        private void MarkFootprint(
+            string instanceId,
+            PieceDefinition definition,
+            GridCoord anchor,
+            PieceRotation rotation)
+        {
+            foreach (var cell in definition.Shape.GetCells(anchor, rotation))
+            {
+                if (_tiles.TryGetValue(cell, out var tile))
+                    tile.SetOccupied(instanceId, true);
+            }
+        }
+
+        private void CreateShapeVisual(
+            string instanceId,
+            PieceDefinition definition,
+            GridCoord anchor,
+            PieceRotation rotation)
+        {
+            var shapeCells = definition.Shape.GetCells(anchor, rotation).ToList();
+            var source = PieceVisualLookup.GetSource(definition.Id);
+            var shapeVisual = PieceShapeVisual.Create(
+                _piecesOverlay,
+                gridLayout,
+                shapeCells,
+                definition,
+                source);
+            if (shapeVisual != null)
+                _shapeVisualsByInstance[instanceId] = shapeVisual;
+        }
 
         public bool TrySellSelectedPiece()
         {
@@ -352,19 +425,11 @@ namespace DeadManZone.Presentation.Board
                     piece.Definition,
                     piece.Rotation);
 
-                var shapeCells = piece.Definition.Shape
-                    .GetCells(piece.Anchor, piece.Rotation)
-                    .ToList();
-
-                var source = PieceVisualLookup.GetSource(piece.Definition.Id);
-                var shapeVisual = PieceShapeVisual.Create(
-                    _piecesOverlay,
-                    gridLayout,
-                    shapeCells,
+                CreateShapeVisual(
+                    piece.InstanceId,
                     piece.Definition,
-                    source);
-                if (shapeVisual != null)
-                    _shapeVisualsByInstance[piece.InstanceId] = shapeVisual;
+                    piece.Anchor,
+                    piece.Rotation);
             }
         }
 

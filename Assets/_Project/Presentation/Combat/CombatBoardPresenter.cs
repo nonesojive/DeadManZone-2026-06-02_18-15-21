@@ -4,6 +4,7 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Content;
+using DeadManZone.Core.Run;
 using DeadManZone.Data;
 using DeadManZone.Game;
 using DeadManZone.Presentation.Board;
@@ -22,6 +23,7 @@ namespace DeadManZone.Presentation.Combat
     [SerializeField] private CanvasGroup phaseBannerGroup;
 
     private readonly Dictionary<string, GridCoord> _instanceAnchors = new();
+    private readonly CombatReplayVisuals _replayVisuals = new();
     private ContentRegistry _registry;
     private Coroutine _bannerRoutine;
 
@@ -43,7 +45,8 @@ namespace DeadManZone.Presentation.Combat
         RunManager.Instance.CombatAdvanced += OnCombatAdvanced;
 
       HideBanner();
-      RebuildInstanceMap();
+      boardView?.RefreshFromRunManager();
+      InitializeReplayState();
     }
 
     private void OnDisable()
@@ -57,19 +60,62 @@ namespace DeadManZone.Presentation.Combat
 
     private void OnCombatAdvanced(CombatAdvanceResult result)
     {
-      RebuildInstanceMap();
+      RestoreReplayStateBeforeSegment(result.CompletedPhase);
+      _replayVisuals.SyncBoardView(boardView);
       ShowPhaseBanner(result.CompletedPhase);
     }
 
-    private void RebuildInstanceMap()
+    private void InitializeReplayState()
     {
       _instanceAnchors.Clear();
       if (RunManager.Instance == null || !RunManager.Instance.HasActiveRun || _registry == null)
         return;
 
-      var board = RunManager.Instance.Orchestrator.GetPlayerBoard();
-      foreach (var piece in board.Pieces)
-        _instanceAnchors[piece.InstanceId] = piece.Anchor;
+      var state = RunManager.Instance.State;
+      if (state.Phase != RunPhase.Combat || state.Combat?.EnemyBoard == null)
+        return;
+
+      var excludePhase = state.Combat.AwaitingCommand ? state.Combat.CompletedPhase : (CombatPhase?)null;
+      RestoreReplayStateBeforeSegment(excludePhase);
+    }
+
+    private void RestoreReplayStateBeforeSegment(CombatPhase? excludePhase)
+    {
+      if (RunManager.Instance == null || !RunManager.Instance.HasActiveRun || _registry == null)
+        return;
+
+      var state = RunManager.Instance.State;
+      if (state.Phase != RunPhase.Combat || state.Combat?.EnemyBoard == null)
+        return;
+
+      var playerBoard = RunManager.Instance.Orchestrator.GetPlayerBoard();
+      var enemyBoard = BoardSnapshotMapper.ToBoard(state.Combat.EnemyBoard, _registry);
+      var battlefield = BattlefieldState.FromBoards(playerBoard, enemyBoard);
+      var events = ConvertSavedEvents(state.Combat.EventLog);
+
+      _replayVisuals.RestoreFromBattlefieldAndEvents(battlefield, events, excludePhase);
+      _instanceAnchors.Clear();
+      foreach (var pair in _replayVisuals.Anchors)
+        _instanceAnchors[pair.Key] = pair.Value;
+    }
+
+    private static IEnumerable<CombatEvent> ConvertSavedEvents(IReadOnlyList<CombatEventRecord> records)
+    {
+      if (records == null)
+        yield break;
+
+      foreach (var record in records)
+      {
+        yield return new CombatEvent
+        {
+          Phase = record.Phase,
+          Tick = record.Tick,
+          ActorId = record.ActorId,
+          ActionType = record.ActionType,
+          TargetId = record.TargetId,
+          Value = record.Value
+        };
+      }
     }
 
     private void OnEventReplayed(CombatEvent combatEvent)
@@ -77,14 +123,22 @@ namespace DeadManZone.Presentation.Combat
       if (combatEvent == null)
         return;
 
+      _replayVisuals.ApplyEvent(combatEvent, boardView);
+      foreach (var pair in _replayVisuals.Anchors)
+        _instanceAnchors[pair.Key] = pair.Value;
+
       switch (combatEvent.ActionType)
       {
         case "move":
           FlashTile(combatEvent.ActorId, UiThemeProvider.Current.tileHoverColor);
           break;
         case "damage":
+        case "gas_damage":
           FlashTile(combatEvent.TargetId, UiThemeProvider.Current.dangerColor);
           ShowFloatingText(combatEvent.TargetId, $"-{combatEvent.Value}");
+          break;
+        case "destroyed":
+          FlashTile(combatEvent.ActorId, UiThemeProvider.Current.dangerColor);
           break;
         case "stance_change":
           FlashTile(combatEvent.ActorId, UiThemeProvider.Current.accentColor);

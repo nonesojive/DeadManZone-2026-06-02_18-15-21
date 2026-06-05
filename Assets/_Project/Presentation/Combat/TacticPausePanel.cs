@@ -344,6 +344,7 @@ namespace DeadManZone.Presentation.Combat
 
         private static Button CreateButton(Transform parent, string label, Vector2 anchor)
         {
+            var theme = UiThemeProvider.Current;
             var go = new GameObject("Button", typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(parent, false);
             var rect = go.GetComponent<RectTransform>();
@@ -351,13 +352,19 @@ namespace DeadManZone.Presentation.Combat
             rect.anchorMax = anchor;
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.sizeDelta = new Vector2(180f, 44f);
+
             var text = CreateLabel(go.transform, label, 18, FontStyles.Bold, new Vector2(0.5f, 0.5f), new Vector2(160f, 36f));
             text.raycastTarget = false;
-            return go.GetComponent<Button>();
+            UiThemeApplicator.ApplyLabel(text, secondary: false, theme);
+
+            var button = go.GetComponent<Button>();
+            UiThemeApplicator.ApplyAccentButton(button, theme);
+            return button;
         }
 
         private static Toggle CreateToggle(Transform parent, string label, Vector2 anchor)
         {
+            var theme = UiThemeProvider.Current;
             var go = new GameObject("Toggle", typeof(RectTransform), typeof(Toggle), typeof(Image));
             go.transform.SetParent(parent, false);
             var rect = go.GetComponent<RectTransform>();
@@ -365,10 +372,16 @@ namespace DeadManZone.Presentation.Combat
             rect.anchorMax = anchor;
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.sizeDelta = new Vector2(180f, 36f);
+
+            var image = go.GetComponent<Image>();
+            UiThemeApplicator.ApplyCard(image, theme);
+
             var text = CreateLabel(go.transform, label, 16, FontStyles.Normal, new Vector2(0.5f, 0.5f), new Vector2(170f, 32f));
             text.raycastTarget = false;
+            UiThemeApplicator.ApplyLabel(text, secondary: false, theme);
+
             var toggle = go.GetComponent<Toggle>();
-            toggle.targetGraphic = go.GetComponent<Image>();
+            toggle.targetGraphic = image;
             return toggle;
         }
     }
