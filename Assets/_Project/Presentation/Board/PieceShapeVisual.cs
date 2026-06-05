@@ -20,15 +20,16 @@ namespace DeadManZone.Presentation.Board
             GridLayoutGroup grid,
             IReadOnlyList<GridCoord> cells,
             PieceDefinition definition,
-            PieceDefinitionSO source)
+            PieceDefinitionSO source,
+            GridCoord anchor,
+            PieceRotation rotation)
         {
             if (overlay == null || grid == null || cells == null || cells.Count == 0 || definition == null)
                 return null;
 
             var theme = UiThemeProvider.Current;
-            var tint = source != null && source.categoryTint.a > 0.01f
-                ? source.categoryTint
-                : theme.GetCategoryTint(definition.Category);
+            var tint = PieceArtResolver.ResolveTint(definition, source, theme);
+            var hideLabel = PieceArtResolver.AllCellsHaveSprites(source, anchor, rotation, definition);
 
             var footprint = ComputeFootprint(overlay, grid, cells);
             if (footprint.size.sqrMagnitude < 1f)
@@ -61,7 +62,18 @@ namespace DeadManZone.Presentation.Board
                 blockRect.localPosition = cellCenter - footprint.center;
 
                 var image = block.AddComponent<Image>();
-                image.color = Color.Lerp(tint, Color.white, 0.15f);
+                var localCell = PieceArtResolver.ToLocalCell(cell, anchor, rotation);
+                var cellSprite = source?.TryGetCellSprite(localCell);
+                if (cellSprite != null)
+                {
+                    image.sprite = cellSprite;
+                    image.color = Color.white;
+                }
+                else
+                {
+                    image.color = Color.Lerp(tint, Color.white, 0.15f);
+                }
+
                 image.raycastTarget = false;
 
                 var outline = block.AddComponent<Outline>();
@@ -69,21 +81,27 @@ namespace DeadManZone.Presentation.Board
                 outline.effectDistance = new Vector2(1f, -1f);
             }
 
-            var labelGo = new GameObject("Label", typeof(RectTransform));
-            labelGo.transform.SetParent(root.transform, false);
-            var labelRect = labelGo.GetComponent<RectTransform>();
-            labelRect.anchorMin = Vector2.zero;
-            labelRect.anchorMax = Vector2.one;
-            labelRect.offsetMin = new Vector2(2f, 2f);
-            labelRect.offsetMax = new Vector2(-2f, -2f);
+            if (!hideLabel)
+            {
+                var labelGo = new GameObject("Label", typeof(RectTransform));
+                labelGo.transform.SetParent(root.transform, false);
+                var labelRect = labelGo.GetComponent<RectTransform>();
+                labelRect.anchorMin = Vector2.zero;
+                labelRect.anchorMax = Vector2.one;
+                labelRect.offsetMin = new Vector2(2f, 2f);
+                labelRect.offsetMax = new Vector2(-2f, -2f);
 
-            var label = labelGo.AddComponent<TextMeshProUGUI>();
-            label.text = GetShortName(definition);
-            label.fontSize = Mathf.Clamp(Mathf.RoundToInt(Mathf.Min(footprint.size.x, footprint.size.y) * 0.22f), 9, 14);
-            label.alignment = TextAlignmentOptions.Center;
-            label.color = theme.textPrimary;
-            label.raycastTarget = false;
-            label.textWrappingMode = TextWrappingModes.Normal;
+                var label = labelGo.AddComponent<TextMeshProUGUI>();
+                label.text = GetShortName(definition);
+                label.fontSize = Mathf.Clamp(
+                    Mathf.RoundToInt(Mathf.Min(footprint.size.x, footprint.size.y) * 0.22f),
+                    9,
+                    14);
+                label.alignment = TextAlignmentOptions.Center;
+                label.color = theme.textPrimary;
+                label.raycastTarget = false;
+                label.textWrappingMode = TextWrappingModes.Normal;
+            }
 
             return root.AddComponent<PieceShapeVisual>();
         }

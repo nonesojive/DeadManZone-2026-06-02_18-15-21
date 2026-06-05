@@ -91,7 +91,9 @@ namespace DeadManZone.Presentation.Reserves
                     gridLayout,
                     shapeCells,
                     piece.Definition,
-                    PieceVisualLookup.GetSource(piece.Definition.Id));
+                    PieceVisualLookup.GetSource(piece.Definition.Id),
+                    piece.Anchor,
+                    piece.Rotation);
                 if (shapeVisual != null)
                     _shapeVisualsByInstance[piece.InstanceId] = shapeVisual;
             }

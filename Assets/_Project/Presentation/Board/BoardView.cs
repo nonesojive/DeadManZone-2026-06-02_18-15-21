@@ -334,7 +334,9 @@ namespace DeadManZone.Presentation.Board
                 gridLayout,
                 shapeCells,
                 definition,
-                source);
+                source,
+                anchor,
+                rotation);
             if (shapeVisual != null)
                 _shapeVisualsByInstance[instanceId] = shapeVisual;
         }

@@ -36,6 +36,36 @@ namespace DeadManZone.Data
         [Header("Visuals")]
         public Sprite icon;
         public Color categoryTint = Color.white;
+        [Tooltip("Optional per-cell board sprites keyed by local shape offset (pre-rotation).")]
+        public PieceCellSprite[] cellSprites;
+
+        public bool HasCellArt()
+        {
+            if (cellSprites == null)
+                return false;
+
+            foreach (var entry in cellSprites)
+            {
+                if (entry.sprite != null)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public Sprite TryGetCellSprite(Vector2Int localCell)
+        {
+            if (cellSprites == null)
+                return null;
+
+            foreach (var entry in cellSprites)
+            {
+                if (entry.localCell == localCell && entry.sprite != null)
+                    return entry.sprite;
+            }
+
+            return null;
+        }
 
         public PieceDefinition ToCore()
         {
