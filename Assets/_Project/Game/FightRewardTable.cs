@@ -18,9 +18,9 @@ namespace DeadManZone.Game
     {
         private static readonly FightReward[] Rewards =
         {
-            new FightReward(15, 1, 2),
-            new FightReward(18, 1, 2),
-            new FightReward(20, 1, 2),
+            new FightReward(100, 1, 2),
+            new FightReward(105, 1, 2),
+            new FightReward(110, 1, 2),
             new FightReward(22, 2, 2),
             new FightReward(25, 2, 3),
             new FightReward(28, 2, 3),
