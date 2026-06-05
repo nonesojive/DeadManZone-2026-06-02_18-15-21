@@ -17,11 +17,11 @@ MonoBehaviour:
   previewTag: Mechanical
   placements:
   - piece: {fileID: 11400000, guid: a09195287ae98b44490baf1a5d3e1a68, type: 2}
-    anchor: {x: 7, y: 4}
+    anchor: {x: 0, y: 4}
     instanceId: enemy_hq
   - piece: {fileID: 11400000, guid: 05c51c0c32d885f4c8f973aea0e45007, type: 2}
     anchor: {x: 5, y: 4}
     instanceId: 
   - piece: {fileID: 11400000, guid: f4a5b6c7d8e9508899aabbccddeeff04, type: 2}
-    anchor: {x: 2, y: 2}
+    anchor: {x: 4, y: 6}
     instanceId: 

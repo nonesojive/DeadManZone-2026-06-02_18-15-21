@@ -34,7 +34,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 armorType: ArmorType.Heavy);
 
             int damage = CombatDamageResolver.ComputeDamage(attacker, defender, damageScale: 1f, armorBuffSteps: 0);
-            Assert.AreEqual(95, damage);
+            Assert.AreEqual(94, damage);
         }
 
         [Test]

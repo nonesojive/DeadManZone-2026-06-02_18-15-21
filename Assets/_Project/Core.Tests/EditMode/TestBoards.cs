@@ -36,7 +36,9 @@ namespace DeadManZone.Core.Tests
         public static BoardState StandardEnemy()
         {
             var board = new BoardState(Layout);
-            board.TryPlace(TestPieces.RifleSquad(), FrontLineAnchor());
+            board.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 4), instanceId: "enemy_hq");
+            board.TryPlace(TestPieces.RifleSquad(), FrontLineAnchor(3), instanceId: "enemy_rifle_1");
+            board.TryPlace(TestPieces.RifleSquad(), FrontLineAnchor(6), instanceId: "enemy_rifle_2");
             return board;
         }
 
@@ -44,6 +46,7 @@ namespace DeadManZone.Core.Tests
         {
             var board = new BoardState(Layout);
             board.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0));
+            board.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 2), instanceId: "hq_test");
             board.TryPlace(TestPieces.RifleSquad(), FrontLineAnchor(4));
             return board;
         }

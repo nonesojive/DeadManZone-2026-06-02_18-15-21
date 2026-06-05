@@ -20,14 +20,15 @@ namespace DeadManZone.Core.Tests
             Assert.NotNull(faction, "iron_vanguard faction required for regression tests.");
 
             var board = new BoardState(faction.CreateBoardLayout());
-            Place(board, database, "mobile_cannon", new GridCoord(0, 0), "cannon_1");
-            Place(board, database, "field_medic", new GridCoord(2, 0), "medic_1");
-            Place(board, database, "radio_array", new GridCoord(1, 4), "radio_1");
-            Place(board, database, "grenade_thrower", new GridCoord(4, 3), "grenade_1");
-            Place(board, database, "conscript_rifleman", new GridCoord(5, 4), "conscript_1");
-            Place(board, database, "armored_transport", new GridCoord(3, 2), "transport_1");
-            Place(board, database, "diesel_walker", new GridCoord(6, 4), "walker_1");
-            Place(board, database, "rifle_squad", new GridCoord(8, 3), "rifle_1");
+            Place(board, database, "hq_command", new GridCoord(0, 4), "hq_player");
+            Place(board, database, "radio_array", new GridCoord(2, 4), "radio_1");
+            Place(board, database, "mobile_cannon", new GridCoord(4, 0), "cannon_1");
+            Place(board, database, "grenade_thrower", new GridCoord(6, 2), "grenade_1");
+            Place(board, database, "armored_transport", new GridCoord(4, 3), "transport_1");
+            Place(board, database, "field_medic", new GridCoord(5, 6), "medic_1");
+            Place(board, database, "conscript_rifleman", new GridCoord(6, 5), "conscript_1");
+            Place(board, database, "diesel_walker", new GridCoord(7, 3), "walker_1");
+            Place(board, database, "rifle_squad", new GridCoord(7, 6), "rifle_1");
             return board;
         }
 
@@ -51,7 +52,31 @@ namespace DeadManZone.Core.Tests
                 SourcePieceId = radioId ?? "player_tactic"
             });
 
+            TryAddAbility(commands, board, "grenade_thrower", GrantedAbility.GrenadeLob, CombatPhase.Deployment);
+            TryAddAbility(commands, board, "armored_transport", GrantedAbility.ShieldAllies, CombatPhase.Deployment);
+            TryAddAbility(commands, board, "mobile_cannon", GrantedAbility.CannonBlast, CombatPhase.Grind);
+
             return commands;
+        }
+
+        private static void TryAddAbility(
+            List<PhaseCommand> commands,
+            BoardState board,
+            string pieceId,
+            GrantedAbility ability,
+            CombatPhase phase)
+        {
+            var piece = board.Pieces.FirstOrDefault(p => p.Definition.Id == pieceId);
+            if (piece == null)
+                return;
+
+            commands.Add(new PhaseCommand
+            {
+                AfterPhase = phase,
+                Type = CommandType.UseAbility,
+                Ability = ability,
+                SourcePieceId = piece.InstanceId
+            });
         }
 
         private static void Place(

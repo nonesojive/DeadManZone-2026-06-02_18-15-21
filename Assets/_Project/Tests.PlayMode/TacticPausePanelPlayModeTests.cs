@@ -51,18 +51,10 @@ namespace DeadManZone.PlayMode.Tests
                 CompletedPhase = CombatPhase.Grind,
                 Authority = 0,
                 ActiveTactic = TacticType.DisciplinedFire,
+                PendingSelectedTactic = TacticType.Advance,
                 HqAlive = true,
                 HasCommandPiece = false,
-                AvailableAbilities = new List<AvailableCommand>
-                {
-                    new()
-                    {
-                        Type = CommandType.UseAbility,
-                        Ability = GrantedAbility.GrenadeLob,
-                        RequisitionCost = 3,
-                        SourcePieceId = "grenade_1"
-                    }
-                }
+                AvailableAbilities = System.Array.Empty<AvailableCommand>()
             };
 
             panel.ShowPause(context);

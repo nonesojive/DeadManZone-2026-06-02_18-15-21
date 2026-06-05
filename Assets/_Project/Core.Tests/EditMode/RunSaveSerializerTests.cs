@@ -174,6 +174,7 @@ namespace DeadManZone.Core.Tests
 
             Assert.AreEqual(source.Pieces.Count, restored.Pieces.Count);
             Assert.IsTrue(restored.Pieces.Any(p => p.Definition.Id == "command_bunker"));
+            Assert.IsTrue(restored.Pieces.Any(p => p.Definition.Tags.Contains(DeadManZone.Core.Common.GameTags.Hq)));
         }
 
         [Test]

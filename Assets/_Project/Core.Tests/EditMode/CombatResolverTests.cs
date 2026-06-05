@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Combat;
 using NUnit.Framework;
@@ -40,10 +41,11 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void StanceCommand_IsLoggedBetweenPhases()
         {
-            var resolver = new CombatResolver();
-            var player = TestBoards.WithCommandBunker();
-            var enemy = TestBoards.StandardEnemy();
-
+            var board = TestBoards.WithCommandBunker();
+            var processor = new CommandProcessor();
+            var log = new CombatEventLog();
+            var tactics = new TacticState();
+            int authority = 2;
             var commands = new[]
             {
                 new PhaseCommand
@@ -51,13 +53,22 @@ namespace DeadManZone.Core.Tests
                     AfterPhase = CombatPhase.Deployment,
                     Type = CommandType.SetTactic,
                     Tactic = TacticType.Advance,
-                    SourcePieceId = player.Pieces.First(p => p.Definition.Id == "command_bunker").InstanceId
+                    SourcePieceId = "player_tactic"
                 }
             };
 
-            var result = resolver.Resolve(player, enemy, seed: 7, commands: commands);
+            var result = processor.TryApplyBatch(
+                commands,
+                board,
+                ref authority,
+                tactics,
+                playerCombatants: new List<CombatantState>(),
+                enemyCombatants: new List<CombatantState>(),
+                log,
+                CombatPhase.Deployment);
 
-            Assert.IsTrue(result.EventLog.Events.Any(e => e.ActionType == "tactic_set"));
+            Assert.IsTrue(result.Success, result.Reason);
+            Assert.IsTrue(log.Events.Any(e => e.ActionType == "tactic_set"));
         }
     }
 }

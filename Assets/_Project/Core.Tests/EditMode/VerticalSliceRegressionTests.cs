@@ -142,7 +142,7 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(RunPhase.Build, reloaded.State.Phase);
             Assert.AreEqual(supplies, reloaded.State.Supplies);
             Assert.AreEqual(offerCount, reloaded.State.Shop.Offers.Count);
-            Assert.AreEqual(8, reloaded.GetPlayerBoard().Pieces.Count);
+            Assert.AreEqual(9, reloaded.GetPlayerBoard().Pieces.Count);
         }
 
         private RunState CreateRepresentativeState(RunPhase phase)

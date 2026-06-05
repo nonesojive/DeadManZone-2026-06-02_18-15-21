@@ -36,7 +36,7 @@ namespace DeadManZone.PlayMode.Tests
 
             var commands = new List<AvailableCommand>
             {
-                new() { Type = CommandType.ChangeStance, SourcePieceId = "bunker_1", RequisitionCost = 0 },
+                new() { Type = CommandType.SetTactic, SourcePieceId = "bunker_1", RequisitionCost = 0 },
                 new() { Type = CommandType.SpendRequisitionBuff, SourcePieceId = "depot_1", RequisitionCost = 1 }
             };
 

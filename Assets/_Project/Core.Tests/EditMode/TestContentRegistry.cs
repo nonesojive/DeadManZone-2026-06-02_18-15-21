@@ -15,6 +15,7 @@ namespace DeadManZone.Core.Tests
             var registry = new ContentRegistry();
             registry.Register(TestPieces.RifleSquad(), ShopLane.Offensive);
             registry.Register(TestPieces.CommandBunker(), ShopLane.Defensive);
+            registry.Register(TestPieces.HqPiece(), ShopLane.Defensive, includeInShopPool: false);
             registry.Register(TestPieces.SupplyDepot(), ShopLane.Defensive);
             registry.Register(TestPieces.FieldWorkshop(), ShopLane.Defensive);
             registry.Register(TestPieces.GasDrone(), ShopLane.Specialty);

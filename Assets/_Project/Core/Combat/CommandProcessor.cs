@@ -97,7 +97,7 @@ namespace DeadManZone.Core.Combat
                 }
 
                 tactics.PlayerTactic = tacticCommand.Tactic;
-                log.Append(completedPhase, tick: -1, "tactic", null, "tactic_set", (int)tacticCommand.Tactic);
+                log.Append(completedPhase, tick: -1, "tactic", "tactic_set", null, (int)tacticCommand.Tactic);
             }
 
             var usedAbilities = new HashSet<GrantedAbility>();

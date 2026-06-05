@@ -42,16 +42,16 @@ namespace DeadManZone.Core.Tests
             rifle.shapeCells = new[] { Vector2Int.zero };
             rifle.shopLane = ShopLane.Offensive;
 
-            var bunker = ScriptableObject.CreateInstance<Data.PieceDefinitionSO>();
-            bunker.id = "command_bunker";
-            bunker.displayName = "Command Bunker";
-            bunker.category = PieceCategory.Building;
-            bunker.shapeCells = new[] { Vector2Int.zero };
-            bunker.shopLane = ShopLane.Defensive;
+            var radio = ScriptableObject.CreateInstance<Data.PieceDefinitionSO>();
+            radio.id = "radio_array";
+            radio.displayName = "Radio Array";
+            radio.category = PieceCategory.Building;
+            radio.shapeCells = new[] { Vector2Int.zero, Vector2Int.up };
+            radio.shopLane = ShopLane.Defensive;
 
             typeof(Data.ContentDatabase)
                 .GetField("pieces", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                ?.SetValue(database, new[] { rifle, bunker });
+                ?.SetValue(database, new[] { rifle, radio });
 
             var registry = database.BuildRegistry();
 
@@ -59,7 +59,7 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(1, registry.GetPool(ShopLane.Defensive).Count);
 
             Object.DestroyImmediate(rifle);
-            Object.DestroyImmediate(bunker);
+            Object.DestroyImmediate(radio);
             Object.DestroyImmediate(database);
         }
     }
