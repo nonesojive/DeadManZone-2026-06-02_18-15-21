@@ -20,8 +20,5 @@ MonoBehaviour:
     anchor: {x: 0, y: 4}
     instanceId: enemy_hq
   - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
-    anchor: {x: 6, y: 4}
-    instanceId: 
-  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
     anchor: {x: 4, y: 4}
     instanceId: 

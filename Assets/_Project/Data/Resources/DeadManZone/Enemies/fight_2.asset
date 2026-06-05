@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: fight_2
   m_EditorClassIdentifier: 
   fightNumber: 2
-  displayName: Grenade Patrol
-  previewTag: Artillery
+  displayName: Patrol
+  previewTag: Infantry
   placements:
   - piece: {fileID: 11400000, guid: a09195287ae98b44490baf1a5d3e1a68, type: 2}
     anchor: {x: 0, y: 4}
     instanceId: enemy_hq
-  - piece: {fileID: 11400000, guid: f2a3b4c5d6e7488899aabbccddeeff02, type: 2}
-    anchor: {x: 5, y: 4}
-    instanceId: 
   - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
     anchor: {x: 4, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: f3a4b5c6d7e8498899aabbccddeeff03, type: 2}
+    anchor: {x: 5, y: 4}
     instanceId: 
