@@ -237,6 +237,25 @@ namespace DeadManZone.Presentation.Board
 
         public BoardTileView GetTile(GridCoord coord) => _tiles.TryGetValue(coord, out var tile) ? tile : null;
 
+        public void RefreshZoneColors()
+        {
+            if (_layout == null)
+                return;
+
+            foreach (var pair in _tiles)
+            {
+                var coord = pair.Key;
+                var tile = pair.Value;
+                if (tile == null)
+                    continue;
+
+                var zone = _layout.GetZone(coord);
+                var color = GetZoneColor(zone);
+                tile.SetBaseColor(color);
+                tile.SetOverlay(color, _layout.IsSpecialTile(coord), false);
+            }
+        }
+
         public void RemovePieceVisual(string instanceId)
         {
             if (string.IsNullOrEmpty(instanceId))
