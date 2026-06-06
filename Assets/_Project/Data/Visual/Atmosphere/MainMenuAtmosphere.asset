@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f2c4a1e6b9d3057a4e8f1c2d3b4a5e6, type: 3}
+  m_Name: MainMenuAtmosphere
+  m_EditorClassIdentifier: DeadManZone.Presentation::DeadManZone.Presentation.Visual.SceneAtmosphereSO
+  fogEnabled: 1
+  fogColor: {r: 0.12, g: 0.08, b: 0.05, a: 1}
+  fogMode: 2
+  fogDensity: 0.035
+  linearFogStart: 0
+  linearFogEnd: 300
+  ambientMode: 1
+  ambientSkyColor: {r: 0.08, g: 0.09, b: 0.11, a: 1}
+  ambientEquatorColor: {r: 0.06, g: 0.05, b: 0.04, a: 1}
+  ambientGroundColor: {r: 0.03, g: 0.025, b: 0.02, a: 1}
