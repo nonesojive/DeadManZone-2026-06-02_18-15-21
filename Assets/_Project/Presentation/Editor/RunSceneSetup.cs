@@ -114,6 +114,19 @@ namespace DeadManZone.Presentation.Editor
             var directorSerialized = new SerializedObject(combatDirector);
             directorSerialized.FindProperty("autoAdvanceAfterCommands").boolValue = false;
             directorSerialized.ApplyModifiedPropertiesWithoutUndo();
+
+            CreateRunVisualProfileApplier();
+        }
+
+        private static void CreateRunVisualProfileApplier()
+        {
+            var go = new GameObject("VisualProfile");
+            var applier = go.AddComponent<VisualProfileApplier>();
+            var profile = VisualProfilePresetFactory.EnsureDefaultProfile();
+            var serialized = new SerializedObject(applier);
+            serialized.FindProperty("profile").objectReferenceValue = profile;
+            serialized.FindProperty("sceneKind").enumValueIndex = (int)VisualProfileSceneKind.Run;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static BoardView CreateBoardSection(Transform parent, UiThemeSO theme)
@@ -346,13 +359,14 @@ namespace DeadManZone.Presentation.Editor
             var iconGo = new GameObject("Icon", typeof(RectTransform));
             iconGo.transform.SetParent(card.transform, false);
             var iconRect = iconGo.GetComponent<RectTransform>();
-            iconRect.anchorMin = new Vector2(0f, 0.55f);
-            iconRect.anchorMax = new Vector2(0f, 0.55f);
-            iconRect.pivot = new Vector2(0f, 0.5f);
-            iconRect.anchoredPosition = new Vector2(8f, 0f);
-            iconRect.sizeDelta = new Vector2(32f, 32f);
+            iconRect.anchorMin = new Vector2(0f, 0.58f);
+            iconRect.anchorMax = new Vector2(0f, 0.58f);
+            iconRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRect.anchoredPosition = new Vector2(44f, 0f);
+            iconRect.sizeDelta = new Vector2(80f, 80f);
             var iconImage = iconGo.AddComponent<Image>();
             iconImage.enabled = false;
+            iconImage.preserveAspect = true;
             iconImage.raycastTarget = false;
 
             var offerView = card.AddComponent<ShopOfferView>();
