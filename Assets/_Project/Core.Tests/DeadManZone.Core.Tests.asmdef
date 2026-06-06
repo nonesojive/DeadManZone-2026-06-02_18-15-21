@@ -4,7 +4,8 @@
   "references": [
     "DeadManZone.Core",
     "DeadManZone.Data",
-    "DeadManZone.Game"
+    "DeadManZone.Game",
+    "DeadManZone.Presentation"
   ],
   "includePlatforms": [
     "Editor"
