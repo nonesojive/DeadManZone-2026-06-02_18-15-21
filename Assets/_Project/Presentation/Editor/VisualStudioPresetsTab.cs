@@ -7,6 +7,8 @@ namespace DeadManZone.Presentation.Editor
 {
     internal static class VisualStudioPresetsTab
     {
+        private static bool _shareUiThemeOnDuplicate;
+
         public static void Draw(
             VisualProfileSO profile,
             bool autoApply,
@@ -36,14 +38,32 @@ namespace DeadManZone.Presentation.Editor
                 return;
             }
 
+            EditorGUI.BeginChangeCheck();
+            var displayName = EditorGUILayout.TextField("Preset Name", profile.displayName);
+            if (EditorGUI.EndChangeCheck())
+            {
+                profile.displayName = displayName;
+                EditorUtility.SetDirty(profile);
+            }
+
             EditorGUILayout.Space(4f);
+            _shareUiThemeOnDuplicate = EditorGUILayout.ToggleLeft(
+                "Share UI theme when duplicating (link instead of copy)",
+                _shareUiThemeOnDuplicate);
+
             EditorGUILayout.BeginHorizontal();
 
             if (GUILayout.Button("Duplicate Preset"))
             {
-                var duplicate = DuplicatePreset(profile);
+                var duplicate = DuplicatePreset(profile, _shareUiThemeOnDuplicate);
                 if (duplicate != null)
                     callbacks.OnProfileChanged?.Invoke(duplicate);
+            }
+
+            if (GUILayout.Button("Delete"))
+            {
+                if (DeletePreset(profile))
+                    callbacks.OnProfileChanged?.Invoke(VisualProfileEditorUtility.GetActiveProfile());
             }
 
             if (GUILayout.Button("Apply Preset"))
@@ -124,7 +144,7 @@ namespace DeadManZone.Presentation.Editor
             }
         }
 
-        private static VisualProfileSO DuplicatePreset(VisualProfileSO source)
+        private static VisualProfileSO DuplicatePreset(VisualProfileSO source, bool shareUiTheme)
         {
             if (source == null)
                 return null;
@@ -137,7 +157,9 @@ namespace DeadManZone.Presentation.Editor
                 $"{VisualProfilePresetFactory.PresetsFolder}/{fileStem}VisualProfile.asset");
 
             var prefix = Path.GetFileNameWithoutExtension(profilePath).Replace("VisualProfile", string.Empty);
-            var theme = CopySubAsset(source.uiTheme, $"{VisualProfilePresetFactory.PresetsFolder}/{prefix}UiTheme.asset");
+            var theme = shareUiTheme
+                ? source.uiTheme
+                : CopySubAsset(source.uiTheme, $"{VisualProfilePresetFactory.PresetsFolder}/{prefix}UiTheme.asset");
             var mainMenuAtmosphere = CopySubAsset(
                 source.mainMenuAtmosphere,
                 $"{VisualProfilePresetFactory.PresetsFolder}/{prefix}MainMenuAtmosphere.asset");
@@ -161,6 +183,49 @@ namespace DeadManZone.Presentation.Editor
             AssetDatabase.SaveAssets();
             Debug.Log($"Duplicated preset to {profilePath}");
             return profile;
+        }
+
+        private static bool DeletePreset(VisualProfileSO profile)
+        {
+            if (profile == null)
+                return false;
+
+            var path = AssetDatabase.GetAssetPath(profile);
+            if (string.IsNullOrEmpty(path)
+                || path == VisualProfilePresetFactory.DefaultProfilePath
+                || path == VisualProfilePresetFactory.RuntimeProfilePath)
+            {
+                Debug.LogWarning("Cannot delete the default or runtime visual profile.");
+                return false;
+            }
+
+            if (!EditorUtility.DisplayDialog(
+                    "Delete Preset",
+                    $"Delete preset '{profile.displayName}' and its copied sub-assets?",
+                    "Delete",
+                    "Cancel"))
+                return false;
+
+            DeleteIfOwnedSubAsset(profile.uiTheme, path);
+            DeleteIfOwnedSubAsset(profile.mainMenuAtmosphere, path);
+            DeleteIfOwnedSubAsset(profile.runAtmosphere, path);
+            DeleteIfOwnedSubAsset(profile.mainMenuLighting, path);
+            AssetDatabase.DeleteAsset(path);
+            AssetDatabase.SaveAssets();
+            return true;
+        }
+
+        private static void DeleteIfOwnedSubAsset(Object asset, string profilePath)
+        {
+            if (asset == null)
+                return;
+
+            var assetPath = AssetDatabase.GetAssetPath(asset);
+            if (string.IsNullOrEmpty(assetPath)
+                || !assetPath.StartsWith(VisualProfilePresetFactory.PresetsFolder))
+                return;
+
+            AssetDatabase.DeleteAsset(assetPath);
         }
 
         private static T CopySubAsset<T>(T source, string destinationPath) where T : Object

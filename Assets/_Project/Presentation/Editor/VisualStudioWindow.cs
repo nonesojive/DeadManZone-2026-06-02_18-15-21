@@ -108,8 +108,11 @@ namespace DeadManZone.Presentation.Editor
             if (GUILayout.Button("Save Assets", EditorStyles.toolbarButton))
                 VisualProfileEditorUtility.SaveProfileAssets();
 
+            if (GUILayout.Button("Revert Unsaved", EditorStyles.toolbarButton))
+                VisualProfileEditorUtility.RevertUnsaved(_profile);
+
             if (GUILayout.Button("Sync SlimUI", EditorStyles.toolbarButton))
-                MenuThemeEditor.EnsureMenuTheme();
+                MenuThemeEditor.EnsureMenuTheme(_profile?.uiTheme);
 
             EditorGUILayout.EndHorizontal();
         }

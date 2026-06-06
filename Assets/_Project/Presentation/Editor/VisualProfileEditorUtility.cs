@@ -52,6 +52,32 @@ namespace DeadManZone.Presentation.Editor
             runtimeProfile.postProcessProfile = profile.postProcessProfile;
             EditorUtility.SetDirty(runtimeProfile);
             VisualProfileProvider.InvalidateCache();
+            UiThemeProvider.InvalidateCache();
+        }
+
+        public static void RevertUnsaved(VisualProfileSO profile)
+        {
+            if (profile == null)
+                return;
+
+            ReloadAsset(profile);
+            ReloadAsset(profile.uiTheme);
+            ReloadAsset(profile.mainMenuAtmosphere);
+            ReloadAsset(profile.mainMenuLighting);
+            ReloadAsset(profile.runAtmosphere);
+            ApplyToOpenScene(GetActiveProfile());
+        }
+
+        private static void ReloadAsset(Object asset)
+        {
+            if (asset == null)
+                return;
+
+            var path = AssetDatabase.GetAssetPath(asset);
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
         }
     }
 }

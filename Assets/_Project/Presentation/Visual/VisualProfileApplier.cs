@@ -15,21 +15,20 @@ namespace DeadManZone.Presentation.Visual
             set => profile = value;
         }
 
-        public void ApplyNow()
+        public void ApplyNow(VisualProfileSO overrideProfile = null)
         {
-            if (profile == null)
-                profile = VisualProfileProvider.Current;
-            if (profile == null)
+            var active = overrideProfile ?? VisualProfileProvider.Current ?? profile;
+            if (active == null)
                 return;
 
             switch (sceneKind)
             {
                 case VisualProfileSceneKind.MainMenu:
-                    profile.mainMenuAtmosphere?.ApplyToRenderSettings();
-                    profile.mainMenuLighting?.ApplyToEnvironment(menuEnvironmentRoot);
+                    active.mainMenuAtmosphere?.ApplyToRenderSettings();
+                    active.mainMenuLighting?.ApplyToEnvironment(menuEnvironmentRoot);
                     break;
                 case VisualProfileSceneKind.Run:
-                    profile.runAtmosphere?.ApplyToRenderSettings();
+                    active.runAtmosphere?.ApplyToRenderSettings();
                     break;
             }
         }

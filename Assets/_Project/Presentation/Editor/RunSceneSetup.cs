@@ -122,9 +122,11 @@ namespace DeadManZone.Presentation.Editor
         {
             var go = new GameObject("VisualProfile");
             var applier = go.AddComponent<VisualProfileApplier>();
-            var profile = VisualProfilePresetFactory.EnsureDefaultProfile();
+            VisualProfilePresetFactory.EnsureDefaultProfile();
+            var runtimeProfile = AssetDatabase.LoadAssetAtPath<VisualProfileSO>(
+                VisualProfilePresetFactory.RuntimeProfilePath);
             var serialized = new SerializedObject(applier);
-            serialized.FindProperty("profile").objectReferenceValue = profile;
+            serialized.FindProperty("profile").objectReferenceValue = runtimeProfile;
             serialized.FindProperty("sceneKind").enumValueIndex = (int)VisualProfileSceneKind.Run;
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
