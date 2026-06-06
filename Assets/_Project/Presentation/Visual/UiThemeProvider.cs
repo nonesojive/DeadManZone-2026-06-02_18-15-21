@@ -15,6 +15,13 @@ namespace DeadManZone.Presentation.Visual
                 if (_cached != null)
                     return _cached;
 
+                var profileTheme = VisualProfileProvider.Current?.uiTheme;
+                if (profileTheme != null)
+                {
+                    _cached = profileTheme;
+                    return _cached;
+                }
+
                 _cached = Resources.Load<UiThemeSO>(ResourcePath);
                 if (_cached == null)
                     _cached = CreateFallback();
@@ -23,7 +30,11 @@ namespace DeadManZone.Presentation.Visual
             }
         }
 
-        public static void InvalidateCache() => _cached = null;
+        public static void InvalidateCache()
+        {
+            _cached = null;
+            VisualProfileProvider.InvalidateCache();
+        }
 
         private static UiThemeSO CreateFallback()
         {
