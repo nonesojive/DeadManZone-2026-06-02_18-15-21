@@ -116,5 +116,58 @@ namespace DeadManZone.Data
                 FactionId = factionId
             };
         }
+
+        private void OnValidate()
+        {
+            void Warn(string message)
+            {
+                Debug.LogWarning($"[PieceDefinitionSO:{name}] {message}", this);
+            }
+
+            bool IsUnknownTag(string tagId)
+            {
+                return !TagRegistry.TryGet(tagId, out _);
+            }
+
+            if (string.IsNullOrWhiteSpace(primary))
+            {
+                Warn("Primary tag is empty.");
+            }
+            else if (IsUnknownTag(primary))
+            {
+                Warn($"Unknown primary tag '{primary}'.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(combatRole) && IsUnknownTag(combatRole))
+            {
+                Warn($"Unknown combat role tag '{combatRole}'.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(systemTag) && IsUnknownTag(systemTag))
+            {
+                Warn($"Unknown system tag '{systemTag}'.");
+            }
+
+            WarnUnknownTagEntries("synergyTags", synergyTags);
+            WarnUnknownTagEntries("abilityTags", abilityTags);
+
+            void WarnUnknownTagEntries(string fieldName, string[] tagIds)
+            {
+                if (tagIds == null)
+                    return;
+
+                for (int i = 0; i < tagIds.Length; i++)
+                {
+                    string tagId = tagIds[i];
+                    if (string.IsNullOrWhiteSpace(tagId))
+                        continue;
+
+                    if (IsUnknownTag(tagId))
+                    {
+                        Warn($"Unknown {fieldName} entry at index {i}: '{tagId}'.");
+                    }
+                }
+            }
+        }
     }
 }
