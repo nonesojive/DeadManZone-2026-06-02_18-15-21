@@ -3,6 +3,7 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Run;
+using DeadManZone.Core.Tags;
 using DeadManZone.Data;
 using DeadManZone.Game;
 using NUnit.Framework;
@@ -25,7 +26,9 @@ namespace DeadManZone.Core.Tests.EditMode
             var orchestrator = new RunOrchestrator(database);
             orchestrator.StartNewRun("iron_vanguard", runSeed: 1);
             var board = orchestrator.GetPlayerBoard();
-            var hq = System.Linq.Enumerable.FirstOrDefault(board.Pieces, p => p.Definition.Tags.Contains(GameTags.Hq));
+            var hq = System.Linq.Enumerable.FirstOrDefault(
+                board.Pieces,
+                p => PieceTagQueries.HasTag(p.Definition, GameTagIds.Hq));
             Assert.IsNotNull(hq);
             Assert.AreEqual(new GridCoord(0, 4), hq.Anchor);
         }

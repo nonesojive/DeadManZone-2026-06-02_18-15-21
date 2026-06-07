@@ -1,6 +1,5 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
-using DeadManZone.Core.Common;
 using DeadManZone.Core.Tags;
 using DeadManZone.Core.Tests;
 using NUnit.Framework;
@@ -15,12 +14,12 @@ namespace DeadManZone.Core.Tests.EditMode
             var supply = TestPieces.CreateUnit(
                 "supply",
                 synergyTags: new[] { GameTagIds.Supply },
-                tags: new[] { GameKeywords.Supply });
+                tags: new[] { GameTagIds.Supply });
             var rifle = TestPieces.CreateUnit(
                 "rifle",
                 primary: GameTagIds.Infantry,
                 systemTag: GameTagIds.Combatant,
-                tags: new[] { GameKeywords.Infantry, GameTags.Combatant });
+                tags: new[] { GameTagIds.Infantry, GameTagIds.Combatant });
             var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
             var board = new BoardState(layout);
             Assert.IsTrue(board.TryPlace(supply, new GridCoord(0, 0), "supply_1").Success);
@@ -47,12 +46,12 @@ namespace DeadManZone.Core.Tests.EditMode
             var supply = TestPieces.CreateUnit(
                 "supply",
                 synergyTags: new[] { GameTagIds.Supply },
-                tags: new[] { GameKeywords.Supply });
+                tags: new[] { GameTagIds.Supply });
             var rifle = TestPieces.CreateUnit(
                 "rifle",
                 primary: GameTagIds.Infantry,
                 systemTag: GameTagIds.Combatant,
-                tags: new[] { GameKeywords.Infantry, GameTags.Combatant });
+                tags: new[] { GameTagIds.Infantry, GameTagIds.Combatant });
             var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
             var board = new BoardState(layout);
             Assert.IsTrue(board.TryPlace(supply, new GridCoord(0, 0), "supply_1").Success);

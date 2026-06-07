@@ -4,6 +4,7 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Run;
+using DeadManZone.Core.Tags;
 using DeadManZone.Data;
 using DeadManZone.Game;
 using NUnit.Framework;
@@ -90,7 +91,7 @@ namespace DeadManZone.Core.Tests
             Assert.IsTrue(_orchestrator.TrySellPlacedPiece("rifle_1"));
             Assert.AreEqual(startingSupplies + refund, _orchestrator.State.Supplies);
             Assert.AreEqual(1, _orchestrator.GetPlayerBoard().Pieces.Count);
-            Assert.IsTrue(_orchestrator.GetPlayerBoard().Pieces.All(p => p.Definition.Tags.Contains(GameTags.Hq)));
+            Assert.IsTrue(_orchestrator.GetPlayerBoard().Pieces.All(p => PieceTagQueries.HasTag(p.Definition, GameTagIds.Hq)));
         }
 
         [Test]

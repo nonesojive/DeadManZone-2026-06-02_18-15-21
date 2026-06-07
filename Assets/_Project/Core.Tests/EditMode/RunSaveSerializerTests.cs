@@ -3,6 +3,7 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Run;
 using DeadManZone.Core.Shop;
+using DeadManZone.Core.Tags;
 using NUnit.Framework;
 
 namespace DeadManZone.Core.Tests
@@ -174,7 +175,7 @@ namespace DeadManZone.Core.Tests
 
             Assert.AreEqual(source.Pieces.Count, restored.Pieces.Count);
             Assert.IsTrue(restored.Pieces.Any(p => p.Definition.Id == "command_bunker"));
-            Assert.IsTrue(restored.Pieces.Any(p => p.Definition.Tags.Contains(DeadManZone.Core.Common.GameTags.Hq)));
+            Assert.IsTrue(restored.Pieces.Any(p => PieceTagQueries.HasTag(p.Definition, GameTagIds.Hq)));
         }
 
         [Test]
