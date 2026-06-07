@@ -28,8 +28,8 @@ MonoBehaviour:
   synergyTags:
   - gas
   abilityTags: []
-  maxHp: 10
-  baseDamage: 3
+  maxHp: 100
+  baseDamage: 24
   cooldownTicks: 3
   goldCost: 0
   requisitionCost: 0

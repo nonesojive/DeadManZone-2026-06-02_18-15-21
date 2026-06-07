@@ -48,6 +48,9 @@ namespace DeadManZone.Core.Meta
 
         public static bool IsFactionUnlocked(string factionId)
         {
+            if (string.Equals(factionId, "iron_vanguard", StringComparison.OrdinalIgnoreCase))
+                return true;
+
             var data = Load();
             return data.UnlockedFactions.Contains(factionId);
         }
@@ -105,6 +108,15 @@ namespace DeadManZone.Core.Meta
         }
 
         public static void ResetCache() => _cached = null;
+
+        /// <summary>Clears cached meta and removes the on-disk save (for isolated EditMode tests).</summary>
+        public static void ResetForTests()
+        {
+            _cached = null;
+            string path = GetSavePath();
+            if (File.Exists(path))
+                File.Delete(path);
+        }
 
         private static string GetSavePath()
         {

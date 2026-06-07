@@ -22,7 +22,10 @@ namespace DeadManZone.Data
             new Vector2Int(7, 4)
         };
         public int startingSupplies = 100;
-        public int startingManpower = 10;
+        public int startingManpower = 100;
+
+        [Header("Manpower")]
+        public int baseMusterPerShop = 12;
         public int startingAuthority = 2;
         public int startingMorale = 100;
 

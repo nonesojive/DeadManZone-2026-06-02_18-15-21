@@ -9,7 +9,7 @@ namespace DeadManZone.Core.Combat
             IEnumerable<CombatantState> playerCombatants,
             bool playerWon,
             bool isDraw,
-            int manpowerRefunded,
+            int manpowerCasualties,
             int suppliesEarned,
             int moraleDelta,
             int topCount = 3)
@@ -19,7 +19,7 @@ namespace DeadManZone.Core.Combat
             {
                 PlayerWon = playerWon,
                 IsDraw = isDraw,
-                ManpowerRefunded = manpowerRefunded,
+                ManpowerCasualties = manpowerCasualties,
                 SuppliesEarned = suppliesEarned,
                 MoraleDelta = moraleDelta,
                 TopDamageDealt = RankByDamage(playerSide, c => c.DamageDealtThisFight, topCount),

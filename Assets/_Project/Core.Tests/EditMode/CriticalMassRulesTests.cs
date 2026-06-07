@@ -20,9 +20,9 @@ namespace DeadManZone.Core.Tests.EditMode
                 combatRole: GameTagIds.Assault,
                 systemTag: GameTagIds.Combatant);
 
-            board.TryPlace(infantry, new GridCoord(0, 0), "a");
-            board.TryPlace(infantry, new GridCoord(1, 0), "b");
-            board.TryPlace(infantry, new GridCoord(2, 0), "c");
+            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(0), "a").Success);
+            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(1), "b").Success);
+            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(2), "c").Success);
 
             var bonus = CriticalMassRules.EvaluateFightStart(board);
             Assert.GreaterOrEqual(bonus.DamageBonus, 2);
@@ -39,9 +39,9 @@ namespace DeadManZone.Core.Tests.EditMode
                 combatRole: GameTagIds.Assault,
                 systemTag: GameTagIds.Combatant);
 
-            board.TryPlace(infantry, new GridCoord(0, 0), "a");
-            board.TryPlace(infantry, new GridCoord(1, 0), "b");
-            board.TryPlace(infantry, new GridCoord(2, 0), "c");
+            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(0), "a").Success);
+            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(1), "b").Success);
+            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(2), "c").Success);
 
             var snapshot = CriticalMassRules.EvaluateFightStart(board);
             Assert.IsTrue(board.TryRemove("c", out _));

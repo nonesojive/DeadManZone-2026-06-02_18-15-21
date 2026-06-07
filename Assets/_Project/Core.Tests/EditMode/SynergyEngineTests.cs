@@ -1,5 +1,6 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
+using DeadManZone.Core.Common;
 using DeadManZone.Core.Tags;
 using DeadManZone.Core.Tests;
 using NUnit.Framework;
@@ -22,8 +23,8 @@ namespace DeadManZone.Core.Tests.EditMode
                 tags: new[] { GameTagIds.Infantry, GameTagIds.Combatant });
             var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
             var board = new BoardState(layout);
-            Assert.IsTrue(board.TryPlace(supply, new GridCoord(0, 0), "supply_1").Success);
-            Assert.IsTrue(board.TryPlace(rifle, new GridCoord(1, 0), "rifle_1").Success);
+            Assert.IsTrue(board.TryPlace(supply, TestBoards.SupportLineAnchor(0), "supply_1").Success);
+            Assert.IsTrue(board.TryPlace(rifle, TestBoards.SupportLineAnchor(1), "rifle_1").Success);
 
             var snapshot = SynergyEngine.EvaluateFightStart(board);
             Assert.IsTrue(snapshot.TryGet("rifle_1", out var rifleSynergy));
@@ -54,14 +55,14 @@ namespace DeadManZone.Core.Tests.EditMode
                 tags: new[] { GameTagIds.Infantry, GameTagIds.Combatant });
             var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
             var board = new BoardState(layout);
-            Assert.IsTrue(board.TryPlace(supply, new GridCoord(0, 0), "supply_1").Success);
-            Assert.IsTrue(board.TryPlace(rifle, new GridCoord(1, 0), "rifle_1").Success);
+            Assert.IsTrue(board.TryPlace(supply, TestBoards.SupportLineAnchor(0), "supply_1").Success);
+            Assert.IsTrue(board.TryPlace(rifle, TestBoards.SupportLineAnchor(1), "rifle_1").Success);
 
             var initialSnapshot = SynergyEngine.EvaluateFightStart(board);
             Assert.IsTrue(initialSnapshot.TryGet("rifle_1", out var initialRifleResult));
             Assert.AreEqual(1, initialRifleResult.DamageBonus);
 
-            var moved = board.TryRelocate("rifle_1", new GridCoord(4, 0), PieceRotation.R0);
+            var moved = board.TryRelocate("rifle_1", TestBoards.FrontLineAnchor(0), PieceRotation.R0);
             Assert.IsTrue(moved.Success, moved.Reason);
 
             var movedSnapshot = SynergyEngine.EvaluateFightStart(board);

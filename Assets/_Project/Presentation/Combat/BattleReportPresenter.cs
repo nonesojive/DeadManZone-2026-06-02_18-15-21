@@ -45,7 +45,7 @@ namespace DeadManZone.Presentation.Combat
             if (summaryText != null)
             {
                 summaryText.text =
-                    $"Manpower refunded: {report.ManpowerRefunded}\n" +
+                    $"Casualties: −{report.ManpowerCasualties}\n" +
                     $"Supplies: {report.SuppliesEarned}\n" +
                     $"Morale: {report.MoraleDelta:+#;-#;0}";
             }

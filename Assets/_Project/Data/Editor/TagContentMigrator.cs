@@ -20,6 +20,7 @@ namespace DeadManZone.Data.Editor
                 ["mg_team"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
                 ["field_gun_nest"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Artillery, GameTagIds.Combatant),
                 ["supply_depot"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant, GameTagIds.Supply),
+                ["field_workshop"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant, GameTagIds.Mechanical),
                 ["mobile_artillery"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant, GameTagIds.Mechanical),
 
                 ["conscript_rifleman"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),

@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
+using DeadManZone.Core.Common;
+using DeadManZone.Core.Run;
 using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
@@ -376,11 +378,12 @@ namespace DeadManZone.Core.Combat
                 PlayerCombatantsLost = lost,
                 PlayerHqDamaged = hqDamaged,
                 SurvivingPlayerCombatantIds = survivors,
+                PlayerCombatantsAtEnd = _playerCombatants,
                 BattleReport = BattleReportBuilder.Build(
                     _playerCombatants,
                     PlayerWon,
                     IsDraw,
-                    manpowerRefunded: 0,
+                    ManpowerCalculator.ComputeCasualties(_playerCombatants),
                     suppliesEarned: 0,
                     moraleDelta: 0)
             };

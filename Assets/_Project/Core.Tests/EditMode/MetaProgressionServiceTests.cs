@@ -6,7 +6,7 @@ namespace DeadManZone.Core.Tests.EditMode
     public sealed class MetaProgressionServiceTests
     {
         [SetUp]
-        public void SetUp() => MetaProgressionService.ResetCache();
+        public void SetUp() => MetaProgressionService.ResetForTests();
 
         [Test]
         public void TryUnlockAchievement_AddsToSave()

@@ -250,6 +250,14 @@ namespace DeadManZone.Game
             State.Shop = shop;
         }
 
+        private void ApplyMuster()
+        {
+            var board = GetPlayerBoard();
+            int gained = MusterCalculator.Compute(board, Faction.baseMusterPerShop);
+            State.Manpower += gained;
+            State.LastMusterGained = gained;
+        }
+
         private void RerollLaneOffers(ShopLane lane)
         {
             if (State.Shop?.Offers == null)

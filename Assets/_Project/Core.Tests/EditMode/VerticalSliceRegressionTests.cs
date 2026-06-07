@@ -45,14 +45,14 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void AllEnemyTemplates_FixedSeedCombat_IsDeterministic()
         {
-            var player = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
             var faction = _database.GetFaction("iron_vanguard");
             var registry = _database.BuildRegistry();
-            var commands = VerticalSliceTestFixtures.BuildAggressiveCommands(player);
             var resolver = new CombatResolver();
 
             for (int fight = 1; fight <= RunOrchestrator.MaxFights; fight++)
             {
+                var player = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
+                var commands = VerticalSliceTestFixtures.BuildAggressiveCommands(player);
                 var enemy = _database.GetEnemyTemplate(fight).BuildBoard(faction, registry);
                 int combatSeed = VerticalSliceTestFixtures.RegressionRunSeed + fight * 1000;
 
@@ -62,11 +62,12 @@ namespace DeadManZone.Core.Tests
                     combatSeed,
                     commands,
                     VerticalSliceTestFixtures.RegressionRequisition);
+                var secondPlayer = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
                 var second = resolver.Resolve(
-                    player,
+                    secondPlayer,
                     enemy,
                     combatSeed,
-                    commands,
+                    VerticalSliceTestFixtures.BuildAggressiveCommands(secondPlayer),
                     VerticalSliceTestFixtures.RegressionRequisition);
 
                 Assert.AreEqual(first.PlayerWon, second.PlayerWon, $"Fight {fight} win flag differed between runs.");
@@ -77,14 +78,14 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void AllEnemyTemplates_FixedSeedCombat_ProducesEventLog()
         {
-            var player = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
             var faction = _database.GetFaction("iron_vanguard");
             var registry = _database.BuildRegistry();
-            var commands = VerticalSliceTestFixtures.BuildAggressiveCommands(player);
             var resolver = new CombatResolver();
 
             for (int fight = 1; fight <= RunOrchestrator.MaxFights; fight++)
             {
+                var player = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
+                var commands = VerticalSliceTestFixtures.BuildAggressiveCommands(player);
                 var enemy = _database.GetEnemyTemplate(fight).BuildBoard(faction, registry);
                 int combatSeed = VerticalSliceTestFixtures.RegressionRunSeed + fight * 1000;
 

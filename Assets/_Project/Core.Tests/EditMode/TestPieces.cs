@@ -6,6 +6,28 @@ namespace DeadManZone.Core.Tests
 {
     public static class TestPieces
     {
+        public static PieceDefinition RifleSquadTenMan() => new()
+        {
+            Id = "rifle_squad",
+            DisplayName = "Rifle Squad",
+            Category = PieceCategory.Unit,
+            Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
+            MaxHp = 100,
+            ManpowerCost = 10,
+            Tags = new[] { GameTagIds.Combatant }
+        };
+
+        public static PieceDefinition FieldingHq() => new()
+        {
+            Id = "hq",
+            DisplayName = "HQ",
+            Category = PieceCategory.Building,
+            Shape = new PieceShape(new[] { new GridCoord(0, 0), new GridCoord(1, 0) }),
+            Tags = new[] { GameTagIds.Hq },
+            MaxHp = 80,
+            ManpowerCost = 8
+        };
+
         public static PieceDefinition RifleSquad() => new()
         {
             Id = "rifle_squad",
@@ -13,11 +35,11 @@ namespace DeadManZone.Core.Tests
             Category = PieceCategory.Unit,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
             Tags = new[] { GameTagIds.Infantry, GameTagIds.Combatant },
-            MaxHp = 10,
-            BaseDamage = 2,
+            MaxHp = 100,
+            BaseDamage = 20,
             CooldownTicks = 3,
             GoldCost = 10,
-            ManpowerCost = 1,
+            ManpowerCost = 10,
             FactionId = "iron_vanguard"
         };
 
@@ -79,7 +101,8 @@ namespace DeadManZone.Core.Tests
             Category = PieceCategory.Building,
             Shape = new PieceShape(new[] { new GridCoord(0, 0), new GridCoord(1, 0) }),
             Tags = new[] { GameTagIds.Hq },
-            MaxHp = 25
+            MaxHp = 80,
+            ManpowerCost = 8
         };
 
         public static PieceDefinition SupplyDepot() => new()
@@ -88,9 +111,12 @@ namespace DeadManZone.Core.Tests
             DisplayName = "Supply Depot",
             Category = PieceCategory.Building,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
+            SynergyTags = new[] { GameTagIds.Supply },
             Tags = new[] { GameTagIds.Supply },
-            MaxHp = 15,
+            MaxHp = 50,
             GoldCost = 6,
+            ManpowerCost = 0,
+            MusterPerShop = 3,
             ShopModifiers = ShopModifierFlags.GoldDiscount10,
             CommandActions = CommandActionFlags.SpendRequisitionBuff
         };
@@ -102,8 +128,9 @@ namespace DeadManZone.Core.Tests
             Category = PieceCategory.Building,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
             Tags = new[] { GameTagIds.Mechanical },
-            MaxHp = 12,
+            MaxHp = 120,
             GoldCost = 7,
+            MusterPerShop = 2,
             ShopModifiers = ShopModifierFlags.GuaranteeEngineerOffer
         };
 

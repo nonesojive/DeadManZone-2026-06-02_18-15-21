@@ -47,7 +47,7 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(2, loaded.SaveSchemaVersion);
             Assert.AreEqual(88, loaded.Supplies);
             Assert.AreEqual(5, loaded.Authority);
-            Assert.AreEqual(10, loaded.Manpower);
+            Assert.AreEqual(100, loaded.Manpower);
             Assert.AreEqual(100, loaded.Morale);
         }
 

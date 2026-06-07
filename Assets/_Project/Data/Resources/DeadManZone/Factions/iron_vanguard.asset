@@ -22,8 +22,9 @@ MonoBehaviour:
   - {x: 1, y: 4}
   - {x: 4, y: 4}
   - {x: 7, y: 4}
-  startingSupplies: 100
-  startingManpower: 10
+  startingSupplies: 125
+  startingManpower: 100
+  baseMusterPerShop: 12
   startingAuthority: 2
   startingMorale: 100
   hqPieceId: hq_command

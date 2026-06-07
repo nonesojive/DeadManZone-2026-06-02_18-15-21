@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
+using DeadManZone.Core.Common;
 using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
@@ -24,6 +25,8 @@ namespace DeadManZone.Core.Combat
         public bool PlayerHqDamaged { get; init; }
         public IReadOnlyList<string> SurvivingPlayerCombatantIds { get; init; } =
             System.Array.Empty<string>();
+        public IReadOnlyList<CombatantState> PlayerCombatantsAtEnd { get; init; } =
+            System.Array.Empty<CombatantState>();
     }
 
     public sealed class PhasedCombatRun

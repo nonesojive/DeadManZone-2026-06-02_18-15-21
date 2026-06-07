@@ -20,6 +20,7 @@ namespace DeadManZone.Core.Board
         public int GoldCost { get; init; }
         public int RequisitionCost { get; init; }
         public int ManpowerCost { get; init; }
+        public int MusterPerShop { get; init; }
         public ShopModifierFlags ShopModifiers { get; init; }
         public CommandActionFlags CommandActions { get; init; }
         public AttackSpeedTier AttackSpeed { get; init; } = AttackSpeedTier.Medium;

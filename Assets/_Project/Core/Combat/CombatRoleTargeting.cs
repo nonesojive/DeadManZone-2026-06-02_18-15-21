@@ -28,12 +28,37 @@ namespace DeadManZone.Core.Combat
             return CombatRoleProfile.ResolveBias(attacker.Definition.CombatRole) switch
             {
                 CombatRoleTargetingBias.NoAttack => null,
-                CombatRoleTargetingBias.HighestHp => SelectHighestCurrentHp(aliveEnemies),
+                CombatRoleTargetingBias.HighestHp => SelectHighestCurrentHp(PreferLineTroops(aliveEnemies)),
                 CombatRoleTargetingBias.Furthest => SelectFurthest(attacker.Position, aliveEnemies),
                 CombatRoleTargetingBias.NearestFront => SelectNearestFront(attacker.Position, aliveEnemies),
                 CombatRoleTargetingBias.LowestMaxHpRearPreferred => SelectLowestMaxHpRearPreferred(aliveEnemies),
                 _ => SelectFirstByInstanceId(aliveEnemies)
             };
+        }
+
+        /// <summary>Assault/sniper roles skip HQ and non-combatants when frontline targets exist.</summary>
+        private static List<CombatantState> PreferLineTroops(IReadOnlyList<CombatantState> candidates)
+        {
+            var lineTroops = new List<CombatantState>(candidates.Count);
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                var candidate = candidates[i];
+                if (!IsDeprioritizedTarget(candidate))
+                    lineTroops.Add(candidate);
+            }
+
+            return lineTroops.Count > 0 ? lineTroops : new List<CombatantState>(candidates);
+        }
+
+        private static bool IsDeprioritizedTarget(CombatantState combatant)
+        {
+            if (combatant?.Definition == null)
+                return true;
+
+            if (combatant.HasTag(GameTagIds.Hq) || combatant.HasTag(GameTagIds.NonCombatant))
+                return true;
+
+            return CombatRoleProfile.ResolveBias(combatant.Definition.CombatRole) == CombatRoleTargetingBias.NoAttack;
         }
 
         private static CombatantState SelectFirstByInstanceId(IReadOnlyList<CombatantState> candidates)

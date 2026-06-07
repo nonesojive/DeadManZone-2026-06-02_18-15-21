@@ -23,7 +23,8 @@ MonoBehaviour:
   - {x: 4, y: 4}
   - {x: 7, y: 4}
   startingSupplies: 100
-  startingManpower: 10
+  startingManpower: 100
+  baseMusterPerShop: 14
   startingAuthority: 3
   startingMorale: 100
   hqPieceId: echo_hq

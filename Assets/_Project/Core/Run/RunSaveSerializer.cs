@@ -8,7 +8,7 @@ namespace DeadManZone.Core.Run
     {
         private const int CurrentSchemaVersion = 4;
         private const int LegacyMigrationTargetVersion = 2;
-        private const int LegacyDefaultManpower = 10;
+        private const int LegacyDefaultManpower = 100;
         private const int LegacyDefaultMorale = 100;
 
         private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings

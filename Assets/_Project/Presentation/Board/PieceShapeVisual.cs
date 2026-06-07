@@ -31,7 +31,8 @@ namespace DeadManZone.Presentation.Board
 
             var theme = UiThemeProvider.Current;
             var tint = PieceArtResolver.ResolveTint(definition, source, theme);
-            var hideLabel = PieceArtResolver.AllCellsHaveSprites(source, anchor, rotation, definition);
+            // Show names on placeholder art; hide once every cell has a sprite assigned.
+            bool hideLabel = PieceArtResolver.AllCellsHaveSprites(source, anchor, rotation, definition);
 
             var footprint = ComputeFootprint(overlay, grid, cells, cellCenterResolver);
             if (footprint.size.sqrMagnitude < 1f)

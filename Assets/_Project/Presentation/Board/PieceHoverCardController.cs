@@ -2,23 +2,21 @@ using System.Collections.Generic;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Tags;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace DeadManZone.Presentation.Board
 {
     public sealed class PieceHoverCardController : MonoBehaviour
     {
+        private static PieceHoverCard _sharedHoverCard;
+
         [SerializeField] private PieceHoverCard hoverCard;
         [SerializeField] private Canvas targetCanvas;
         [SerializeField] private Vector2 screenOffset = new(24f, -24f);
 
         private readonly List<string> _hiddenTagNames = new();
 
-        private void Awake()
-        {
-            ResolveCanvas();
-            ResolveHoverCard();
-            Hide();
-        }
+        private void Awake() => Hide();
 
         public void Show(PieceDefinition definition, Vector2 screenPosition)
         {
@@ -48,17 +46,29 @@ namespace DeadManZone.Presentation.Board
             if (hoverCard != null)
                 return hoverCard;
 
+            if (_sharedHoverCard != null)
+            {
+                hoverCard = _sharedHoverCard;
+                return hoverCard;
+            }
+
             hoverCard = GetComponentInChildren<PieceHoverCard>(true);
             if (hoverCard != null)
+            {
+                _sharedHoverCard = hoverCard;
                 return hoverCard;
+            }
 
             var canvas = ResolveCanvas();
             if (canvas == null)
                 return null;
 
+            var layer = GetOrCreateTooltipLayer(canvas);
             var cardGo = new GameObject("PieceHoverCard", typeof(RectTransform), typeof(PieceHoverCard));
-            cardGo.transform.SetParent(canvas.transform, false);
+            cardGo.transform.SetParent(layer, false);
+            cardGo.SetActive(false);
             hoverCard = cardGo.GetComponent<PieceHoverCard>();
+            _sharedHoverCard = hoverCard;
             return hoverCard;
         }
 
@@ -67,10 +77,58 @@ namespace DeadManZone.Presentation.Board
             if (targetCanvas != null)
                 return targetCanvas;
 
-            targetCanvas = GetComponentInParent<Canvas>();
-            if (targetCanvas == null)
-                targetCanvas = FindFirstObjectByType<Canvas>();
+            var canvas = GetComponentInParent<Canvas>();
+            var outermost = canvas;
+            while (canvas != null)
+            {
+                outermost = canvas;
+                var parent = canvas.transform.parent;
+                canvas = parent != null ? parent.GetComponentInParent<Canvas>() : null;
+            }
+
+            if (outermost != null)
+            {
+                targetCanvas = outermost;
+                return targetCanvas;
+            }
+
+            foreach (var candidate in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+            {
+                if (candidate.renderMode == RenderMode.ScreenSpaceOverlay)
+                {
+                    targetCanvas = candidate;
+                    return targetCanvas;
+                }
+            }
+
+            targetCanvas = FindFirstObjectByType<Canvas>();
             return targetCanvas;
+        }
+
+        private static RectTransform GetOrCreateTooltipLayer(Canvas canvas)
+        {
+            const string layerName = "PieceHoverCardLayer";
+            var existing = canvas.transform.Find(layerName);
+            if (existing != null)
+                return existing as RectTransform;
+
+            var layerGo = new GameObject(layerName, typeof(RectTransform));
+            layerGo.transform.SetParent(canvas.transform, false);
+            var layerRect = layerGo.GetComponent<RectTransform>();
+            layerRect.anchorMin = Vector2.zero;
+            layerRect.anchorMax = Vector2.one;
+            layerRect.offsetMin = Vector2.zero;
+            layerRect.offsetMax = Vector2.zero;
+            layerGo.transform.SetAsLastSibling();
+
+            var canvasOverride = layerGo.AddComponent<Canvas>();
+            canvasOverride.overrideSorting = true;
+            canvasOverride.sortingOrder = 500;
+
+            if (canvas.GetComponent<GraphicRaycaster>() != null)
+                layerGo.AddComponent<GraphicRaycaster>();
+
+            return layerRect;
         }
 
         private string BuildOverflowTooltip(PieceDefinition definition, PieceCardViewModel model)

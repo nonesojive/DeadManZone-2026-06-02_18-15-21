@@ -484,7 +484,11 @@ namespace DeadManZone.Presentation.Board
                     piece.Anchor,
                     piece.Rotation);
             }
+
+            hoverController?.Hide();
         }
+
+        public void HidePieceHoverCard() => pieceHoverCardController?.Hide();
 
         private void EnsurePiecesOverlay()
         {

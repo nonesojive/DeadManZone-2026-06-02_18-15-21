@@ -1,4 +1,5 @@
 using DeadManZone.Core.Board;
+using DeadManZone.Core.Common;
 using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat

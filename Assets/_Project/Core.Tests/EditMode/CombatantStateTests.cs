@@ -1,5 +1,6 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
+using DeadManZone.Core.Common;
 using DeadManZone.Core.Tags;
 using NUnit.Framework;
 

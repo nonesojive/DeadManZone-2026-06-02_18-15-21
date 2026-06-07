@@ -26,6 +26,23 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
+        public void AssaultRole_PrefersCombatantOverHq()
+        {
+            var attacker = CreateAttacker("attacker_assault", GameTagIds.Assault, AttackRangeTier.Long, new GridCoord(0, 0));
+            var hq = CreateEnemy("enemy_hq", hp: 25, maxHp: 25, new GridCoord(2, 0));
+            hq = WithSystemTag(hq, GameTagIds.Hq);
+            var conscript = CreateEnemy("enemy_conscript", hp: 8, maxHp: 8, new GridCoord(3, 0));
+
+            var target = TacticTargeting.SelectTarget(
+                attacker,
+                new[] { hq, conscript },
+                TacticType.Advance);
+
+            Assert.NotNull(target);
+            Assert.AreEqual("enemy_conscript", target.InstanceId);
+        }
+
+        [Test]
         public void UtilityRole_DoesNotSelectAttackTarget()
         {
             var attacker = CreateAttacker("attacker_utility", GameTagIds.Utility, AttackRangeTier.Long, new GridCoord(0, 0));
@@ -50,6 +67,48 @@ namespace DeadManZone.Core.Tests.EditMode
                 Definition = definition,
                 CurrentHp = definition.MaxHp,
                 Position = position
+            };
+        }
+
+        private static CombatantState WithSystemTag(CombatantState combatant, string systemTag)
+        {
+            var definition = combatant.Definition;
+            definition = new PieceDefinition
+            {
+                Id = definition.Id,
+                DisplayName = definition.DisplayName,
+                Category = definition.Category,
+                Shape = definition.Shape,
+                Primary = definition.Primary,
+                CombatRole = definition.CombatRole,
+                SystemTag = systemTag,
+                SynergyTags = definition.SynergyTags,
+                AbilityTags = definition.AbilityTags,
+                Tags = definition.Tags,
+                MaxHp = definition.MaxHp,
+                BaseDamage = definition.BaseDamage,
+                CooldownTicks = definition.CooldownTicks,
+                GoldCost = definition.GoldCost,
+                RequisitionCost = definition.RequisitionCost,
+                ManpowerCost = definition.ManpowerCost,
+                ShopModifiers = definition.ShopModifiers,
+                CommandActions = definition.CommandActions,
+                AttackRange = definition.AttackRange,
+                MovementSpeed = definition.MovementSpeed,
+                AttackSpeed = definition.AttackSpeed,
+                ArmorType = definition.ArmorType,
+                AttackType = definition.AttackType,
+                GrantedAbility = definition.GrantedAbility,
+                FactionId = definition.FactionId
+            };
+
+            return new CombatantState
+            {
+                InstanceId = combatant.InstanceId,
+                Side = combatant.Side,
+                Definition = definition,
+                CurrentHp = combatant.CurrentHp,
+                Position = combatant.Position
             };
         }
 

@@ -52,6 +52,7 @@ namespace DeadManZone.Core.Run
         public int Manpower { get; set; }
         public int Authority { get; set; }
         public int Morale { get; set; }
+        public int LastMusterGained { get; set; }
         public bool EmergencyDraftUsed { get; set; }
         public int RerollCountThisRound { get; set; }
         public int RunSeed { get; set; }

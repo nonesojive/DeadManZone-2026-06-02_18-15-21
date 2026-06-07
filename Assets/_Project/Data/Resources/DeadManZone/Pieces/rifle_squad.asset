@@ -28,12 +28,12 @@ MonoBehaviour:
   synergyTags:
   - vanguard
   abilityTags: []
-  maxHp: 10
-  baseDamage: 2
+  maxHp: 100
+  baseDamage: 20
   cooldownTicks: 3
   goldCost: 5
   requisitionCost: 0
-  manpowerCost: 1
+  manpowerCost: 10
   shopModifiers: 0
   commandActions: 0
   shopLane: 0

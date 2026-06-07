@@ -18,16 +18,16 @@ namespace DeadManZone.Game
     {
         private static readonly FightReward[] Rewards =
         {
-            new FightReward(100, 1, 2),
-            new FightReward(105, 1, 2),
-            new FightReward(110, 1, 2),
-            new FightReward(22, 2, 2),
-            new FightReward(25, 2, 3),
-            new FightReward(28, 2, 3),
-            new FightReward(30, 2, 3),
-            new FightReward(32, 3, 3),
-            new FightReward(35, 3, 4),
-            new FightReward(45, 4, 4)
+            new FightReward(100, 1, 0),
+            new FightReward(105, 1, 0),
+            new FightReward(110, 1, 0),
+            new FightReward(22, 2, 0),
+            new FightReward(25, 2, 0),
+            new FightReward(28, 2, 0),
+            new FightReward(30, 2, 0),
+            new FightReward(32, 3, 0),
+            new FightReward(35, 3, 0),
+            new FightReward(45, 4, 0)
         };
 
         public static FightReward GetReward(int fightIndex, bool isDraw = false)

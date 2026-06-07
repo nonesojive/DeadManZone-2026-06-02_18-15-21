@@ -32,12 +32,6 @@ namespace DeadManZone.Presentation.Board
         private readonly List<TMP_Text> _chips = new();
         private RectTransform _contentRoot;
 
-        private void Awake()
-        {
-            EnsureRuntimeUi();
-            Hide();
-        }
-
         public void Bind(PieceCardViewModel model, string overflowTooltip)
         {
             if (model == null)
@@ -113,9 +107,11 @@ namespace DeadManZone.Presentation.Board
 
         public void Show()
         {
+            EnsureRuntimeUi();
             if (cardRoot == null || canvasGroup == null)
                 return;
 
+            gameObject.SetActive(true);
             cardRoot.gameObject.SetActive(true);
             canvasGroup.alpha = 1f;
             canvasGroup.interactable = false;
@@ -124,11 +120,13 @@ namespace DeadManZone.Presentation.Board
 
         public void Hide()
         {
-            if (cardRoot == null || canvasGroup == null)
-                return;
+            if (cardRoot != null && canvasGroup != null)
+            {
+                canvasGroup.alpha = 0f;
+                cardRoot.gameObject.SetActive(false);
+            }
 
-            canvasGroup.alpha = 0f;
-            cardRoot.gameObject.SetActive(false);
+            gameObject.SetActive(false);
         }
 
         private void EnsureRuntimeUi()
@@ -147,6 +145,10 @@ namespace DeadManZone.Presentation.Board
                 canvasGroup = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
             if (background == null)
                 background = GetComponent<Image>() ?? gameObject.AddComponent<Image>();
+
+            var activeTheme = theme != null ? theme : UiThemeProvider.Current;
+            if (background != null)
+                background.color = activeTheme.cardColor;
 
             if (_contentRoot == null)
             {

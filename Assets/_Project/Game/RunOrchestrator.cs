@@ -68,6 +68,7 @@ namespace DeadManZone.Game
             State.PlayerBoard = Faction.CreateEmptyBoardSnapshot();
             State.RerollCountThisRound = 0;
             PlaceStartingHq();
+            ApplyMuster();
             ResetAuthorityForBuildRound();
             ResetMetaForNewRun();
             RefreshShop();
@@ -116,7 +117,7 @@ namespace DeadManZone.Game
             }
 
             failureReason =
-                $"Insufficient manpower: board upkeep is {upkeep} but only {State.Manpower} available.";
+                $"Insufficient manpower: fielding requires {upkeep} but only {State.Manpower} available.";
             return false;
         }
 
@@ -129,8 +130,6 @@ namespace DeadManZone.Game
                 throw new InvalidOperationException(failureReason);
 
             var playerBoard = GetPlayerBoard();
-            int upkeep = ManpowerCalculator.ComputeUpkeep(playerBoard, _registry);
-            State.Manpower -= upkeep;
             RecordCriticalMassIfTriggered();
 
             var enemyTemplate = _content.GetEnemyTemplate(State.FightIndex);
@@ -281,20 +280,7 @@ namespace DeadManZone.Game
             return result;
         }
 
-        public bool TryEmergencyDraft()
-        {
-            var board = GetPlayerBoard();
-            int upkeep = ManpowerCalculator.ComputeUpkeep(board, _registry);
-            int shortfall = upkeep - State.Manpower;
-            if (shortfall <= 0)
-                return false;
-
-            if (!EmergencyDraft.TryUse(State, shortfall))
-                return false;
-
-            Persist();
-            return true;
-        }
+        public bool TryEmergencyDraft() => false;
 
         public bool TryRerollLane(ShopLane lane)
         {
@@ -364,13 +350,9 @@ namespace DeadManZone.Game
             _activeCombat = null;
             bool playerWon = result.PlayerWon;
             bool isDraw = result.IsDraw;
-            var playerBoard = GetPlayerBoard();
-            int manpowerBefore = State.Manpower;
-            State.Manpower += ManpowerCalculator.RefundSurvivors(
-                playerBoard,
-                result.SurvivingPlayerCombatantIds,
-                _registry);
-            int manpowerRefunded = State.Manpower - manpowerBefore;
+            var playerCombatants = result.PlayerCombatantsAtEnd ?? Array.Empty<CombatantState>();
+            int casualties = ManpowerCalculator.ComputeCasualties(playerCombatants);
+            State.Manpower = Math.Max(0, State.Manpower - casualties);
 
             if (!playerWon)
             {
@@ -385,7 +367,7 @@ namespace DeadManZone.Game
                     System.Array.Empty<CombatantState>(),
                     playerWon,
                     isDraw,
-                    manpowerRefunded,
+                    casualties,
                     suppliesEarned: 0,
                     moraleDelta: -moraleLoss);
                 State.Combat = null;
@@ -401,6 +383,7 @@ namespace DeadManZone.Game
                 State.Phase = RunPhase.Aftermath;
                 State.RerollCountThisRound = 0;
                 ResetAuthorityForBuildRound();
+                ApplyMuster();
                 RefreshShop();
                 Persist();
                 return;
@@ -408,14 +391,13 @@ namespace DeadManZone.Game
 
             var reward = FightRewardTable.GetReward(State.FightIndex, isDraw);
             State.Supplies += reward.Supplies;
-            State.Manpower += reward.BonusManpower;
             State.Authority += reward.BonusAuthority;
             ProcessFightEndMeta(playerWon: true, result.PlayerHqDamaged);
             State.LastBattleReport = BattleReportBuilder.Build(
                 System.Array.Empty<CombatantState>(),
                 playerWon,
                 isDraw,
-                manpowerRefunded,
+                casualties,
                 reward.Supplies,
                 moraleDelta: 0);
             if (result.BattleReport != null)
@@ -424,7 +406,7 @@ namespace DeadManZone.Game
                 {
                     PlayerWon = playerWon,
                     IsDraw = isDraw,
-                    ManpowerRefunded = manpowerRefunded,
+                    ManpowerCasualties = casualties,
                     SuppliesEarned = reward.Supplies,
                     MoraleDelta = 0,
                     TopDamageDealt = result.BattleReport.TopDamageDealt,
@@ -446,6 +428,7 @@ namespace DeadManZone.Game
             State.Phase = RunPhase.Aftermath;
             State.RerollCountThisRound = 0;
             ResetAuthorityForBuildRound();
+            ApplyMuster();
             RefreshShop();
             Persist();
         }

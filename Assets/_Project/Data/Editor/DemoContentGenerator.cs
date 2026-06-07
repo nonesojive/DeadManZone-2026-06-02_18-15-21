@@ -47,6 +47,7 @@ namespace DeadManZone.Data.Editor
             int goldCost = 5,
             int requisitionCost = 0,
             int manpowerCost = 1,
+            int musterPerShop = 0,
             ShopModifierFlags shopModifiers = ShopModifierFlags.None,
             CommandActionFlags commandActions = CommandActionFlags.None,
             GrantedAbility grantedAbility = GrantedAbility.None)
@@ -77,6 +78,7 @@ namespace DeadManZone.Data.Editor
             asset.goldCost = goldCost;
             asset.requisitionCost = requisitionCost;
             asset.manpowerCost = manpowerCost;
+            asset.musterPerShop = musterPerShop;
             asset.shopModifiers = shopModifiers;
             asset.commandActions = commandActions;
             asset.grantedAbility = grantedAbility;
@@ -96,7 +98,8 @@ namespace DeadManZone.Data.Editor
             string displayName,
             string hqPieceId,
             int startingSupplies = 100,
-            int startingManpower = 10,
+            int startingManpower = 100,
+            int baseMusterPerShop = 12,
             int startingAuthority = 2,
             int startingMorale = 100)
         {
@@ -107,6 +110,7 @@ namespace DeadManZone.Data.Editor
             asset.hqPieceId = hqPieceId;
             asset.startingSupplies = startingSupplies;
             asset.startingManpower = startingManpower;
+            asset.baseMusterPerShop = baseMusterPerShop;
             asset.startingAuthority = startingAuthority;
             asset.startingMorale = startingMorale;
             EditorUtility.SetDirty(asset);

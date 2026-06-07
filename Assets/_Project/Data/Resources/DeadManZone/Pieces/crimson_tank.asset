@@ -29,8 +29,8 @@ MonoBehaviour:
   systemTag: combatant
   synergyTags: []
   abilityTags: []
-  maxHp: 28
-  baseDamage: 5
+  maxHp: 280
+  baseDamage: 40
   cooldownTicks: 3
   goldCost: 0
   requisitionCost: 0

@@ -30,8 +30,8 @@ MonoBehaviour:
   - stealth
   - gas
   abilityTags: []
-  maxHp: 8
-  baseDamage: 4
+  maxHp: 80
+  baseDamage: 32
   cooldownTicks: 3
   goldCost: 0
   requisitionCost: 0

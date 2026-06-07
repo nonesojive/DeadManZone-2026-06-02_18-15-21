@@ -12,7 +12,7 @@ namespace DeadManZone.Data.Editor
             return new[]
             {
                 Save(1, "Neutral Patrol", "Infantry", "neutral",
-                    Placement(byId["conscript_rifleman"], 6, 4), Placement(byId["conscript_rifleman"], 8, 4)),
+                    Placement(byId["mg_team"], 5, 4), Placement(byId["mg_team"], 7, 4)),
                 Save(2, "Crimson Skirmish", "Heavy Fire", "crimson_legion",
                     Placement(byId["crimson_elite"], 6, 4), Placement(byId["crimson_elite"], 8, 4)),
                 Save(3, "Ash Gas Line", "Gas", "ash_wraiths",
@@ -27,7 +27,7 @@ namespace DeadManZone.Data.Editor
                     Placement(byId["wraith_phantom"], 8, 4)),
                 Save(7, "Neutral Battery", "Artillery", "neutral",
                     Placement(byId["mobile_cannon"], 6, 3), Placement(byId["grenade_thrower"], 5, 4),
-                    Placement(byId["field_medic"], 3, 4)),
+                    Placement(byId["field_medic"], 5, 6)),
                 Save(8, "Crimson Armor Push", "Mechanical", "crimson_legion",
                     Placement(byId["crimson_tank"], 7, 4), Placement(byId["crimson_tank"], 5, 5),
                     Placement(byId["crimson_elite"], 4, 4)),
@@ -35,7 +35,7 @@ namespace DeadManZone.Data.Editor
                     Placement(byId["wraith_bombard"], 6, 3), Placement(byId["wraith_stalker"], 4, 4),
                     Placement(byId["wraith_phantom"], 8, 4)),
                 Save(10, "Final Gauntlet", "Boss", "crimson_legion",
-                    Placement(byId["crimson_tank"], 7, 4), Placement(byId["crimson_artillery"], 6, 3),
+                    Placement(byId["crimson_tank"], 7, 4), Placement(byId["crimson_artillery"], 1, 3),
                     Placement(byId["crimson_elite"], 5, 4), Placement(byId["wraith_bombard"], 4, 3))
             };
         }

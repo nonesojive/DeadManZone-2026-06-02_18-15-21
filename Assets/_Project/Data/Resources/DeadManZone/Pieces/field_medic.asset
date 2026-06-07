@@ -28,12 +28,12 @@ MonoBehaviour:
   synergyTags:
   - medic
   abilityTags: []
-  maxHp: 6
+  maxHp: 40
   baseDamage: 0
   cooldownTicks: 3
   goldCost: 5
   requisitionCost: 0
-  manpowerCost: 1
+  manpowerCost: 4
   shopModifiers: 0
   commandActions: 0
   shopLane: 1

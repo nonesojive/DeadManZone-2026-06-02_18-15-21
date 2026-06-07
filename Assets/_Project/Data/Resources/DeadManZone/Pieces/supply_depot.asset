@@ -28,12 +28,13 @@ MonoBehaviour:
   synergyTags:
   - supply
   abilityTags: []
-  maxHp: 15
+  maxHp: 50
   baseDamage: 0
   cooldownTicks: 3
   goldCost: 6
   requisitionCost: 0
-  manpowerCost: 1
+  manpowerCost: 0
+  musterPerShop: 3
   shopModifiers: 2
   commandActions: 0
   shopLane: 1

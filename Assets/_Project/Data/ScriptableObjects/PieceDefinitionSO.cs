@@ -26,6 +26,9 @@ namespace DeadManZone.Data
         public int goldCost = 5;
         public int requisitionCost;
         public int manpowerCost = 1;
+
+        [Header("Manpower")]
+        public int musterPerShop;
         public ShopModifierFlags shopModifiers;
         public CommandActionFlags commandActions;
         public ShopLane shopLane = ShopLane.Offensive;
@@ -105,6 +108,7 @@ namespace DeadManZone.Data
                 GoldCost = goldCost,
                 RequisitionCost = requisitionCost,
                 ManpowerCost = manpowerCost,
+                MusterPerShop = musterPerShop,
                 ShopModifiers = shopModifiers,
                 CommandActions = commandActions,
                 AttackSpeed = attackSpeed,

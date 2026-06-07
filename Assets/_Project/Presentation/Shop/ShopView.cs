@@ -49,6 +49,7 @@ namespace DeadManZone.Presentation.Shop
         {
             if (RunManager.Instance != null)
                 RunManager.Instance.RunStateChanged += OnRunStateChanged;
+            boardView?.HidePieceHoverCard();
             RefreshFromRunManager();
             ScheduleDeferredRefresh();
         }

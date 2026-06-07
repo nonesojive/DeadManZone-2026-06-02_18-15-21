@@ -13,7 +13,7 @@ namespace DeadManZone.Core.Combat
     {
         public bool PlayerWon { get; init; }
         public bool IsDraw { get; init; }
-        public int ManpowerRefunded { get; init; }
+        public int ManpowerCasualties { get; init; }
         public int SuppliesEarned { get; init; }
         public int MoraleDelta { get; init; }
         public IReadOnlyList<BattleReportEntry> TopDamageDealt { get; init; } =

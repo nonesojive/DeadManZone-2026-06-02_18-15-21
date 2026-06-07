@@ -13,7 +13,7 @@ namespace DeadManZone.Core.Tests.EditMode
             var refund = SalvageCalculator.Compute(piece);
             Assert.AreEqual(5, refund.Supplies);
             Assert.AreEqual(1, refund.Authority);
-            Assert.AreEqual(1, refund.Manpower);
+            Assert.AreEqual(0, refund.Manpower);
         }
 
         [Test]

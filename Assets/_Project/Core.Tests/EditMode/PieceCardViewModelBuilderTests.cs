@@ -1,5 +1,6 @@
 using System.Linq;
 using DeadManZone.Core.Board;
+using DeadManZone.Core.Common;
 using DeadManZone.Core.Tags;
 using NUnit.Framework;
 

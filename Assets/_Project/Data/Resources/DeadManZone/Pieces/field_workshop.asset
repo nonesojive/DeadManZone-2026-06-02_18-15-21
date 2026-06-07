@@ -18,15 +18,33 @@ MonoBehaviour:
   shapeCells:
   - {x: 0, y: 0}
   tags:
+  - Building
+  - Utility
+  - Non-Combatant
   - Mechanical
-  maxHp: 12
+  primary: building
+  combatRole: utility
+  systemTag: noncombatant
+  synergyTags:
+  - mechanical
+  abilityTags: []
+  maxHp: 120
   baseDamage: 0
   cooldownTicks: 3
   goldCost: 7
   requisitionCost: 0
   manpowerCost: 1
+  musterPerShop: 2
   shopModifiers: 8
   commandActions: 0
   shopLane: 1
+  attackSpeed: 1
+  attackRange: 1
+  movementSpeed: 2
+  armorType: 1
+  attackType: 1
+  grantedAbility: 0
+  factionId: neutral
   icon: {fileID: 0}
   categoryTint: {r: 0.48, g: 0.4, b: 0.28, a: 1}
+  cellSprites: []

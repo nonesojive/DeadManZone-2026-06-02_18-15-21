@@ -26,6 +26,9 @@ namespace DeadManZone.Core.Tests
         /// <summary>Front zone anchor for unit placement on the default horizontal layout (columns 7-8).</summary>
         public static GridCoord FrontLineAnchor(int y = 5) => new(7, y);
 
+        /// <summary>Support zone anchor for a 9-wide board with 3 rear and 3 support columns (columns 3-5).</summary>
+        public static GridCoord SupportLineAnchor(int columnOffset = 0, int y = 0) => new(3 + columnOffset, y);
+
         public static BoardState StandardPlayer()
         {
             var board = new BoardState(Layout);
@@ -68,6 +71,38 @@ namespace DeadManZone.Core.Tests
             var enemy = new BoardState(Layout);
             enemy.TryPlace(TestPieces.WeakConscript(), FrontLineAnchor());
             return enemy;
+        }
+
+        public static BoardState WithHqAndRifle()
+        {
+            var board = new BoardState(Layout);
+            board.TryPlace(TestPieces.FieldingHq(), new GridCoord(0, 2), instanceId: "hq_test");
+            board.TryPlace(TestPieces.RifleSquadTenMan(), FrontLineAnchor(4));
+            return board;
+        }
+
+        public static BoardState HqOnly()
+        {
+            var board = new BoardState(Layout);
+            board.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 4), instanceId: "hq_test");
+            return board;
+        }
+
+        public static BoardState WithSupplyDepot()
+        {
+            var board = new BoardState(Layout);
+            board.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 4), instanceId: "hq_test");
+            board.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 0));
+            return board;
+        }
+
+        public static BoardState WithTwoSupplyBuildings()
+        {
+            var board = new BoardState(Layout);
+            board.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 4), instanceId: "hq_test");
+            board.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 0), instanceId: "supply_depot_1");
+            board.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 1), instanceId: "supply_depot_2");
+            return board;
         }
     }
 }
