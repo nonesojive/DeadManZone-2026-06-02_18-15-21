@@ -11,7 +11,10 @@ namespace DeadManZone.Core.Combat
             IReadOnlyList<CombatantState> enemies,
             TacticType tactic)
         {
-            var alive = enemies.Where(e => e.IsAlive).ToList();
+            if (attacker == null || attacker.Definition == null || enemies == null || enemies.Count == 0)
+                return null;
+
+            var alive = enemies.Where(e => e != null && e.IsAlive).ToList();
             if (alive.Count == 0)
                 return null;
 
@@ -20,6 +23,9 @@ namespace DeadManZone.Core.Combat
                 .ToList();
             if (inRange.Count == 0)
                 return null;
+
+            if (!string.IsNullOrWhiteSpace(attacker.Definition.CombatRole))
+                return CombatRoleTargeting.SelectTarget(attacker, inRange);
 
             return tactic switch
             {
