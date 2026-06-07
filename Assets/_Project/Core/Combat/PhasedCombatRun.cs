@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
-using DeadManZone.Core.Common;
+using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
 {
@@ -161,14 +161,14 @@ namespace DeadManZone.Core.Combat
 
             foreach (var combatant in _playerCombatants)
             {
-                if (HasTag(combatant, GameTags.Combatant))
+                if (HasTag(combatant, GameTagIds.Combatant))
                 {
                     total++;
                     if (!combatant.IsAlive)
                         lost++;
                 }
 
-                if (HasTag(combatant, GameTags.Hq) && combatant.CurrentHp < combatant.Definition.MaxHp)
+                if (HasTag(combatant, GameTagIds.Hq) && combatant.CurrentHp < combatant.Definition.MaxHp)
                     hqDamaged = true;
             }
 
@@ -176,7 +176,7 @@ namespace DeadManZone.Core.Combat
         }
 
         private static bool HasTag(CombatantState combatant, string tag) =>
-            combatant.Definition?.Tags?.Contains(tag) == true;
+            PieceTagQueries.HasTag(combatant.Definition, tag);
 
         private CombatAdvanceResult CompleteFight()
         {
@@ -282,7 +282,7 @@ namespace DeadManZone.Core.Combat
                 foreach (var adjacentId in board.GetAdjacentInstanceIds(combatant.InstanceId))
                 {
                     var adjacent = board.Pieces.First(p => p.InstanceId == adjacentId);
-                    if (adjacent.Definition.Tags.Contains("Supply"))
+                    if (PieceTagQueries.HasTag(adjacent.Definition, GameTagIds.Supply))
                         combatant.DamageBonus += 1;
                 }
             }

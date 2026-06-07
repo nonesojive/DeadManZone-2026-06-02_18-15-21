@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
-using DeadManZone.Core.Common;
+using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
 {
@@ -36,7 +36,7 @@ namespace DeadManZone.Core.Combat
         public TacticType PlayerTactic => _tactics.PlayerTactic;
 
         public bool IsPlayerHqAlive =>
-            _playerCombatants.Any(c => c.HasTag(GameTags.Hq) && c.IsAlive);
+            _playerCombatants.Any(c => c.HasTag(GameTagIds.Hq) && c.IsAlive);
 
         private TickCombatRun(
             BoardState playerBoard,
@@ -208,7 +208,7 @@ namespace DeadManZone.Core.Combat
 
             var blocked = new HashSet<GridCoord>(_occupied);
 
-            foreach (var mover in movers.Where(m => m.IsAlive && m.HasTag(GameTags.Combatant)).OrderBy(m => m.InstanceId))
+            foreach (var mover in movers.Where(m => m.IsAlive && m.HasTag(GameTagIds.Combatant)).OrderBy(m => m.InstanceId))
             {
                 if (mover.Definition.MovementSpeed == MovementSpeedTier.None)
                     continue;
@@ -361,7 +361,7 @@ namespace DeadManZone.Core.Combat
         {
             var (total, lost, hqDamaged) = ComputePlayerLossStats();
             var survivors = _playerCombatants
-                .Where(c => c.IsAlive && c.HasTag(GameTags.Combatant))
+                .Where(c => c.IsAlive && c.HasTag(GameTagIds.Combatant))
                 .Select(c => c.InstanceId)
                 .ToList();
 
@@ -394,14 +394,14 @@ namespace DeadManZone.Core.Combat
 
             foreach (var combatant in _playerCombatants)
             {
-                if (combatant.HasTag(GameTags.Combatant))
+                if (combatant.HasTag(GameTagIds.Combatant))
                 {
                     total++;
                     if (!combatant.IsAlive)
                         lost++;
                 }
 
-                if (combatant.HasTag(GameTags.Hq) && combatant.CurrentHp < combatant.Definition.MaxHp)
+                if (combatant.HasTag(GameTagIds.Hq) && combatant.CurrentHp < combatant.Definition.MaxHp)
                     hqDamaged = true;
             }
 

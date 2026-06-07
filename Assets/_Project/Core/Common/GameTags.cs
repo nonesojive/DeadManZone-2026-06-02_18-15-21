@@ -1,5 +1,8 @@
+using System;
+
 namespace DeadManZone.Core.Common
 {
+    [Obsolete("Use GameTagIds and PieceTagQueries")]
     public static class GameTags
     {
         public const string Combatant = "Combatant";

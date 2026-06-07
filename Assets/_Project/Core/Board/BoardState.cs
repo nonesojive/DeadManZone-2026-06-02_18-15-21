@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DeadManZone.Core.Common;
+using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Board
 {
@@ -126,7 +126,7 @@ namespace DeadManZone.Core.Board
         }
 
         private static bool IsImmovableHq(PieceDefinition definition) =>
-            definition?.Tags?.Contains(GameTags.Hq) == true;
+            PieceTagQueries.HasTag(definition, GameTagIds.Hq);
 
         private static bool IsZoneAllowedForDefinition(PieceDefinition definition, ZoneType zone)
         {

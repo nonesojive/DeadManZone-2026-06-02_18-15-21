@@ -7,6 +7,7 @@ using DeadManZone.Core.Common;
 using DeadManZone.Core.Content;
 using DeadManZone.Core.Run;
 using DeadManZone.Core.Shop;
+using DeadManZone.Core.Tags;
 using DeadManZone.Data;
 
 namespace DeadManZone.Game
@@ -212,7 +213,7 @@ namespace DeadManZone.Game
                 ActiveTactic = _activeCombat.PlayerTactic,
                 HqAlive = _activeCombat.IsPlayerHqAlive,
                 HasCommandPiece = board.Pieces.Any(p =>
-                    p.Definition.Tags.Contains(GameTags.Command)),
+                    PieceTagQueries.HasTag(p.Definition, GameTagIds.Command)),
                 AvailableAbilities = abilities,
                 PendingSelectedTactic = State.Combat.PendingSelectedTactic,
                 PendingSelectedAbilities = State.Combat.PendingSelectedAbilities

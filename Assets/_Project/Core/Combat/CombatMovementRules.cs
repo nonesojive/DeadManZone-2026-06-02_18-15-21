@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
-using DeadManZone.Core.Common;
+using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
 {
@@ -9,7 +9,7 @@ namespace DeadManZone.Core.Combat
     {
         public static bool ShouldAttemptMove(CombatantState mover, IReadOnlyList<CombatantState> enemies) =>
             mover.IsAlive
-            && mover.HasTag(GameTags.Combatant)
+            && mover.HasTag(GameTagIds.Combatant)
             && mover.Definition.MovementSpeed != MovementSpeedTier.None
             && !HasEnemyInRange(mover, enemies);
 

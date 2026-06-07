@@ -1,6 +1,5 @@
-using System.Linq;
 using DeadManZone.Core.Board;
-using DeadManZone.Core.Common;
+using DeadManZone.Core.Tags;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -33,7 +32,7 @@ namespace DeadManZone.Presentation.DragDrop
             if (string.IsNullOrEmpty(instanceId) || DragDropController.Instance == null)
                 return;
 
-            if (_definition?.Tags?.Contains(GameTags.Hq) == true)
+            if (PieceTagQueries.HasTag(_definition, GameTagIds.Hq))
                 return;
 
             var payload = new DragPayload

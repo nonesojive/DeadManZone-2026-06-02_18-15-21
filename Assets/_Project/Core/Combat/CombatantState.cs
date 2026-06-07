@@ -1,6 +1,5 @@
-using System.Linq;
 using DeadManZone.Core.Board;
-using DeadManZone.Core.Common;
+using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
 {
@@ -26,7 +25,7 @@ namespace DeadManZone.Core.Combat
         public GridCoord Position { get; set; }
         public bool IsAlive => CurrentHp > 0;
 
-        public bool HasTag(string tag) => Definition?.Tags?.Contains(tag) == true;
+        public bool HasTag(string tag) => PieceTagQueries.HasTag(Definition, tag);
 
         public bool CanAttack => IsAlive && Definition.BaseDamage > 0;
     }

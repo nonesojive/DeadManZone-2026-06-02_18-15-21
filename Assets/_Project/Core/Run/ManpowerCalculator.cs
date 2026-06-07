@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
-using DeadManZone.Core.Common;
 using DeadManZone.Core.Content;
+using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Run
 {
@@ -36,6 +36,6 @@ namespace DeadManZone.Core.Run
         }
 
         private static bool IsCombatant(PieceDefinition definition) =>
-            definition?.Tags?.Contains(GameTags.Combatant) == true;
+            PieceTagQueries.HasTag(definition, GameTagIds.Combatant);
     }
 }

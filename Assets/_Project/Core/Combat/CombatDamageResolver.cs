@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using DeadManZone.Core.Board;
+using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
 {
@@ -15,7 +15,7 @@ namespace DeadManZone.Core.Combat
             float baseDamage = (attacker.BaseDamage + flatBonus) * damageScale;
             var armor = StepArmor(defender.ArmorType, armorBuffSteps);
             float afterArmor = baseDamage * BaselineArmorMultiplier(armor);
-            float typeMultiplier = AttackTypeMultiplier(attacker.AttackType, armor, defender.Tags);
+            float typeMultiplier = AttackTypeMultiplier(attacker.AttackType, armor, defender);
             return System.Math.Max(1, (int)(afterArmor * typeMultiplier));
         }
 
@@ -39,9 +39,10 @@ namespace DeadManZone.Core.Combat
         public static float AttackTypeMultiplier(
             AttackType attackType,
             ArmorType armor,
-            IReadOnlyList<string> tags)
+            PieceDefinition defender)
         {
-            bool isBuilding = HasTag(tags, "building") || HasTag(tags, "structure");
+            bool isBuilding = PieceTagQueries.HasTag(defender, GameTagIds.Building)
+                || PieceTagQueries.HasTag(defender, GameTagIds.Structure);
 
             return attackType switch
             {
@@ -50,20 +51,6 @@ namespace DeadManZone.Core.Combat
                 AttackType.Piercing when armor == ArmorType.Heavy => 1.35f,
                 _ => 1.0f
             };
-        }
-
-        private static bool HasTag(IReadOnlyList<string> tags, string tag)
-        {
-            if (tags == null)
-                return false;
-
-            foreach (var entry in tags)
-            {
-                if (string.Equals(entry, tag, System.StringComparison.OrdinalIgnoreCase))
-                    return true;
-            }
-
-            return false;
         }
     }
 }

@@ -1,6 +1,9 @@
+using System;
+
 namespace DeadManZone.Core.Common
 {
     /// <summary>Keyword tags used for synergies, critical mass, and shop filtering.</summary>
+    [Obsolete("Use GameTagIds and PieceTagQueries")]
     public static class GameKeywords
     {
         public const string Infantry = "Infantry";
