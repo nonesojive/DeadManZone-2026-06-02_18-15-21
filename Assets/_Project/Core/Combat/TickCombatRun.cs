@@ -53,10 +53,12 @@ namespace DeadManZone.Core.Combat
             _enemyCombatants = SpawnCombatants(enemyBoard, CombatSide.Enemy, _layout.EnemyOriginX);
             var playerSynergySnapshot = SynergyEngine.EvaluateFightStart(playerBoard);
             var enemySynergySnapshot = SynergyEngine.EvaluateFightStart(enemyBoard);
+            var playerCriticalMassSnapshot = CriticalMassRules.EvaluateFightStart(playerBoard);
+            var enemyCriticalMassSnapshot = CriticalMassRules.EvaluateFightStart(enemyBoard);
             SynergyEngine.ApplyToCombatants(playerSynergySnapshot, _playerCombatants);
             SynergyEngine.ApplyToCombatants(enemySynergySnapshot, _enemyCombatants);
-            CriticalMassRules.ApplyToCombatants(playerBoard, _playerCombatants);
-            CriticalMassRules.ApplyToCombatants(enemyBoard, _enemyCombatants);
+            CriticalMassRules.ApplyToCombatants(playerBoard, _playerCombatants, playerCriticalMassSnapshot);
+            CriticalMassRules.ApplyToCombatants(enemyBoard, _enemyCombatants, enemyCriticalMassSnapshot);
             ApplyTacticDamageBuffs();
             RebuildOccupied();
         }
@@ -211,9 +213,16 @@ namespace DeadManZone.Core.Combat
                 if (mover.Definition.MovementSpeed == MovementSpeedTier.None)
                     continue;
 
-                mover.MoveCharge += CombatMovementSpeed.GetChargePerTick(
+                int moveChargePerTick = CombatMovementSpeed.GetChargePerTick(
                     mover.Definition.MovementSpeed,
                     mover.Side == CombatSide.Player ? _tactics.PlayerTactic : _tactics.EnemyTactic);
+                if (mover.MoveChargePercentBonus != 0)
+                {
+                    int percentMultiplier = System.Math.Max(0, 100 + mover.MoveChargePercentBonus);
+                    moveChargePerTick = moveChargePerTick * percentMultiplier / 100;
+                }
+
+                mover.MoveCharge += moveChargePerTick;
 
                 if (!CombatMovementRules.ShouldAttemptMove(mover, aliveTargets))
                     continue;

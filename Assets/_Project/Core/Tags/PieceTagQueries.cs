@@ -28,6 +28,33 @@ namespace DeadManZone.Core.Tags
                 || ContainsTag(piece.Tags, targetKey);
         }
 
+        public static bool HasPrimaryTag(PieceDefinition piece, string tagId)
+        {
+            string targetKey = NormalizeTagKey(tagId);
+            if (piece == null || targetKey.Length == 0)
+                return false;
+
+            return MatchesTag(piece.Primary, targetKey);
+        }
+
+        public static bool HasCombatRoleTag(PieceDefinition piece, string tagId)
+        {
+            string targetKey = NormalizeTagKey(tagId);
+            if (piece == null || targetKey.Length == 0)
+                return false;
+
+            return MatchesTag(piece.CombatRole, targetKey);
+        }
+
+        public static bool HasSynergyTag(PieceDefinition piece, string tagId)
+        {
+            string targetKey = NormalizeTagKey(tagId);
+            if (piece == null || targetKey.Length == 0)
+                return false;
+
+            return ContainsTag(piece.SynergyTags, targetKey);
+        }
+
         public static IReadOnlyList<string> GetAllTagIds(PieceDefinition piece)
         {
             if (piece == null)
@@ -133,7 +160,7 @@ namespace DeadManZone.Core.Tags
             if (!seen.Add(trimmedId))
                 return;
 
-            if (TryCreateVisibleTag(trimmedId, TagCategory.Primary, 65, "Faction identity tag.", out var tag))
+            if (TryCreateVisibleTag(trimmedId, TagCategory.Faction, 65, "Faction identity tag.", out var tag))
             {
                 destination.Add(tag);
             }

@@ -2,6 +2,7 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Tests;
+using DeadManZone.Core.Tags;
 using NUnit.Framework;
 
 namespace DeadManZone.Core.Tests.EditMode
@@ -9,18 +10,45 @@ namespace DeadManZone.Core.Tests.EditMode
     public sealed class CriticalMassRulesTests
     {
         [Test]
-        public void ThreeInfantry_GrantsDamageBonus()
+        public void ThreeInfantryPrimary_GrantsDamageBonus()
         {
             var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
             var board = new BoardState(layout);
-            var infantry = TestPieces.CreateUnit("inf", tags: new[] { GameKeywords.Infantry, GameTags.Combatant });
+            var infantry = TestPieces.CreateUnit(
+                "inf",
+                primary: GameTagIds.Infantry,
+                combatRole: GameTagIds.Assault,
+                systemTag: GameTagIds.Combatant);
 
             board.TryPlace(infantry, new GridCoord(0, 0), "a");
             board.TryPlace(infantry, new GridCoord(1, 0), "b");
             board.TryPlace(infantry, new GridCoord(2, 0), "c");
 
-            var bonus = CriticalMassRules.Evaluate(board);
+            var bonus = CriticalMassRules.EvaluateFightStart(board);
             Assert.GreaterOrEqual(bonus.DamageBonus, 2);
+        }
+
+        [Test]
+        public void FightStartSnapshot_DoesNotChangeAfterPieceRemoved()
+        {
+            var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
+            var board = new BoardState(layout);
+            var infantry = TestPieces.CreateUnit(
+                "inf",
+                primary: GameTagIds.Infantry,
+                combatRole: GameTagIds.Assault,
+                systemTag: GameTagIds.Combatant);
+
+            board.TryPlace(infantry, new GridCoord(0, 0), "a");
+            board.TryPlace(infantry, new GridCoord(1, 0), "b");
+            board.TryPlace(infantry, new GridCoord(2, 0), "c");
+
+            var snapshot = CriticalMassRules.EvaluateFightStart(board);
+            Assert.IsTrue(board.TryRemove("c", out _));
+
+            var reevaluated = CriticalMassRules.EvaluateFightStart(board);
+            Assert.GreaterOrEqual(snapshot.DamageBonus, 2);
+            Assert.AreEqual(0, reevaluated.DamageBonus);
         }
     }
 }
