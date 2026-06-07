@@ -1,5 +1,6 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
+using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Tests
 {
@@ -35,6 +36,11 @@ namespace DeadManZone.Core.Tests
                 DisplayName = source.DisplayName,
                 Category = source.Category,
                 Shape = source.Shape,
+                Primary = source.Primary,
+                CombatRole = source.CombatRole,
+                SystemTag = source.SystemTag,
+                SynergyTags = source.SynergyTags,
+                AbilityTags = source.AbilityTags,
                 Tags = source.Tags,
                 MaxHp = source.MaxHp,
                 BaseDamage = baseDamage ?? source.BaseDamage,
@@ -116,18 +122,38 @@ namespace DeadManZone.Core.Tests
             CommandActions = CommandActionFlags.CallStrike
         };
 
-        public static PieceDefinition CreateUnit(string id, string[] tags) => new()
-        {
-            Id = id,
-            DisplayName = id,
-            Category = PieceCategory.Unit,
-            Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
-            Tags = tags,
-            MaxHp = 10,
-            BaseDamage = 2,
-            CooldownTicks = 3,
-            ManpowerCost = 1
-        };
+        public static PieceDefinition CreateUnit(
+            string id,
+            string[] tags = null,
+            string primary = null,
+            string combatRole = null,
+            string systemTag = null,
+            string[] synergyTags = null,
+            string[] abilityTags = null) => new()
+            {
+                Id = id,
+                DisplayName = id,
+                Category = PieceCategory.Unit,
+                Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
+                Primary = primary,
+                CombatRole = combatRole,
+                SystemTag = systemTag,
+                SynergyTags = synergyTags ?? System.Array.Empty<string>(),
+                AbilityTags = abilityTags ?? System.Array.Empty<string>(),
+                Tags = PieceTagQueries.BuildLegacyTags(
+                    PieceCategory.Unit,
+                    baseDamage: 2,
+                    primary,
+                    combatRole,
+                    systemTag,
+                    synergyTags ?? System.Array.Empty<string>(),
+                    abilityTags ?? System.Array.Empty<string>(),
+                    tags ?? System.Array.Empty<string>()),
+                MaxHp = 10,
+                BaseDamage = 2,
+                CooldownTicks = 3,
+                ManpowerCost = 1
+            };
 
         public static PieceDefinition WeakConscript() => new()
         {

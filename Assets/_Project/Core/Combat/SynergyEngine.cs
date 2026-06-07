@@ -1,11 +1,10 @@
 using System.Collections.Generic;
-using System.Linq;
 using DeadManZone.Core.Board;
-using DeadManZone.Core.Common;
+using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
 {
-    /// <summary>Applies adjacency and tag-based combat buffs at fight start.</summary>
+    /// <summary>Applies tag-owned adjacency synergy buffs from a fight-start snapshot.</summary>
     public static class SynergyEngine
     {
         public readonly struct SynergyResult
@@ -15,56 +14,195 @@ namespace DeadManZone.Core.Combat
             public int MoveChargeBonus { get; init; }
         }
 
-        public static SynergyResult ComputeForCombatant(
-            BoardState board,
-            PlacedPiece placedPiece,
-            IReadOnlyList<PlacedPiece> allPieces)
+        public sealed class FightStartSynergySnapshot
         {
-            int damageBonus = 0;
-            int armorSteps = 0;
-            int moveCharge = 0;
-            var tags = placedPiece.Definition.Tags;
+            private readonly IReadOnlyDictionary<string, SynergyResult> _resultsByInstanceId;
 
-            foreach (var adjacentId in board.GetAdjacentInstanceIds(placedPiece.InstanceId))
+            public static FightStartSynergySnapshot Empty { get; } =
+                new(new Dictionary<string, SynergyResult>());
+
+            internal FightStartSynergySnapshot(IReadOnlyDictionary<string, SynergyResult> resultsByInstanceId)
             {
-                var adjacent = allPieces.First(p => p.InstanceId == adjacentId);
-                var adjTags = adjacent.Definition.Tags;
-
-                if (adjTags.Contains(GameKeywords.Supply))
-                    damageBonus += 1;
-
-                if (adjTags.Contains(GameKeywords.Medic) && tags.Contains(GameKeywords.Infantry))
-                    armorSteps += 1;
-
-                if (adjTags.Contains(GameKeywords.Command) && tags.Contains(GameKeywords.Artillery))
-                    damageBonus += 2;
-
-                if (adjTags.Contains(GameKeywords.Echo) && tags.Contains(GameKeywords.Stealth))
-                    damageBonus += 1;
+                _resultsByInstanceId = resultsByInstanceId;
             }
 
-            return new SynergyResult
+            public bool TryGet(string instanceId, out SynergyResult result)
             {
-                DamageBonus = damageBonus,
-                ArmorBuffSteps = armorSteps,
-                MoveChargeBonus = moveCharge
-            };
+                if (string.IsNullOrWhiteSpace(instanceId))
+                {
+                    result = default;
+                    return false;
+                }
+
+                return _resultsByInstanceId.TryGetValue(instanceId, out result);
+            }
         }
 
-        public static void ApplyToCombatants(BoardState board, IList<CombatantState> combatants)
+        public static FightStartSynergySnapshot EvaluateFightStart(BoardState board)
         {
-            var pieces = board.Pieces.ToList();
-            foreach (var combatant in combatants)
+            if (board == null)
+                return FightStartSynergySnapshot.Empty;
+
+            var piecesById = new Dictionary<string, PlacedPiece>(System.StringComparer.Ordinal);
+            var resultsById = new Dictionary<string, SynergyResult>(System.StringComparer.Ordinal);
+            foreach (var piece in board.Pieces)
             {
-                var placed = pieces.FirstOrDefault(p => p.InstanceId == combatant.InstanceId);
-                if (placed == null)
+                piecesById[piece.InstanceId] = piece;
+                resultsById[piece.InstanceId] = default;
+            }
+
+            foreach (var source in piecesById.Values)
+            {
+                var sourceSynergyTags = source.Definition.SynergyTags;
+                if (sourceSynergyTags == null || sourceSynergyTags.Count == 0)
                     continue;
 
-                var synergy = ComputeForCombatant(board, placed, pieces);
+                var adjacentPieces = GetAdjacentPieces(board, source.InstanceId, piecesById);
+                if (adjacentPieces.Count == 0)
+                    continue;
+
+                var seenSourceTags = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+                for (int i = 0; i < sourceSynergyTags.Count; i++)
+                {
+                    string sourceTagId = sourceSynergyTags[i];
+                    if (string.IsNullOrWhiteSpace(sourceTagId) || !seenSourceTags.Add(sourceTagId))
+                        continue;
+
+                    var rules = SynergyRuleCatalog.GetRulesForSourceTag(sourceTagId);
+                    for (int ruleIndex = 0; ruleIndex < rules.Count; ruleIndex++)
+                    {
+                        var rule = rules[ruleIndex];
+                        ApplyRule(source, adjacentPieces, rule, resultsById);
+                    }
+                }
+            }
+
+            return new FightStartSynergySnapshot(resultsById);
+        }
+
+        public static void ApplyToCombatants(
+            FightStartSynergySnapshot snapshot,
+            IList<CombatantState> combatants)
+        {
+            if (snapshot == null || combatants == null)
+                return;
+
+            foreach (var combatant in combatants)
+            {
+                if (!snapshot.TryGet(combatant.InstanceId, out var synergy))
+                    continue;
+
                 combatant.DamageBonus += synergy.DamageBonus;
                 combatant.ArmorBuffSteps += synergy.ArmorBuffSteps;
                 combatant.MoveCharge += synergy.MoveChargeBonus;
             }
+        }
+
+        private static List<PlacedPiece> GetAdjacentPieces(
+            BoardState board,
+            string sourceId,
+            IReadOnlyDictionary<string, PlacedPiece> piecesById)
+        {
+            var adjacentPieces = new List<PlacedPiece>();
+            foreach (var adjacentId in board.GetAdjacentInstanceIds(sourceId))
+            {
+                if (!piecesById.TryGetValue(adjacentId, out var adjacentPiece))
+                    continue;
+
+                adjacentPieces.Add(adjacentPiece);
+            }
+
+            return adjacentPieces;
+        }
+
+        private static void ApplyRule(
+            PlacedPiece sourcePiece,
+            IReadOnlyList<PlacedPiece> adjacentPieces,
+            SynergyEffectDefinition rule,
+            Dictionary<string, SynergyResult> resultsById)
+        {
+            if (rule.Direction == SynergyDirection.Outbound)
+            {
+                for (int i = 0; i < adjacentPieces.Count; i++)
+                {
+                    var adjacentPiece = adjacentPieces[i];
+                    if (!rule.NeighborFilter.Matches(adjacentPiece.Definition))
+                        continue;
+
+                    ApplyEffect(adjacentPiece.InstanceId, rule, resultsById);
+                }
+
+                return;
+            }
+
+            if (rule.Direction == SynergyDirection.Inbound)
+            {
+                for (int i = 0; i < adjacentPieces.Count; i++)
+                {
+                    if (!rule.NeighborFilter.Matches(adjacentPieces[i].Definition))
+                        continue;
+
+                    ApplyEffect(sourcePiece.InstanceId, rule, resultsById);
+                }
+            }
+        }
+
+        private static void ApplyEffect(
+            string targetInstanceId,
+            SynergyEffectDefinition rule,
+            Dictionary<string, SynergyResult> resultsById)
+        {
+            if (!resultsById.TryGetValue(targetInstanceId, out var result))
+                result = default;
+
+            int amount = ResolveAmount(rule);
+            if (amount == 0)
+                return;
+
+            switch (rule.Stat)
+            {
+                case SynergyStat.Damage:
+                    result = new SynergyResult
+                    {
+                        DamageBonus = result.DamageBonus + amount,
+                        ArmorBuffSteps = result.ArmorBuffSteps,
+                        MoveChargeBonus = result.MoveChargeBonus
+                    };
+                    break;
+                case SynergyStat.ArmorType:
+                    result = new SynergyResult
+                    {
+                        DamageBonus = result.DamageBonus,
+                        ArmorBuffSteps = result.ArmorBuffSteps + amount,
+                        MoveChargeBonus = result.MoveChargeBonus
+                    };
+                    break;
+                case SynergyStat.MoveChargePercent:
+                    result = new SynergyResult
+                    {
+                        DamageBonus = result.DamageBonus,
+                        ArmorBuffSteps = result.ArmorBuffSteps,
+                        MoveChargeBonus = result.MoveChargeBonus + amount
+                    };
+                    break;
+                case SynergyStat.AttackRange:
+                case SynergyStat.MovementSpeed:
+                default:
+                    return;
+            }
+
+            resultsById[targetInstanceId] = result;
+        }
+
+        private static int ResolveAmount(SynergyEffectDefinition rule)
+        {
+            return rule.ModType switch
+            {
+                SynergyModType.Flat => rule.Magnitude,
+                SynergyModType.TierStep => rule.Magnitude,
+                SynergyModType.Percent => rule.Magnitude,
+                _ => 0
+            };
         }
     }
 }

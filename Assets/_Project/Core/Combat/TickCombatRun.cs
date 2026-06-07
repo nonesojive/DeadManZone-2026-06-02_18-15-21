@@ -51,8 +51,10 @@ namespace DeadManZone.Core.Combat
             Authority = authority;
             _playerCombatants = SpawnCombatants(playerBoard, CombatSide.Player, 0);
             _enemyCombatants = SpawnCombatants(enemyBoard, CombatSide.Enemy, _layout.EnemyOriginX);
-            SynergyEngine.ApplyToCombatants(playerBoard, _playerCombatants);
-            SynergyEngine.ApplyToCombatants(enemyBoard, _enemyCombatants);
+            var playerSynergySnapshot = SynergyEngine.EvaluateFightStart(playerBoard);
+            var enemySynergySnapshot = SynergyEngine.EvaluateFightStart(enemyBoard);
+            SynergyEngine.ApplyToCombatants(playerSynergySnapshot, _playerCombatants);
+            SynergyEngine.ApplyToCombatants(enemySynergySnapshot, _enemyCombatants);
             CriticalMassRules.ApplyToCombatants(playerBoard, _playerCombatants);
             CriticalMassRules.ApplyToCombatants(enemyBoard, _enemyCombatants);
             ApplyTacticDamageBuffs();

@@ -4,6 +4,7 @@ namespace DeadManZone.Core.Tags
     {
         Primary,
         CombatRole,
+        Faction,
         System,
         Synergy
     }
