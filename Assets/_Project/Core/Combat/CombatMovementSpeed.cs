@@ -15,8 +15,11 @@ namespace DeadManZone.Core.Combat
             _ => 0
         };
 
-        /// <summary>Future tactics pass: Advance +10%, Stand Ground -10%, etc.</summary>
-        public static int GetChargePerTick(MovementSpeedTier tier, TacticType tactic) =>
-            GetChargePerTick(tier);
+        public static int GetChargePerTick(MovementSpeedTier tier, TacticType tactic)
+        {
+            int baseCharge = GetChargePerTick(tier);
+            int multiplier = TacticEffects.GetMovementChargeMultiplier(tactic);
+            return baseCharge * multiplier / 100;
+        }
     }
 }

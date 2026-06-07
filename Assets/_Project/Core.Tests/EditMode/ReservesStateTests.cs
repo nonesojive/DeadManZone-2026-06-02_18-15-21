@@ -19,9 +19,9 @@ namespace DeadManZone.Core.Tests
         };
 
         [Test]
-        public void GridDimensions_Are9By2()
+        public void GridDimensions_Are8By2()
         {
-            Assert.AreEqual(9, ReservesState.Width);
+            Assert.AreEqual(8, ReservesState.Width);
             Assert.AreEqual(2, ReservesState.Height);
         }
 
@@ -58,7 +58,7 @@ namespace DeadManZone.Core.Tests
                 Id = "wide",
                 DisplayName = "Wide",
                 Category = PieceCategory.Unit,
-                Shape = new PieceShape(new[] { new GridCoord(0, 0), new GridCoord(8, 0) }),
+                Shape = new PieceShape(new[] { new GridCoord(0, 0), new GridCoord(7, 0) }),
                 MaxHp = 1
             };
 

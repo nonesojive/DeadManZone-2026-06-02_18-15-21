@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e188979955eadf341af6036882ce05d1
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/TransitionEffect/Demo/Demo.unity
+  uploadId: 900364

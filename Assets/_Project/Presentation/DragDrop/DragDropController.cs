@@ -40,7 +40,13 @@ namespace DeadManZone.Presentation.DragDrop
                 ApplyRotation(PieceRotationUtil.RotateCounterClockwise(_activePayload.Rotation));
         }
 
-        public void BeginDrag(DragPayload payload, Transform returnParent, PointerEventData eventData)
+        public void BeginDrag(
+            DragPayload payload,
+            Transform returnParent,
+            PointerEventData eventData,
+            float cellSize = 36f,
+            float cellSpacing = 3f,
+            bool pieceOnlyGhost = false)
         {
             _activePayload = payload;
             _returnParent = returnParent;
@@ -54,7 +60,10 @@ namespace DeadManZone.Presentation.DragDrop
                 canvasTransform,
                 payload.PieceId ?? payload.Offer?.PieceId ?? "piece",
                 payload.Definition,
-                payload.Rotation);
+                payload.Rotation,
+                cellSize,
+                cellSpacing,
+                pieceOnlyGhost);
             FollowPointer(eventData);
         }
 

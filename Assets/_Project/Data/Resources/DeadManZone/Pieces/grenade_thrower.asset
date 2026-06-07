@@ -17,16 +17,13 @@ MonoBehaviour:
   category: 1
   shapeCells:
   - {x: 0, y: 0}
-  - {x: 0, y: 1}
   tags:
   - Infantry
-  - Artillery
-  - Assault
-  - Neutral
-  maxHp: 140
-  baseDamage: 28
+  - Combatant
+  maxHp: 7
+  baseDamage: 3
   cooldownTicks: 4
-  goldCost: 70
+  goldCost: 5
   requisitionCost: 0
   manpowerCost: 1
   shopModifiers: 0
@@ -37,7 +34,8 @@ MonoBehaviour:
   movementSpeed: 2
   armorType: 1
   attackType: 2
-  grantedAbility: 1
+  grantedAbility: 0
   factionId: neutral
   icon: {fileID: 0}
-  categoryTint: {r: 0.45, g: 0.48, b: 0.42, a: 1}
+  categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  cellSprites: []

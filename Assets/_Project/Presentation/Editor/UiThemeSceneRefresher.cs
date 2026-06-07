@@ -1,5 +1,6 @@
 using DeadManZone.Presentation.Board;
 using DeadManZone.Presentation.MainMenu;
+using DeadManZone.Presentation.Reserves;
 using DeadManZone.Presentation.Run;
 using DeadManZone.Presentation.Visual;
 using TMPro;
@@ -16,7 +17,7 @@ namespace DeadManZone.Presentation.Editor
             UiThemeProvider.InvalidateCache();
             VisualProfileProvider.InvalidateCache();
 
-            var theme = profile?.uiTheme ?? UiThemeEditor.EnsureThemeAsset();
+            var theme = profile?.uiTheme ?? UiThemeSceneStyling.LoadTheme();
 
             foreach (var view in Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None))
             {
@@ -73,8 +74,7 @@ namespace DeadManZone.Presentation.Editor
                 if (!IsUnderThemedRoot(button.transform))
                     continue;
 
-                var isAccent = button.name.Contains("Continue") || button.name.Contains("Start")
-                    || button.name.Contains("Begin Fight");
+                var isAccent = IsAccentButtonName(button.name);
                 if (isAccent)
                     UiThemeApplicator.ApplyAccentButton(button, theme);
                 else
@@ -90,17 +90,97 @@ namespace DeadManZone.Presentation.Editor
                 UiThemeApplicator.ApplyLabel(label, secondary, theme);
             }
 
-            foreach (var panel in Object.FindObjectsByType<Image>(FindObjectsSortMode.None))
+            foreach (var image in Object.FindObjectsByType<Image>(FindObjectsSortMode.None))
             {
-                if (!IsUnderThemedRoot(panel.transform) || panel.GetComponent<Button>() != null)
+                if (!IsUnderThemedRoot(image.transform) || image.GetComponent<Button>() != null)
                     continue;
 
-                if (panel.name.Contains("Card") || panel.name.Contains("Offer"))
-                    UiThemeApplicator.ApplyCard(panel, theme);
-                else if (panel.name.Contains("Panel") || panel.name.Contains("Bar") || panel.name.Contains("Overlay"))
-                    UiThemeApplicator.ApplyPanel(panel, theme);
+                RefreshThemedImage(image, theme);
             }
         }
+
+        private static void RefreshThemedImage(Image image, UiThemeSO theme)
+        {
+            var name = image.gameObject.name;
+            var parentName = image.transform.parent != null ? image.transform.parent.name : string.Empty;
+
+            if (name is "DecorBackground" or "LoadingDecor" or "CombatDecor" or "LaneTint")
+                return;
+
+            if (name == "SellZone" || parentName == "SellZone")
+            {
+                UiThemeApplicator.ApplySellZone(image, theme);
+                return;
+            }
+
+            if (name == RunHudPanelBuilder.PanelName)
+            {
+                UiThemeApplicator.ApplyStorageSlotEmpty(image, theme);
+                image.color = theme.GetReserveSlotColor();
+                return;
+            }
+
+            if (name == ReservesLabelStripFactory.StripName)
+            {
+                UiThemeApplicator.ApplyStorageSlotEmpty(image, theme);
+                image.color = theme.GetReserveSlotColor();
+                return;
+            }
+
+            if (name == "PhaseBanner" || parentName == "PhaseBanner")
+            {
+                UiThemeApplicator.ApplyBanner(image, theme);
+                return;
+            }
+
+            if (name.Contains("TacticPause") || parentName == "TacticPauseSheet")
+            {
+                UiThemeApplicator.ApplySecurityTerminalFrame(image, theme);
+                return;
+            }
+
+            if (name is "LastBattleLogSheet" or "BattleReportSheet" or "MainCard" or "OptionsCard"
+                or "Card" or "PanelFrame")
+            {
+                UiThemeApplicator.ApplyModalFrame(image, theme);
+                return;
+            }
+
+            if (name is "LogScroll")
+            {
+                UiThemeApplicator.ApplyInventoryPanel(image, theme);
+                return;
+            }
+
+            if (name is "TopBar" or "BottomBar")
+            {
+                UiThemeApplicator.ApplySidebarPanel(image, theme);
+                return;
+            }
+
+            if (name.Contains("Column") && name.EndsWith("Column"))
+            {
+                UiThemeApplicator.ApplyInventoryPanel(image, theme);
+                return;
+            }
+
+            if (name.Contains("Tile") || name.Contains("ReservesTile"))
+            {
+                UiThemeApplicator.ApplySlotEmpty(image, theme);
+                return;
+            }
+
+            if (name.Contains("Card") || name.Contains("Offer") || name.Contains("Toggle"))
+                UiThemeApplicator.ApplyCard(image, theme);
+            else if (name.Contains("Panel") || name.Contains("Bar") || name.Contains("Sheet"))
+                UiThemeApplicator.ApplyPanel(image, theme);
+        }
+
+        private static bool IsAccentButtonName(string buttonName) =>
+            buttonName.Contains("Continue") || buttonName.Contains("NewRun")
+            || buttonName.Contains("Begin Fight") || buttonName.Contains("IronVanguard")
+            || buttonName.Contains("DustScourge") || buttonName.Contains("Cartel")
+            || buttonName.Contains("Close") || buttonName.Contains("Submit");
 
         private static bool IsUnderThemedRoot(Transform transform)
         {

@@ -16,6 +16,9 @@ namespace DeadManZone.Presentation.Editor
 {
     public static class RunSceneSetup
     {
+        private const float BoardAreaAnchorMaxX = 0.50f;
+        private const float ShopAreaAnchorMinX = 0.50f;
+
         public static void BuildRunScene(GameObject canvas)
         {
             var theme = UiThemeSceneStyling.LoadTheme();
@@ -29,60 +32,66 @@ namespace DeadManZone.Presentation.Editor
                 canvasBg = canvas.AddComponent<Image>();
             canvasBg.color = theme.backgroundColor;
             canvasBg.raycastTarget = false;
+            UiThemeSceneStyling.AddDecorBackground(canvas.transform, theme, menuScene: false);
 
             var controllerRoot = CreateRegion(canvas.transform, "RunScene", Vector2.zero, Vector2.one);
             var controller = controllerRoot.AddComponent<RunSceneController>();
             var buildPanel = CreateRegion(controllerRoot.transform, "BuildPanel", Vector2.zero, Vector2.one);
             var buildCanvasGroup = buildPanel.AddComponent<CanvasGroup>();
             UiThemeSceneStyling.AddPanelBackground(buildPanel.transform, theme);
+            RunBuildUiBootstrap.EnsureOnBuildPanel(buildPanel.transform, null);
 
             var topBar = CreateRegion(buildPanel.transform, "TopBar", new Vector2(0f, 0.92f), Vector2.one);
-            UiThemeSceneStyling.AddPanelBackground(topBar.transform, theme);
+            UiThemeSceneStyling.AddSidebarBackground(topBar.transform, theme);
 
             var hud = topBar.AddComponent<RunHudView>();
-            var statusBlock = MenuSceneSetup.CreateLabelPublic(
-                topBar.transform, "", 16, FontStyles.Bold,
-                new Vector2(0.02f, 0.5f), new Vector2(400f, 72f));
-            statusBlock.alignment = TextAlignmentOptions.TopLeft;
-            statusBlock.enableWordWrapping = true;
-            var statusRect = statusBlock.rectTransform;
-            statusRect.anchorMin = new Vector2(0.012f, 0f);
-            statusRect.anchorMax = new Vector2(0.58f, 1f);
-            statusRect.pivot = new Vector2(0f, 0.5f);
-            statusRect.offsetMin = Vector2.zero;
-            statusRect.offsetMax = Vector2.zero;
-            UiThemeSceneStyling.StyleLabel(statusBlock, theme);
-            var hudSerialized = new SerializedObject(hud);
-            hudSerialized.FindProperty("statusText").objectReferenceValue = statusBlock;
-            hudSerialized.ApplyModifiedPropertiesWithoutUndo();
+            var builtHud = RunHudPanelBuilder.Create(buildPanel.transform, theme);
+            RunHudPanelBuilder.WireRunHudView(hud, builtHud);
             hud.ApplyTheme(theme);
 
-            var tooltip = MenuSceneSetup.CreateLabelPublic(
+            var tooltipGo = MenuSceneSetup.CreateLabelPublic(
                 topBar.transform, "", 16, FontStyles.Italic,
                 new Vector2(0.62f, 0.5f), new Vector2(360f, 56f));
+            tooltipGo.gameObject.name = "ShopTooltip";
+            tooltipGo.gameObject.AddComponent<ShopSharedTooltip>();
+            var tooltip = tooltipGo;
             UiThemeSceneStyling.StyleLabel(tooltip, theme, secondary: true);
 
             var menuBtn = MenuSceneSetup.CreateSmallButtonPublic(
                 topBar.transform, "MENU", new Vector2(0.94f, 0.5f), new Vector2(100f, 40f));
             UiThemeSceneStyling.StyleButton(menuBtn, theme);
 
+            var lastLogReview = CreateLastBattleLogReview(buildPanel.transform, theme);
+            CreateLastBattleLogButton(topBar.transform, theme, lastLogReview);
+
             var mainRow = CreateRegion(buildPanel.transform, "MainRow", new Vector2(0f, 0.16f), new Vector2(1f, 0.92f));
             var bottomBar = CreateRegion(buildPanel.transform, "BottomBar", Vector2.zero, new Vector2(1f, 0.16f));
-            UiThemeSceneStyling.AddPanelBackground(bottomBar.transform, theme);
+            UiThemeSceneStyling.AddSidebarBackground(bottomBar.transform, theme);
 
             var beginFight = MenuSceneSetup.CreateSmallButtonPublic(
-                bottomBar.transform, "Begin Fight", new Vector2(0.92f, 0.5f), new Vector2(160f, 48f));
+                bottomBar.transform, "Begin Fight",
+                new Vector2(BuildLayoutMetrics.BeginFightAnchorX, BuildLayoutMetrics.BottomBarCenterY),
+                new Vector2(160f, 48f));
+            var beginFightRect = beginFight.GetComponent<RectTransform>();
+            beginFightRect.anchoredPosition = new Vector2(0f, BuildLayoutMetrics.BottomBarVerticalOffsetPixels);
             UiThemeSceneStyling.StyleButton(beginFight, theme, accent: true);
 
-            var boardArea = CreateRegion(mainRow.transform, "BoardArea", new Vector2(0f, 0f), new Vector2(0.56f, 1f));
-            var shopArea = CreateRegion(mainRow.transform, "ShopArea", new Vector2(0.57f, 0f), Vector2.one);
+            var boardAreaGo = CreateRegion(mainRow.transform, "BoardArea", new Vector2(0f, 0f), new Vector2(BoardAreaAnchorMaxX, 1f));
+            var shopAreaGo = CreateRegion(mainRow.transform, "ShopArea", new Vector2(ShopAreaAnchorMinX, 0f), Vector2.one);
+            var boardAreaRect = boardAreaGo.GetComponent<RectTransform>();
+            var shopAreaRect = shopAreaGo.GetComponent<RectTransform>();
 
-            var boardView = CreateBoardSection(boardArea.transform, theme);
-            var shopView = CreateShopSection(shopArea.transform, tooltip, theme);
+            var boardView = CreateBoardSection(boardAreaGo.transform, theme);
+            var shopView = CreateShopSection(shopAreaGo.transform, tooltip, theme, boardView);
+
+            var rowLayout = mainRow.AddComponent<BuildRowLayoutFitter>();
+            var rowLayoutSerialized = new SerializedObject(rowLayout);
+            rowLayoutSerialized.FindProperty("boardArea").objectReferenceValue = boardAreaRect;
+            rowLayoutSerialized.FindProperty("shopArea").objectReferenceValue = shopAreaRect;
+            rowLayoutSerialized.FindProperty("boardView").objectReferenceValue = boardView;
+            rowLayoutSerialized.ApplyModifiedPropertiesWithoutUndo();
             var reservesView = CreateReservesSection(bottomBar.transform, theme);
-            var lastLogReview = CreateLastBattleLogReview(buildPanel.transform, theme);
-            CreateLastBattleLogButton(bottomBar.transform, theme, lastLogReview);
-            var sellZone = CreateSellZone(bottomBar.transform, theme);
+            var sellZone = CreateSellZone(bottomBar.transform, theme, boardView);
             var pauseMenu = CreatePauseMenu(buildPanel.transform, theme);
             var endOverlay = CreateRunEndOverlay(buildPanel.transform, theme);
 
@@ -103,9 +112,18 @@ namespace DeadManZone.Presentation.Editor
 
             WireFlowPresenter(flowPresenter, combatDirector, tacticPanel, battleReport, loadingOverlay, loadingText);
             WireCombatBoardPresenter(combatBoard, combatDirector, boardView, bannerText, bannerGroup);
-            WireController(controller, buildPanel, buildCanvasGroup, combatPanel, boardArea, shopArea, bottomBar,
+            WireController(controller, buildPanel, buildCanvasGroup, combatPanel, boardAreaGo, shopAreaGo, bottomBar,
                 boardView, shopView, reservesView, combatDirector, tacticPanel, hud, endOverlay, pauseMenu,
-                beginFight, menuBtn);
+                beginFight, menuBtn, rowLayout);
+
+            RunBuildUiBootstrap.EnsureOnBuildPanel(buildPanel.transform, boardView, rowLayout);
+            RunHudLayoutFitter.EnsureOnBuildPanel(buildPanel.transform, builtHud.Root, rowLayout);
+            ReservesLayoutFitter.EnsureOnBuildPanel(
+                buildPanel.transform,
+                bottomBar.GetComponent<RectTransform>(),
+                bottomBar.transform.Find("ReservesRegion") as RectTransform,
+                rowLayout,
+                boardView);
 
             var panelSerialized = new SerializedObject(tacticPanel);
             panelSerialized.FindProperty("combatDirector").objectReferenceValue = combatDirector;
@@ -138,31 +156,12 @@ namespace DeadManZone.Presentation.Editor
             const int supportCols = 3;
             float gridLeft = 0.02f;
             float gridRight = 0.98f;
-            float gridWidth = gridRight - gridLeft;
-
-            CreateZoneHeader(parent, "REAR", gridLeft, gridLeft + gridWidth * rearCols / boardWidth, 0.90f, 0.98f, theme);
-            CreateZoneHeader(
-                parent,
-                "SUPPORT",
-                gridLeft + gridWidth * rearCols / boardWidth,
-                gridLeft + gridWidth * (rearCols + supportCols) / boardWidth,
-                0.90f,
-                0.98f,
-                theme);
-            CreateZoneHeader(
-                parent,
-                "FRONT",
-                gridLeft + gridWidth * (rearCols + supportCols) / boardWidth,
-                gridRight,
-                0.90f,
-                0.98f,
-                theme);
 
             var gridRoot = new GameObject("TileGrid", typeof(RectTransform));
             gridRoot.transform.SetParent(parent, false);
             var gridRect = gridRoot.GetComponent<RectTransform>();
-            gridRect.anchorMin = new Vector2(gridLeft, 0.05f);
-            gridRect.anchorMax = new Vector2(gridRight, 0.89f);
+            gridRect.anchorMin = new Vector2(gridLeft, BuildLayoutMetrics.BoardGridBottomY);
+            gridRect.anchorMax = new Vector2(gridRight, BuildLayoutMetrics.BoardGridTopY);
             gridRect.offsetMin = Vector2.zero;
             gridRect.offsetMax = Vector2.zero;
 
@@ -177,7 +176,24 @@ namespace DeadManZone.Presentation.Editor
             var gridFitter = gridRoot.AddComponent<GridLayoutCellFitter>();
             gridFitter.Configure(boardWidth, boardHeight);
 
-            CreateZoneColorStrip(parent, theme, gridLeft, gridRight, rearCols, supportCols, boardWidth);
+            var (rearStrip, rearLabel) = CreateZoneStripSegment(parent, "REAR", theme.rearZoneColor, theme);
+            var (supportStrip, supportLabel) = CreateZoneStripSegment(parent, "SUPPORT", theme.supportZoneColor, theme);
+            var (frontStrip, frontLabel) = CreateZoneStripSegment(parent, "FRONT", theme.frontZoneColor, theme);
+
+            var boardRect = parent.GetComponent<RectTransform>();
+            var zoneLayout = parent.gameObject.AddComponent<BoardZoneStripLayout>();
+            zoneLayout.Configure(
+                boardRect,
+                gridRect,
+                grid,
+                rearStrip,
+                supportStrip,
+                frontStrip,
+                rearLabel,
+                supportLabel,
+                frontLabel,
+                rearCols,
+                supportCols);
 
             var tilePrefab = CreateTilePrefab(theme);
             tilePrefab.transform.SetParent(parent, false);
@@ -193,75 +209,33 @@ namespace DeadManZone.Presentation.Editor
             return boardView;
         }
 
-        private static void CreateZoneHeader(
+        private static (RectTransform strip, TMP_Text label) CreateZoneStripSegment(
             Transform parent,
-            string text,
-            float anchorMinX,
-            float anchorMaxX,
-            float anchorMinY,
-            float anchorMaxY,
+            string zoneName,
+            Color color,
             UiThemeSO theme)
         {
-            var header = CreateRegion(
-                parent,
-                text + "Header",
-                new Vector2(anchorMinX, anchorMinY),
-                new Vector2(anchorMaxX, anchorMaxY));
-            var label = MenuSceneSetup.CreateLabelPublic(
-                header.transform, text, 13, FontStyles.Bold,
-                new Vector2(0.5f, 0.5f), new Vector2(120f, 22f));
-            label.color = theme.textSecondary;
-            label.alignment = TextAlignmentOptions.Center;
-        }
-
-        private static void CreateZoneColorStrip(
-            Transform parent,
-            UiThemeSO theme,
-            float gridLeft,
-            float gridRight,
-            int rearCols,
-            int supportCols,
-            int boardWidth)
-        {
-            float gridWidth = gridRight - gridLeft;
-            float yMin = 0f;
-            float yMax = 0.04f;
-            AddZoneStripSegment(parent, theme.rearZoneColor, gridLeft, gridLeft + gridWidth * rearCols / boardWidth, yMin, yMax);
-            AddZoneStripSegment(
-                parent,
-                theme.supportZoneColor,
-                gridLeft + gridWidth * rearCols / boardWidth,
-                gridLeft + gridWidth * (rearCols + supportCols) / boardWidth,
-                yMin,
-                yMax);
-            AddZoneStripSegment(
-                parent,
-                theme.frontZoneColor,
-                gridLeft + gridWidth * (rearCols + supportCols) / boardWidth,
-                gridRight,
-                yMin,
-                yMax);
-        }
-
-        private static void AddZoneStripSegment(
-            Transform parent,
-            Color color,
-            float anchorMinX,
-            float anchorMaxX,
-            float anchorMinY,
-            float anchorMaxY)
-        {
-            var segment = CreateRegion(parent, "ZoneStrip", new Vector2(anchorMinX, anchorMinY), new Vector2(anchorMaxX, anchorMaxY));
+            var segment = CreateRegion(parent, zoneName + "Strip", Vector2.zero, Vector2.zero);
             var image = segment.AddComponent<Image>();
             image.color = color;
             image.raycastTarget = false;
+
+            var label = MenuSceneSetup.CreateLabelPublic(
+                segment.transform, zoneName, 12, FontStyles.Bold,
+                new Vector2(0.5f, 0.5f), new Vector2(120f, 20f));
+            label.alignment = TextAlignmentOptions.Center;
+            label.color = theme.textPrimary;
+            label.raycastTarget = false;
+
+            return (segment.GetComponent<RectTransform>(), label);
         }
 
         private static GameObject CreateTilePrefab(UiThemeSO theme)
         {
             var tile = new GameObject("TilePrefab", typeof(RectTransform));
             var image = tile.AddComponent<Image>();
-            image.color = theme.rearZoneColor;
+            UiThemeApplicator.ApplySlotEmpty(image, theme);
+            image.color = theme.GetTileDisplayColor(theme.rearZoneColor);
 
             var special = new GameObject("SpecialOverlay", typeof(RectTransform));
             special.transform.SetParent(tile.transform, false);
@@ -288,11 +262,16 @@ namespace DeadManZone.Presentation.Editor
             return tile;
         }
 
-        private static ShopView CreateShopSection(Transform parent, TMP_Text sharedTooltip, UiThemeSO theme)
+        private static ShopView CreateShopSection(Transform parent, TMP_Text sharedTooltip, UiThemeSO theme, BoardView boardView)
         {
-            var (generalRoot, rerollGeneral) = CreateLaneColumn(parent, "Offensive", 0.17f, theme);
-            var (engineerRoot, rerollEngineers) = CreateLaneColumn(parent, "Defensive", 0.5f, theme);
-            var (reqRoot, rerollReq) = CreateLaneColumn(parent, "Specialty", 0.83f, theme);
+            var (generalRoot, rerollGeneral, offensiveRow) = CreateLaneRow(parent, "Offensive", 2, theme, boardView, sharedTooltip);
+            var (engineerRoot, rerollEngineers, defensiveRow) = CreateLaneRow(parent, "Defensive", 1, theme, boardView, sharedTooltip);
+            var (reqRoot, rerollReq, specialtyRow) = CreateLaneRow(parent, "Specialty", 0, theme, boardView, sharedTooltip);
+
+            var laneLayout = parent.gameObject.AddComponent<ShopLaneLayoutFitter>();
+            laneLayout.Configure(offensiveRow, defensiveRow, specialtyRow);
+
+            ShopUiBootstrap.EnsureOnShopArea(parent, boardView, sharedTooltip);
 
             var offerPrefab = CreateOfferCardPrefab(theme);
             offerPrefab.transform.SetParent(parent, false);
@@ -308,124 +287,264 @@ namespace DeadManZone.Presentation.Editor
             serialized.FindProperty("rerollGeneralButton").objectReferenceValue = rerollGeneral;
             serialized.FindProperty("rerollEngineersButton").objectReferenceValue = rerollEngineers;
             serialized.FindProperty("rerollRequisitionButton").objectReferenceValue = rerollReq;
+            serialized.FindProperty("boardView").objectReferenceValue = boardView;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return shopView;
         }
 
-        private static (Transform offersRoot, Button reroll) CreateLaneColumn(
+        private static (Transform offersRoot, Button reroll, RectTransform rowRect) CreateLaneRow(
             Transform parent,
             string title,
-            float centerX,
-            UiThemeSO theme)
+            int laneIndexFromBottom,
+            UiThemeSO theme,
+            BoardView boardView,
+            TMP_Text sharedTooltip)
         {
-            var column = CreateRegion(parent, title + "Column", new Vector2(centerX - 0.14f, 0.05f), new Vector2(centerX + 0.14f, 0.95f));
-            var laneBg = column.AddComponent<Image>();
-            laneBg.color = title switch
+            var (minY, maxY) = BuildLayoutMetrics.GetShopLaneAnchors(laneIndexFromBottom);
+            var row = CreateRegion(
+                parent,
+                title + "Row",
+                new Vector2(0f, minY),
+                new Vector2(BuildLayoutMetrics.ShopRightInset, maxY));
+            var laneBg = row.AddComponent<Image>();
+            UiThemeApplicator.ApplyInventoryPanel(laneBg, theme);
+            var laneTint = title switch
             {
                 "Offensive" => theme.generalLaneTint,
                 "Defensive" => theme.engineersLaneTint,
                 _ => theme.requisitionLaneTint
             };
+            if (theme.inventoryPanelSprite != null)
+            {
+                var tintOverlay = MenuSceneSetup.CreateStretchChild(row.transform, "LaneTint");
+                tintOverlay.transform.SetAsFirstSibling();
+                var tintImage = tintOverlay.AddComponent<Image>();
+                tintImage.color = laneTint;
+                tintImage.raycastTarget = false;
+            }
+            else
+            {
+                laneBg.color = laneTint;
+            }
             laneBg.raycastTarget = false;
 
-            var header = MenuSceneSetup.CreateLabelPublic(
-                column.transform, title, 20, FontStyles.Bold,
-                new Vector2(0.5f, 0.94f), new Vector2(180f, 28f));
-            UiThemeSceneStyling.StyleLabel(header, theme);
-
-            var offers = CreateRegion(column.transform, "Offers", new Vector2(0f, 0.12f), new Vector2(1f, 0.82f));
-            var layout = offers.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 8f;
+            var offers = CreateRegion(row.transform, "Offers", new Vector2(0.04f, 0.14f), new Vector2(0.90f, 0.86f));
+            var layout = offers.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = ShopLayoutMetrics.LaneSpacing;
             layout.childAlignment = TextAnchor.UpperCenter;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
+            layout.childControlWidth = false;
+            layout.childControlHeight = false;
             layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
+            layout.padding = new RectOffset(4, 4, 4, 4);
 
-            var reroll = MenuSceneSetup.CreateSmallButtonPublic(
-                column.transform, "Reroll", new Vector2(0.5f, 0.05f), new Vector2(140f, 34f));
-            UiThemeSceneStyling.StyleButton(reroll, theme);
-            return (offers.transform, reroll);
+            var reroll = CreateRerollButton(row.transform, theme, boardView, sharedTooltip);
+            return (offers.transform, reroll, row.GetComponent<RectTransform>());
+        }
+
+        private static Button CreateRerollButton(
+            Transform row,
+            UiThemeSO theme,
+            BoardView boardView,
+            TMP_Text sharedTooltip)
+        {
+            var go = new GameObject("RerollButton", typeof(RectTransform));
+            go.transform.SetParent(row, false);
+            var rect = go.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.965f, 0.5f);
+            rect.anchorMax = new Vector2(0.965f, 0.5f);
+            rect.pivot = new Vector2(1f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+
+            var image = go.AddComponent<Image>();
+            UiThemeApplicator.ApplyCard(image, theme);
+            image.raycastTarget = true;
+
+            var button = go.AddComponent<Button>();
+            UiThemeSceneStyling.StyleButton(button, theme);
+
+            var label = MenuSceneSetup.CreateLabelPublic(
+                go.transform, "\u21BB", 22, FontStyles.Bold,
+                new Vector2(0.5f, 0.5f), new Vector2(48f, 48f));
+            label.alignment = TextAlignmentOptions.Center;
+            label.raycastTarget = false;
+            UiThemeSceneStyling.StyleLabel(label, theme);
+
+            var scaled = go.AddComponent<BoardScaledRect>();
+            scaled.Configure(boardView, 1, 1);
+
+            if (sharedTooltip != null)
+            {
+                var tooltip = go.AddComponent<ShopRerollTooltip>();
+                tooltip.Configure(sharedTooltip);
+            }
+
+            return button;
         }
 
         private static GameObject CreateOfferCardPrefab(UiThemeSO theme)
         {
+            const float defaultSquare = 150f;
+
             var card = new GameObject("OfferCard", typeof(RectTransform));
             var rect = card.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(200f, 110f);
+            rect.sizeDelta = new Vector2(
+                defaultSquare + ShopLayoutMetrics.CardPadding,
+                defaultSquare + ShopLayoutMetrics.NameStripHeight + ShopLayoutMetrics.CardPadding);
 
             var image = card.AddComponent<Image>();
             UiThemeApplicator.ApplyCard(image, theme);
-            image.raycastTarget = true;
+            image.raycastTarget = false;
 
-            var iconGo = new GameObject("Icon", typeof(RectTransform));
-            iconGo.transform.SetParent(card.transform, false);
-            var iconRect = iconGo.GetComponent<RectTransform>();
-            iconRect.anchorMin = new Vector2(0f, 0.58f);
-            iconRect.anchorMax = new Vector2(0f, 0.58f);
-            iconRect.pivot = new Vector2(0.5f, 0.5f);
-            iconRect.anchoredPosition = new Vector2(44f, 0f);
-            iconRect.sizeDelta = new Vector2(80f, 80f);
-            var iconImage = iconGo.AddComponent<Image>();
-            iconImage.enabled = false;
-            iconImage.preserveAspect = true;
-            iconImage.raycastTarget = false;
+            var layout = card.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 0f;
+            layout.childAlignment = TextAnchor.UpperCenter;
+            layout.childControlWidth = false;
+            layout.childControlHeight = false;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+            layout.padding = new RectOffset(4, 4, 4, 4);
 
-            var offerView = card.AddComponent<ShopOfferView>();
-            card.AddComponent<ShopOfferDragSource>();
-
-            var pieceText = MenuSceneSetup.CreateLabelPublic(
-                card.transform, "piece", 15, FontStyles.Bold,
-                new Vector2(0.55f, 0.72f), new Vector2(120f, 24f));
-            var priceText = MenuSceneSetup.CreateLabelPublic(
-                card.transform, "0G", 14, FontStyles.Normal,
-                new Vector2(0.55f, 0.5f), new Vector2(120f, 20f));
-            UiThemeSceneStyling.StyleLabel(pieceText, theme);
-            UiThemeSceneStyling.StyleLabel(priceText, theme, secondary: true);
-
-            MenuSceneSetup.CreateLabelPublic(
-                card.transform, "drag", 11, FontStyles.Italic,
-                new Vector2(0.5f, 0.88f), new Vector2(180f, 16f));
-
-            var lockBtn = MenuSceneSetup.CreateSmallButtonPublic(
-                card.transform, "Lock", new Vector2(0.5f, 0.16f), new Vector2(100f, 28f));
-            UiThemeSceneStyling.StyleButton(lockBtn, theme);
-
-            var lockIndicator = new GameObject("Locked", typeof(RectTransform));
+            var lockIndicator = new GameObject("LockedOverlay", typeof(RectTransform));
             lockIndicator.transform.SetParent(card.transform, false);
             Stretch(lockIndicator.GetComponent<RectTransform>());
             var lockImage = lockIndicator.AddComponent<Image>();
-            lockImage.color = new Color(theme.accentColor.r, theme.accentColor.g, theme.accentColor.b, 0.25f);
+            lockImage.color = new Color(theme.accentColor.r, theme.accentColor.g, theme.accentColor.b, 0.35f);
             lockImage.enabled = false;
             lockImage.raycastTarget = false;
+            var lockOverlayLayout = lockIndicator.AddComponent<LayoutElement>();
+            lockOverlayLayout.ignoreLayout = true;
+            lockIndicator.transform.SetAsFirstSibling();
+
+            var squareRootGo = new GameObject("SquareRoot", typeof(RectTransform));
+            squareRootGo.transform.SetParent(card.transform, false);
+            var squareRoot = squareRootGo.GetComponent<RectTransform>();
+            squareRoot.sizeDelta = new Vector2(defaultSquare, defaultSquare);
+            var squareLayout = squareRootGo.AddComponent<LayoutElement>();
+            squareLayout.minWidth = defaultSquare;
+            squareLayout.minHeight = defaultSquare;
+            squareLayout.preferredWidth = defaultSquare;
+            squareLayout.preferredHeight = defaultSquare;
+
+            var squareBg = squareRootGo.AddComponent<Image>();
+            squareBg.color = new Color(0f, 0f, 0f, 0.12f);
+            squareBg.raycastTarget = true;
+
+            var previewRootGo = new GameObject("PreviewRoot", typeof(RectTransform));
+            previewRootGo.transform.SetParent(squareRootGo.transform, false);
+            var previewRoot = previewRootGo.GetComponent<RectTransform>();
+            previewRoot.anchorMin = new Vector2(0.5f, 0.5f);
+            previewRoot.anchorMax = new Vector2(0.5f, 0.5f);
+            previewRoot.pivot = new Vector2(0.5f, 0.5f);
+            previewRoot.anchoredPosition = Vector2.zero;
+            previewRoot.sizeDelta = new Vector2(defaultSquare, defaultSquare);
+
+            var blockRootGo = new GameObject("Blocks", typeof(RectTransform));
+            blockRootGo.transform.SetParent(previewRootGo.transform, false);
+            var blockRoot = blockRootGo.GetComponent<RectTransform>();
+            blockRoot.anchorMin = new Vector2(0.5f, 0.5f);
+            blockRoot.anchorMax = new Vector2(0.5f, 0.5f);
+            blockRoot.pivot = new Vector2(0.5f, 0.5f);
+            blockRoot.anchoredPosition = Vector2.zero;
+
+            var offerView = card.AddComponent<ShopOfferView>();
+
+            FixOfferPreviewComponent(previewRootGo, blockRoot, out var piecePreview);
+
+            var priceBadgeGo = new GameObject("PriceBadge", typeof(RectTransform));
+            priceBadgeGo.transform.SetParent(squareRootGo.transform, false);
+            var priceBadgeRect = priceBadgeGo.GetComponent<RectTransform>();
+            priceBadgeRect.anchorMin = new Vector2(0f, 1f);
+            priceBadgeRect.anchorMax = new Vector2(0f, 1f);
+            priceBadgeRect.pivot = new Vector2(0f, 1f);
+            priceBadgeRect.anchoredPosition = new Vector2(6f, -6f);
+            priceBadgeRect.sizeDelta = new Vector2(56f, 20f);
+            var priceBadgeBg = priceBadgeGo.AddComponent<Image>();
+            UiThemeApplicator.ApplyCard(priceBadgeBg, theme);
+            priceBadgeBg.raycastTarget = false;
+
+            var priceText = MenuSceneSetup.CreateLabelPublic(
+                priceBadgeGo.transform, "0G", 11, FontStyles.Bold,
+                new Vector2(0.5f, 0.5f), new Vector2(52f, 18f));
+            priceText.alignment = TextAlignmentOptions.Center;
+            UiThemeSceneStyling.StyleLabel(priceText, theme);
+
+            var lockBtn = MenuSceneSetup.CreateSmallButtonPublic(
+                squareRootGo.transform, "O", new Vector2(1f, 1f), new Vector2(24f, 24f));
+            var lockBtnRect = lockBtn.GetComponent<RectTransform>();
+            lockBtnRect.anchorMin = new Vector2(1f, 1f);
+            lockBtnRect.anchorMax = new Vector2(1f, 1f);
+            lockBtnRect.pivot = new Vector2(1f, 1f);
+            lockBtnRect.anchoredPosition = new Vector2(-6f, -6f);
+            UiThemeSceneStyling.StyleButton(lockBtn, theme);
+            var lockIconImage = lockBtn.GetComponent<Image>();
+
+            squareRootGo.AddComponent<ShopOfferDragSource>();
+
+            var nameStripGo = new GameObject("NameStrip", typeof(RectTransform));
+            nameStripGo.transform.SetParent(card.transform, false);
+            var nameStrip = nameStripGo.GetComponent<RectTransform>();
+            nameStrip.sizeDelta = new Vector2(defaultSquare, ShopLayoutMetrics.NameStripHeight);
+            var nameStripLayout = nameStripGo.AddComponent<LayoutElement>();
+            nameStripLayout.minHeight = ShopLayoutMetrics.NameStripHeight;
+            nameStripLayout.preferredHeight = ShopLayoutMetrics.NameStripHeight;
+            nameStripLayout.minWidth = defaultSquare;
+            nameStripLayout.preferredWidth = defaultSquare;
+
+            var nameStripBg = nameStripGo.AddComponent<Image>();
+            nameStripBg.color = new Color(0f, 0f, 0f, 0.35f);
+            nameStripBg.raycastTarget = false;
+
+            var pieceText = MenuSceneSetup.CreateLabelPublic(
+                nameStripGo.transform, "piece", 12, FontStyles.Bold,
+                new Vector2(0.5f, 0.5f), new Vector2(defaultSquare - 8f, ShopLayoutMetrics.NameStripHeight - 4f));
+            pieceText.alignment = TextAlignmentOptions.Center;
+            pieceText.enableWordWrapping = false;
+            pieceText.overflowMode = TextOverflowModes.Ellipsis;
+            UiThemeSceneStyling.StyleLabel(pieceText, theme);
 
             var serialized = new SerializedObject(offerView);
             serialized.FindProperty("cardBackground").objectReferenceValue = image;
-            serialized.FindProperty("iconImage").objectReferenceValue = iconImage;
+            serialized.FindProperty("squareRoot").objectReferenceValue = squareRoot;
+            serialized.FindProperty("previewRoot").objectReferenceValue = previewRoot;
+            serialized.FindProperty("piecePreview").objectReferenceValue = piecePreview;
+            serialized.FindProperty("nameStripRoot").objectReferenceValue = nameStrip;
             serialized.FindProperty("pieceIdText").objectReferenceValue = pieceText;
-            serialized.FindProperty("priceText").objectReferenceValue = priceText;
-            serialized.FindProperty("lockButton").objectReferenceValue = lockBtn;
+            serialized.FindProperty("priceBadgeBackground").objectReferenceValue = priceBadgeBg;
+            serialized.FindProperty("priceBadgeText").objectReferenceValue = priceText;
+            serialized.FindProperty("lockIconButton").objectReferenceValue = lockBtn;
+            serialized.FindProperty("lockIconImage").objectReferenceValue = lockIconImage;
             serialized.FindProperty("lockedIndicator").objectReferenceValue = lockImage;
-            serialized.FindProperty("dragSource").objectReferenceValue = card.GetComponent<ShopOfferDragSource>();
+            serialized.FindProperty("dragSource").objectReferenceValue = squareRootGo.GetComponent<ShopOfferDragSource>();
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return card;
+        }
+
+        private static void FixOfferPreviewComponent(
+            GameObject previewRootGo,
+            RectTransform blockRoot,
+            out ShopPiecePreview piecePreview)
+        {
+            GameObjectUtility.RemoveMonoBehavioursWithMissingScript(previewRootGo);
+            piecePreview = previewRootGo.GetComponent<ShopPiecePreview>();
+            if (piecePreview == null)
+                piecePreview = previewRootGo.AddComponent<ShopPiecePreview>();
+
+            var previewSerialized = new SerializedObject(piecePreview);
+            previewSerialized.FindProperty("blockRoot").objectReferenceValue = blockRoot;
+            previewSerialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static ReservesView CreateReservesSection(Transform bottomBar, UiThemeSO theme)
         {
             var reservesRegion = CreateRegion(bottomBar.transform, "ReservesRegion",
-                new Vector2(0f, 0f), new Vector2(0.48f, 1f));
-
-            var title = MenuSceneSetup.CreateLabelPublic(
-                reservesRegion.transform, "Reserves", 18, FontStyles.Bold,
-                new Vector2(0.08f, 0.88f), new Vector2(140f, 28f));
-            UiThemeSceneStyling.StyleLabel(title, theme);
+                Vector2.zero, Vector2.one);
 
             var gridRoot = new GameObject("ReservesGrid", typeof(RectTransform));
             gridRoot.transform.SetParent(reservesRegion.transform, false);
             var gridRect = gridRoot.GetComponent<RectTransform>();
-            gridRect.anchorMin = new Vector2(0.04f, 0.08f);
-            gridRect.anchorMax = new Vector2(0.96f, 0.82f);
+            gridRect.anchorMin = new Vector2(0.1f, 0.1f);
+            gridRect.anchorMax = new Vector2(1f, 0.9f);
             gridRect.offsetMin = Vector2.zero;
             gridRect.offsetMax = Vector2.zero;
 
@@ -438,6 +557,8 @@ namespace DeadManZone.Presentation.Editor
 
             var reservesFitter = gridRoot.AddComponent<GridLayoutCellFitter>();
             reservesFitter.Configure(ReservesState.Width, ReservesState.Height);
+
+            ReservesLabelStripFactory.Ensure(reservesRegion.transform, theme);
 
             var tilePrefab = CreateReservesTilePrefab(theme);
             tilePrefab.transform.SetParent(reservesRegion.transform, false);
@@ -457,7 +578,7 @@ namespace DeadManZone.Presentation.Editor
         {
             var tile = new GameObject("ReservesTilePrefab", typeof(RectTransform));
             var image = tile.AddComponent<Image>();
-            image.color = theme.cardColor;
+            UiThemeApplicator.ApplyStorageSlotEmpty(image, theme);
             tile.AddComponent<ReservesTileView>();
             var serialized = new SerializedObject(tile.GetComponent<ReservesTileView>());
             serialized.FindProperty("baseImage").objectReferenceValue = image;
@@ -522,18 +643,32 @@ namespace DeadManZone.Presentation.Editor
         {
             var card = CreateRegion(parent, name, new Vector2(0.35f, 0.32f), new Vector2(0.65f, 0.68f));
             card.SetActive(active);
-            UiThemeSceneStyling.AddPanelBackground(card.transform, theme);
+            var image = card.AddComponent<Image>();
+            image.raycastTarget = true;
+            UiThemeApplicator.ApplyModalFrame(image, theme);
             return card;
         }
 
         private static Button CreateLastBattleLogButton(
-            Transform bottomBar,
+            Transform topBar,
             UiThemeSO theme,
             LastBattleLogReviewPresenter reviewPresenter)
         {
             var button = MenuSceneSetup.CreateSmallButtonPublic(
-                bottomBar.transform, "Last Log", new Vector2(0.54f, 0.5f), new Vector2(120f, 44f));
+                topBar, "Last Log", new Vector2(0.895f, 0.5f), new Vector2(124f, 40f));
+            var rect = button.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.895f, 0.5f);
+            rect.anchorMax = new Vector2(0.895f, 0.5f);
+            rect.pivot = new Vector2(1f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
             UiThemeSceneStyling.StyleButton(button, theme);
+
+            var label = button.GetComponentInChildren<TMP_Text>();
+            if (label != null)
+            {
+                label.enableWordWrapping = false;
+                label.overflowMode = TextOverflowModes.Ellipsis;
+            }
 
             var bridge = button.gameObject.AddComponent<LastBattleLogReviewButton>();
             var serialized = new SerializedObject(bridge);
@@ -551,7 +686,7 @@ namespace DeadManZone.Presentation.Editor
 
             var sheet = CreateRegion(root.transform, "LastBattleLogSheet", new Vector2(0.12f, 0.1f), new Vector2(0.88f, 0.9f));
             var sheetBg = sheet.AddComponent<Image>();
-            UiThemeApplicator.ApplyPanel(sheetBg, theme);
+            UiThemeApplicator.ApplyModalFrame(sheetBg, theme);
 
             var title = MenuSceneSetup.CreateLabelPublic(
                 sheet.transform, "Previous Battle Log (dev)", 22, FontStyles.Bold,
@@ -560,7 +695,7 @@ namespace DeadManZone.Presentation.Editor
 
             var scrollRoot = CreateRegion(sheet.transform, "LogScroll", new Vector2(0.04f, 0.12f), new Vector2(0.96f, 0.86f));
             var scrollBg = scrollRoot.AddComponent<Image>();
-            scrollBg.color = new Color(0f, 0f, 0f, 0.25f);
+            UiThemeApplicator.ApplyInventoryPanel(scrollBg, theme);
             var scroll = scrollRoot.AddComponent<ScrollRect>();
             scroll.horizontal = false;
             scroll.vertical = true;
@@ -606,15 +741,33 @@ namespace DeadManZone.Presentation.Editor
             return presenter;
         }
 
-        private static SellDropZone CreateSellZone(Transform bottomBar, UiThemeSO theme)
+        private static SellDropZone CreateSellZone(Transform bottomBar, UiThemeSO theme, BoardView boardView)
         {
-            var sell = CreateRegion(bottomBar.transform, "SellZone", new Vector2(0.58f, 0.1f), new Vector2(0.78f, 0.9f));
+            var sell = CreateRegion(
+                bottomBar,
+                "SellZone",
+                new Vector2(BuildLayoutMetrics.SellAnchorX, BuildLayoutMetrics.BottomBarCenterY),
+                new Vector2(BuildLayoutMetrics.SellAnchorX, BuildLayoutMetrics.BottomBarCenterY));
+            var rect = sell.GetComponent<RectTransform>();
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(0f, BuildLayoutMetrics.BottomBarVerticalOffsetPixels);
+
             var image = sell.AddComponent<Image>();
-            image.color = theme.sellZoneColor;
+            UiThemeApplicator.ApplySellZone(image, theme);
+
+            var scaled = sell.AddComponent<BoardScaledRect>();
+            scaled.Configure(boardView, 3, 3, 0.92f);
 
             var label = MenuSceneSetup.CreateLabelPublic(
-                sell.transform, "Sell\n(drop here)", 20, FontStyles.Bold,
-                new Vector2(0.5f, 0.5f), new Vector2(260f, 60f));
+                sell.transform, "Sell\n(drop here)", 14, FontStyles.Bold,
+                new Vector2(0.5f, 0.5f), new Vector2(120f, 120f));
+            label.alignment = TextAlignmentOptions.Center;
+            label.enableWordWrapping = true;
+            var labelRect = label.rectTransform;
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = new Vector2(4f, 4f);
+            labelRect.offsetMax = new Vector2(-4f, -4f);
             UiThemeSceneStyling.StyleLabel(label, theme);
 
             return sell.AddComponent<SellDropZone>();
@@ -628,7 +781,8 @@ namespace DeadManZone.Presentation.Editor
             bg.color = new Color(0f, 0f, 0f, 0.72f);
 
             var card = CreateRegion(root.transform, "Card", new Vector2(0.32f, 0.28f), new Vector2(0.68f, 0.72f));
-            UiThemeSceneStyling.AddPanelBackground(card.transform, theme);
+            var cardImage = card.AddComponent<Image>();
+            UiThemeApplicator.ApplyModalFrame(cardImage, theme);
 
             var title = MenuSceneSetup.CreateLabelPublic(
                 card.transform, "Victory", 42, FontStyles.Bold,
@@ -660,6 +814,13 @@ namespace DeadManZone.Presentation.Editor
             out TMP_Text loadingText)
         {
             var overlay = CreateRegion(parent, "CombatLoadingOverlay", Vector2.zero, Vector2.one);
+            if (theme.combatBackgroundSprite != null)
+            {
+                var decor = CreateRegion(overlay.transform, "CombatDecor", Vector2.zero, Vector2.one);
+                var decorImage = decor.AddComponent<Image>();
+                UiThemeApplicator.ApplyBackgroundPlate(decorImage, theme.combatBackgroundSprite, 0.35f);
+            }
+
             var bg = overlay.AddComponent<Image>();
             bg.color = theme.combatOverlayColor;
             loadingText = MenuSceneSetup.CreateLabelPublic(
@@ -678,12 +839,12 @@ namespace DeadManZone.Presentation.Editor
         {
             var sheet = CreateRegion(parent, "TacticPauseSheet", Vector2.zero, new Vector2(1f, 0.42f));
             var sheetBg = sheet.AddComponent<Image>();
-            UiThemeApplicator.ApplyPanel(sheetBg, theme);
+            UiThemeApplicator.ApplySecurityTerminalFrame(sheetBg, theme);
 
             var bannerRoot = CreateRegion(parent, "PhaseBanner", new Vector2(0.25f, 0.72f), new Vector2(0.75f, 0.88f));
             bannerRoot.SetActive(false);
             var bannerBg = bannerRoot.AddComponent<Image>();
-            bannerBg.color = theme.combatBannerColor;
+            UiThemeApplicator.ApplyBanner(bannerBg, theme);
             bannerText = MenuSceneSetup.CreateLabelPublic(
                 bannerRoot.transform, "Deployment", 36, FontStyles.Bold,
                 new Vector2(0.5f, 0.5f), new Vector2(500f, 50f));
@@ -786,7 +947,7 @@ namespace DeadManZone.Presentation.Editor
         {
             var sheet = CreateRegion(parent, "BattleReportSheet", new Vector2(0.15f, 0.18f), new Vector2(0.85f, 0.82f));
             var sheetBg = sheet.AddComponent<Image>();
-            UiThemeApplicator.ApplyPanel(sheetBg, theme);
+            UiThemeApplicator.ApplyModalFrame(sheetBg, theme);
 
             var presenter = sheet.AddComponent<BattleReportPresenter>();
             var outcome = MenuSceneSetup.CreateLabelPublic(
@@ -857,7 +1018,8 @@ namespace DeadManZone.Presentation.Editor
             RunEndOverlayView endOverlay,
             PauseMenuView pauseMenu,
             Button beginFight,
-            Button menu)
+            Button menu,
+            BuildRowLayoutFitter mainRowLayout)
         {
             var serialized = new SerializedObject(controller);
             serialized.FindProperty("buildPanel").objectReferenceValue = buildPanel;
@@ -866,6 +1028,7 @@ namespace DeadManZone.Presentation.Editor
             serialized.FindProperty("boardArea").objectReferenceValue = boardArea.GetComponent<RectTransform>();
             serialized.FindProperty("shopArea").objectReferenceValue = shopArea;
             serialized.FindProperty("bottomBar").objectReferenceValue = bottomBar;
+            serialized.FindProperty("mainRowLayout").objectReferenceValue = mainRowLayout;
             serialized.FindProperty("boardView").objectReferenceValue = boardView;
             serialized.FindProperty("shopView").objectReferenceValue = shopView;
             serialized.FindProperty("reservesView").objectReferenceValue = reservesView;

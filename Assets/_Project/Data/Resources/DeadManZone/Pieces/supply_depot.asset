@@ -26,7 +26,15 @@ MonoBehaviour:
   requisitionCost: 0
   manpowerCost: 1
   shopModifiers: 2
-  commandActions: 2
+  commandActions: 0
   shopLane: 1
+  attackSpeed: 1
+  attackRange: 1
+  movementSpeed: 2
+  armorType: 1
+  attackType: 1
+  grantedAbility: 0
+  factionId: iron_vanguard
   icon: {fileID: 0}
   categoryTint: {r: 0.48, g: 0.4, b: 0.28, a: 1}
+  cellSprites: []

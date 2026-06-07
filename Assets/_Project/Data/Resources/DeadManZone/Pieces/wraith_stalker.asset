@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
+  m_Name: wraith_stalker
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
+  id: wraith_stalker
+  displayName: Wraith Stalker
+  category: 1
+  shapeCells:
+  - {x: 0, y: 0}
+  tags:
+  - Stealth
+  - Gas
+  - Combatant
+  maxHp: 8
+  baseDamage: 4
+  cooldownTicks: 3
+  goldCost: 0
+  requisitionCost: 0
+  manpowerCost: 1
+  shopModifiers: 0
+  commandActions: 0
+  shopLane: 0
+  attackSpeed: 1
+  attackRange: 1
+  movementSpeed: 2
+  armorType: 1
+  attackType: 1
+  grantedAbility: 0
+  factionId: ash_wraiths
+  icon: {fileID: 0}
+  categoryTint: {r: 0.29999998, g: 0.36999997, b: 0.5, a: 1}
+  cellSprites: []

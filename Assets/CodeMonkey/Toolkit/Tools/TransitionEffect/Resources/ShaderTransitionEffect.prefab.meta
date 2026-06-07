@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 190dac909b1b0a841937741d7135fbe0
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/TransitionEffect/Resources/ShaderTransitionEffect.prefab
+  uploadId: 900364

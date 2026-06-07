@@ -20,7 +20,7 @@ namespace DeadManZone.Presentation.Run
                 mainMenuButton.onClick.AddListener(() => GameScenes.LoadMainMenu());
         }
 
-        public void Show(RunPhase phase)
+        public void Show(RunPhase phase, RunState state = null)
         {
             if (root != null)
                 root.SetActive(true);
@@ -31,9 +31,22 @@ namespace DeadManZone.Presentation.Run
 
             if (bodyText != null)
             {
-                bodyText.text = victory
-                    ? "The gauntlet is yours. Iron Vanguard holds the line."
-                    : "Your line broke. Regroup and try a new campaign.";
+                string factionName = state?.FactionId ?? "your force";
+                if (victory && state != null)
+                {
+                    bodyText.text =
+                        $"The gauntlet is yours.\n" +
+                        $"Faction: {factionName}\n" +
+                        $"Fights cleared: {state.FightIndex}\n" +
+                        $"Final supplies: {state.Supplies} · Morale: {state.Morale}";
+                }
+                else
+                {
+                    bodyText.text =
+                        $"Your line broke.\n" +
+                        $"Faction: {factionName}\n" +
+                        (state != null ? $"Reached fight {state.FightIndex} · Morale {state.Morale}" : "Regroup and try again.");
+                }
             }
         }
 
@@ -50,7 +63,7 @@ namespace DeadManZone.Presentation.Run
 
             var panel = root.transform.Find("Card")?.GetComponent<Image>();
             if (panel != null)
-                UiThemeApplicator.ApplyCard(panel, theme);
+                UiThemeApplicator.ApplyModalFrame(panel, theme);
 
             UiThemeApplicator.ApplyLabel(titleText, false, theme);
             UiThemeApplicator.ApplyLabel(bodyText, true, theme);

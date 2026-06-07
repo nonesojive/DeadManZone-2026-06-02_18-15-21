@@ -40,7 +40,9 @@ namespace DeadManZone.Presentation.Editor
             EnsureFolder("Assets/_Project/Data/Visual/Lighting");
             EnsureFolder("Assets/_Project/Data/Resources/DeadManZone");
 
-            var uiTheme = UiThemeEditor.EnsureThemeAsset();
+            var uiTheme = AssetDatabase.IsValidFolder(BunkerSurvivalUiKitSetup.KitRoot)
+                ? BunkerSurvivalUiKitSetup.EnsureBunkerSurvivalTheme()
+                : UiThemeEditor.EnsureThemeAsset();
             var mainMenuAtmosphere = EnsureMainMenuAtmosphere();
             var runAtmosphere = EnsureRunAtmosphere();
             var mainMenuLighting = EnsureMainMenuLighting();
@@ -52,7 +54,7 @@ namespace DeadManZone.Presentation.Editor
                 return created;
             });
 
-            profile.displayName = "Iron Vanguard";
+            profile.displayName = uiTheme.UsesButtonSprites ? "Bunker Survival" : "Iron Vanguard";
             profile.uiTheme = uiTheme;
             profile.mainMenuAtmosphere = mainMenuAtmosphere;
             profile.mainMenuLighting = mainMenuLighting;

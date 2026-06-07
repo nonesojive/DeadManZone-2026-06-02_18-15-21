@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 3bfb6e872c71a464ab0289068925025d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/EditorWindow/ScriptableObjects/Tools/ShaderOutline2D.asset
+  uploadId: 900364

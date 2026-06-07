@@ -23,12 +23,20 @@ MonoBehaviour:
   - Mechanical
   maxHp: 16
   baseDamage: 5
-  cooldownTicks: 5
+  cooldownTicks: 3
   goldCost: 10
   requisitionCost: 2
   manpowerCost: 1
   shopModifiers: 0
   commandActions: 0
   shopLane: 2
+  attackSpeed: 1
+  attackRange: 1
+  movementSpeed: 2
+  armorType: 1
+  attackType: 1
+  grantedAbility: 0
+  factionId: iron_vanguard
   icon: {fileID: 0}
   categoryTint: {r: 0.38, g: 0.32, b: 0.48, a: 1}
+  cellSprites: []

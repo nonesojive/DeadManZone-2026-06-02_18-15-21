@@ -13,8 +13,7 @@ namespace DeadManZone.Presentation.DragDrop
 {
     public sealed class DragGhost : MonoBehaviour
     {
-        private const float CellPixels = 36f;
-        private const float Padding = 10f;
+        private const float Padding = 4f;
 
         [SerializeField] private Image background;
         [SerializeField] private TMP_Text label;
@@ -22,6 +21,9 @@ namespace DeadManZone.Presentation.DragDrop
         private Transform _blockRoot;
         private string _pieceId;
         private PieceDefinition _definition;
+        private float _cellSize = 36f;
+        private float _cellSpacing = 3f;
+        private bool _pieceOnly;
 
         public void SetLabel(string text)
         {
@@ -38,7 +40,10 @@ namespace DeadManZone.Presentation.DragDrop
             Transform parent,
             string pieceId,
             PieceDefinition definition = null,
-            PieceRotation rotation = PieceRotation.R0)
+            PieceRotation rotation = PieceRotation.R0,
+            float cellSize = 36f,
+            float cellSpacing = 3f,
+            bool pieceOnly = false)
         {
             var theme = UiThemeProvider.Current;
             var source = PieceVisualLookup.GetSource(pieceId);
@@ -55,9 +60,13 @@ namespace DeadManZone.Presentation.DragDrop
             rect.anchorMin = new Vector2(0.5f, 0.5f);
             rect.anchorMax = new Vector2(0.5f, 0.5f);
 
-            var image = root.AddComponent<Image>();
-            image.color = Color.Lerp(theme.cardColor, tint, 0.35f);
-            image.raycastTarget = false;
+            Image image = null;
+            if (!pieceOnly)
+            {
+                image = root.AddComponent<Image>();
+                image.color = Color.Lerp(theme.cardColor, tint, 0.35f);
+                image.raycastTarget = false;
+            }
 
             var blockRoot = new GameObject("Blocks", typeof(RectTransform));
             blockRoot.transform.SetParent(root.transform, false);
@@ -67,26 +76,30 @@ namespace DeadManZone.Presentation.DragDrop
             blockRootRect.offsetMin = Vector2.zero;
             blockRootRect.offsetMax = Vector2.zero;
 
-            var textGo = new GameObject("Label", typeof(RectTransform));
-            textGo.transform.SetParent(root.transform, false);
-            var textRect = textGo.GetComponent<RectTransform>();
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = new Vector2(4f, 2f);
-            textRect.offsetMax = new Vector2(-4f, -2f);
+            TMP_Text tmp = null;
+            if (!pieceOnly)
+            {
+                var textGo = new GameObject("Label", typeof(RectTransform));
+                textGo.transform.SetParent(root.transform, false);
+                var textRect = textGo.GetComponent<RectTransform>();
+                textRect.anchorMin = Vector2.zero;
+                textRect.anchorMax = Vector2.one;
+                textRect.offsetMin = new Vector2(4f, 2f);
+                textRect.offsetMax = new Vector2(-4f, -2f);
 
-            var tmp = textGo.AddComponent<TextMeshProUGUI>();
-            if (definition != null && !string.IsNullOrEmpty(definition.DisplayName))
-                tmp.text = definition.DisplayName;
-            else if (source != null && !string.IsNullOrEmpty(source.displayName))
-                tmp.text = source.displayName;
-            else
-                tmp.text = pieceId ?? "piece";
+                tmp = textGo.AddComponent<TextMeshProUGUI>();
+                if (definition != null && !string.IsNullOrEmpty(definition.DisplayName))
+                    tmp.text = definition.DisplayName;
+                else if (source != null && !string.IsNullOrEmpty(source.displayName))
+                    tmp.text = source.displayName;
+                else
+                    tmp.text = pieceId ?? "piece";
 
-            tmp.fontSize = 13;
-            tmp.alignment = TextAlignmentOptions.Center;
-            tmp.color = theme.textPrimary;
-            tmp.raycastTarget = false;
+                tmp.fontSize = 13;
+                tmp.alignment = TextAlignmentOptions.Center;
+                tmp.color = theme.textPrimary;
+                tmp.raycastTarget = false;
+            }
 
             var ghost = root.AddComponent<DragGhost>();
             ghost.background = image;
@@ -94,6 +107,9 @@ namespace DeadManZone.Presentation.DragDrop
             ghost._blockRoot = blockRoot.transform;
             ghost._pieceId = pieceId;
             ghost._definition = definition;
+            ghost._cellSize = cellSize;
+            ghost._cellSpacing = cellSpacing;
+            ghost._pieceOnly = pieceOnly;
             ghost.RebuildBlocks(rotation);
             return ghost;
         }
@@ -109,10 +125,8 @@ namespace DeadManZone.Presentation.DragDrop
             var theme = UiThemeProvider.Current;
             var source = PieceVisualLookup.GetSource(_pieceId);
             var tint = _definition != null
-                ? theme.GetCategoryTint(_definition.Category)
+                ? PieceArtResolver.ResolveTint(_definition, source, theme)
                 : theme.cardColor;
-            if (source != null && source.categoryTint.a > 0.01f)
-                tint = source.categoryTint;
 
             var cells = _definition?.Shape != null
                 ? _definition.Shape.GetCells(new GridCoord(0, 0), rotation).ToList()
@@ -125,12 +139,15 @@ namespace DeadManZone.Presentation.DragDrop
             int footprintW = maxX - minX + 1;
             int footprintH = maxY - minY + 1;
 
+            float stride = _cellSize + _cellSpacing;
+            float pad = _pieceOnly ? Padding : Padding * 2f;
             var rect = GetComponent<RectTransform>();
             rect.sizeDelta = new Vector2(
-                footprintW * CellPixels + Padding * 2f,
-                footprintH * CellPixels + Padding * 2f);
+                footprintW * _cellSize + (footprintW - 1) * _cellSpacing + pad * 2f,
+                footprintH * _cellSize + (footprintH - 1) * _cellSpacing + pad * 2f);
             rect.localEulerAngles = Vector3.zero;
 
+            var anchor = new GridCoord(0, 0);
             foreach (var cell in cells)
             {
                 var block = new GameObject("Cell", typeof(RectTransform));
@@ -139,13 +156,24 @@ namespace DeadManZone.Presentation.DragDrop
                 blockRect.anchorMin = new Vector2(0f, 1f);
                 blockRect.anchorMax = new Vector2(0f, 1f);
                 blockRect.pivot = new Vector2(0.5f, 0.5f);
-                blockRect.sizeDelta = new Vector2(CellPixels - 3f, CellPixels - 3f);
+                blockRect.sizeDelta = new Vector2(_cellSize - 2f, _cellSize - 2f);
                 blockRect.anchoredPosition = new Vector2(
-                    Padding + (cell.X - minX) * CellPixels + CellPixels * 0.5f,
-                    -(Padding + (cell.Y - minY) * CellPixels + CellPixels * 0.5f));
+                    pad + (cell.X - minX) * stride + _cellSize * 0.5f,
+                    -(pad + (cell.Y - minY) * stride + _cellSize * 0.5f));
 
                 var blockImage = block.AddComponent<Image>();
-                blockImage.color = Color.Lerp(tint, Color.white, 0.12f);
+                var localCell = PieceArtResolver.ToLocalCell(cell, anchor, rotation);
+                var cellSprite = source?.TryGetCellSprite(localCell);
+                if (cellSprite != null)
+                {
+                    blockImage.sprite = cellSprite;
+                    blockImage.color = Color.white;
+                }
+                else
+                {
+                    blockImage.color = Color.Lerp(tint, Color.white, 0.12f);
+                }
+
                 blockImage.raycastTarget = false;
 
                 var outline = block.AddComponent<Outline>();

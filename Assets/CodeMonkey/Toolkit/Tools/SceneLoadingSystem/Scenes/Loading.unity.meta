@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: d1bcc717b6ac64348b29b6183e4bdc2c
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/SceneLoadingSystem/Scenes/Loading.unity
+  uploadId: 900364

@@ -148,8 +148,10 @@ namespace DeadManZone.Game
             if (!reserves.TryRemove(instanceId, out var removed))
                 return false;
 
-            int refund = Math.Max(0, removed.Definition.GoldCost / 2);
-            State.Supplies += refund;
+            var refund = SalvageCalculator.Compute(removed.Definition, State.FactionId);
+            State.Supplies += refund.Supplies;
+            State.Authority += refund.Authority;
+            State.Manpower += refund.Manpower;
             SaveReserves(reserves);
             Persist();
             return true;
@@ -273,6 +275,7 @@ namespace DeadManZone.Game
                 modifiers,
                 shopSeed,
                 State.FightIndex,
+                State.FactionId,
                 fixedSlots);
 
             State.Shop.Offers.RemoveAll(o => o.Lane == lane);

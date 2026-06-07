@@ -22,7 +22,7 @@ namespace DeadManZone.PlayMode.Tests
             SceneManager.LoadScene(GameScenes.MainMenu);
             yield return null;
 
-            var controller = Object.FindObjectOfType<MainMenuController>();
+            var controller = Object.FindFirstObjectByType<MainMenuController>();
             Assert.NotNull(controller, "MainMenuController not found in MainMenu scene.");
             Assert.NotNull(controller.ContinueButtonRoot, "Continue button not wired on MainMenuController.");
 

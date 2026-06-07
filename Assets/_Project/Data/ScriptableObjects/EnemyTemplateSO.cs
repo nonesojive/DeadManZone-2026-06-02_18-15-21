@@ -22,6 +22,7 @@ namespace DeadManZone.Data
         public int fightNumber = 1;
         public string displayName;
         public string previewTag;
+        public string enemyFactionId = "crimson_legion";
         public EnemyPiecePlacement[] placements;
 
         public BoardSnapshot ToBoardSnapshot()

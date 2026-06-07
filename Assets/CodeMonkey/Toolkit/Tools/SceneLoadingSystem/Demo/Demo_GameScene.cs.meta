@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: e243fe70c5b1040468c5789b763b0ebb
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/SceneLoadingSystem/Demo/Demo_GameScene.cs
+  uploadId: 900364

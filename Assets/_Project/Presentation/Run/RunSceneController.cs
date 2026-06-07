@@ -1,3 +1,4 @@
+using System.Collections;
 using DeadManZone.Core.Run;
 using DeadManZone.Game;
 using DeadManZone.Presentation.Board;
@@ -18,6 +19,7 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private RectTransform boardArea;
         [SerializeField] private GameObject shopArea;
         [SerializeField] private GameObject bottomBar;
+        [SerializeField] private BuildRowLayoutFitter mainRowLayout;
 
         [Header("Views")]
         [SerializeField] private BoardView boardView;
@@ -32,20 +34,45 @@ namespace DeadManZone.Presentation.Run
 
         [Header("Hub")]
         [SerializeField] private Button beginFightButton;
+        [SerializeField] private Button emergencyDraftButton;
         [SerializeField] private Button menuButton;
 
-        private Vector2 _buildBoardAnchorMax = new(0.56f, 1f);
+        private Vector2 _buildBoardAnchorMax = new(0.50f, 1f);
         private bool _buildLayoutCaptured;
 
         private void Awake()
         {
             EnsureLayoutReferences();
+            EnsureMainRowLayoutFitter();
             CaptureBuildLayout();
 
             if (beginFightButton != null)
                 beginFightButton.onClick.AddListener(OnBeginFight);
+            if (emergencyDraftButton != null)
+                emergencyDraftButton.onClick.AddListener(OnEmergencyDraft);
             if (menuButton != null)
                 menuButton.onClick.AddListener(OnMenuClicked);
+        }
+
+        private void Start()
+        {
+            RefreshBuildUiLayout();
+            if (mainRowLayout != null)
+                _buildBoardAnchorMax = mainRowLayout.BoardAnchorMax;
+
+            if (shopArea != null)
+            {
+                ShopLaneLayoutFitter.EnsureOnShopArea(shopArea.transform);
+                ShopUiBootstrap.EnsureOnShopArea(shopArea.transform, boardView, shopView?.ModifiersTooltip);
+            }
+
+            if (buildPanel != null)
+            {
+                RunBuildUiBootstrap.EnsureOnBuildPanel(buildPanel.transform, boardView, mainRowLayout);
+                RefreshBuildUiLayout();
+            }
+
+            shopView?.RefreshFromRunManager();
         }
 
         private void OnEnable()
@@ -100,6 +127,11 @@ namespace DeadManZone.Presentation.Run
                 bool canStart = RunManager.Instance.Orchestrator.CanStartBattle(out string failureReason);
                 if (beginFightButton != null)
                     beginFightButton.interactable = canStart;
+                if (emergencyDraftButton != null)
+                {
+                    emergencyDraftButton.gameObject.SetActive(!canStart && !state.EmergencyDraftUsed);
+                    emergencyDraftButton.interactable = !canStart && !state.EmergencyDraftUsed;
+                }
                 runHudView?.Refresh(state, failureReason);
             }
             else
@@ -113,7 +145,7 @@ namespace DeadManZone.Presentation.Run
                 if (phaseCommandPanel != null)
                     phaseCommandPanel.Hide();
                 pauseMenuView?.Hide();
-                runEndOverlay?.Show(state.Phase);
+                runEndOverlay?.Show(state.Phase, state);
                 return;
             }
 
@@ -122,6 +154,10 @@ namespace DeadManZone.Presentation.Run
             if (inBuild)
             {
                 boardView?.RefreshFromRunManager();
+                RefreshBuildUiLayout();
+                if (mainRowLayout != null)
+                    _buildBoardAnchorMax = mainRowLayout.BoardAnchorMax;
+                boardView?.SyncLayoutFromBoard();
                 reservesView?.Refresh();
                 shopView?.RefreshFromRunManager();
                 tacticPausePanel?.Hide();
@@ -163,12 +199,36 @@ namespace DeadManZone.Presentation.Run
             }
         }
 
+        private void EnsureMainRowLayoutFitter()
+        {
+            if (buildPanel == null || boardArea == null || shopArea == null || boardView == null)
+                return;
+
+            if (mainRowLayout == null)
+            {
+                var mainRow = buildPanel.transform.Find("MainRow");
+                if (mainRow == null)
+                    return;
+
+                mainRowLayout = mainRow.GetComponent<BuildRowLayoutFitter>();
+                if (mainRowLayout == null)
+                    mainRowLayout = mainRow.gameObject.AddComponent<BuildRowLayoutFitter>();
+            }
+
+            var shopRect = shopArea.GetComponent<RectTransform>();
+            if (shopRect != null)
+                mainRowLayout.Configure(boardArea, shopRect, boardView);
+        }
+
         private void CaptureBuildLayout()
         {
             if (_buildLayoutCaptured || boardArea == null)
                 return;
 
-            _buildBoardAnchorMax = boardArea.anchorMax;
+            mainRowLayout?.ApplyLayout();
+            _buildBoardAnchorMax = mainRowLayout != null
+                ? mainRowLayout.BoardAnchorMax
+                : boardArea.anchorMax;
             _buildLayoutCaptured = true;
         }
 
@@ -185,6 +245,9 @@ namespace DeadManZone.Presentation.Run
 
             if (combatActive)
             {
+                if (mainRowLayout != null)
+                    _buildBoardAnchorMax = mainRowLayout.BoardAnchorMax;
+
                 boardArea.anchorMin = Vector2.zero;
                 boardArea.anchorMax = Vector2.one;
                 boardArea.offsetMin = Vector2.zero;
@@ -196,6 +259,31 @@ namespace DeadManZone.Presentation.Run
             boardArea.anchorMax = _buildBoardAnchorMax;
             boardArea.offsetMin = Vector2.zero;
             boardArea.offsetMax = Vector2.zero;
+
+            RefreshBuildUiLayoutDeferred();
+        }
+
+        private void RefreshBuildUiLayout()
+        {
+            Canvas.ForceUpdateCanvases();
+            mainRowLayout?.InvalidateAndApply();
+        }
+
+        private void RefreshBuildUiLayoutDeferred()
+        {
+            StopCoroutine(nameof(DeferredBuildUiLayoutPass));
+            StartCoroutine(DeferredBuildUiLayoutPass());
+        }
+
+        private IEnumerator DeferredBuildUiLayoutPass()
+        {
+            yield return null;
+            yield return new WaitForEndOfFrame();
+            RefreshBuildUiLayout();
+            if (mainRowLayout != null)
+                _buildBoardAnchorMax = mainRowLayout.BoardAnchorMax;
+            boardView?.SyncLayoutFromBoard();
+            reservesView?.Refresh();
         }
 
         private void SetBuildPanelAlpha(float alpha)
@@ -206,6 +294,14 @@ namespace DeadManZone.Presentation.Run
             buildPanelCanvasGroup.alpha = alpha;
             buildPanelCanvasGroup.interactable = alpha > 0.9f;
             buildPanelCanvasGroup.blocksRaycasts = alpha > 0.9f;
+        }
+
+        private void OnEmergencyDraft()
+        {
+            if (RunManager.Instance == null)
+                return;
+
+            RunManager.Instance.TryEmergencyDraft();
         }
 
         private void OnBeginFight()

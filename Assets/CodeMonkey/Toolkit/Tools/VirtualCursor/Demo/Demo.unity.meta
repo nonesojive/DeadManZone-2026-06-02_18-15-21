@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0d0e14f1078ac3e46a1945efd10335ff
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/VirtualCursor/Demo/Demo.unity
+  uploadId: 900364

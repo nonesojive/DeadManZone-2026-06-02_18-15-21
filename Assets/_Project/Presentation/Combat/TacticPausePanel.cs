@@ -44,7 +44,7 @@ namespace DeadManZone.Presentation.Combat
                 continueButton.onClick.AddListener(SubmitAndContinue);
 
             if (panelBackground != null)
-                UiThemeApplicator.ApplyCard(panelBackground);
+                UiThemeApplicator.ApplySecurityTerminalFrame(panelBackground);
 
             EnsureRuntimeUi();
         }

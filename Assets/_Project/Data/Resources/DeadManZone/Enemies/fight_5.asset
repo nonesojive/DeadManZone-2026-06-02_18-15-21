@@ -13,15 +13,16 @@ MonoBehaviour:
   m_Name: fight_5
   m_EditorClassIdentifier: 
   fightNumber: 5
-  displayName: Armored Probe
-  previewTag: Tank
+  displayName: Crimson Assault
+  previewTag: Boss
+  enemyFactionId: crimson_legion
   placements:
-  - piece: {fileID: 11400000, guid: a09195287ae98b44490baf1a5d3e1a68, type: 2}
-    anchor: {x: 0, y: 4}
-    instanceId: enemy_hq
-  - piece: {fileID: 11400000, guid: f4a5b6c7d8e9508899aabbccddeeff04, type: 2}
-    anchor: {x: 4, y: 6}
+  - piece: {fileID: 11400000, guid: b5d7e19665a70ef4bbab877f0c8cd433, type: 2}
+    anchor: {x: 7, y: 4}
     instanceId: 
-  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
+  - piece: {fileID: 11400000, guid: 299685d2f5635104d9c4fdf290754b75, type: 2}
     anchor: {x: 5, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 011d8d022159d10439665c0ec0108fd8, type: 2}
+    anchor: {x: 0, y: 0}
     instanceId: 

@@ -246,7 +246,7 @@ def setup_render_scene():
     cam.data.ortho_scale = 2.35
 
     elev = math.radians(35)
-    az = math.radians(45)
+    az = math.radians(225)
     dist = 6.0
     target = Vector((0.05, 0.0, 0.55))
     cam.location = Vector(

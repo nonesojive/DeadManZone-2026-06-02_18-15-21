@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: ba75621384cc48145ba506048ffeb595
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/OpenAIAPI/Demo/Demo_GenerateImage.cs
+  uploadId: 900364

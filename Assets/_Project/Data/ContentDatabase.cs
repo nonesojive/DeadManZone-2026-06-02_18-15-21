@@ -10,7 +10,15 @@ namespace DeadManZone.Data
     {
         private const string ResourcesPath = "DeadManZone/ContentDatabase";
 
-        /// <summary>Demo shop roster (8 pieces). HQ and legacy pieces register by id only.</summary>
+        /// <summary>Playable factions shown in faction select.</summary>
+        public static readonly string[] PlayableFactionIds =
+        {
+            "iron_vanguard",
+            "dust_scourge",
+            "cartel_of_echoes"
+        };
+
+        /// <summary>Demo shop roster piece ids.</summary>
         public static readonly HashSet<string> DemoShopPieceIds = new()
         {
             "conscript_rifleman",
@@ -20,7 +28,17 @@ namespace DeadManZone.Data
             "mobile_cannon",
             "rifle_squad",
             "diesel_walker",
-            "radio_array"
+            "radio_array",
+            "mg_team",
+            "field_gun_nest",
+            "supply_depot",
+            "mobile_artillery",
+            "sand_raider",
+            "scrap_rig",
+            "toxin_launcher",
+            "phantom_agent",
+            "signal_relay",
+            "resonance_cannon"
         };
 
         [SerializeField] private PieceDefinitionSO[] pieces = System.Array.Empty<PieceDefinitionSO>();

@@ -51,6 +51,39 @@ namespace DeadManZone.Presentation.Visual
         public Color combatOverlayColor = new(0.02f, 0.03f, 0.05f, 0.55f);
         public Color combatBannerColor = new(0.1f, 0.1f, 0.12f, 0.88f);
 
+        [Header("Sprites (optional 9-slice)")]
+        public Sprite panelSprite;
+        public Sprite cardSprite;
+        public Sprite modalFrameSprite;
+        public Sprite sidebarPanelSprite;
+        public Sprite inventoryPanelSprite;
+        public Sprite securityTerminalFrameSprite;
+        public Sprite bannerSprite;
+        public Sprite buttonNormalSprite;
+        public Sprite buttonHighlightedSprite;
+        public Sprite buttonPressedSprite;
+        public Sprite buttonDisabledSprite;
+        public Sprite accentButtonSprite;
+        public Sprite secondaryButtonSprite;
+        public Sprite dangerButtonSprite;
+        public Sprite warningButtonSprite;
+        public Sprite slotEmptySprite;
+        public Sprite slotSelectedSprite;
+        public Sprite storageSlotEmptySprite;
+        public Sprite storageSlotSelectedSprite;
+
+        [Header("Sprites (background plates)")]
+        public Sprite menuBackgroundSprite;
+        public Sprite runBackgroundSprite;
+        public Sprite combatBackgroundSprite;
+
+        public bool UsesButtonSprites =>
+            buttonNormalSprite != null
+            || accentButtonSprite != null
+            || dangerButtonSprite != null;
+
+        public bool UsesSlotSprites => slotEmptySprite != null || storageSlotEmptySprite != null;
+
         public Color GetZoneColor(ZoneType zone) =>
             zone switch
             {
@@ -79,9 +112,39 @@ namespace DeadManZone.Presentation.Visual
                 _ => generalLaneTint
             };
 
+        public Color GetTileDisplayColor(Color zoneColor) =>
+            slotEmptySprite != null ? Color.Lerp(Color.white, zoneColor, 0.35f) : zoneColor;
+
+        public Color GetReserveSlotColor() =>
+            storageSlotEmptySprite != null ? new Color(0.92f, 0.91f, 0.88f, 1f) : cardColor;
+
         public void ApplyIronVanguardDefaults()
         {
             // Values match serialized defaults; explicit for editor menu creation.
+        }
+
+        public void ApplyBunkerSurvivalDefaults()
+        {
+            backgroundColor = new Color(0.06f, 0.07f, 0.08f, 1f);
+            panelColor = new Color(0.14f, 0.15f, 0.13f, 0.96f);
+            cardColor = new Color(0.18f, 0.19f, 0.17f, 0.98f);
+            accentColor = new Color(0.85f, 0.65f, 0.2f, 1f);
+            accentMutedColor = new Color(0.55f, 0.42f, 0.12f, 1f);
+            dangerColor = new Color(0.78f, 0.22f, 0.15f, 1f);
+            sellZoneColor = new Color(0.42f, 0.14f, 0.1f, 0.85f);
+            textPrimary = new Color(0.88f, 0.92f, 0.84f, 1f);
+            textSecondary = new Color(0.55f, 0.6f, 0.52f, 1f);
+            textOnAccent = new Color(0.1f, 0.08f, 0.06f, 1f);
+            buttonNormal = new Color(0.22f, 0.24f, 0.21f, 0.98f);
+            buttonHighlighted = new Color(0.32f, 0.34f, 0.3f, 1f);
+            buttonPressed = new Color(0.14f, 0.15f, 0.13f, 1f);
+            rearZoneColor = new Color(0.18f, 0.28f, 0.38f, 1f);
+            supportZoneColor = new Color(0.2f, 0.32f, 0.24f, 1f);
+            frontZoneColor = new Color(0.48f, 0.22f, 0.18f, 1f);
+            neutralZoneColor = new Color(0.32f, 0.28f, 0.22f, 1f);
+            specialTileColor = new Color(0.62f, 0.52f, 0.18f, 0.45f);
+            combatOverlayColor = new Color(0.02f, 0.03f, 0.04f, 0.6f);
+            combatBannerColor = new Color(0.08f, 0.09f, 0.08f, 0.9f);
         }
     }
 }

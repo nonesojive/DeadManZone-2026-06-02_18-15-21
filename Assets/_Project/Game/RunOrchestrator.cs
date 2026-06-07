@@ -68,6 +68,7 @@ namespace DeadManZone.Game
             State.RerollCountThisRound = 0;
             PlaceStartingHq();
             ResetAuthorityForBuildRound();
+            ResetMetaForNewRun();
             RefreshShop();
             _activeCombat = null;
             Persist();
@@ -129,6 +130,7 @@ namespace DeadManZone.Game
             var playerBoard = GetPlayerBoard();
             int upkeep = ManpowerCalculator.ComputeUpkeep(playerBoard, _registry);
             State.Manpower -= upkeep;
+            RecordCriticalMassIfTriggered();
 
             var enemyTemplate = _content.GetEnemyTemplate(State.FightIndex);
             if (enemyTemplate == null)
@@ -315,10 +317,18 @@ namespace DeadManZone.Game
             if (!board.TryRemove(instanceId, out var removed))
                 return false;
 
-            int refund = removed.Definition.GoldCost / 2;
-            State.Supplies += refund;
+            ApplySalvageRefund(removed.Definition);
             SavePlayerBoard(board);
             return true;
+        }
+
+        private void ApplySalvageRefund(PieceDefinition piece)
+        {
+            var refund = SalvageCalculator.Compute(piece, State.FactionId);
+            State.Supplies += refund.Supplies;
+            State.Authority += refund.Authority;
+            State.Manpower += refund.Manpower;
+            RecordSalvageMeta(refund.Supplies);
         }
 
         public bool TryMovePlacedPiece(
@@ -369,6 +379,7 @@ namespace DeadManZone.Game
                     result.PlayerCombatantsTotal,
                     result.PlayerHqDamaged);
                 State.Morale -= moraleLoss;
+                ProcessFightEndMeta(playerWon: false, result.PlayerHqDamaged);
                 State.LastBattleReport = BattleReportBuilder.Build(
                     System.Array.Empty<CombatantState>(),
                     playerWon,
@@ -381,6 +392,7 @@ namespace DeadManZone.Game
                 if (State.Morale <= 0)
                 {
                     State.Phase = RunPhase.Defeat;
+                    ProcessRunEndMeta(victory: false);
                     Persist();
                     return;
                 }
@@ -396,6 +408,8 @@ namespace DeadManZone.Game
             var reward = FightRewardTable.GetReward(State.FightIndex, isDraw);
             State.Supplies += reward.Supplies;
             State.Manpower += reward.BonusManpower;
+            State.Authority += reward.BonusAuthority;
+            ProcessFightEndMeta(playerWon: true, result.PlayerHqDamaged);
             State.LastBattleReport = BattleReportBuilder.Build(
                 System.Array.Empty<CombatantState>(),
                 playerWon,
@@ -422,6 +436,7 @@ namespace DeadManZone.Game
             if (State.FightIndex >= MaxFights)
             {
                 State.Phase = RunPhase.Victory;
+                ProcessRunEndMeta(victory: true);
                 SaveManager.DeleteSave();
                 return;
             }

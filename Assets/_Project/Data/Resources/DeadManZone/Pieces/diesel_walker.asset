@@ -21,13 +21,13 @@ MonoBehaviour:
   - {x: 0, y: 1}
   - {x: 1, y: 1}
   tags:
-  - Vehicle
-  - Tank
+  - Mechanical
   - Vanguard
-  maxHp: 320
-  baseDamage: 35
+  - Combatant
+  maxHp: 25
+  baseDamage: 4
   cooldownTicks: 5
-  goldCost: 140
+  goldCost: 12
   requisitionCost: 0
   manpowerCost: 1
   shopModifiers: 0
@@ -42,3 +42,4 @@ MonoBehaviour:
   factionId: iron_vanguard
   icon: {fileID: 0}
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  cellSprites: []

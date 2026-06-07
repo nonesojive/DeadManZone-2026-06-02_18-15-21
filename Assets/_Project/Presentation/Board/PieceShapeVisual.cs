@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
@@ -22,7 +23,8 @@ namespace DeadManZone.Presentation.Board
             PieceDefinition definition,
             PieceDefinitionSO source,
             GridCoord anchor,
-            PieceRotation rotation)
+            PieceRotation rotation,
+            Func<GridCoord, Vector2?> cellCenterResolver = null)
         {
             if (overlay == null || grid == null || cells == null || cells.Count == 0 || definition == null)
                 return null;
@@ -31,7 +33,7 @@ namespace DeadManZone.Presentation.Board
             var tint = PieceArtResolver.ResolveTint(definition, source, theme);
             var hideLabel = PieceArtResolver.AllCellsHaveSprites(source, anchor, rotation, definition);
 
-            var footprint = ComputeFootprint(overlay, grid, cells);
+            var footprint = ComputeFootprint(overlay, grid, cells, cellCenterResolver);
             if (footprint.size.sqrMagnitude < 1f)
                 return null;
 
@@ -51,7 +53,7 @@ namespace DeadManZone.Presentation.Board
 
             foreach (var cell in cells)
             {
-                var cellCenter = CellCenterInOverlay(overlay, grid, cell);
+                var cellCenter = CellCenterInOverlay(overlay, grid, cell, cellCenterResolver);
                 var block = new GameObject("Cell", typeof(RectTransform));
                 block.transform.SetParent(root.transform, false);
                 var blockRect = block.GetComponent<RectTransform>();
@@ -109,7 +111,8 @@ namespace DeadManZone.Presentation.Board
         private static (Vector2 center, Vector2 size) ComputeFootprint(
             RectTransform overlay,
             GridLayoutGroup grid,
-            IReadOnlyList<GridCoord> cells)
+            IReadOnlyList<GridCoord> cells,
+            Func<GridCoord, Vector2?> cellCenterResolver = null)
         {
             float minX = float.MaxValue;
             float maxX = float.MinValue;
@@ -120,7 +123,7 @@ namespace DeadManZone.Presentation.Board
 
             foreach (var cell in cells)
             {
-                var cellCenter = CellCenterInOverlay(overlay, grid, cell);
+                var cellCenter = CellCenterInOverlay(overlay, grid, cell, cellCenterResolver);
                 minX = Mathf.Min(minX, cellCenter.x - halfW);
                 maxX = Mathf.Max(maxX, cellCenter.x + halfW);
                 minY = Mathf.Min(minY, cellCenter.y - halfH);
@@ -135,8 +138,19 @@ namespace DeadManZone.Presentation.Board
         /// <summary>
         /// Center of a grid cell in overlay local space (overlay must match the TileGrid rect).
         /// </summary>
-        internal static Vector2 CellCenterInOverlay(RectTransform overlay, GridLayoutGroup grid, GridCoord cell)
+        internal static Vector2 CellCenterInOverlay(
+            RectTransform overlay,
+            GridLayoutGroup grid,
+            GridCoord cell,
+            Func<GridCoord, Vector2?> cellCenterResolver = null)
         {
+            if (cellCenterResolver != null)
+            {
+                var resolved = cellCenterResolver(cell);
+                if (resolved.HasValue)
+                    return resolved.Value;
+            }
+
             float strideX = grid.cellSize.x + grid.spacing.x;
             float strideY = grid.cellSize.y + grid.spacing.y;
             float left = -overlay.rect.width * overlay.pivot.x + grid.padding.left;

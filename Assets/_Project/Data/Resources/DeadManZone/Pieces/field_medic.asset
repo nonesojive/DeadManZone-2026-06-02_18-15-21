@@ -18,14 +18,12 @@ MonoBehaviour:
   shapeCells:
   - {x: 0, y: 0}
   tags:
-  - Infantry
-  - Support
-  - Utility
-  - Neutral
-  maxHp: 240
-  baseDamage: 4
+  - Medic
+  - Combatant
+  maxHp: 6
+  baseDamage: 0
   cooldownTicks: 3
-  goldCost: 60
+  goldCost: 5
   requisitionCost: 0
   manpowerCost: 1
   shopModifiers: 0
@@ -39,4 +37,5 @@ MonoBehaviour:
   grantedAbility: 0
   factionId: neutral
   icon: {fileID: 0}
-  categoryTint: {r: 0.45, g: 0.48, b: 0.42, a: 1}
+  categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  cellSprites: []

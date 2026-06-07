@@ -23,12 +23,20 @@ MonoBehaviour:
   - Combatant
   maxHp: 18
   baseDamage: 3
-  cooldownTicks: 4
+  cooldownTicks: 3
   goldCost: 9
   requisitionCost: 0
   manpowerCost: 1
   shopModifiers: 0
   commandActions: 0
   shopLane: 1
+  attackSpeed: 1
+  attackRange: 1
+  movementSpeed: 2
+  armorType: 1
+  attackType: 1
+  grantedAbility: 0
+  factionId: iron_vanguard
   icon: {fileID: 0}
   categoryTint: {r: 0.48, g: 0.4, b: 0.28, a: 1}
+  cellSprites: []

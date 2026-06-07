@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 15ebe84cc345b1844b1b00190c4991e1
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/SceneLoadingSystem/Demo/Demo_MainMenu.unity
+  uploadId: 900364

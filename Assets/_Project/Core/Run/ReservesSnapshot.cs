@@ -33,8 +33,15 @@ namespace DeadManZone.Core.Run
         public static ReservesState ToReserves(ReservesSnapshot snapshot, ContentRegistry registry)
         {
             if (snapshot.Width != ReservesState.Width || snapshot.Height != ReservesState.Height)
+            {
+                if (snapshot.Width == 9 && ReservesState.Width == 8 && snapshot.Height == ReservesState.Height)
+                {
+                    return ToReservesFromLegacyNineWide(snapshot, registry);
+                }
+
                 throw new System.InvalidOperationException(
                     $"Reserves snapshot must be {ReservesState.Width}x{ReservesState.Height}, got {snapshot.Width}x{snapshot.Height}.");
+            }
 
             var reserves = new ReservesState();
             foreach (var record in snapshot.Pieces.OrderBy(p => p.InstanceId))
@@ -52,6 +59,41 @@ namespace DeadManZone.Core.Run
             }
 
             return reserves;
+        }
+
+        private static ReservesState ToReservesFromLegacyNineWide(
+            ReservesSnapshot snapshot,
+            ContentRegistry registry)
+        {
+            var reserves = new ReservesState();
+            foreach (var record in snapshot.Pieces.OrderBy(p => p.InstanceId))
+            {
+                var definition = registry.GetById(record.PieceId);
+                var rotation = RotationFromDegrees(record.RotationDegrees);
+                var anchor = new GridCoord(record.AnchorX, record.AnchorY);
+                if (!WouldFitLegacyPiece(definition, anchor, rotation))
+                    continue;
+
+                var result = reserves.TryPlace(definition, anchor, record.InstanceId, rotation);
+                if (!result.Success)
+                    continue;
+            }
+
+            return reserves;
+        }
+
+        private static bool WouldFitLegacyPiece(
+            PieceDefinition definition,
+            GridCoord anchor,
+            PieceRotation rotation)
+        {
+            foreach (var cell in definition.Shape.GetCells(anchor, rotation))
+            {
+                if (cell.X < 0 || cell.Y < 0 || cell.X >= ReservesState.Width || cell.Y >= ReservesState.Height)
+                    return false;
+            }
+
+            return true;
         }
 
         private static PieceRotation RotationFromDegrees(int degrees) =>

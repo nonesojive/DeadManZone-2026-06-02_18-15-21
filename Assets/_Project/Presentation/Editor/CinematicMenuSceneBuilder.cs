@@ -18,7 +18,7 @@ namespace DeadManZone.Presentation.Editor
 
         internal static void BuildAndSave(string scenePath)
         {
-            var theme = UiThemeEditor.EnsureThemeAsset();
+            var theme = UiThemeSceneStyling.LoadTheme();
             var menuTheme = MenuThemeEditor.EnsureMenuTheme();
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);

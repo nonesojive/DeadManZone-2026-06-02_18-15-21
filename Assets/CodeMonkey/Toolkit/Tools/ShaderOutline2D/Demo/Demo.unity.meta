@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: ca2c71c8b1f053b4d9a56269567746db
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/ShaderOutline2D/Demo/Demo.unity
+  uploadId: 900364

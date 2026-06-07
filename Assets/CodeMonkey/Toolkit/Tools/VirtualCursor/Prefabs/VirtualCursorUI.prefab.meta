@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 8fedae4c55cacd742885f162292809c1
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/VirtualCursor/Prefabs/VirtualCursorUI.prefab
+  uploadId: 900364

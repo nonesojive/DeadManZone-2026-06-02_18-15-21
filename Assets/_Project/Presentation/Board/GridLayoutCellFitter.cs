@@ -12,6 +12,9 @@ namespace DeadManZone.Presentation.Board
         [SerializeField] private int columnCount = 9;
         [SerializeField] private int rowCount = 10;
 
+        public int ColumnCount => columnCount;
+        public int RowCount => rowCount;
+
         private GridLayoutGroup _grid;
         private RectTransform _rect;
 

@@ -42,12 +42,20 @@ namespace DeadManZone.Presentation.Reserves
 
         private void OnRunStateChanged(Core.Run.RunState _) => Refresh();
 
+        public void SyncLayoutFromBoard()
+        {
+            SyncGridFromBoardView();
+            SyncPiecesOverlay();
+        }
+
         public void Refresh()
         {
             if (RunManager.Instance == null || !RunManager.Instance.HasActiveRun)
                 return;
 
             EnsureGridBuilt();
+            SyncGridFromBoardView();
+            SyncPiecesOverlay();
             var registry = _database != null ? _database.BuildRegistry() : ContentDatabase.Load()?.BuildRegistry();
             if (registry == null)
                 return;
@@ -93,7 +101,8 @@ namespace DeadManZone.Presentation.Reserves
                     piece.Definition,
                     PieceVisualLookup.GetSource(piece.Definition.Id),
                     piece.Anchor,
-                    piece.Rotation);
+                    piece.Rotation,
+                    ResolveCellCenterInOverlay);
                 if (shapeVisual != null)
                     _shapeVisualsByInstance[piece.InstanceId] = shapeVisual;
             }
@@ -111,17 +120,26 @@ namespace DeadManZone.Presentation.Reserves
                     Destroy(child.gameObject);
             }
 
-            if (_piecesOverlay != null)
+            if (_piecesOverlay == null)
+            {
+                var gridRect = gridLayout.GetComponent<RectTransform>();
+                var parent = gridRect.parent;
+
+                var overlayGo = new GameObject("PiecesOverlay", typeof(RectTransform));
+                overlayGo.transform.SetParent(parent, false);
+                overlayGo.transform.SetSiblingIndex(gridRect.GetSiblingIndex() + 1);
+                _piecesOverlay = overlayGo.GetComponent<RectTransform>();
+            }
+
+            SyncPiecesOverlay();
+        }
+
+        private void SyncPiecesOverlay()
+        {
+            if (_piecesOverlay == null || gridLayout == null)
                 return;
 
             var gridRect = gridLayout.GetComponent<RectTransform>();
-            var parent = gridRect.parent;
-
-            var overlayGo = new GameObject("PiecesOverlay", typeof(RectTransform));
-            overlayGo.transform.SetParent(parent, false);
-            overlayGo.transform.SetSiblingIndex(gridRect.GetSiblingIndex() + 1);
-
-            _piecesOverlay = overlayGo.GetComponent<RectTransform>();
             _piecesOverlay.anchorMin = gridRect.anchorMin;
             _piecesOverlay.anchorMax = gridRect.anchorMax;
             _piecesOverlay.pivot = gridRect.pivot;
@@ -129,6 +147,38 @@ namespace DeadManZone.Presentation.Reserves
             _piecesOverlay.sizeDelta = gridRect.sizeDelta;
             _piecesOverlay.offsetMin = gridRect.offsetMin;
             _piecesOverlay.offsetMax = gridRect.offsetMax;
+        }
+
+        private void SyncGridFromBoardView()
+        {
+            if (gridLayout == null)
+                return;
+
+            var boardView = FindFirstObjectByType<BoardView>();
+            var boardGrid = boardView?.GridLayout;
+            if (boardGrid == null)
+                return;
+
+            gridLayout.cellSize = boardGrid.cellSize;
+            gridLayout.spacing = boardGrid.spacing;
+            gridLayout.padding = new RectOffset(0, 0, 0, 0);
+
+            var cellFitter = gridLayout.GetComponent<GridLayoutCellFitter>();
+            if (cellFitter != null)
+                cellFitter.enabled = false;
+        }
+
+        private Vector2? ResolveCellCenterInOverlay(GridCoord cell)
+        {
+            if (_piecesOverlay == null || !_tiles.TryGetValue(cell, out var tileView))
+                return null;
+
+            var tileRect = tileView.GetComponent<RectTransform>();
+            if (tileRect == null)
+                return null;
+
+            var world = tileRect.TransformPoint(tileRect.rect.center);
+            return _piecesOverlay.InverseTransformPoint(world);
         }
 
         public bool TryRelocatePiece(string instanceId, GridCoord anchor, PieceRotation rotation)
@@ -160,10 +210,9 @@ namespace DeadManZone.Presentation.Reserves
             if (gridLayout != null)
             {
                 gridLayout.constraintCount = ReservesState.Width;
-                var fitter = gridLayout.GetComponent<GridLayoutCellFitter>();
-                if (fitter == null)
-                    fitter = gridLayout.gameObject.AddComponent<GridLayoutCellFitter>();
-                fitter.Configure(ReservesState.Width, ReservesState.Height);
+                var cellFitter = gridLayout.GetComponent<GridLayoutCellFitter>();
+                if (cellFitter != null)
+                    cellFitter.enabled = false;
             }
 
             for (int y = 0; y < ReservesState.Height; y++)
@@ -178,7 +227,7 @@ namespace DeadManZone.Presentation.Reserves
                     if (tileView == null)
                         tileView = tileObject.AddComponent<ReservesTileView>();
 
-                    tileView.Initialize(coord, Theme.cardColor);
+                    tileView.Initialize(coord, Theme.GetReserveSlotColor());
                     if (tileObject.GetComponent<ReservesTileDropTarget>() == null)
                         tileObject.AddComponent<ReservesTileDropTarget>();
                     _tiles[coord] = tileView;

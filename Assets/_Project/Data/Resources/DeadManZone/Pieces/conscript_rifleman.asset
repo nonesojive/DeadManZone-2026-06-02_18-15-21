@@ -19,13 +19,11 @@ MonoBehaviour:
   - {x: 0, y: 0}
   tags:
   - Infantry
-  - Assault
-  - Scout
-  - Neutral
-  maxHp: 700
-  baseDamage: 6
+  - Combatant
+  maxHp: 8
+  baseDamage: 2
   cooldownTicks: 3
-  goldCost: 50
+  goldCost: 4
   requisitionCost: 0
   manpowerCost: 1
   shopModifiers: 0
@@ -38,5 +36,6 @@ MonoBehaviour:
   attackType: 1
   grantedAbility: 0
   factionId: neutral
-  icon: {fileID: 0}
-  categoryTint: {r: 0.45, g: 0.48, b: 0.42, a: 1}
+  icon: {fileID: 21300000, guid: 4eb2bb56d6282714f87f94a6c98a1cd7, type: 3}
+  categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  cellSprites: []

@@ -14,23 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: mobile_cannon
   displayName: Mobile Cannon
-  category: 1
+  category: 2
   shapeCells:
   - {x: 0, y: 0}
   - {x: 1, y: 0}
-  - {x: 2, y: 0}
-  - {x: 0, y: 1}
-  - {x: 1, y: 1}
-  - {x: 2, y: 1}
   tags:
-  - Vehicle
   - Artillery
-  - Neutral
-  maxHp: 300
-  baseDamage: 40
-  cooldownTicks: 5
-  goldCost: 180
-  requisitionCost: 0
+  - Vehicle
+  maxHp: 14
+  baseDamage: 4
+  cooldownTicks: 3
+  goldCost: 9
+  requisitionCost: 1
   manpowerCost: 1
   shopModifiers: 0
   commandActions: 0
@@ -40,7 +35,8 @@ MonoBehaviour:
   movementSpeed: 1
   armorType: 2
   attackType: 2
-  grantedAbility: 3
+  grantedAbility: 0
   factionId: neutral
   icon: {fileID: 0}
-  categoryTint: {r: 0.45, g: 0.48, b: 0.42, a: 1}
+  categoryTint: {r: 0.38, g: 0.32, b: 0.48, a: 1}
+  cellSprites: []

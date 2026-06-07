@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a4a36c75241ce5e45a63bf165f2f7b92
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/EditorWindow/ScriptableObjects/Tools/TransitionEffect.asset
+  uploadId: 900364

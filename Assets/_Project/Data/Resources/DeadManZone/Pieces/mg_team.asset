@@ -30,5 +30,13 @@ MonoBehaviour:
   shopModifiers: 0
   commandActions: 0
   shopLane: 0
+  attackSpeed: 1
+  attackRange: 1
+  movementSpeed: 2
+  armorType: 1
+  attackType: 1
+  grantedAbility: 0
+  factionId: iron_vanguard
   icon: {fileID: 0}
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  cellSprites: []

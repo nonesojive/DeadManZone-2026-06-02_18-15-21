@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: cdb692c209b0de440be452f3de4cb5ba
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/ShaderTint2D/Demo/ShaderTintSolid.mat
+  uploadId: 900364

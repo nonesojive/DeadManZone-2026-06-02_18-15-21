@@ -116,6 +116,19 @@ namespace DeadManZone.Core.Tests
             CommandActions = CommandActionFlags.CallStrike
         };
 
+        public static PieceDefinition CreateUnit(string id, string[] tags) => new()
+        {
+            Id = id,
+            DisplayName = id,
+            Category = PieceCategory.Unit,
+            Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
+            Tags = tags,
+            MaxHp = 10,
+            BaseDamage = 2,
+            CooldownTicks = 3,
+            ManpowerCost = 1
+        };
+
         public static PieceDefinition WeakConscript() => new()
         {
             Id = "weak_conscript",

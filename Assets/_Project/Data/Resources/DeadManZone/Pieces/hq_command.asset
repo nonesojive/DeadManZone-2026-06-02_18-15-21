@@ -20,8 +20,7 @@ MonoBehaviour:
   - {x: 1, y: 0}
   tags:
   - HQ
-  - Building
-  maxHp: 200
+  maxHp: 25
   baseDamage: 0
   cooldownTicks: 3
   goldCost: 0
@@ -39,3 +38,4 @@ MonoBehaviour:
   factionId: iron_vanguard
   icon: {fileID: 0}
   categoryTint: {r: 0.48, g: 0.4, b: 0.28, a: 1}
+  cellSprites: []

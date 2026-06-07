@@ -32,14 +32,14 @@ namespace DeadManZone.Core.Shop
             bool specialtyOpen = specialtyUnlocked ?? SpecialtyLaneUnlock.IsUnlocked(board, factionId, _registry);
 
             int offensiveSlots = OffersPerLane + modifiers.ExtraGeneralSlots;
-            RollLane(ShopLane.Offensive, offensiveSlots, modifiers, rng, offers, round);
-            RollLane(ShopLane.Defensive, OffersPerLane, modifiers, rng, offers, round);
+            RollLane(ShopLane.Offensive, offensiveSlots, modifiers, rng, offers, round, factionId);
+            RollLane(ShopLane.Defensive, OffersPerLane, modifiers, rng, offers, round, factionId);
 
             if (modifiers.GuaranteeEngineerOffer && !offers.Any(o => o.Lane == ShopLane.Defensive))
                 InjectDefensiveOffer(offers, modifiers, rng, round);
 
             if (specialtyOpen)
-                RollLane(ShopLane.Specialty, OffersPerLane, modifiers, rng, offers, round);
+                RollLane(ShopLane.Specialty, OffersPerLane, modifiers, rng, offers, round, factionId);
 
             return new ShopState
             {
@@ -86,10 +86,11 @@ namespace DeadManZone.Core.Shop
             ShopModifiers modifiers,
             int seed,
             int round,
+            string factionId,
             IReadOnlyDictionary<int, ShopOffer> fixedSlots = null)
         {
             var rng = new Rng(seed);
-            return RollLane(lane, slotCount, modifiers, rng, round, fixedSlots);
+            return RollLane(lane, slotCount, modifiers, rng, round, factionId, fixedSlots);
         }
 
         private void RollLane(
@@ -98,9 +99,10 @@ namespace DeadManZone.Core.Shop
             ShopModifiers modifiers,
             Rng rng,
             List<ShopOffer> offers,
-            int round)
+            int round,
+            string factionId)
         {
-            foreach (var rolled in RollLane(lane, slotCount, modifiers, rng, round, fixedSlots: null))
+            foreach (var rolled in RollLane(lane, slotCount, modifiers, rng, round, factionId, fixedSlots: null))
                 offers.Add(rolled);
         }
 
@@ -110,6 +112,7 @@ namespace DeadManZone.Core.Shop
             ShopModifiers modifiers,
             Rng rng,
             int round,
+            string factionId,
             IReadOnlyDictionary<int, ShopOffer> fixedSlots)
         {
             fixedSlots ??= new Dictionary<int, ShopOffer>();
@@ -134,7 +137,7 @@ namespace DeadManZone.Core.Shop
                     break;
 
                 int index = rng.NextInt(0, available.Count);
-                var piece = ShopPoolFilter.PickWeighted(available, round, rng) ?? available[index];
+                var piece = ShopPoolFilter.PickWeighted(available, round, rng, playerFactionId: factionId) ?? available[index];
                 available.RemoveAll(p => p.Id == piece.Id);
                 results.Add(CreateOffer(lane, piece, modifiers, rng, round, i));
             }

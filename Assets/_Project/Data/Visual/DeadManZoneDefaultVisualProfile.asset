@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: DeadManZoneDefaultVisualProfile
   m_EditorClassIdentifier: DeadManZone.Presentation::DeadManZone.Presentation.Visual.VisualProfileSO
   displayName: Iron Vanguard
-  uiTheme: {fileID: 11400000, guid: 39912280dda8fb14fbe012b48afeb54d, type: 2}
+  uiTheme: {fileID: 11400000, guid: a7b3c9d1e2f4056789012345678abcd1, type: 2}
   mainMenuAtmosphere: {fileID: 11400000, guid: f1a2b3c4d5e6789012345678abcdef01, type: 2}
   mainMenuLighting: {fileID: 11400000, guid: f1a2b3c4d5e6789012345678abcdef03, type: 2}
   runAtmosphere: {fileID: 11400000, guid: f1a2b3c4d5e6789012345678abcdef02, type: 2}

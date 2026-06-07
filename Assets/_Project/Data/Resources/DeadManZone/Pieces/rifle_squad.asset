@@ -19,12 +19,12 @@ MonoBehaviour:
   - {x: 0, y: 0}
   tags:
   - Infantry
-  - Assault
   - Vanguard
-  maxHp: 130
-  baseDamage: 22
+  - Combatant
+  maxHp: 10
+  baseDamage: 2
   cooldownTicks: 3
-  goldCost: 55
+  goldCost: 5
   requisitionCost: 0
   manpowerCost: 1
   shopModifiers: 0
@@ -39,3 +39,4 @@ MonoBehaviour:
   factionId: iron_vanguard
   icon: {fileID: 0}
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  cellSprites: []

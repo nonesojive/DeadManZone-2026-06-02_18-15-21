@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 96615f0466e8fcf4d86ad72b7aeef3aa
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/TickSystem/Scripts/TickSystemMonoBehaviour.cs
+  uploadId: 900364

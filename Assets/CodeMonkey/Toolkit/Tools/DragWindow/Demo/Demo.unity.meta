@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 29507c1e47824a0499853aee4519ec46
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/DragWindow/Demo/Demo.unity
+  uploadId: 900364

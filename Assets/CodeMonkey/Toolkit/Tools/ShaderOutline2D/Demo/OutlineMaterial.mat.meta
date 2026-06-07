@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c6d67b8aff8861740a32fbf31f5c6fe7
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/ShaderOutline2D/Demo/OutlineMaterial.mat
+  uploadId: 900364

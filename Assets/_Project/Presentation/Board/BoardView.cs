@@ -34,6 +34,30 @@ namespace DeadManZone.Presentation.Board
 
         public int TileCount => _tiles.Count;
 
+        public Vector2 CellSize => gridLayout != null ? gridLayout.cellSize : Vector2.one * 48f;
+
+        public Vector2 CellSpacing => gridLayout != null ? gridLayout.spacing : Vector2.one * 3f;
+
+        public GridLayoutGroup GridLayout => gridLayout;
+
+        public void SyncLayoutFromBoard()
+        {
+            if (gridLayout == null)
+                return;
+
+            SyncPiecesOverlay();
+            Canvas.ForceUpdateCanvases();
+            GetComponent<BoardZoneStripLayout>()?.ApplyLayout();
+
+            if (_boardState != null)
+                RefreshOccupancyVisuals();
+        }
+
+        private void Awake()
+        {
+            BoardZoneStripBootstrap.Ensure(this);
+        }
+
         public event Action<GridCoord, PlacementResult> TilePlacementAttempted;
 
         public void BuildBoard(BoardLayout layout)
@@ -82,6 +106,7 @@ namespace DeadManZone.Presentation.Board
 
             EnsurePiecesOverlay();
             Canvas.ForceUpdateCanvases();
+            GetComponent<BoardZoneStripLayout>()?.ApplyLayout();
         }
 
         public bool TryPlaceFromReserves(string instanceId, GridCoord anchor, PieceRotation rotation)
@@ -151,8 +176,6 @@ namespace DeadManZone.Presentation.Board
                     record.InstanceId,
                     rotation);
             }
-
-            RefreshOccupancyVisuals();
         }
 
         public void RefreshFromRunManager()
@@ -355,7 +378,8 @@ namespace DeadManZone.Presentation.Board
                 definition,
                 source,
                 anchor,
-                rotation);
+                rotation,
+                ResolveCellCenterInOverlay);
             if (shapeVisual != null)
                 _shapeVisualsByInstance[instanceId] = shapeVisual;
         }
@@ -423,6 +447,10 @@ namespace DeadManZone.Presentation.Board
             if (_piecesOverlay == null || gridLayout == null)
                 EnsurePiecesOverlay();
 
+            SyncPiecesOverlay();
+            Canvas.ForceUpdateCanvases();
+            if (gridLayout != null)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(gridLayout.GetComponent<RectTransform>());
             Canvas.ForceUpdateCanvases();
 
             foreach (var piece in _boardState.Pieces)
@@ -461,17 +489,26 @@ namespace DeadManZone.Presentation.Board
 
             RemoveStrayOverlayChildrenFromGrid();
 
-            if (_piecesOverlay != null)
+            if (_piecesOverlay == null)
+            {
+                var gridRect = gridLayout.GetComponent<RectTransform>();
+                var parent = gridRect.parent;
+
+                var overlayGo = new GameObject("PiecesOverlay", typeof(RectTransform));
+                overlayGo.transform.SetParent(parent, false);
+                overlayGo.transform.SetSiblingIndex(gridRect.GetSiblingIndex() + 1);
+                _piecesOverlay = overlayGo.GetComponent<RectTransform>();
+            }
+
+            SyncPiecesOverlay();
+        }
+
+        private void SyncPiecesOverlay()
+        {
+            if (_piecesOverlay == null || gridLayout == null)
                 return;
 
             var gridRect = gridLayout.GetComponent<RectTransform>();
-            var parent = gridRect.parent;
-
-            var overlayGo = new GameObject("PiecesOverlay", typeof(RectTransform));
-            overlayGo.transform.SetParent(parent, false);
-            overlayGo.transform.SetSiblingIndex(gridRect.GetSiblingIndex() + 1);
-
-            _piecesOverlay = overlayGo.GetComponent<RectTransform>();
             _piecesOverlay.anchorMin = gridRect.anchorMin;
             _piecesOverlay.anchorMax = gridRect.anchorMax;
             _piecesOverlay.pivot = gridRect.pivot;
@@ -479,6 +516,19 @@ namespace DeadManZone.Presentation.Board
             _piecesOverlay.sizeDelta = gridRect.sizeDelta;
             _piecesOverlay.offsetMin = gridRect.offsetMin;
             _piecesOverlay.offsetMax = gridRect.offsetMax;
+        }
+
+        private Vector2? ResolveCellCenterInOverlay(GridCoord cell)
+        {
+            if (_piecesOverlay == null || !_tiles.TryGetValue(cell, out var tileView))
+                return null;
+
+            var tileRect = tileView.GetComponent<RectTransform>();
+            if (tileRect == null)
+                return null;
+
+            var world = tileRect.TransformPoint(tileRect.rect.center);
+            return _piecesOverlay.InverseTransformPoint(world);
         }
 
         private void RemoveStrayOverlayChildrenFromGrid()

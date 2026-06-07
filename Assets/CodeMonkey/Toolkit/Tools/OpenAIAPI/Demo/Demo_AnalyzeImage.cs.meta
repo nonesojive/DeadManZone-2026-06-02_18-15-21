@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 38463d6981bd9c4488f8c64544356040
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/OpenAIAPI/Demo/Demo_AnalyzeImage.cs
+  uploadId: 900364

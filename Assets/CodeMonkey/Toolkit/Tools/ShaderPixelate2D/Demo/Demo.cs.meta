@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: b2008d866323e934b9ca6713f6c636f6
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/ShaderPixelate2D/Demo/Demo.cs
+  uploadId: 900364

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 25fe3f11c9d59504b8a48a92208b0bbe
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/ShaderDissolve2D/Demo/Demo.unity
+  uploadId: 900364

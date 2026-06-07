@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: e89f0d4675839e04795e407d39fd660b
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/SceneLoadingSystem/Scripts/SceneLoaderCallback.cs
+  uploadId: 900364

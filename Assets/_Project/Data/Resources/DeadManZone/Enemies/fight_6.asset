@@ -13,18 +13,16 @@ MonoBehaviour:
   m_Name: fight_6
   m_EditorClassIdentifier: 
   fightNumber: 6
-  displayName: Vanguard Line
-  previewTag: Infantry
+  displayName: Ash Phantoms
+  previewTag: Stealth
+  enemyFactionId: ash_wraiths
   placements:
-  - piece: {fileID: 11400000, guid: a09195287ae98b44490baf1a5d3e1a68, type: 2}
-    anchor: {x: 0, y: 4}
-    instanceId: enemy_hq
-  - piece: {fileID: 11400000, guid: 8937bdc205c84fd4caaf1320ece884bd, type: 2}
-    anchor: {x: 5, y: 4}
+  - piece: {fileID: 11400000, guid: 21b91e5e648d6184b84cc8bc0b3727cd, type: 2}
+    anchor: {x: 6, y: 4}
     instanceId: 
-  - piece: {fileID: 11400000, guid: 8937bdc205c84fd4caaf1320ece884bd, type: 2}
+  - piece: {fileID: 11400000, guid: 21b91e5e648d6184b84cc8bc0b3727cd, type: 2}
     anchor: {x: 4, y: 4}
     instanceId: 
-  - piece: {fileID: 11400000, guid: 5e91eecb2707bbf49ab99e364754925e, type: 2}
-    anchor: {x: 5, y: 2}
+  - piece: {fileID: 11400000, guid: 2bac63a69be7d37419e8dfa995588d3e, type: 2}
+    anchor: {x: 8, y: 4}
     instanceId: 

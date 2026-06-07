@@ -38,8 +38,6 @@ namespace DeadManZone.Core.Combat
         public bool IsPlayerHqAlive =>
             _playerCombatants.Any(c => c.HasTag(GameTags.Hq) && c.IsAlive);
 
-        public void SetPlayerTactic(TacticType tactic) => _tactics.PlayerTactic = tactic;
-
         private TickCombatRun(
             BoardState playerBoard,
             BoardState enemyBoard,
@@ -53,8 +51,11 @@ namespace DeadManZone.Core.Combat
             Authority = authority;
             _playerCombatants = SpawnCombatants(playerBoard, CombatSide.Player, 0);
             _enemyCombatants = SpawnCombatants(enemyBoard, CombatSide.Enemy, _layout.EnemyOriginX);
-            ApplyAdjacencyBonuses(playerBoard, _playerCombatants);
-            ApplyAdjacencyBonuses(enemyBoard, _enemyCombatants);
+            SynergyEngine.ApplyToCombatants(playerBoard, _playerCombatants);
+            SynergyEngine.ApplyToCombatants(enemyBoard, _enemyCombatants);
+            CriticalMassRules.ApplyToCombatants(playerBoard, _playerCombatants);
+            CriticalMassRules.ApplyToCombatants(enemyBoard, _enemyCombatants);
+            ApplyTacticDamageBuffs();
             RebuildOccupied();
         }
 
@@ -431,17 +432,20 @@ namespace DeadManZone.Core.Combat
                 .ToList();
         }
 
-        private static void ApplyAdjacencyBonuses(BoardState board, IList<CombatantState> combatants)
+        private void ApplyTacticDamageBuffs()
         {
-            foreach (var combatant in combatants)
-            {
-                foreach (var adjacentId in board.GetAdjacentInstanceIds(combatant.InstanceId))
-                {
-                    var adjacent = board.Pieces.First(p => p.InstanceId == adjacentId);
-                    if (adjacent.Definition.Tags.Contains("Supply"))
-                        combatant.DamageBonus += 1;
-                }
-            }
+            _tactics.PlayerDamageBuff = TacticEffects.GetDamageBuff(_tactics.PlayerTactic);
+            _tactics.EnemyDamageBuff = TacticEffects.GetDamageBuff(_tactics.EnemyTactic);
+            TacticEffects.ApplyProtectSupportBuffs(
+                _tactics.PlayerTactic,
+                _playerCombatants,
+                _playerBoard.Layout);
+        }
+
+        public void SetPlayerTactic(TacticType tactic)
+        {
+            _tactics.PlayerTactic = tactic;
+            ApplyTacticDamageBuffs();
         }
 
         private static IReadOnlyList<PhaseCommand> FilterCommands(

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: edef3c00d9153ae429c91a7fcc5dcfb8
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/TickSystem/Prefabs/TickSystem.prefab
+  uploadId: 900364

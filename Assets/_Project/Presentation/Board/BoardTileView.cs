@@ -50,14 +50,14 @@ namespace DeadManZone.Presentation.Board
         {
             _baseColor = color;
             if (baseImage != null)
-                baseImage.color = color;
+                baseImage.color = UiThemeProvider.Current.GetTileDisplayColor(color);
         }
 
         public void SetOverlay(Color baseColor, bool isSpecial, bool isInvalidPlacement)
         {
             _baseColor = baseColor;
             if (baseImage != null)
-                baseImage.color = baseColor;
+                baseImage.color = UiThemeProvider.Current.GetTileDisplayColor(baseColor);
 
             var theme = UiThemeProvider.Current;
             if (specialOverlay != null)

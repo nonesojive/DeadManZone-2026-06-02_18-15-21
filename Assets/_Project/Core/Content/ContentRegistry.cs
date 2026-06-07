@@ -27,6 +27,17 @@ namespace DeadManZone.Core.Content
 
         public PieceDefinition GetById(string pieceId) => _piecesById[pieceId];
 
+        public bool TryGetById(string pieceId, out PieceDefinition definition)
+        {
+            if (string.IsNullOrEmpty(pieceId))
+            {
+                definition = null;
+                return false;
+            }
+
+            return _piecesById.TryGetValue(pieceId, out definition);
+        }
+
         public IReadOnlyList<PieceDefinition> GetPool(ShopLane lane) =>
             _pools.TryGetValue(lane, out var pool) ? pool : System.Array.Empty<PieceDefinition>();
 

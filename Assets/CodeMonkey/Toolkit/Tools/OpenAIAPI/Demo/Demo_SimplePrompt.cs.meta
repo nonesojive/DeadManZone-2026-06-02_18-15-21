@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 346151ad85fa6104799191fef3d2a38e
+AssetOrigin:
+  serializedVersion: 1
+  productId: 309282
+  packageName: Code Monkey Toolkit
+  packageVersion: 1.0.4
+  assetPath: Assets/CodeMonkey/Toolkit/Tools/OpenAIAPI/Demo/Demo_SimplePrompt.cs
+  uploadId: 900364

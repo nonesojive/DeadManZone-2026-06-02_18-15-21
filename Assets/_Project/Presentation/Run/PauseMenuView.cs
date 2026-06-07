@@ -64,7 +64,11 @@ namespace DeadManZone.Presentation.Run
 
             var card = mainPanel != null ? mainPanel.GetComponent<Image>() : null;
             if (card != null)
-                UiThemeApplicator.ApplyCard(card, theme);
+                UiThemeApplicator.ApplyModalFrame(card, theme);
+
+            var optionsCard = optionsPanel != null ? optionsPanel.GetComponent<Image>() : null;
+            if (optionsCard != null)
+                UiThemeApplicator.ApplyModalFrame(optionsCard, theme);
 
             UiThemeApplicator.ApplyAccentButton(resumeButton, theme);
             UiThemeApplicator.ApplyButton(optionsButton, theme);

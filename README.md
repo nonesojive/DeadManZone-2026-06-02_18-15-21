@@ -1,68 +1,73 @@
 # DeadManZone
 
-Unity 6 vertical slice: Iron Vanguard faction, zoned board loadout, three-lane shop, three-phase deterministic combat, and mid-run save/resume.
+Unity 6 demo: 10-fight gauntlet, 3 playable factions (Ironmarch Vanguard, Dust Scourge, Cartel of Echoes), neutral + 2 enemy faction variety, tick combat with tactics, synergies, salvage, achievements, and local leaderboards.
 
 ## Prerequisites
 
-- Unity 6 (project uses URP-style UI; Input System set to **Both** in Player Settings if prompted)
-- Generated content assets (first-time setup below)
+- Unity 6 (URP-style UI; Input System set to **Both** if prompted)
+- Generated demo content (first-time setup below)
 
 ## First-time setup
 
 1. Open the project in Unity.
-2. Run **DeadManZone → Create Default UI Theme** (once; creates `UiTheme` under Resources).
-3. Run **DeadManZone → Generate Vertical Slice Content** (creates pieces, enemies, and `ContentDatabase` under `Assets/_Project/Data/Resources/`).
-4. Run **DeadManZone → Setup Main Menu & Run Scenes** (builds `MainMenu` and `Run` scenes with UI wiring).
-5. Optional: **DeadManZone → Set Play Mode Start Scene to MainMenu** so Play always opens the main menu.
+2. Run **DeadManZone → Generate Demo Content (5 Factions)** (pieces, factions, enemies, ContentDatabase).
+3. Run **DeadManZone → Create Default UI Theme** (once).
+4. Run **DeadManZone → Setup Main Menu & Run Scenes**.
+5. Optional: **DeadManZone → Set Play Mode Start Scene to MainMenu**.
 
-## Visual theme
+Legacy vertical slice only: **DeadManZone → Generate Vertical Slice Content**.
 
-UI colors and board zone tints live in [`UiThemeSO`](Assets/_Project/Presentation/Visual/UiThemeSO.cs) (`Assets/_Project/Data/Resources/DeadManZone/UiTheme.asset`). Tune the grimdark palette (steel panels, brass accents, rear/support/front zone colors) in the Inspector, then re-run scene setup if you change prefab wiring. Piece category colors are on each `PieceDefinitionSO` (`categoryTint`); optional `icon` sprites can be assigned per piece.
+## Playable factions
 
-## Play the slice
+| Faction | Unlock |
+|---------|--------|
+| Ironmarch Vanguard | Default |
+| Dust Scourge | After first campaign win |
+| Cartel of Echoes | After first campaign win |
 
-1. Press Play (from Main Menu scene recommended).
-2. **New Run** → Iron Vanguard.
-3. Drag shop offers to **Reserves** (2×9 grid) or the main board; use **Lock** and lane **Reroll** as needed. Press **R** / **Q** while dragging to rotate.
-4. Drag pieces between board and reserves; drop on **Sell** to refund.
-5. **Begin Fight** → issue between-phase commands → advance combat.
-6. **MENU** (top-right) → **Main Menu** or **Exit**; the run auto-saves. **Continue** restores the run.
+See [Demo guide](docs/demo-guide.md) for enemy factions, systems, and known issues.
 
-**Save schema v3:** runs use spatial reserves instead of the old bench list. Saves from before this layout update are invalid—start a **New Run** after updating.
+## Play the demo
+
+1. Press Play (Main Menu scene recommended).
+2. **New Run** → choose a playable faction.
+3. Build phase: drag shop offers to board/reserves; **R** / **Q** to rotate while dragging; sell for salvage refunds.
+4. **Begin Fight** → issue tactics/abilities between combat segments.
+5. Clear **10 fights** to win. **MENU** saves and exits mid-run.
+
+## Meta features
+
+- **Achievements** — 10 demo achievements (local save; Steam stub in `SteamIntegration.cs`)
+- **Leaderboard** — top scores stored locally under `%LOCALAPPDATA%/DeadManZone/`
+- **Emergency Draft** — once per run when manpower gate blocks Begin Fight
 
 ## Running tests
 
-### Unity Test Runner (recommended)
+### Unity Test Runner
 
 1. **Window → General → Test Runner**
-2. **Edit Mode** → **Run All** (core logic, shop, combat determinism, save round-trips)
-3. **Play Mode** → **Run All** (UI smoke tests, save in play mode)
+2. **Edit Mode → Run All**
+3. **Play Mode → Run All**
 
-Regression coverage for the vertical slice lives in `VerticalSliceRegressionTests` (fixed-seed combat for all five enemy templates, save/load for every `RunPhase`).
+New coverage: `SynergyEngineTests`, `CriticalMassRulesTests`, `SalvageCalculatorTests`, `TacticEffectsTests`, `MetaProgressionServiceTests`.
 
-### Command line (Unity batch)
-
-Adjust the Unity editor path for your install:
+### Command line
 
 ```bash
-Unity.exe -batchmode -nographics -projectPath "<path-to-DeadManZone>" -runTests -testPlatform editmode -testResults "<path-to>/TestResults-EditMode.xml" -quit
-```
-
-```bash
-Unity.exe -batchmode -nographics -projectPath "<path-to-DeadManZone>" -runTests -testPlatform playmode -testResults "<path-to>/TestResults-PlayMode.xml" -quit
+Unity.exe -batchmode -nographics -projectPath "<path-to-DeadManZone>" -runTests -testPlatform editmode -testResults "<path>/TestResults-EditMode.xml" -quit
 ```
 
 ## Project layout
 
 | Path | Purpose |
 |------|---------|
-| `Assets/_Project/Core/` | Board, shop, combat simulation (deterministic, Unity-free) |
-| `Assets/_Project/Game/` | `RunOrchestrator`, `RunManager`, save/load |
-| `Assets/_Project/Presentation/` | UI, drag-drop, combat director |
+| `Assets/_Project/Core/` | Board, shop, combat, meta (deterministic, Unity-free) |
+| `Assets/_Project/Game/` | RunOrchestrator, RunManager, Steam stub |
+| `Assets/_Project/Presentation/` | UI, drag-drop, combat director, VFX |
 | `Assets/_Project/Data/` | ScriptableObjects and content pipeline |
-| `docs/superpowers/` | Design spec and implementation plan |
+| `docs/` | Design specs and demo guide |
 
 ## Design docs
 
 - [Autobattler design spec](docs/superpowers/specs/2026-05-31-deadmanzone-autobattler-design.md)
-- [Vertical slice implementation plan](docs/superpowers/plans/2026-05-31-deadmanzone-vertical-slice.md)
+- [Demo guide](docs/demo-guide.md)

@@ -23,8 +23,8 @@ namespace DeadManZone.Presentation.Visual
             RenderSettings.fogColor = fogColor;
             RenderSettings.fogMode = fogMode;
             RenderSettings.fogDensity = fogDensity;
-            RenderSettings.linearFogStart = linearFogStart;
-            RenderSettings.linearFogEnd = linearFogEnd;
+            RenderSettings.fogStartDistance = linearFogStart;
+            RenderSettings.fogEndDistance = linearFogEnd;
             RenderSettings.ambientMode = ambientMode;
             RenderSettings.ambientSkyColor = ambientSkyColor;
             RenderSettings.ambientEquatorColor = ambientEquatorColor;
@@ -37,8 +37,8 @@ namespace DeadManZone.Presentation.Visual
             fogColor = RenderSettings.fogColor;
             fogMode = RenderSettings.fogMode;
             fogDensity = RenderSettings.fogDensity;
-            linearFogStart = RenderSettings.linearFogStart;
-            linearFogEnd = RenderSettings.linearFogEnd;
+            linearFogStart = RenderSettings.fogStartDistance;
+            linearFogEnd = RenderSettings.fogEndDistance;
             ambientMode = RenderSettings.ambientMode;
             ambientSkyColor = RenderSettings.ambientSkyColor;
             ambientEquatorColor = RenderSettings.ambientEquatorColor;

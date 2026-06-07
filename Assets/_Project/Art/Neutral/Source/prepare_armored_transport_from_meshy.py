@@ -20,6 +20,8 @@ OUTPUT_ICON = os.path.join(ART_NEUTRAL, "Renders", "Icons", "armored_transport_i
 # Target ~8–12k tris for neutral vehicles (art spec)
 TARGET_TRIS = 11_000
 MESH_OBJECT_NAME = "mesh_node"
+# Front-facing 3/4: camera opposite default Meshy export orientation.
+ICON_CAMERA_AZIMUTH_DEG = 225.0
 
 
 def clear_scene():
@@ -51,7 +53,6 @@ def load_tank_mesh():
 
     bpy.ops.object.origin_set(type="ORIGIN_GEOMETRY", center="BOUNDS")
     obj.location = (0.0, 0.0, 0.0)
-
     max_dim = max(obj.dimensions)
     if max_dim > 0:
         scale = 1.8 / max_dim
@@ -114,7 +115,7 @@ def setup_render_scene():
     cam.data.ortho_scale = 3.2
 
     elev = math.radians(35)
-    az = math.radians(45)
+    az = math.radians(ICON_CAMERA_AZIMUTH_DEG)
     dist = 8.0
     target = Vector((0.0, 0.0, 0.5))
     cam.location = Vector(
