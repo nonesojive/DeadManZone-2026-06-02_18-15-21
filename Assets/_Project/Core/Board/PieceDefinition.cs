@@ -8,6 +8,11 @@ namespace DeadManZone.Core.Board
         public string DisplayName { get; init; }
         public PieceCategory Category { get; init; }
         public PieceShape Shape { get; init; }
+        public string Primary { get; init; }
+        public string CombatRole { get; init; }
+        public string SystemTag { get; init; }
+        public IReadOnlyList<string> SynergyTags { get; init; } = System.Array.Empty<string>();
+        public IReadOnlyList<string> AbilityTags { get; init; } = System.Array.Empty<string>();
         public IReadOnlyList<string> Tags { get; init; } = System.Array.Empty<string>();
         public int MaxHp { get; init; }
         public int BaseDamage { get; init; }

@@ -1,6 +1,7 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Shop;
+using DeadManZone.Core.Tags;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,6 +15,11 @@ namespace DeadManZone.Data
         public PieceCategory category;
         public Vector2Int[] shapeCells = { Vector2Int.zero };
         public string[] tags;
+        public string primary;
+        public string combatRole;
+        public string systemTag;
+        public string[] synergyTags = System.Array.Empty<string>();
+        public string[] abilityTags = System.Array.Empty<string>();
         public int maxHp = 10;
         public int baseDamage;
         public int cooldownTicks = 3;
@@ -79,7 +85,20 @@ namespace DeadManZone.Data
                 DisplayName = displayName,
                 Category = category,
                 Shape = new PieceShape(cells),
-                Tags = NormalizeTags(tags, category, baseDamage),
+                Primary = primary,
+                CombatRole = combatRole,
+                SystemTag = systemTag,
+                SynergyTags = synergyTags ?? System.Array.Empty<string>(),
+                AbilityTags = abilityTags ?? System.Array.Empty<string>(),
+                Tags = PieceTagQueries.BuildLegacyTags(
+                    category,
+                    baseDamage,
+                    primary,
+                    combatRole,
+                    systemTag,
+                    synergyTags ?? System.Array.Empty<string>(),
+                    abilityTags ?? System.Array.Empty<string>(),
+                    tags ?? System.Array.Empty<string>()),
                 MaxHp = maxHp,
                 BaseDamage = baseDamage,
                 CooldownTicks = cooldownTicks,
@@ -96,23 +115,6 @@ namespace DeadManZone.Data
                 GrantedAbility = grantedAbility,
                 FactionId = factionId
             };
-        }
-
-        private static string[] NormalizeTags(string[] tags, PieceCategory category, int baseDamage)
-        {
-            var list = new List<string>(tags ?? System.Array.Empty<string>());
-            if (category is PieceCategory.Unit or PieceCategory.Hybrid)
-            {
-                if (!list.Contains(GameTags.Combatant))
-                    list.Add(GameTags.Combatant);
-            }
-            else if (category == PieceCategory.Building && baseDamage > 0)
-            {
-                if (!list.Contains(GameTags.Combatant))
-                    list.Add(GameTags.Combatant);
-            }
-
-            return list.ToArray();
         }
     }
 }
