@@ -32,7 +32,7 @@ namespace DeadManZone.Core.Board
                 if (_occupied.Contains(cell))
                     return false;
 
-                if (!IsCategoryAllowed(definition.Category, Layout.GetZone(cell)))
+                if (!IsZoneAllowedForDefinition(definition, Layout.GetZone(cell)))
                     return false;
             }
 
@@ -55,7 +55,7 @@ namespace DeadManZone.Core.Board
                 if (_occupied.Contains(cell))
                     return new PlacementResult { Success = false, Reason = "Cell occupied" };
 
-                if (!IsCategoryAllowed(definition.Category, Layout.GetZone(cell)))
+                if (!IsZoneAllowedForDefinition(definition, Layout.GetZone(cell)))
                     return new PlacementResult { Success = false, Reason = "Invalid zone for category" };
             }
 
@@ -127,6 +127,17 @@ namespace DeadManZone.Core.Board
 
         private static bool IsImmovableHq(PieceDefinition definition) =>
             definition?.Tags?.Contains(GameTags.Hq) == true;
+
+        private static bool IsZoneAllowedForDefinition(PieceDefinition definition, ZoneType zone)
+        {
+            if (definition == null)
+                return false;
+
+            if (!string.IsNullOrWhiteSpace(definition.Primary))
+                return PrimaryZoneRules.IsZoneAllowed(definition.Primary, zone);
+
+            return IsCategoryAllowed(definition.Category, zone);
+        }
 
         private static bool IsCategoryAllowed(PieceCategory category, ZoneType zone) =>
             zone switch
