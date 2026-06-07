@@ -18,8 +18,16 @@ MonoBehaviour:
   shapeCells:
   - {x: 0, y: 0}
   tags:
-  - Medic
+  - Infantry
+  - Support
   - Combatant
+  - Medic
+  primary: infantry
+  combatRole: support
+  systemTag: combatant
+  synergyTags:
+  - medic
+  abilityTags: []
   maxHp: 6
   baseDamage: 0
   cooldownTicks: 3

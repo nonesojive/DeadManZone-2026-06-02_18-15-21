@@ -19,8 +19,16 @@ MonoBehaviour:
   - {x: 0, y: 0}
   - {x: 1, y: 0}
   tags:
+  - Vehicle
   - Artillery
+  - Combatant
   - Echo
+  primary: vehicle
+  combatRole: artillery
+  systemTag: combatant
+  synergyTags:
+  - echo
+  abilityTags: []
   maxHp: 13
   baseDamage: 5
   cooldownTicks: 3

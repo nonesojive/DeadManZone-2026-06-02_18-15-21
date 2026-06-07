@@ -19,8 +19,15 @@ MonoBehaviour:
   - {x: 0, y: 0}
   tags:
   - Infantry
-  - Vanguard
+  - Assault
   - Combatant
+  - Vanguard
+  primary: infantry
+  combatRole: assault
+  systemTag: combatant
+  synergyTags:
+  - vanguard
+  abilityTags: []
   maxHp: 10
   baseDamage: 2
   cooldownTicks: 3

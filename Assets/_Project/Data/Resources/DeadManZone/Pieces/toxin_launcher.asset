@@ -18,8 +18,16 @@ MonoBehaviour:
   shapeCells:
   - {x: 0, y: 0}
   tags:
-  - Gas
+  - Vehicle
   - Artillery
+  - Combatant
+  - Gas
+  primary: vehicle
+  combatRole: artillery
+  systemTag: combatant
+  synergyTags:
+  - gas
+  abilityTags: []
   maxHp: 10
   baseDamage: 4
   cooldownTicks: 3

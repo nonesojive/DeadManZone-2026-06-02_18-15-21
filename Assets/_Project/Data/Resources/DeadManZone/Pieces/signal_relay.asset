@@ -18,8 +18,18 @@ MonoBehaviour:
   shapeCells:
   - {x: 0, y: 0}
   tags:
+  - Building
+  - Utility
+  - Non-Combatant
   - Command
   - Echo
+  primary: building
+  combatRole: utility
+  systemTag: noncombatant
+  synergyTags:
+  - command
+  - echo
+  abilityTags: []
   maxHp: 11
   baseDamage: 0
   cooldownTicks: 3

@@ -19,8 +19,15 @@ MonoBehaviour:
   - {x: 0, y: 0}
   tags:
   - Infantry
-  - Gas
+  - Assault
   - Combatant
+  - Gas
+  primary: infantry
+  combatRole: assault
+  systemTag: combatant
+  synergyTags:
+  - gas
+  abilityTags: []
   maxHp: 9
   baseDamage: 3
   cooldownTicks: 2

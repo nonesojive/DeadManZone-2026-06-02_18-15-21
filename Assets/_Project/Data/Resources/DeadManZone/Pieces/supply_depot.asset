@@ -18,7 +18,16 @@ MonoBehaviour:
   shapeCells:
   - {x: 0, y: 0}
   tags:
+  - Building
+  - Utility
+  - Non-Combatant
   - Supply
+  primary: building
+  combatRole: utility
+  systemTag: noncombatant
+  synergyTags:
+  - supply
+  abilityTags: []
   maxHp: 15
   baseDamage: 0
   cooldownTicks: 3

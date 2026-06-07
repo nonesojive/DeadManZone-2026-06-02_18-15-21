@@ -19,8 +19,14 @@ MonoBehaviour:
   - {x: 0, y: 0}
   - {x: 0, y: 1}
   tags:
+  - Building
   - Artillery
   - Combatant
+  primary: building
+  combatRole: artillery
+  systemTag: combatant
+  synergyTags: []
+  abilityTags: []
   maxHp: 18
   baseDamage: 3
   cooldownTicks: 3

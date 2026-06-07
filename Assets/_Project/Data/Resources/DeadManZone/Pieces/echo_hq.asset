@@ -19,7 +19,14 @@ MonoBehaviour:
   - {x: 0, y: 0}
   - {x: 1, y: 0}
   tags:
+  - Building
+  - Headquarters
   - HQ
+  primary: building
+  combatRole: headquarters
+  systemTag: hq
+  synergyTags: []
+  abilityTags: []
   maxHp: 20
   baseDamage: 0
   cooldownTicks: 3

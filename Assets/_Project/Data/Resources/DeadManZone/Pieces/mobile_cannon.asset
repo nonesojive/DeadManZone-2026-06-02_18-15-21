@@ -19,8 +19,14 @@ MonoBehaviour:
   - {x: 0, y: 0}
   - {x: 1, y: 0}
   tags:
-  - Artillery
   - Vehicle
+  - Artillery
+  - Combatant
+  primary: vehicle
+  combatRole: artillery
+  systemTag: combatant
+  synergyTags: []
+  abilityTags: []
   maxHp: 14
   baseDamage: 4
   cooldownTicks: 3

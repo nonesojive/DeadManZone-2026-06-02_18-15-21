@@ -22,7 +22,13 @@ MonoBehaviour:
   - {x: 1, y: 1}
   tags:
   - Vehicle
+  - Tank
   - Combatant
+  primary: vehicle
+  combatRole: tank
+  systemTag: combatant
+  synergyTags: []
+  abilityTags: []
   maxHp: 28
   baseDamage: 5
   cooldownTicks: 3

@@ -1,6 +1,7 @@
 using System.IO;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Shop;
+using DeadManZone.Core.Tags;
 using UnityEditor;
 using UnityEngine;
 
@@ -35,7 +36,10 @@ namespace DeadManZone.Data.Editor
             PieceCategory category,
             ShopLane lane,
             Vector2Int[] shape,
-            string[] tags,
+            string primary,
+            string combatRole,
+            string systemTag,
+            string[] synergyTags,
             string factionId = "neutral",
             int maxHp = 10,
             int baseDamage = 0,
@@ -54,7 +58,18 @@ namespace DeadManZone.Data.Editor
             asset.category = category;
             asset.shopLane = lane;
             asset.shapeCells = shape;
-            asset.tags = tags;
+            asset.primary = primary;
+            asset.combatRole = combatRole;
+            asset.systemTag = systemTag;
+            asset.synergyTags = synergyTags ?? System.Array.Empty<string>();
+            asset.tags = PieceTagQueries.BuildLegacyTags(
+                category,
+                baseDamage,
+                primary,
+                combatRole,
+                systemTag,
+                asset.synergyTags,
+                asset.abilityTags ?? System.Array.Empty<string>());
             asset.factionId = factionId;
             asset.maxHp = maxHp;
             asset.baseDamage = baseDamage;

@@ -21,9 +21,18 @@ MonoBehaviour:
   - {x: 0, y: 1}
   - {x: 1, y: 1}
   tags:
-  - Mechanical
-  - Vanguard
+  - Vehicle
+  - Tank
   - Combatant
+  - Vanguard
+  - Mechanical
+  primary: vehicle
+  combatRole: tank
+  systemTag: combatant
+  synergyTags:
+  - vanguard
+  - mechanical
+  abilityTags: []
   maxHp: 25
   baseDamage: 4
   cooldownTicks: 5

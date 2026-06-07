@@ -19,7 +19,13 @@ MonoBehaviour:
   - {x: 0, y: 0}
   tags:
   - Infantry
+  - Artillery
   - Combatant
+  primary: infantry
+  combatRole: artillery
+  systemTag: combatant
+  synergyTags: []
+  abilityTags: []
   maxHp: 7
   baseDamage: 3
   cooldownTicks: 4
