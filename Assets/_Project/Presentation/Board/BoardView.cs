@@ -23,6 +23,7 @@ namespace DeadManZone.Presentation.Board
         [SerializeField] private BoardTileView tileViewTemplate;
 
         [SerializeField] private UiThemeSO theme;
+        [SerializeField] private PieceHoverCardController pieceHoverCardController;
 
         private readonly Dictionary<GridCoord, BoardTileView> _tiles = new();
         private readonly Dictionary<string, PieceShapeVisual> _shapeVisualsByInstance = new();
@@ -56,6 +57,7 @@ namespace DeadManZone.Presentation.Board
         private void Awake()
         {
             BoardZoneStripBootstrap.Ensure(this);
+            ResolvePieceHoverCardController();
         }
 
         public event Action<GridCoord, PlacementResult> TilePlacementAttempted;
@@ -452,6 +454,7 @@ namespace DeadManZone.Presentation.Board
             if (gridLayout != null)
                 LayoutRebuilder.ForceRebuildLayoutImmediate(gridLayout.GetComponent<RectTransform>());
             Canvas.ForceUpdateCanvases();
+            var hoverController = ResolvePieceHoverCardController();
 
             foreach (var piece in _boardState.Pieces)
             {
@@ -472,7 +475,8 @@ namespace DeadManZone.Presentation.Board
                     piece.Definition.Id,
                     piece.Anchor,
                     piece.Definition,
-                    piece.Rotation);
+                    piece.Rotation,
+                    hoverController);
 
                 CreateShapeVisual(
                     piece.InstanceId,
@@ -546,6 +550,8 @@ namespace DeadManZone.Presentation.Board
 
         private void ClearPieceChips()
         {
+            pieceHoverCardController?.Hide();
+
             foreach (var visual in _shapeVisualsByInstance.Values)
             {
                 if (visual != null)
@@ -576,6 +582,21 @@ namespace DeadManZone.Presentation.Board
         }
 
         private UiThemeSO Theme => theme != null ? theme : UiThemeProvider.Current;
+
+        private PieceHoverCardController ResolvePieceHoverCardController()
+        {
+            if (pieceHoverCardController != null)
+                return pieceHoverCardController;
+
+            pieceHoverCardController = GetComponent<PieceHoverCardController>();
+            if (pieceHoverCardController == null)
+                pieceHoverCardController = GetComponentInParent<PieceHoverCardController>();
+            if (pieceHoverCardController == null)
+                pieceHoverCardController = FindFirstObjectByType<PieceHoverCardController>();
+            if (pieceHoverCardController == null)
+                pieceHoverCardController = gameObject.AddComponent<PieceHoverCardController>();
+            return pieceHoverCardController;
+        }
 
         private Color GetZoneColor(ZoneType zone) => Theme.GetZoneColor(zone);
 
