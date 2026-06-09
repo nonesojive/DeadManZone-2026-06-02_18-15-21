@@ -65,8 +65,6 @@ namespace DeadManZone.Core.Combat
             Requisition = requisition;
             _playerCombatants = SpawnCombatants(playerBoard, CombatSide.Player);
             _enemyCombatants = SpawnCombatants(enemyBoard, CombatSide.Enemy);
-            ApplyAdjacencyBonuses(playerBoard, _playerCombatants);
-            ApplyAdjacencyBonuses(enemyBoard, _enemyCombatants);
         }
 
         public static PhasedCombatRun Start(
@@ -278,18 +276,6 @@ namespace DeadManZone.Core.Combat
             return System.Math.Max(1, (int)(raw * damageScale * assaultMultiplier));
         }
 
-        private static void ApplyAdjacencyBonuses(BoardState board, IList<CombatantState> combatants)
-        {
-            foreach (var combatant in combatants)
-            {
-                foreach (var adjacentId in board.GetAdjacentInstanceIds(combatant.InstanceId))
-                {
-                    var adjacent = board.Pieces.First(p => p.InstanceId == adjacentId);
-                    if (PieceTagQueries.HasTag(adjacent.Definition, GameTagIds.Supply))
-                        combatant.DamageBonus += 1;
-                }
-            }
-        }
 
         private static List<CombatantState> SpawnCombatants(BoardState board, CombatSide side) =>
             board.Pieces

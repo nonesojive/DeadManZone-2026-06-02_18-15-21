@@ -41,16 +41,33 @@ namespace DeadManZone.Core.Combat
             ArmorType armor,
             PieceDefinition defender)
         {
-            bool isBuilding = PieceTagQueries.HasTag(defender, GameTagIds.Building)
-                || PieceTagQueries.HasTag(defender, GameTagIds.Structure);
+            var profile = AttackTypeProfileCatalog.Get(attackType);
+            if (profile == null)
+                return 1f;
 
-            return attackType switch
-            {
-                AttackType.Ballistic when armor == ArmorType.Light => 1.25f,
-                AttackType.Explosive when armor is ArmorType.Light or ArmorType.Medium || isBuilding => 1.30f,
-                AttackType.Piercing when armor == ArmorType.Heavy => 1.35f,
-                _ => 1.0f
-            };
+            bool isStructure = PieceTagQueries.HasPrimaryTag(defender, GameTagIds.Building)
+                || PieceTagQueries.HasPrimaryTag(defender, GameTagIds.Structure);
+
+            if (profile.StrongArmor.HasValue && armor == profile.StrongArmor.Value)
+                return profile.StrongMultiplier;
+
+            if (profile.WeakArmor.HasValue && armor == profile.WeakArmor.Value)
+                return profile.WeakMultiplier;
+
+            if (profile.StrongVsStructures && isStructure)
+                return profile.StrongMultiplier;
+
+            if (!string.IsNullOrWhiteSpace(profile.StrongPrimaryTagId)
+                && PieceTagQueries.HasPrimaryTag(defender, profile.StrongPrimaryTagId))
+                return profile.StrongMultiplier;
+
+            if (!string.IsNullOrWhiteSpace(profile.WeakPrimaryTagId)
+                && (PieceTagQueries.HasPrimaryTag(defender, profile.WeakPrimaryTagId)
+                    || (profile.WeakPrimaryTagId == GameTagIds.Building
+                        && PieceTagQueries.HasPrimaryTag(defender, GameTagIds.Structure))))
+                return profile.WeakMultiplier;
+
+            return profile.NeutralMultiplier;
         }
     }
 }

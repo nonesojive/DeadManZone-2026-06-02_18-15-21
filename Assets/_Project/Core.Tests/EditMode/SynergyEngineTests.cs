@@ -10,82 +10,39 @@ namespace DeadManZone.Core.Tests.EditMode
     public sealed class SynergyEngineTests
     {
         [Test]
-        public void Supply_OutboundAura_BuffsAdjacentNeighbor()
+        public void EmptyRuleCatalog_ProducesZeroBonuses()
         {
-            var supply = TestPieces.CreateUnit(
-                "supply",
-                synergyTags: new[] { GameTagIds.Supply },
-                tags: new[] { GameTagIds.Supply });
             var rifle = TestPieces.CreateUnit(
                 "rifle",
                 primary: GameTagIds.Infantry,
-                systemTag: GameTagIds.Combatant,
-                tags: new[] { GameTagIds.Infantry, GameTagIds.Combatant });
+                systemTag: GameTagIds.Combatant);
             var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
             var board = new BoardState(layout);
-            Assert.IsTrue(board.TryPlace(supply, TestBoards.SupportLineAnchor(0), "supply_1").Success);
-            Assert.IsTrue(board.TryPlace(rifle, TestBoards.SupportLineAnchor(1), "rifle_1").Success);
+            Assert.IsTrue(board.TryPlace(rifle, TestBoards.SupportLineAnchor(0), "rifle_1").Success);
 
             var snapshot = SynergyEngine.EvaluateFightStart(board);
-            Assert.IsTrue(snapshot.TryGet("rifle_1", out var rifleSynergy));
-            Assert.AreEqual(1, rifleSynergy.DamageBonus);
-
-            var combatant = new CombatantState
-            {
-                InstanceId = "rifle_1",
-                Definition = rifle,
-                CurrentHp = rifle.MaxHp
-            };
-
-            SynergyEngine.ApplyToCombatants(snapshot, new[] { combatant });
-            Assert.AreEqual(1, combatant.DamageBonus);
+            Assert.IsFalse(snapshot.TryGet("rifle_1", out var result) && result.DamageBonus > 0);
         }
 
         [Test]
         public void FightStartSnapshot_DoesNotChangeAfterRelocate()
         {
-            var supply = TestPieces.CreateUnit(
-                "supply",
-                synergyTags: new[] { GameTagIds.Supply },
-                tags: new[] { GameTagIds.Supply });
             var rifle = TestPieces.CreateUnit(
                 "rifle",
                 primary: GameTagIds.Infantry,
-                systemTag: GameTagIds.Combatant,
-                tags: new[] { GameTagIds.Infantry, GameTagIds.Combatant });
+                systemTag: GameTagIds.Combatant);
             var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
             var board = new BoardState(layout);
-            Assert.IsTrue(board.TryPlace(supply, TestBoards.SupportLineAnchor(0), "supply_1").Success);
-            Assert.IsTrue(board.TryPlace(rifle, TestBoards.SupportLineAnchor(1), "rifle_1").Success);
+            Assert.IsTrue(board.TryPlace(rifle, TestBoards.SupportLineAnchor(0), "rifle_1").Success);
 
             var initialSnapshot = SynergyEngine.EvaluateFightStart(board);
-            Assert.IsTrue(initialSnapshot.TryGet("rifle_1", out var initialRifleResult));
-            Assert.AreEqual(1, initialRifleResult.DamageBonus);
+            Assert.IsFalse(initialSnapshot.TryGet("rifle_1", out var initialRifleResult) && initialRifleResult.DamageBonus > 0);
 
             var moved = board.TryRelocate("rifle_1", TestBoards.FrontLineAnchor(0), PieceRotation.R0);
             Assert.IsTrue(moved.Success, moved.Reason);
 
             var movedSnapshot = SynergyEngine.EvaluateFightStart(board);
-            Assert.IsTrue(movedSnapshot.TryGet("rifle_1", out var movedRifleResult));
-            Assert.AreEqual(0, movedRifleResult.DamageBonus);
-
-            var combatantWithInitialSnapshot = new CombatantState
-            {
-                InstanceId = "rifle_1",
-                Definition = rifle,
-                CurrentHp = rifle.MaxHp
-            };
-            SynergyEngine.ApplyToCombatants(initialSnapshot, new[] { combatantWithInitialSnapshot });
-            Assert.AreEqual(1, combatantWithInitialSnapshot.DamageBonus);
-
-            var combatantWithMovedSnapshot = new CombatantState
-            {
-                InstanceId = "rifle_1",
-                Definition = rifle,
-                CurrentHp = rifle.MaxHp
-            };
-            SynergyEngine.ApplyToCombatants(movedSnapshot, new[] { combatantWithMovedSnapshot });
-            Assert.AreEqual(0, combatantWithMovedSnapshot.DamageBonus);
+            Assert.IsFalse(movedSnapshot.TryGet("rifle_1", out var movedRifleResult) && movedRifleResult.DamageBonus > 0);
         }
     }
 }

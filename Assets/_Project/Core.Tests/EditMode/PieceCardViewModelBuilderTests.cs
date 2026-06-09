@@ -28,16 +28,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 AttackType = AttackType.Ballistic,
                 ArmorType = ArmorType.Light,
                 AbilityTags = new[] { "flamethrower" },
-                SynergyTags = new[]
-                {
-                    GameTagIds.Supply,
-                    GameTagIds.Medic,
-                    GameTagIds.Command,
-                    GameTagIds.Echo,
-                    GameTagIds.Stealth,
-                    GameTagIds.Vanguard,
-                    GameTagIds.Mechanical
-                }
+                SynergyTags = System.Array.Empty<string>()
             };
 
             PieceCardViewModel model = PieceCardViewModelBuilder.Build(piece);
@@ -53,11 +44,11 @@ namespace DeadManZone.Core.Tests.EditMode
             Assert.IsTrue(model.IdentityTags.Any(t => t.Id == GameTagIds.Infantry));
             Assert.IsTrue(model.IdentityTags.Any(t => t.Id == GameTagIds.Assault));
             Assert.IsTrue(model.IdentityTags.Any(t => t.Id == "neutral"));
+            Assert.IsTrue(model.IdentityTags.Any(t => t.Id == GameTagIds.Ballistic));
             Assert.IsFalse(model.IdentityTags.Any(t => t.Id == GameTagIds.Combatant));
 
-            Assert.LessOrEqual(model.OptionalTags.Count, 4);
-            Assert.AreEqual(4, model.OptionalTags.Count);
-            Assert.AreEqual(4, model.OverflowCount);
+            Assert.AreEqual(1, model.OptionalTags.Count);
+            Assert.AreEqual(0, model.OverflowCount);
             Assert.IsTrue(model.OptionalTags.Any(t => t.Id == "flamethrower"));
         }
     }

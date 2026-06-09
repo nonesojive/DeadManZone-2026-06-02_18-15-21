@@ -213,7 +213,7 @@ namespace DeadManZone.Game
                 ActiveTactic = _activeCombat.PlayerTactic,
                 HqAlive = _activeCombat.IsPlayerHqAlive,
                 HasCommandPiece = board.Pieces.Any(p =>
-                    PieceTagQueries.HasTag(p.Definition, GameTagIds.Command)),
+                    p.Definition.CommandActions.HasFlag(CommandActionFlags.ChangeStance)),
                 AvailableAbilities = abilities,
                 PendingSelectedTactic = State.Combat.PendingSelectedTactic,
                 PendingSelectedAbilities = State.Combat.PendingSelectedAbilities

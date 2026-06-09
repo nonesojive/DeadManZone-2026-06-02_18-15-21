@@ -46,7 +46,8 @@ namespace DeadManZone.Presentation.Board
             SetText(damageText, $"DMG: {model.BaseDamage}");
             SetText(movementSpeedText, $"Move: {FormatMovement(model.MovementSpeed)}");
             SetText(attackSpeedText, $"Atk Speed: {FormatAttackSpeed(model.AttackSpeed)}");
-            SetText(attackTypeText, $"Attack Type: {FormatAttackType(model.AttackType)}");
+            if (attackTypeText != null)
+                attackTypeText.gameObject.SetActive(false);
             SetText(armorTypeText, $"Armor Type: {FormatArmor(model.ArmorType)}");
 
             if (synergyText != null)

@@ -22,11 +22,11 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
-        public void ComputeMuster_SupplySynergyBonus_TwoOrMoreSupplyTags()
+        public void ComputeMuster_NoSupplySynergyBonusUntilTagsReturn()
         {
             var board = TestBoards.WithTwoSupplyBuildings();
             int muster = MusterCalculator.Compute(board, baseMusterPerShop: 10);
-            Assert.GreaterOrEqual(muster, 12);
+            Assert.AreEqual(10, muster);
         }
     }
 }

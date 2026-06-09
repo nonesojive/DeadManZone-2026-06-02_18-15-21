@@ -19,5 +19,25 @@ namespace DeadManZone.Core.Tests.EditMode
         {
             Assert.Throws<System.ArgumentException>(() => TagRegistry.Get("not_a_real_tag"));
         }
+
+        [Test]
+        public void Registry_ContainsBallisticAttackTypeTag()
+        {
+            var tag = TagRegistry.Get(GameTagIds.Ballistic);
+            Assert.AreEqual(TagCategory.AttackType, tag.Category);
+            Assert.AreEqual("Ballistic", tag.DisplayName);
+        }
+
+        [Test]
+        public void Registry_HasNoSynergyTags()
+        {
+            Assert.AreEqual(0, TagRegistry.GetByCategory(TagCategory.Synergy).Count);
+        }
+
+        [Test]
+        public void Registry_HasSevenAttackTypeTags()
+        {
+            Assert.AreEqual(7, TagRegistry.GetByCategory(TagCategory.AttackType).Count);
+        }
     }
 }

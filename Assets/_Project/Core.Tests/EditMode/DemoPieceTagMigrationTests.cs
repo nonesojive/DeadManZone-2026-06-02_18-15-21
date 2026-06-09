@@ -18,9 +18,10 @@ namespace DeadManZone.Core.Tests.EditMode
             Assert.AreEqual(GameTagIds.Infantry, rifleSo.primary);
             Assert.AreEqual(GameTagIds.Assault, rifleSo.combatRole);
             Assert.AreEqual(GameTagIds.Combatant, rifleSo.systemTag);
+            Assert.IsEmpty(rifleSo.synergyTags);
 
             var rifle = rifleSo.ToCore();
-            Assert.IsTrue(PieceTagQueries.HasTag(rifle, GameTagIds.Vanguard));
+            Assert.IsFalse(PieceTagQueries.HasSynergyTag(rifle, "vanguard"));
         }
     }
 }

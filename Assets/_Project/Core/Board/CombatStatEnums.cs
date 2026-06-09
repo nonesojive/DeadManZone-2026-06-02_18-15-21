@@ -35,7 +35,11 @@ namespace DeadManZone.Core.Board
         None,
         Ballistic,
         Explosive,
-        Piercing
+        Piercing,
+        Shredding,
+        Fire,
+        Melee,
+        Gas
     }
 
     public enum GrantedAbility

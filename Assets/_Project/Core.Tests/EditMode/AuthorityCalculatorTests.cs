@@ -1,6 +1,7 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Run;
+using DeadManZone.Core.Tests;
 using NUnit.Framework;
 
 namespace DeadManZone.Core.Tests
@@ -33,7 +34,7 @@ namespace DeadManZone.Core.Tests
                 DisplayName = "Radio Array",
                 Category = PieceCategory.Building,
                 Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
-                Tags = new[] { "Command" },
+                CommandActions = CommandActionFlags.ChangeStance,
                 MaxHp = 12
             };
             board.TryPlace(radio, new GridCoord(3, 0), "radio_1");

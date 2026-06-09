@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DeadManZone.Core.Board;
 
 namespace DeadManZone.Core.Tags
 {
@@ -30,15 +31,14 @@ namespace DeadManZone.Core.Tags
                 [GameTagIds.NonCombatant] = Create(GameTagIds.NonCombatant, "Non-Combatant", TagCategory.System, "System marker for units excluded from combat.", 0, false),
                 [GameTagIds.Hq] = Create(GameTagIds.Hq, "HQ", TagCategory.System, "System marker for headquarters win condition logic.", 0, false),
 
-                // Synergy
-                [GameTagIds.Supply] = Create(GameTagIds.Supply, "Supply", TagCategory.Synergy, "Synergy source tied to logistical support.", 60),
-                [GameTagIds.Medic] = Create(GameTagIds.Medic, "Medic", TagCategory.Synergy, "Synergy source tied to ally sustain.", 58),
-                [GameTagIds.Command] = Create(GameTagIds.Command, "Command", TagCategory.Synergy, "Synergy source tied to leadership effects.", 56),
-                [GameTagIds.Echo] = Create(GameTagIds.Echo, "Echo", TagCategory.Synergy, "Synergy source for mirrored tactical bonuses.", 54),
-                [GameTagIds.Stealth] = Create(GameTagIds.Stealth, "Stealth", TagCategory.Synergy, "Synergy source for concealment-based play.", 52),
-                [GameTagIds.Vanguard] = Create(GameTagIds.Vanguard, "Vanguard", TagCategory.Synergy, "Synergy source for forward pressure.", 50),
-                [GameTagIds.Mechanical] = Create(GameTagIds.Mechanical, "Mechanical", TagCategory.Synergy, "Synergy source for machine-focused effects.", 48),
-                [GameTagIds.Gas] = Create(GameTagIds.Gas, "Gas", TagCategory.Synergy, "Synergy source for area attrition effects.", 46)
+                // Attack type
+                [GameTagIds.Ballistic] = CreateFromProfile(AttackType.Ballistic),
+                [GameTagIds.Piercing] = CreateFromProfile(AttackType.Piercing),
+                [GameTagIds.Shredding] = CreateFromProfile(AttackType.Shredding),
+                [GameTagIds.Explosive] = CreateFromProfile(AttackType.Explosive),
+                [GameTagIds.Fire] = CreateFromProfile(AttackType.Fire),
+                [GameTagIds.Melee] = CreateFromProfile(AttackType.Melee),
+                [GameTagIds.Gas] = CreateFromProfile(AttackType.Gas)
             };
 
         public static TagDefinition Get(string id)
@@ -90,6 +90,17 @@ namespace DeadManZone.Core.Tags
                 DisplayPriority = displayPriority,
                 PlayerVisible = playerVisible
             };
+        }
+
+        private static TagDefinition CreateFromProfile(AttackType attackType)
+        {
+            var profile = AttackTypeProfileCatalog.Get(attackType);
+            return Create(
+                profile.TagId,
+                profile.DisplayName,
+                TagCategory.AttackType,
+                profile.Tooltip,
+                displayPriority: 62);
         }
     }
 }

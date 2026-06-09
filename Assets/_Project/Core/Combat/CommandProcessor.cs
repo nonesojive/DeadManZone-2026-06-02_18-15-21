@@ -80,7 +80,8 @@ namespace DeadManZone.Core.Combat
             if (tacticCommand != null)
             {
                 bool hqAlive = playerCombatants.Any(c => c.HasTag(GameTagIds.Hq) && c.IsAlive);
-                bool hasCommand = board.Pieces.Any(p => PieceTagQueries.HasTag(p.Definition, GameTagIds.Command));
+                bool hasCommand = board.Pieces.Any(p =>
+                    p.Definition.CommandActions.HasFlag(CommandActionFlags.ChangeStance));
                 var previous = tactics.PlayerTactic;
 
                 if (!_tacticValidator.CanContinue(

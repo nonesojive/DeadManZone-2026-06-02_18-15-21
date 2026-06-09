@@ -29,9 +29,7 @@ MonoBehaviour:
   primary: vehicle
   combatRole: tank
   systemTag: combatant
-  synergyTags:
-  - vanguard
-  - mechanical
+  synergyTags: []
   abilityTags: []
   maxHp: 250
   baseDamage: 32

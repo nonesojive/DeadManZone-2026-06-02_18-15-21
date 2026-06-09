@@ -157,7 +157,6 @@ namespace DeadManZone.Data.Editor
                 primary: mapping.Primary,
                 combatRole: mapping.CombatRole,
                 systemTag: mapping.SystemTag,
-                synergyTags: mapping.SynergyTags,
                 factionId: factionId,
                 maxHp: maxHp,
                 baseDamage: baseDamage,

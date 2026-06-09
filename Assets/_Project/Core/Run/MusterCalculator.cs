@@ -18,12 +18,6 @@ namespace DeadManZone.Core.Run
             return baseMusterPerShop + fromPieces + synergyBonus;
         }
 
-        private static int CountSupplySynergyBonus(BoardState board)
-        {
-            int supplyCount = board.Pieces.Count(p =>
-                p.Definition.SynergyTags != null
-                && p.Definition.SynergyTags.Contains("supply"));
-            return supplyCount >= SupplySynergyThreshold ? SupplySynergyMusterBonus : 0;
-        }
+        private static int CountSupplySynergyBonus(BoardState board) => 0;
     }
 }

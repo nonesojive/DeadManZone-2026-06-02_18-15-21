@@ -23,14 +23,13 @@ namespace DeadManZone.Core.Tags
         public const string NonCombatant = "noncombatant";
         public const string Hq = "hq";
 
-        // Synergy
-        public const string Supply = "supply";
-        public const string Medic = "medic";
-        public const string Command = "command";
-        public const string Echo = "echo";
-        public const string Stealth = "stealth";
-        public const string Vanguard = "vanguard";
-        public const string Mechanical = "mechanical";
+        // Attack type
+        public const string Ballistic = "ballistic";
+        public const string Piercing = "piercing";
+        public const string Shredding = "shredding";
+        public const string Explosive = "explosive";
+        public const string Fire = "fire";
+        public const string Melee = "melee";
         public const string Gas = "gas";
     }
 }

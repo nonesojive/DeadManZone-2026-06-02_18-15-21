@@ -33,13 +33,6 @@ namespace DeadManZone.Core.Tags
                 CountCategory = CriticalMassCountCategory.CombatRole,
                 Threshold = 3,
                 MoveChargePercentBonus = 10
-            },
-            new()
-            {
-                TagId = GameTagIds.Vanguard,
-                CountCategory = CriticalMassCountCategory.Synergy,
-                Threshold = 2,
-                DamageBonus = 1
             }
         };
 

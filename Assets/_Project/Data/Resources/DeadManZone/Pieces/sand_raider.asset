@@ -25,8 +25,7 @@ MonoBehaviour:
   primary: infantry
   combatRole: assault
   systemTag: combatant
-  synergyTags:
-  - gas
+  synergyTags: []
   abilityTags: []
   maxHp: 90
   baseDamage: 24

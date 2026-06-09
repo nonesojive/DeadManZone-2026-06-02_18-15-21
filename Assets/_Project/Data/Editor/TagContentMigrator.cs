@@ -14,38 +14,38 @@ namespace DeadManZone.Data.Editor
             new(StringComparer.Ordinal)
             {
                 ["hq_command"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Headquarters, GameTagIds.Hq),
-                ["rifle_squad"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant, GameTagIds.Vanguard),
-                ["diesel_walker"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, GameTagIds.Combatant, GameTagIds.Vanguard, GameTagIds.Mechanical),
-                ["radio_array"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant, GameTagIds.Command),
+                ["rifle_squad"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
+                ["diesel_walker"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, GameTagIds.Combatant),
+                ["radio_array"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant),
                 ["mg_team"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
                 ["field_gun_nest"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Artillery, GameTagIds.Combatant),
-                ["supply_depot"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant, GameTagIds.Supply),
-                ["field_workshop"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant, GameTagIds.Mechanical),
-                ["mobile_artillery"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant, GameTagIds.Mechanical),
+                ["supply_depot"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant),
+                ["field_workshop"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant),
+                ["mobile_artillery"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant),
 
                 ["conscript_rifleman"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
                 ["grenade_thrower"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Artillery, GameTagIds.Combatant),
-                ["field_medic"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Support, GameTagIds.Combatant, GameTagIds.Medic),
+                ["field_medic"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Support, GameTagIds.Combatant),
                 ["armored_transport"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, GameTagIds.Combatant),
                 ["mobile_cannon"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant),
 
                 ["dust_hq"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Headquarters, GameTagIds.Hq),
-                ["sand_raider"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant, GameTagIds.Gas),
+                ["sand_raider"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
                 ["scrap_rig"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, GameTagIds.Combatant),
-                ["toxin_launcher"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant, GameTagIds.Gas),
+                ["toxin_launcher"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant),
 
                 ["echo_hq"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Headquarters, GameTagIds.Hq),
-                ["phantom_agent"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, GameTagIds.Combatant, GameTagIds.Stealth, GameTagIds.Echo),
-                ["signal_relay"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant, GameTagIds.Command, GameTagIds.Echo),
-                ["resonance_cannon"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant, GameTagIds.Echo),
+                ["phantom_agent"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, GameTagIds.Combatant),
+                ["signal_relay"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant),
+                ["resonance_cannon"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant),
 
                 ["crimson_elite"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
                 ["crimson_tank"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, GameTagIds.Combatant),
                 ["crimson_artillery"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Artillery, GameTagIds.Combatant),
 
-                ["wraith_stalker"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, GameTagIds.Combatant, GameTagIds.Stealth, GameTagIds.Gas),
-                ["wraith_phantom"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant, GameTagIds.Gas),
-                ["wraith_bombard"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant, GameTagIds.Gas)
+                ["wraith_stalker"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, GameTagIds.Combatant),
+                ["wraith_phantom"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
+                ["wraith_bombard"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant)
             };
 
         private static readonly HashSet<string> KnownLegacyTags = new(StringComparer.OrdinalIgnoreCase)
@@ -57,14 +57,6 @@ namespace DeadManZone.Data.Editor
             "Combatant",
             "NonCombatant",
             "HQ",
-            "Supply",
-            "Medic",
-            "Command",
-            "Echo",
-            "Stealth",
-            "Vanguard",
-            "Mechanical",
-            "Gas",
             "Artillery",
             "Assault",
             "Tank",
@@ -119,6 +111,30 @@ namespace DeadManZone.Data.Editor
             Debug.Log($"[TagContentMigrator] Piece tag migration complete. Updated={updated}, Unchanged={unchanged}, Warnings={warnings}.");
         }
 
+        [MenuItem("DeadManZone/Clear Legacy Synergy Tags")]
+        public static void ClearLegacySynergyTags()
+        {
+            string[] guids = AssetDatabase.FindAssets("t:PieceDefinitionSO", new[] { PieceRoot });
+            int cleared = 0;
+
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                var piece = AssetDatabase.LoadAssetAtPath<PieceDefinitionSO>(path);
+                if (piece == null || piece.synergyTags == null || piece.synergyTags.Length == 0)
+                    continue;
+
+                piece.synergyTags = Array.Empty<string>();
+                EditorUtility.SetDirty(piece);
+                cleared++;
+            }
+
+            if (cleared > 0)
+                AssetDatabase.SaveAssets();
+
+            Debug.Log($"[TagContentMigrator] Cleared synergy tags on {cleared} pieces.");
+        }
+
         internal static bool TryGetMapping(string pieceId, out PieceTagMapping mapping)
         {
             if (string.IsNullOrWhiteSpace(pieceId))
@@ -168,13 +184,9 @@ namespace DeadManZone.Data.Editor
             changed |= SetIfChanged(ref piece.combatRole, mapping.CombatRole);
             changed |= SetIfChanged(ref piece.systemTag, mapping.SystemTag);
 
-            string[] mappedSynergyTags = mapping.SynergyTags;
-            if (mappedSynergyTags == null || mappedSynergyTags.Length == 0)
-                mappedSynergyTags = Array.Empty<string>();
-
-            if (!AreArraysEqual(piece.synergyTags, mappedSynergyTags))
+            if (piece.synergyTags != null && piece.synergyTags.Length > 0)
             {
-                piece.synergyTags = (string[])mappedSynergyTags.Clone();
+                piece.synergyTags = Array.Empty<string>();
                 changed = true;
             }
 
@@ -225,18 +237,16 @@ namespace DeadManZone.Data.Editor
 
         internal readonly struct PieceTagMapping
         {
-            public PieceTagMapping(string primary, string combatRole, string systemTag, params string[] synergyTags)
+            public PieceTagMapping(string primary, string combatRole, string systemTag)
             {
                 Primary = primary;
                 CombatRole = combatRole;
                 SystemTag = systemTag;
-                SynergyTags = synergyTags ?? Array.Empty<string>();
             }
 
             public string Primary { get; }
             public string CombatRole { get; }
             public string SystemTag { get; }
-            public string[] SynergyTags { get; }
         }
     }
 }

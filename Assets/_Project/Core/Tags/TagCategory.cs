@@ -6,6 +6,7 @@ namespace DeadManZone.Core.Tags
         CombatRole,
         Faction,
         System,
-        Synergy
+        Synergy,
+        AttackType
     }
 }

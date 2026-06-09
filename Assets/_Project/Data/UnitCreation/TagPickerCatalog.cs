@@ -12,5 +12,7 @@ namespace DeadManZone.Data.UnitCreation
         public static IReadOnlyList<TagDefinition> SystemTags => TagRegistry.GetByCategory(TagCategory.System);
 
         public static IReadOnlyList<TagDefinition> SynergyTags => TagRegistry.GetByCategory(TagCategory.Synergy);
+
+        public static IReadOnlyList<TagDefinition> AttackTypeTags => TagRegistry.GetByCategory(TagCategory.AttackType);
     }
 }

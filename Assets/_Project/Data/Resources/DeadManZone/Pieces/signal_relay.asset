@@ -26,9 +26,7 @@ MonoBehaviour:
   primary: building
   combatRole: utility
   systemTag: noncombatant
-  synergyTags:
-  - command
-  - echo
+  synergyTags: []
   abilityTags: []
   maxHp: 110
   baseDamage: 0
@@ -38,7 +36,7 @@ MonoBehaviour:
   manpowerCost: 1
   musterPerShop: 1
   shopModifiers: 4
-  commandActions: 0
+  commandActions: 1
   shopLane: 1
   attackSpeed: 1
   attackRange: 1

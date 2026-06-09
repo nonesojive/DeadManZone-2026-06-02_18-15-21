@@ -25,8 +25,7 @@ MonoBehaviour:
   primary: infantry
   combatRole: support
   systemTag: combatant
-  synergyTags:
-  - medic
+  synergyTags: []
   abilityTags: []
   maxHp: 40
   baseDamage: 0

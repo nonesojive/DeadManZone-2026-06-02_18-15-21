@@ -113,6 +113,7 @@ namespace DeadManZone.Core.Tags
             AddVisibleTag(identityTags, seen, piece.Primary, TagCategory.Primary, 100, "Primary identity tag.");
             AddVisibleTag(identityTags, seen, piece.CombatRole, TagCategory.CombatRole, 80, "Combat role identity tag.");
             AddFactionTag(identityTags, seen, piece.FactionId);
+            AddAttackTypeTag(identityTags, seen, piece.AttackType);
 
             var abilityTags = new List<TagDefinition>();
             var synergyTags = new List<TagDefinition>();
@@ -164,6 +165,15 @@ namespace DeadManZone.Core.Tags
             {
                 destination.Add(tag);
             }
+        }
+
+        private static void AddAttackTypeTag(List<TagDefinition> destination, HashSet<string> seen, AttackType attackType)
+        {
+            if (attackType == AttackType.None)
+                return;
+
+            string tagId = AttackTypeTags.ToTagId(attackType);
+            AddVisibleTag(destination, seen, tagId, TagCategory.AttackType, 62, "Attack type identity tag.");
         }
 
         private static void AddVisibleTag(

@@ -12,17 +12,7 @@ namespace DeadManZone.Core.Tags
     public static class SynergyTraitRegistry
     {
         private static readonly IReadOnlyDictionary<string, SynergyTraitThresholds> Catalog =
-            new Dictionary<string, SynergyTraitThresholds>(StringComparer.OrdinalIgnoreCase)
-            {
-                [GameTagIds.Supply] = new() { Thresholds = new[] { 2, 4, 6 }, Description = "Grants bonus damage to adjacent allies." },
-                [GameTagIds.Medic] = new() { Thresholds = new[] { 2, 4 }, Description = "Provides armor buff steps to adjacent infantry." },
-                [GameTagIds.Command] = new() { Thresholds = new[] { 1, 2, 3 }, Description = "Greatly increases damage for nearby artillery." },
-                [GameTagIds.Vanguard] = new() { Thresholds = new[] { 2, 4 }, Description = "Increases movement charge for forward units." },
-                [GameTagIds.Mechanical] = new() { Thresholds = new[] { 3, 6 }, Description = "Boosts performance of mechanical units." },
-                [GameTagIds.Gas] = new() { Thresholds = new[] { 2, 4 }, Description = "Applies attrition effects to enemies." },
-                [GameTagIds.Stealth] = new() { Thresholds = new[] { 2, 4 }, Description = "Grants concealment-based bonuses." },
-                [GameTagIds.Echo] = new() { Thresholds = new[] { 2 }, Description = "Mirrors tactical bonuses." }
-            };
+            new Dictionary<string, SynergyTraitThresholds>(StringComparer.OrdinalIgnoreCase);
 
         public static bool TryGet(string tagId, out SynergyTraitThresholds thresholds)
         {
