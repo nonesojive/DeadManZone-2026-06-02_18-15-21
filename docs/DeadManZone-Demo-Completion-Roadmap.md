@@ -63,7 +63,7 @@ A demo is considered complete only when **all** of the following are true:
 
 ## Recommended Art Strategy (Solo + AI)
 
-The neutral art spec (`2026-06-05-deadmanzone-neutral-faction-art-design.md`) recommends a **Blender 3D → orthographic 3/4 isometric render** pipeline for rotation consistency and future modular per-cell tiles.
+The neutral art spec uses **SuperGrok isometric unit tokens** on **top-down terrain tiles** (locked in `2026-06-06-deadmanzone-top-down-visual-commitment.md`). Blender is optional for vehicles. Style anchor: `Assets/Grok Images/Isometric/grok-image-0211da6d-2b71-444a-ad30-4781dae097e0.jpg`.
 
 **Practical solo path:**
 - Use AI image tools (Flux, Midjourney, etc.) for rapid concepting and color keys.
@@ -106,7 +106,9 @@ Fix any failures immediately (most are minor supply number or schema updates fro
   3. `field_medic_icon.png`
   4. `armored_transport_icon.png` (L-shape)
   5. `mobile_cannon_icon.png` (3×2)
-- Lock prompt style: “grimdark retro-futurist WW1 trench militia, worn olive drab + mud brown + dull gunmetal, beat-up practical kit, orthographic 3/4 isometric view, transparent background, 256×256 shop icon”.
+- Use prompts from `docs/DeadManZone-Art-Prompt-Pack.md` (v1.1 — isometric tokens).
+- Crop from Grok sheets or generate fresh roster row; remove backgrounds before Unity import.
+- QA at 48px on dark shop panel and on `FronttileA1` mud terrain.
 - Assign icons to the five neutral `PieceDefinitionSO` assets.
 - Verification screenshot: `neutral_roster_review.png` (all 5 at full size + 50% scale on dark panel).
 

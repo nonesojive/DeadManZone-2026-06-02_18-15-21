@@ -1,16 +1,17 @@
 # DeadManZone — Neutral Faction Art & Asset Pipeline Design
 
-**Date:** 2026-06-05  
+**Date:** 2026-06-05 (camera updated 2026-06-07)  
 **Engine:** Unity 6  
-**Status:** Approved (brainstorming) — pending written spec review before implementation plan  
+**Status:** Approved — isometric tokens + top-down terrain locked  
 **Scope:** Art pipeline and asset specs for the 5 neutral demo pieces  
-**Builds on:** `2026-05-31-deadmanzone-autobattler-design.md`, `2026-06-04-deadmanzone-combat-units-demo-design.md`
+**Builds on:** `2026-05-31-deadmanzone-autobattler-design.md`, `2026-06-04-deadmanzone-combat-units-demo-design.md`  
+**Visual commitment:** `2026-06-06-deadmanzone-top-down-visual-commitment.md`
 
 ---
 
 ## Summary
 
-Create neutral faction piece art using a **3D Blender → 2D sprite** pipeline. Renders use a locked **orthographic 3/4 isometric** camera. Delivery is phased: shop icons first (plugs into existing `PieceDefinitionSO.icon` today), per-cell board tiles later (requires a separate code implementation plan).
+Create neutral faction piece art using a **SuperGrok Imagine → 2D sprite** pipeline (primary), with optional **Blender → PNG** fallback for vehicles. Unit tokens use a locked **orthographic 3/4 isometric** camera; terrain tiles use **true top-down**. Same unit sprites serve shop icons, board cells, and combat replay. Delivery is phased: shop icons first (plugs into existing `PieceDefinitionSO.icon` today), per-cell board tiles later (requires a separate code implementation plan).
 
 **Neutral roster (5 pieces):** Conscript Rifleman, Grenade Thrower, Field Medic, Armored Transport, Mobile Cannon.
 
@@ -29,26 +30,39 @@ Neutrals are generic trench militia — not faction-proud like Iron Vanguard.
 | **Retro-futurist** | Coil-rifle hints, welded armor plates, gas-mask silhouettes — subtle, not sci-fi clean |
 | **vs Iron Vanguard** | IV = brass, diesel glow, industrial precision. Neutral = mud, canvas, field-expedient |
 
-### Isometric camera standard (locked)
+### Two-layer camera standard (locked)
 
-All neutral piece renders use one Blender template scene.
+**Unit tokens** — isometric 3/4 (infantry readability at grid scale).  
+**Terrain tiles** — true top-down (trenches, mud, bunker walls).
+
+#### Unit token camera (shop + board + combat)
 
 | Setting | Value |
 |---------|--------|
-| **Projection** | Orthographic (no perspective distortion at small sizes) |
-| **Elevation** | ~35° above ground plane |
-| **Azimuth** | ~45° (classic 3/4: see front + one side) |
-| **Facing** | Piece “front” oriented toward camera-right |
-| **Lighting** | Single key light upper-left, cool fill, minimal rim — grim, not studio-bright |
-| **Background** | Transparent PNG |
-| **Shadow** | One template choice (soft ground shadow baked in, or none) — pick once and keep consistent |
+| **Projection** | Orthographic |
+| **Elevation** | **~35°** (classic 3/4 isometric) |
+| **Azimuth** | **~225°** (token faces bottom-right of frame) |
+| **Lighting** | Key upper-left, cool fill — grim, not studio-bright |
+| **Background** | Transparent PNG (remove white from AI exports) |
+| **Shadow** | Soft oval drop shadow baked in (consistent across roster) |
+
+**AI style anchor:** `Assets/Grok Images/Isometric Batch 2/grok-image-2eb75a93-e52d-4847-ae43-03394588e5fd.jpg`  
+**Blender fallback:** `Assets/_Project/Art/Neutral/Source/neutral_token_camera.py`
+
+#### Terrain tile camera
+
+| Setting | Value |
+|---------|--------|
+| **Projection** | Orthographic top-down (90°) |
+| **Use** | Zone cell backgrounds only — not unit tokens |
+| **Examples** | `Assets/Grok Images/FronttileA*.jpg`, `ReartileA.jpg` |
 
 ### Deliverable sizes
 
 | Asset | Resolution | Use |
 |-------|------------|-----|
 | Shop icon | 256×256 px | `PieceDefinitionSO.icon` — works in current build |
-| Board cell tile | 128×128 px | Per-cell modular art (Phase 3) |
+| Board / combat token | 128×128 px | Per-cell modular art (Phase 3); combat replay reuses same sprites |
 | Style reference sheet | 1920×1080 px | Camera, lighting, palette documentation |
 
 ### Board rotation
@@ -59,20 +73,28 @@ Pieces rotate 0° / 90° / 180° / 270° on the grid. Phase 3 uses **modular per
 
 ## Section 2 — Pipeline, Piece Briefs & Budgets
 
-### Blender → Unity pipeline
+### AI → Unity pipeline (primary)
 
 ```
-Blender (model + PBR texture)
+SuperGrok Imagine (style-locked isometric sprite sheet)
     ↓
-Template scene render (ortho 3/4 isometric)
+Crop units + remove background → PNG
     ↓
-PNG export → Assets/_Project/Art/Neutral/
+Assets/_Project/Art/Neutral/Renders/Icons/
     ↓
 Unity import (Sprite 2D/UI, sRGB, no mips)
     ↓
 Assign on PieceDefinitionSO.icon (Phase 1–2)
     ↓
-[Future] Per-cell board tiles → PieceShapeVisual (Phase 3 + code)
+[Phase 3] Per-cell board tiles → PieceShapeVisual
+```
+
+### Blender → Unity pipeline (optional — vehicles / consistency)
+
+```
+Blender or Meshy model → neutral_token_camera.py isometric render
+    ↓
+Same PNG folders and Unity import path as AI pipeline
 ```
 
 ### Template scene rules
@@ -111,13 +133,15 @@ Assets/_Project/Art/
 
 All five use `categoryTint` ≈ muted olive `(0.45, 0.48, 0.42)` on their ScriptableObjects — materials should harmonize.
 
-| Piece ID | Grid | Silhouette hook | Modeling notes |
-|----------|------|-----------------|----------------|
-| `conscript_rifleman` | 1×1 | **Style anchor — build first** | Hunched rifleman, coil-carbine, trench helmet, small pack. Single figure, no base diorama. Strong head + diagonal rifle read. |
-| `grenade_thrower` | 1×2 | Vertical footprint | Throw pose, bandolier, grenade in hand. Upper cell = torso/arms; lower = legs/boots. Reads as one unit when stacked. |
-| `field_medic` | 1×1 | Support identity | Muted red-cross armband, medic satchel, sidearm or no primary rifle. Softer, less armored silhouette than rifleman. |
-| `armored_transport` | 2×3 L | Heaviest neutral | WW1 armored truck / half-track — riveted plates, not sleek modern tank. L-footprint: cab front, cargo bed back. Modular: cab, hull, tracks, rear gate. |
-| `mobile_cannon` | 3×2 | Longest piece | Field gun on wheeled carriage; barrel along long axis. Six-cell rectangle; barrel length sells the 3-wide footprint. |
+| Piece ID | Grid (demo build) | Silhouette hook | Art notes |
+|----------|-------------------|-----------------|-----------|
+| `conscript_rifleman` | 1×1 | **Style anchor** | Hunched rifleman, rifle, trench helmet, gas mask, small pack. |
+| `grenade_thrower` | 1×1 | Throw pose | Grenade in raised hand, bandolier. Shop icon can show full figure; board uses single cell. |
+| `field_medic` | 1×1 | Support identity | Faded red-cross armband, medic satchel, no primary rifle. |
+| `armored_transport` | **1×2** horizontal | Half-track vehicle | Side-view half-track from Grok fits 1×2. *(Design docs previously said 2×3 L — not in demo.)* |
+| `mobile_cannon` | **1×2** horizontal | Towed field gun | Carriage + barrel from Grok fits 1×2. *(Design docs previously said 3×2 — not in demo.)* |
+
+Shapes may expand post-demo; art pipeline targets **current `PieceDefinitionSO.shapeCells`** first.
 
 **Optional ability hints on icons:** grenade in hand (Grenade Thrower), slab armor (Armored Transport), prominent barrel + ammo crate (Mobile Cannon).
 
@@ -180,22 +204,15 @@ All five use `categoryTint` ≈ muted olive `(0.45, 0.48, 0.42)` on their Script
 | Conscript Rifleman | 1 `infantry_cell` | Full figure in one cell |
 | Grenade Thrower | `grenade_upper`, `grenade_lower` | Vertical stack |
 | Field Medic | 1 `medic_cell` | Distinct from rifleman at cell scale |
-| Armored Transport | `vehicle_cab`, `vehicle_hull`, `vehicle_track`, `vehicle_rear` | L-shape assembly map required |
-| Mobile Cannon | `cannon_barrel`, `cannon_carriage`, `cannon_wheel` | Barrel spans multiple cells visually |
+| Armored Transport | `0_0`, `1_0` | One sprite per horizontal cell (demo 1×2) |
+| Mobile Cannon | `0_0`, `1_0` | Barrel cell + carriage/wheel cell |
 
-**Rotation:** Square isometric tokens; avoid hard-facing asymmetry (text, one-sided logos). Vehicles use symmetric top-down massing.
+**Rotation:** Isometric tokens rotate on the grid; prefer mostly symmetric silhouettes or accept mild rotation artifacts. Token front faces bottom-right of source art at rotation 0.
 
-**Armored Transport assembly (R0):**
+**Demo footprints (R0):**
 ```
-[cab][hull]
-[cargo][cargo]
-[tracks][tracks]
-```
-
-**Mobile Cannon assembly (R0):**
-```
-[wheel][barrel][barrel]
-[carriage][carriage][carriage]
+Armored Transport:  [cell][cell]
+Mobile Cannon:      [cell][cell]
 ```
 
 ### Unity assignment (Phase 1–2)
@@ -221,9 +238,9 @@ Board sprites are not wired today. Separate implementation plan will cover:
 ### Out of scope
 
 - Rigging / animation
-- 3D in-engine combat rendering
+- 3D in-engine combat rendering (deferred — see top-down visual commitment spec)
 - Iron Vanguard pieces (separate spec)
-- Combat VFX
+- Combat VFX (separate presentation pass; uses same top-down tokens)
 
 ### Success criteria
 

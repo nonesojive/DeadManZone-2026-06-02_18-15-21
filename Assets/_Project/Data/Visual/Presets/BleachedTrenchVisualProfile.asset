@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c3e5f7a9b0d2e4f60718293a4b5c6d7, type: 3}
+  m_Name: BleachedTrenchVisualProfile
+  m_EditorClassIdentifier: DeadManZone.Presentation::DeadManZone.Presentation.Visual.VisualProfileSO
+  displayName: Bleached Trench
+  uiTheme: {fileID: 11400000, guid: a8f9594e7f7a6a244bd54525d9b8f6bf, type: 2}
+  mainMenuAtmosphere: {fileID: 11400000, guid: 27ddd5a7767970a46802762a29c58404, type: 2}
+  mainMenuLighting: {fileID: 11400000, guid: a7dd6d0f5237d244ead6967200e28ccd, type: 2}
+  runAtmosphere: {fileID: 11400000, guid: 4f5d0f20d6d4b954a8595d03f77d0dc9, type: 2}
+  postProcessProfile: {fileID: 0}

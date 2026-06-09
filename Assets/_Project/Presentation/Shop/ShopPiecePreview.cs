@@ -81,24 +81,34 @@ namespace DeadManZone.Presentation.Shop
             float offsetY = (viewportSize - footprintHpx) * 0.5f;
             float half = viewportSize * 0.5f;
 
+            var theme = UiThemeProvider.Current;
+            var footprintBackground = PieceArtResolver.ResolveFootprintBackground(source, theme);
+            var footprintCenter = new Vector2(
+                offsetX + footprintWpx * 0.5f - half,
+                half - (offsetY + footprintHpx * 0.5f));
+            var footprintSize = new Vector2(footprintWpx, footprintHpx);
+
             if (source?.icon != null)
             {
-                var iconGo = new GameObject("Icon", typeof(RectTransform));
-                iconGo.transform.SetParent(blockRoot, false);
-                iconGo.transform.SetAsFirstSibling();
-                var iconRect = iconGo.GetComponent<RectTransform>();
-                iconRect.anchorMin = new Vector2(0.5f, 0.5f);
-                iconRect.anchorMax = new Vector2(0.5f, 0.5f);
-                iconRect.pivot = new Vector2(0.5f, 0.5f);
-                float iconSize = viewportSize * 0.62f;
-                iconRect.sizeDelta = new Vector2(iconSize, iconSize);
-                var iconImage = iconGo.AddComponent<Image>();
-                iconImage.sprite = source.icon;
-                iconImage.preserveAspect = true;
-                iconImage.raycastTarget = false;
+                RenderShopIcon(source.icon, footprintCenter, footprintSize, footprintBackground);
+                return;
             }
 
-            var theme = UiThemeProvider.Current;
+            PieceFootprintBackground.Create(
+                blockRoot,
+                footprintCenter,
+                footprintSize,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                footprintBackground);
+
+            PieceFootprintOutline.Create(
+                blockRoot,
+                footprintCenter,
+                footprintSize,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f));
+
             var tint = PieceArtResolver.ResolveTint(definition, source, theme);
             var anchor = new GridCoord(0, 0);
 
@@ -133,11 +143,47 @@ namespace DeadManZone.Presentation.Shop
                 }
 
                 image.raycastTarget = false;
-
-                var outline = block.AddComponent<Outline>();
-                outline.effectColor = new Color(0f, 0f, 0f, 0.55f);
-                outline.effectDistance = new Vector2(1f, -1f);
             }
+        }
+
+        private void RenderShopIcon(
+            Sprite icon,
+            Vector2 footprintCenter,
+            Vector2 footprintSize,
+            Color footprintBackground)
+        {
+            PieceFootprintBackground.Create(
+                blockRoot,
+                footprintCenter,
+                footprintSize,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                footprintBackground);
+
+            PieceFootprintOutline.Create(
+                blockRoot,
+                footprintCenter,
+                footprintSize,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f));
+
+            var iconGo = new GameObject("Icon", typeof(RectTransform));
+            iconGo.transform.SetParent(blockRoot, false);
+            var iconRect = iconGo.GetComponent<RectTransform>();
+            iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+            iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRect.anchoredPosition = footprintCenter;
+
+            float inset = Mathf.Clamp(Mathf.Min(footprintSize.x, footprintSize.y) * 0.08f, 2f, 6f);
+            iconRect.sizeDelta = new Vector2(
+                Mathf.Max(footprintSize.x - inset * 2f, 8f),
+                Mathf.Max(footprintSize.y - inset * 2f, 8f));
+
+            var iconImage = iconGo.AddComponent<Image>();
+            iconImage.sprite = icon;
+            iconImage.preserveAspect = true;
+            iconImage.raycastTarget = false;
         }
 
         private void ResolveBlockRoot()

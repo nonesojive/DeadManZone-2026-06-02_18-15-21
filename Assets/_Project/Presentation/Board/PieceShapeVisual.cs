@@ -16,6 +16,8 @@ namespace DeadManZone.Presentation.Board
     /// </summary>
     public sealed class PieceShapeVisual : MonoBehaviour
     {
+        public Vector2 Center => ((RectTransform)transform).localPosition;
+
         public static PieceShapeVisual Create(
             RectTransform overlay,
             GridLayoutGroup grid,
@@ -31,8 +33,10 @@ namespace DeadManZone.Presentation.Board
 
             var theme = UiThemeProvider.Current;
             var tint = PieceArtResolver.ResolveTint(definition, source, theme);
-            // Show names on placeholder art; hide once every cell has a sprite assigned.
-            bool hideLabel = PieceArtResolver.AllCellsHaveSprites(source, anchor, rotation, definition);
+            var footprintBackground = PieceArtResolver.ResolveFootprintBackground(source, theme);
+            bool useFootprintIcon = PieceArtResolver.ShouldUseFootprintIcon(source, anchor, rotation, definition);
+            bool hideLabel = useFootprintIcon
+                || PieceArtResolver.AllCellsHaveSprites(source, anchor, rotation, definition);
 
             var footprint = ComputeFootprint(overlay, grid, cells, cellCenterResolver);
             if (footprint.size.sqrMagnitude < 1f)
@@ -48,6 +52,26 @@ namespace DeadManZone.Presentation.Board
             rootRect.sizeDelta = footprint.size;
             rootRect.localPosition = footprint.center;
             rootRect.localEulerAngles = Vector3.zero;
+
+            PieceFootprintBackground.Create(rootRect, footprintBackground);
+            PieceFootprintOutline.Create(rootRect);
+
+            if (useFootprintIcon)
+            {
+                var artGo = new GameObject("FootprintIcon", typeof(RectTransform));
+                artGo.transform.SetParent(root.transform, false);
+                var artRect = artGo.GetComponent<RectTransform>();
+                artRect.anchorMin = Vector2.zero;
+                artRect.anchorMax = Vector2.one;
+                artRect.offsetMin = new Vector2(1f, 1f);
+                artRect.offsetMax = new Vector2(-1f, -1f);
+
+                var artImage = artGo.AddComponent<Image>();
+                artImage.sprite = source.icon;
+                artImage.preserveAspect = true;
+                artImage.raycastTarget = false;
+                return root.AddComponent<PieceShapeVisual>();
+            }
 
             float cellW = grid.cellSize.x;
             float cellH = grid.cellSize.y;
@@ -78,35 +102,38 @@ namespace DeadManZone.Presentation.Board
                 }
 
                 image.raycastTarget = false;
-
-                var outline = block.AddComponent<Outline>();
-                outline.effectColor = new Color(0f, 0f, 0f, 0.55f);
-                outline.effectDistance = new Vector2(1f, -1f);
             }
 
             if (!hideLabel)
-            {
-                var labelGo = new GameObject("Label", typeof(RectTransform));
-                labelGo.transform.SetParent(root.transform, false);
-                var labelRect = labelGo.GetComponent<RectTransform>();
-                labelRect.anchorMin = Vector2.zero;
-                labelRect.anchorMax = Vector2.one;
-                labelRect.offsetMin = new Vector2(2f, 2f);
-                labelRect.offsetMax = new Vector2(-2f, -2f);
-
-                var label = labelGo.AddComponent<TextMeshProUGUI>();
-                label.text = GetShortName(definition);
-                label.fontSize = Mathf.Clamp(
-                    Mathf.RoundToInt(Mathf.Min(footprint.size.x, footprint.size.y) * 0.22f),
-                    9,
-                    14);
-                label.alignment = TextAlignmentOptions.Center;
-                label.color = theme.textPrimary;
-                label.raycastTarget = false;
-                label.textWrappingMode = TextWrappingModes.Normal;
-            }
+                AddFootprintLabel(root.transform, definition, footprint.size, theme);
 
             return root.AddComponent<PieceShapeVisual>();
+        }
+
+        private static void AddFootprintLabel(
+            Transform parent,
+            PieceDefinition definition,
+            Vector2 footprintSize,
+            UiThemeSO theme)
+        {
+            var labelGo = new GameObject("Label", typeof(RectTransform));
+            labelGo.transform.SetParent(parent, false);
+            var labelRect = labelGo.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = new Vector2(2f, 2f);
+            labelRect.offsetMax = new Vector2(-2f, -2f);
+
+            var label = labelGo.AddComponent<TextMeshProUGUI>();
+            label.text = GetShortName(definition);
+            label.fontSize = Mathf.Clamp(
+                Mathf.RoundToInt(Mathf.Min(footprintSize.x, footprintSize.y) * 0.22f),
+                9,
+                14);
+            label.alignment = TextAlignmentOptions.Center;
+            label.color = theme.textPrimary;
+            label.raycastTarget = false;
+            label.textWrappingMode = TextWrappingModes.Normal;
         }
 
         private static (Vector2 center, Vector2 size) ComputeFootprint(

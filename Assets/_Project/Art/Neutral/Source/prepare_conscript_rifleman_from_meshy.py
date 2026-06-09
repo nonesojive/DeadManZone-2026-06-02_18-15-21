@@ -8,9 +8,13 @@ CLI: blender --background --python prepare_conscript_rifleman_from_meshy.py
 import bpy
 import math
 import os
+import sys
 from mathutils import Vector
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
+from neutral_token_camera import configure_token_camera
 ART_NEUTRAL = os.path.normpath(os.path.join(SCRIPT_DIR, ".."))
 
 SOURCE_BLEND = os.path.join(SCRIPT_DIR, "conscript_rifleman_meshy_source.blend")
@@ -21,8 +25,7 @@ OUTPUT_ICON = os.path.join(ART_NEUTRAL, "Renders", "Icons", "conscript_rifleman_
 TARGET_TRIS = 3_500
 TARGET_HEIGHT = 1.75
 MESH_OBJECT_NAME = "mesh_node"
-# Front-facing 3/4: camera opposite default Meshy export orientation.
-ICON_CAMERA_AZIMUTH_DEG = 225.0
+# Isometric token camera (optional Blender path): see neutral_token_camera.py
 
 
 def clear_scene():
@@ -120,22 +123,7 @@ def setup_render_scene():
     bpy.ops.object.camera_add()
     cam = bpy.context.active_object
     cam.name = "RenderCamera"
-    cam.data.type = "ORTHO"
-    cam.data.ortho_scale = 2.15
-
-    elev = math.radians(35)
-    az = math.radians(ICON_CAMERA_AZIMUTH_DEG)
-    dist = 6.0
-    target = Vector((0.0, 0.0, TARGET_HEIGHT * 0.52))
-    cam.location = Vector(
-        (
-            dist * math.cos(elev) * math.cos(az),
-            dist * math.cos(elev) * math.sin(az),
-            dist * math.sin(elev),
-        )
-    )
-    direction = target - cam.location
-    cam.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+    configure_token_camera(cam, ortho_scale=2.15, target_z=TARGET_HEIGHT * 0.52)
     scene.camera = cam
 
 

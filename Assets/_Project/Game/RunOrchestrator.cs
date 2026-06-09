@@ -9,6 +9,7 @@ using DeadManZone.Core.Run;
 using DeadManZone.Core.Shop;
 using DeadManZone.Core.Tags;
 using DeadManZone.Data;
+using DeadManZone.Game.Dev;
 
 namespace DeadManZone.Game
 {
@@ -32,7 +33,7 @@ namespace DeadManZone.Game
         public RunOrchestrator(ContentDatabase content)
         {
             _content = content ?? throw new ArgumentNullException(nameof(content));
-            _registry = content.BuildRegistry();
+            _registry = ContentRegistryProvider.Build(content);
             _shopGenerator = new ShopGenerator(_registry);
         }
 

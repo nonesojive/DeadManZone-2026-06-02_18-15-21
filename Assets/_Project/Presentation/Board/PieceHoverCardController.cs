@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using DeadManZone.Core.Board;
+using DeadManZone.Core.Combat;
 using DeadManZone.Core.Tags;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,7 +19,7 @@ namespace DeadManZone.Presentation.Board
 
         private void Awake() => Hide();
 
-        public void Show(PieceDefinition definition, Vector2 screenPosition)
+        public void Show(PieceDefinition definition, Vector2 screenPosition, SynergyEngine.SynergyResult? synergy = null)
         {
             if (definition == null)
                 return;
@@ -28,7 +29,7 @@ namespace DeadManZone.Presentation.Board
             if (card == null)
                 return;
 
-            PieceCardViewModel model = PieceCardViewModelBuilder.Build(definition);
+            PieceCardViewModel model = PieceCardViewModelBuilder.Build(definition, synergy);
             string overflowTooltip = BuildOverflowTooltip(definition, model);
             card.Bind(model, overflowTooltip);
             card.SetScreenPosition(canvas, screenPosition, screenOffset);

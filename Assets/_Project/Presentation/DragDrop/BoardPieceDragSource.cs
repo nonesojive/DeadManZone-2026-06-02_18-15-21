@@ -1,4 +1,5 @@
 using DeadManZone.Core.Board;
+using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Tags;
 using DeadManZone.Presentation.Board;
@@ -15,6 +16,7 @@ namespace DeadManZone.Presentation.DragDrop
         [SerializeField] private PieceRotation rotation;
         private PieceDefinition _definition;
         private PieceHoverCardController _hoverCardController;
+        private BoardView _boardView;
 
         public void Configure(
             string pieceInstanceId,
@@ -22,7 +24,8 @@ namespace DeadManZone.Presentation.DragDrop
             GridCoord pieceAnchor,
             PieceDefinition definition,
             PieceRotation pieceRotation,
-            PieceHoverCardController hoverCardController = null)
+            PieceHoverCardController hoverCardController = null,
+            BoardView boardView = null)
         {
             instanceId = pieceInstanceId;
             pieceId = pieceDefinitionId;
@@ -30,6 +33,7 @@ namespace DeadManZone.Presentation.DragDrop
             _definition = definition;
             rotation = pieceRotation;
             _hoverCardController = hoverCardController;
+            _boardView = boardView;
         }
 
         public void OnBeginDrag(PointerEventData eventData)
@@ -65,7 +69,13 @@ namespace DeadManZone.Presentation.DragDrop
             if (_definition == null)
                 return;
 
-            _hoverCardController?.Show(_definition, eventData.position);
+            SynergyEngine.SynergyResult? synergy = null;
+            if (_boardView != null && !string.IsNullOrEmpty(instanceId))
+            {
+                synergy = _boardView.GetSynergyForInstance(instanceId);
+            }
+
+            _hoverCardController?.Show(_definition, eventData.position, synergy);
         }
 
         public void OnPointerExit(PointerEventData eventData) =>

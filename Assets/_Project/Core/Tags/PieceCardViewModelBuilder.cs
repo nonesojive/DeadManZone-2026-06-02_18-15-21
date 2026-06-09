@@ -1,11 +1,12 @@
 using System;
 using DeadManZone.Core.Board;
+using DeadManZone.Core.Combat;
 
 namespace DeadManZone.Core.Tags
 {
     public static class PieceCardViewModelBuilder
     {
-        public static PieceCardViewModel Build(PieceDefinition piece)
+        public static PieceCardViewModel Build(PieceDefinition piece, SynergyEngine.SynergyResult? synergy = null)
         {
             if (piece == null)
                 throw new ArgumentNullException(nameof(piece));
@@ -24,7 +25,9 @@ namespace DeadManZone.Core.Tags
                 ArmorType = piece.ArmorType,
                 IdentityTags = visibleTags.IdentityTags,
                 OptionalTags = visibleTags.OptionalTags,
-                OverflowCount = visibleTags.OverflowCount
+                OverflowCount = visibleTags.OverflowCount,
+                SynergyDamageBonus = synergy?.DamageBonus ?? 0,
+                SynergyArmorBuffSteps = synergy?.ArmorBuffSteps ?? 0
             };
         }
     }

@@ -9,7 +9,13 @@ import bpy
 import bmesh
 import math
 import os
+import sys
 from mathutils import Vector, Euler
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
+from neutral_token_camera import configure_token_camera
 
 # Muted neutral palette from art spec
 MUD_CANVAS = (0.45, 0.48, 0.42, 1.0)
@@ -17,7 +23,6 @@ GUNMETAL = (0.25, 0.26, 0.28, 1.0)
 WORN_LEATHER = (0.22, 0.16, 0.11, 1.0)
 HELMET_DARK = (0.30, 0.31, 0.28, 1.0)
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 ART_NEUTRAL = os.path.normpath(os.path.join(SCRIPT_DIR, ".."))
 OUTPUT_BLEND = os.path.join(SCRIPT_DIR, "conscript_rifleman.blend")
 OUTPUT_ICON = os.path.join(ART_NEUTRAL, "Renders", "Icons", "conscript_rifleman_icon.png")
@@ -238,26 +243,11 @@ def setup_render_scene():
     fill.data.size = 2.5
     fill.rotation_euler = (math.radians(60), 0.0, math.radians(-140))
 
-    # Orthographic isometric camera (spec: 35° elev, 45° azimuth)
+    # Orthographic isometric token camera (see neutral_token_camera.py)
     bpy.ops.object.camera_add()
     cam = bpy.context.active_object
     cam.name = "RenderCamera"
-    cam.data.type = "ORTHO"
-    cam.data.ortho_scale = 2.35
-
-    elev = math.radians(35)
-    az = math.radians(225)
-    dist = 6.0
-    target = Vector((0.05, 0.0, 0.55))
-    cam.location = Vector(
-        (
-            dist * math.cos(elev) * math.cos(az),
-            dist * math.cos(elev) * math.sin(az),
-            dist * math.sin(elev),
-        )
-    )
-    direction = target - cam.location
-    cam.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+    configure_token_camera(cam, ortho_scale=2.35, target_z=0.55)
     scene.camera = cam
 
 

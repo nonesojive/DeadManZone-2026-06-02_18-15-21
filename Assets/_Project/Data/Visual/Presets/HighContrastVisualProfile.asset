@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c3e5f7a9b0d2e4f60718293a4b5c6d7, type: 3}
+  m_Name: HighContrastVisualProfile
+  m_EditorClassIdentifier: DeadManZone.Presentation::DeadManZone.Presentation.Visual.VisualProfileSO
+  displayName: High Contrast
+  uiTheme: {fileID: 11400000, guid: 61eeab1f4a9c51c429f3af65eb4c88ee, type: 2}
+  mainMenuAtmosphere: {fileID: 11400000, guid: c6034071a06d57b41bb35350eceb2a92, type: 2}
+  mainMenuLighting: {fileID: 11400000, guid: c243c9c4dce9b0044b0c95a638925be9, type: 2}
+  runAtmosphere: {fileID: 11400000, guid: ec12352ebaef42e4e8827c914df62a35, type: 2}
+  postProcessProfile: {fileID: 0}

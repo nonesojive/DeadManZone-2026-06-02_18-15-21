@@ -121,6 +121,8 @@ namespace DeadManZone.Presentation.Run
             bool showBattlefield = inCombat || aftermath;
             SetBuildPanelAlpha(1f);
             SetCombatPresentationLayout(showBattlefield);
+            if (buildPanel != null)
+                ShopBackgroundBootstrap.SetVisible(buildPanel.transform, inBuild);
 
             if (inBuild && RunManager.Instance?.Orchestrator != null)
             {

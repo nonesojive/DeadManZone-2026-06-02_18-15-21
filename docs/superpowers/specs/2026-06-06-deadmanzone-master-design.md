@@ -23,6 +23,7 @@ This is the consolidated design reference for **DeadManZone** as of the June 202
 | `docs/superpowers/specs/2026-06-04-deadmanzone-combat-sim-completion-design.md` | Movement/attack-speed plumbing, 7-column neutral |
 | `docs/superpowers/specs/2026-06-04-build-screen-layout-design.md` | Build UI, reserves grid, rotation, pause menu |
 | `docs/superpowers/specs/2026-06-05-deadmanzone-neutral-faction-art-design.md` | Neutral art pipeline |
+| `docs/superpowers/specs/2026-06-06-deadmanzone-top-down-visual-commitment.md` | Isometric tokens + top-down terrain; 3D combat deferred |
 
 ---
 
@@ -59,7 +60,7 @@ The player is **quartermaster and general**: arrange forces on a spatial grid, s
 | Gauntlet length | 10 fights, linear | Campaign chapters, branching |
 | PvP | Schema-ready, not shipped | Async PvP |
 | Meta | Achievements, local leaderboard | Steam, broader unlock tree |
-| Combat presentation | Top-down 2D, simple VFX | Fog-of-war intro, richer VFX, optional 3D |
+| Combat presentation | 2D grid, isometric tokens, simple VFX | Fog-of-war intro, richer VFX, optional 3D combat skin |
 
 **Target run length:** ~30–40 minutes for a full 10-fight gauntlet.
 
@@ -531,10 +532,12 @@ Main Menu (Continue / New Run / Achievements / Leaderboard)
 
 ### Combat presentation (demo)
 
-- Top-down board view.
+- **Unified 2D grid** — isometric unit tokens on top-down terrain; same sprites in build and combat (no 3D scene transition).
 - Simple attack flashes and damage numbers (`CombatVfxController`).
 - Brief loading overlay entering combat.
+- Y-sort, drop shadows, and VFX for depth (see 2D visual commitment spec).
 - Fog-of-war gas reveal: **deferred** post-demo.
+- Full 3D battle replay: **deferred** post-demo (optional presentation skin on same event log).
 
 ---
 
@@ -548,22 +551,24 @@ Main Menu (Continue / New Run / Achievements / Leaderboard)
 | Wear | Beat-up kit, patched coats, scuffed vehicles |
 | vs Iron Vanguard | IV = brass, diesel glow; Neutral = mud, canvas, field-expedient |
 
-### Camera standard (locked for renders)
+### Camera standard (locked)
 
-| Setting | Value |
-|---------|--------|
-| Projection | Orthographic |
-| Elevation | ~35° |
-| Azimuth | ~45° (3/4 isometric) |
-| Background | Transparent PNG |
-| Shop icon | 256×256 px → `PieceDefinitionSO.icon` |
-| Board cell tile | 128×128 px (Phase 3 — requires code) |
+**Visual commitment:** `2026-06-06-deadmanzone-top-down-visual-commitment.md`
 
-### Pipeline
+| Asset | Camera | Resolution |
+|-------|--------|------------|
+| Unit tokens (shop/board/combat) | Orthographic 3/4 isometric (~35°, facing bottom-right) | 256×256 icon, 128×128 cell |
+| Terrain tiles (zones) | True top-down (90°) | Per tile asset |
+
+**AI style anchor:** `Assets/Grok Images/Isometric Batch 2/grok-image-2eb75a93-e52d-4847-ae43-03394588e5fd.jpg`
+
+### Pipeline (primary: AI)
 
 ```
-Blender (model + PBR) → template scene render → PNG → Unity Sprite import → PieceDefinitionSO.icon
+SuperGrok Imagine → crop + background removal → PNG → Unity Sprite → PieceDefinitionSO.icon
 ```
+
+Optional Blender fallback: `neutral_token_camera.py` isometric render for vehicles.
 
 **Phased delivery:**
 
@@ -743,7 +748,8 @@ Automated test: same seed + boards + commands → byte-identical event log. Run 
 | Rotation | Optional Q/R while dragging | Spatial puzzle depth |
 | Tutorial softness | Enemy templates only | Transparent; no hidden player nerfs |
 | Faction unlock | First victory unlocks 2 factions | Light meta without grind |
-| Art pipeline | Blender → ortho isometric PNG | Matches 2D presentation; modular cells later |
+| Visual presentation | 2D grid: isometric tokens + top-down terrain | Infantry readable; matches code and solo scope |
+| Art pipeline | SuperGrok AI sprites (Blender optional) | Style anchor locked; 3D combat deferred |
 
 ---
 

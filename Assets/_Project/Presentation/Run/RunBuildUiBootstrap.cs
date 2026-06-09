@@ -37,10 +37,12 @@ namespace DeadManZone.Presentation.Run
             if (mainRowLayout == null)
                 mainRowLayout = buildPanel.Find("MainRow")?.GetComponent<BuildRowLayoutFitter>();
 
+            ShopBackgroundBootstrap.ApplyToBuildPanel(buildPanel, UiThemeProvider.Current);
             MoveLastLogToTopBar();
             ApplyRunHudPanel();
             ApplyReservesLayout();
             ApplySellZoneSize();
+            BuildUiChromeBootstrap.Apply(buildPanel);
         }
 
         private const float LastLogAnchorX = 0.895f;

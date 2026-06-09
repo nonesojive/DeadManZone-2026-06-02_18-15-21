@@ -29,12 +29,13 @@ MonoBehaviour:
   synergyTags:
   - mechanical
   abilityTags: []
-  maxHp: 16
-  baseDamage: 5
+  maxHp: 160
+  baseDamage: 40
   cooldownTicks: 3
   goldCost: 10
   requisitionCost: 2
   manpowerCost: 1
+  musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
   shopLane: 2

@@ -12,6 +12,9 @@ namespace DeadManZone.Core.Content
 
         public void Register(PieceDefinition piece, ShopLane lane, bool includeInShopPool = true)
         {
+            if (_piecesById.ContainsKey(piece.Id))
+                RemoveFromShopPools(piece.Id);
+
             _piecesById[piece.Id] = piece;
             if (!includeInShopPool)
                 return;
@@ -45,5 +48,17 @@ namespace DeadManZone.Core.Content
             _piecesById.Values
                 .Where(p => p.Category is PieceCategory.Building or PieceCategory.Hybrid)
                 .ToList();
+
+        private void RemoveFromShopPools(string pieceId)
+        {
+            foreach (var pool in _pools.Values)
+            {
+                for (int i = pool.Count - 1; i >= 0; i--)
+                {
+                    if (pool[i].Id == pieceId)
+                        pool.RemoveAt(i);
+                }
+            }
+        }
     }
 }

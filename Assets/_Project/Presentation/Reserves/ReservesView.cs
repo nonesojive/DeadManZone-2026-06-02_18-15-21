@@ -4,6 +4,7 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Data;
 using DeadManZone.Game;
+using DeadManZone.Game.Dev;
 using DeadManZone.Presentation.Board;
 using DeadManZone.Presentation.DragDrop;
 using DeadManZone.Presentation.Visual;
@@ -56,7 +57,7 @@ namespace DeadManZone.Presentation.Reserves
             EnsureGridBuilt();
             SyncGridFromBoardView();
             SyncPiecesOverlay();
-            var registry = _database != null ? _database.BuildRegistry() : ContentDatabase.Load()?.BuildRegistry();
+            var registry = _database != null ? ContentRegistryProvider.Build(_database) : ContentRegistryProvider.Build(ContentDatabase.Load());
             if (registry == null)
                 return;
 

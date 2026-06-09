@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bad06eddaf305704088f4041c67b1296, type: 3}
+  m_Name: HighContrastUiTheme
+  m_EditorClassIdentifier: DeadManZone.Presentation::DeadManZone.Presentation.Visual.UiThemeSO
+  backgroundColor: {r: 0.06, g: 0.07, b: 0.08, a: 1}
+  panelColor: {r: 0.14, g: 0.15, b: 0.13, a: 0.96}
+  cardColor: {r: 0.18, g: 0.19, b: 0.17, a: 0.98}
+  accentColor: {r: 0.85, g: 0.65, b: 0.2, a: 1}
+  accentMutedColor: {r: 0.55, g: 0.42, b: 0.12, a: 1}
+  dangerColor: {r: 0.78, g: 0.22, b: 0.15, a: 1}
+  sellZoneColor: {r: 0.42, g: 0.14, b: 0.1, a: 0.85}
+  textPrimary: {r: 0.98, g: 0.98, b: 0.96, a: 1}
+  textSecondary: {r: 0.82, g: 0.8, b: 0.74, a: 1}
+  textOnAccent: {r: 0.1, g: 0.08, b: 0.06, a: 1}
+  buttonNormal: {r: 0.22, g: 0.24, b: 0.21, a: 0.98}
+  buttonHighlighted: {r: 0.32, g: 0.34, b: 0.3, a: 1}
+  buttonPressed: {r: 0.14, g: 0.15, b: 0.13, a: 1}
+  rearZoneColor: {r: 0.13440001, g: 0.2572, b: 0.38, a: 1}
+  supportZoneColor: {r: 0.16160001, g: 0.32, b: 0.2144, a: 1}
+  frontZoneColor: {r: 0.48, g: 0.17007999, b: 0.12239999, a: 1}
+  neutralZoneColor: {r: 0.32, g: 0.26464, b: 0.18159999, a: 1}
+  specialTileColor: {r: 0.62, g: 0.52, b: 0.18, a: 0.45}
+  tileHoverColor: {r: 0.35, g: 0.38, b: 0.45, a: 0.5}
+  invalidPlacementColor: {r: 0.8, g: 0.15, b: 0.12, a: 0.55}
+  generalLaneTint: {r: 0.2, g: 0.22, b: 0.28, a: 0.35}
+  engineersLaneTint: {r: 0.18, g: 0.24, b: 0.2, a: 0.35}
+  requisitionLaneTint: {r: 0.26, g: 0.18, b: 0.24, a: 0.35}
+  unitTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  buildingTint: {r: 0.48, g: 0.4, b: 0.28, a: 1}
+  hybridTint: {r: 0.38, g: 0.32, b: 0.48, a: 1}
+  combatOverlayColor: {r: 0.02, g: 0.03, b: 0.04, a: 0.6}
+  combatBannerColor: {r: 0.08, g: 0.09, b: 0.08, a: 0.9}
+  panelSprite: {fileID: 0}
+  cardSprite: {fileID: 0}
+  modalFrameSprite: {fileID: 0}
+  sidebarPanelSprite: {fileID: 0}
+  inventoryPanelSprite: {fileID: 0}
+  securityTerminalFrameSprite: {fileID: 0}
+  bannerSprite: {fileID: 0}
+  buttonNormalSprite: {fileID: 0}
+  buttonHighlightedSprite: {fileID: 0}
+  buttonPressedSprite: {fileID: 0}
+  buttonDisabledSprite: {fileID: 0}
+  accentButtonSprite: {fileID: 0}
+  secondaryButtonSprite: {fileID: 0}
+  dangerButtonSprite: {fileID: 0}
+  warningButtonSprite: {fileID: 0}
+  slotEmptySprite: {fileID: 0}
+  slotSelectedSprite: {fileID: 0}
+  storageSlotEmptySprite: {fileID: 0}
+  storageSlotSelectedSprite: {fileID: 0}
+  menuBackgroundSprite: {fileID: 0}
+  runBackgroundSprite: {fileID: 0}
+  combatBackgroundSprite: {fileID: 0}

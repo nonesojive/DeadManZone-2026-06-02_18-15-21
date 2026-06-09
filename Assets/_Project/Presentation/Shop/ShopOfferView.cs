@@ -2,6 +2,7 @@ using System;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Shop;
 using DeadManZone.Data;
+using DeadManZone.Game.Dev;
 using DeadManZone.Presentation.Board;
 using DeadManZone.Presentation.DragDrop;
 using DeadManZone.Presentation.Visual;
@@ -116,7 +117,7 @@ namespace DeadManZone.Presentation.Shop
             EnsurePiecePreview();
 
             var source = PieceVisualLookup.GetSource(offer.PieceId);
-            var registry = _database != null ? _database.BuildRegistry() : ContentDatabase.Load()?.BuildRegistry();
+            var registry = _database != null ? ContentRegistryProvider.Build(_database) : ContentRegistryProvider.Build(ContentDatabase.Load());
             PieceDefinition definition = null;
             if (registry != null)
                 registry.TryGetById(offer.PieceId, out definition);

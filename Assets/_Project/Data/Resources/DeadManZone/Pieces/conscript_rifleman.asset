@@ -32,6 +32,7 @@ MonoBehaviour:
   goldCost: 4
   requisitionCost: 0
   manpowerCost: 6
+  musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
   shopLane: 0
@@ -44,4 +45,6 @@ MonoBehaviour:
   factionId: neutral
   icon: {fileID: 21300000, guid: 4eb2bb56d6282714f87f94a6c98a1cd7, type: 3}
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
-  cellSprites: []
+  cellSprites:
+  - localCell: {x: 0, y: 0}
+    sprite: {fileID: 21300000, guid: 294d6c7c577a915409df1b9c994754a2, type: 3}

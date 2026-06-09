@@ -7,6 +7,7 @@ using DeadManZone.Core.Content;
 using DeadManZone.Core.Run;
 using DeadManZone.Data;
 using DeadManZone.Game;
+using DeadManZone.Game.Dev;
 using DeadManZone.Presentation.Board;
 using DeadManZone.Presentation.Visual;
 using TMPro;
@@ -33,7 +34,7 @@ namespace DeadManZone.Presentation.Combat
         combatDirector = GetComponent<CombatDirector>();
 
       var database = ContentDatabase.Load();
-      _registry = database?.BuildRegistry();
+      _registry = ContentRegistryProvider.Build(database);
     }
 
     private void OnEnable()

@@ -34,6 +34,7 @@ MonoBehaviour:
   goldCost: 5
   requisitionCost: 0
   manpowerCost: 10
+  musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
   shopLane: 0

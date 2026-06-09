@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
+using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Content;
 using DeadManZone.Core.Run;
 using DeadManZone.Data;
 using DeadManZone.Game;
+using DeadManZone.Game.Dev;
 using DeadManZone.Presentation.DragDrop;
 using DeadManZone.Presentation.Visual;
 using UnityEngine;
@@ -23,14 +25,20 @@ namespace DeadManZone.Presentation.Board
         [SerializeField] private BoardTileView tileViewTemplate;
 
         [SerializeField] private UiThemeSO theme;
+        [SerializeField] private BoardTerrainArtSO terrainArt;
+        [SerializeField] private BoardBattlefieldBackdrop battlefieldBackdrop;
+        [SerializeField] private BoardGridOverlay gridOverlay;
         [SerializeField] private PieceHoverCardController pieceHoverCardController;
 
         private readonly Dictionary<GridCoord, BoardTileView> _tiles = new();
         private readonly Dictionary<string, PieceShapeVisual> _shapeVisualsByInstance = new();
         private RectTransform _piecesOverlay;
+        private BoardSynergyOverlay _synergyOverlay;
+        private SynergySidePanel _synergySidePanel;
+        private SynergyEngine.FightStartSynergySnapshot _lastSynergySnapshot;
         private BoardLayout _layout;
         private BoardState _boardState;
-        private PieceDefinition _selectedPiece;
+private PieceDefinition _selectedPiece;
         private string _selectedPlacedInstanceId;
 
         public int TileCount => _tiles.Count;
@@ -49,6 +57,7 @@ namespace DeadManZone.Presentation.Board
             SyncPiecesOverlay();
             Canvas.ForceUpdateCanvases();
             GetComponent<BoardZoneStripLayout>()?.ApplyLayout();
+            SyncBattlefieldPresentation();
 
             if (_boardState != null)
                 RefreshOccupancyVisuals();
@@ -57,6 +66,7 @@ namespace DeadManZone.Presentation.Board
         private void Awake()
         {
             BoardZoneStripBootstrap.Ensure(this);
+            EnsureBattlefieldPresentation();
             ResolvePieceHoverCardController();
         }
 
@@ -96,7 +106,7 @@ namespace DeadManZone.Presentation.Board
 
                     var zone = layout.GetZone(coord);
                     bool isSpecial = layout.IsSpecialTile(coord);
-                    tileView.Initialize(coord, GetZoneColor(zone), isSpecial);
+                    InitializeTile(tileView, coord, isSpecial);
                     tileView.Clicked += OnTileClicked;
                     if (tileObject.GetComponent<BoardTileDropTarget>() == null)
                         tileObject.AddComponent<BoardTileDropTarget>();
@@ -109,6 +119,7 @@ namespace DeadManZone.Presentation.Board
             EnsurePiecesOverlay();
             Canvas.ForceUpdateCanvases();
             GetComponent<BoardZoneStripLayout>()?.ApplyLayout();
+            SyncBattlefieldPresentation();
         }
 
         public bool TryPlaceFromReserves(string instanceId, GridCoord anchor, PieceRotation rotation)
@@ -197,7 +208,7 @@ namespace DeadManZone.Presentation.Board
             }
 
             if (state.PlayerBoard != null)
-                LoadSnapshot(state.PlayerBoard, database.BuildRegistry());
+                LoadSnapshot(state.PlayerBoard, ContentRegistryProvider.Build(database));
         }
 
         public void RefreshCombatFromRunManager(ContentDatabase database = null)
@@ -210,7 +221,7 @@ namespace DeadManZone.Presentation.Board
             if (state?.Combat?.EnemyBoard == null || state.PlayerBoard == null)
                 return;
 
-            var registry = database.BuildRegistry();
+            var registry = ContentRegistryProvider.Build(database);
             var playerBoard = BoardSnapshotMapper.ToBoard(state.PlayerBoard, registry);
             var enemyBoard = BoardSnapshotMapper.ToBoard(state.Combat.EnemyBoard, registry);
             var battlefield = BattlefieldState.FromBoards(playerBoard, enemyBoard);
@@ -262,8 +273,15 @@ namespace DeadManZone.Presentation.Board
 
         public BoardTileView GetTile(GridCoord coord) => _tiles.TryGetValue(coord, out var tile) ? tile : null;
 
-        public void RefreshZoneColors()
+        public SynergyEngine.SynergyResult? GetSynergyForInstance(string instanceId)
         {
+            if (_lastSynergySnapshot != null && _lastSynergySnapshot.TryGet(instanceId, out var result))
+                return result;
+            return null;
+        }
+
+        public void RefreshZoneColors()
+{
             if (_layout == null)
                 return;
 
@@ -439,7 +457,7 @@ namespace DeadManZone.Presentation.Board
                 var coord = pair.Key;
                 var tile = pair.Value;
                 var zone = _layout.GetZone(coord);
-                tile.Initialize(coord, GetZoneColor(zone), _layout.IsSpecialTile(coord));
+                InitializeTile(tile, coord, _layout.IsSpecialTile(coord));
                 tile.SetOccupied(null, false);
             }
 
@@ -454,6 +472,8 @@ namespace DeadManZone.Presentation.Board
             if (gridLayout != null)
                 LayoutRebuilder.ForceRebuildLayoutImmediate(gridLayout.GetComponent<RectTransform>());
             Canvas.ForceUpdateCanvases();
+            
+            _lastSynergySnapshot = SynergyEngine.EvaluateFightStart(_boardState);
             var hoverController = ResolvePieceHoverCardController();
 
             foreach (var piece in _boardState.Pieces)
@@ -476,7 +496,8 @@ namespace DeadManZone.Presentation.Board
                     piece.Anchor,
                     piece.Definition,
                     piece.Rotation,
-                    hoverController);
+                    hoverController,
+                    this);
 
                 CreateShapeVisual(
                     piece.InstanceId,
@@ -485,8 +506,14 @@ namespace DeadManZone.Presentation.Board
                     piece.Rotation);
             }
 
+            if (_synergyOverlay != null)
+                _synergyOverlay.RefreshLinks(_boardState, _shapeVisualsByInstance);
+
+            if (_synergySidePanel != null)
+                _synergySidePanel.Refresh(_boardState, theme);
+
             hoverController?.Hide();
-        }
+}
 
         public void HidePieceHoverCard() => pieceHoverCardController?.Hide();
 
@@ -506,6 +533,8 @@ namespace DeadManZone.Presentation.Board
                 overlayGo.transform.SetParent(parent, false);
                 overlayGo.transform.SetSiblingIndex(gridRect.GetSiblingIndex() + 1);
                 _piecesOverlay = overlayGo.GetComponent<RectTransform>();
+                _synergyOverlay = overlayGo.AddComponent<BoardSynergyOverlay>();
+                _synergySidePanel = SynergySidePanel.Create(parent, theme);
             }
 
             SyncPiecesOverlay();
@@ -603,6 +632,88 @@ namespace DeadManZone.Presentation.Board
         }
 
         private Color GetZoneColor(ZoneType zone) => Theme.GetZoneColor(zone);
+
+        private void InitializeTile(BoardTileView tile, GridCoord coord, bool isSpecial)
+        {
+            var zone = _layout.GetZone(coord);
+            bool useBackdrop = UsesBattlefieldBackdrop();
+            tile.Initialize(
+                coord,
+                GetZoneColor(zone),
+                isSpecial,
+                useBackdrop ? null : PickTerrainSprite(zone, coord),
+                useBackdrop);
+        }
+
+        private BoardTerrainArtSO ResolveTerrainArt() =>
+            terrainArt != null ? terrainArt : BoardTerrainArtProvider.Current;
+
+        private bool UsesBattlefieldBackdrop()
+        {
+            var art = ResolveTerrainArt();
+            return art != null && art.HasBattlefieldBackdrop;
+        }
+
+        private Sprite PickTerrainSprite(ZoneType zone, GridCoord coord)
+        {
+            var art = ResolveTerrainArt();
+            return art != null && art.HasTerrainTiles ? art.PickTile(zone, coord) : null;
+        }
+
+        private void EnsureBattlefieldPresentation()
+        {
+            if (gridLayout == null)
+                return;
+
+            var boardRect = transform as RectTransform;
+            var gridRect = gridLayout.GetComponent<RectTransform>();
+            if (boardRect == null || gridRect == null)
+                return;
+
+            if (battlefieldBackdrop == null || gridOverlay == null)
+            {
+                var ensured = BoardBattlefieldBootstrap.Ensure(this, boardRect, gridRect, gridLayout);
+                battlefieldBackdrop ??= ensured.backdrop;
+                gridOverlay ??= ensured.overlay;
+            }
+        }
+
+        private void SyncBattlefieldPresentation()
+        {
+            if (gridLayout == null || _layout == null)
+                return;
+
+            EnsureBattlefieldPresentation();
+
+            var gridRect = gridLayout.GetComponent<RectTransform>();
+            var art = ResolveTerrainArt();
+            var theme = Theme;
+            bool useBackdrop = art != null && art.HasBattlefieldBackdrop;
+
+            if (battlefieldBackdrop != null)
+            {
+                battlefieldBackdrop.Configure(gridRect, useBackdrop ? art.battlefieldBackdrop : null);
+                battlefieldBackdrop.gameObject.SetActive(useBackdrop);
+            }
+
+            if (gridOverlay != null)
+            {
+                _layout.GetHorizontalZoneColumns(out int rearCols, out int supportCols);
+                gridOverlay.gameObject.SetActive(useBackdrop);
+                if (useBackdrop)
+                {
+                    gridOverlay.Configure(
+                        gridRect,
+                        gridLayout,
+                        _layout.Width,
+                        _layout.Height,
+                        rearCols,
+                        supportCols,
+                        theme.boardGridLineColor,
+                        theme.boardZoneDividerColor);
+                }
+            }
+        }
 
         private static PieceRotation RotationFromDegrees(int degrees) =>
             degrees switch

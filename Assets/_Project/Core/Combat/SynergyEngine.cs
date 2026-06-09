@@ -14,16 +14,30 @@ namespace DeadManZone.Core.Combat
             public int MoveChargeBonus { get; init; }
         }
 
+        public readonly struct SynergyLink
+        {
+            public string SourceInstanceId { get; init; }
+            public string TargetInstanceId { get; init; }
+            public string SourceTagId { get; init; }
+            public SynergyStat Stat { get; init; }
+        }
+
         public sealed class FightStartSynergySnapshot
         {
             private readonly IReadOnlyDictionary<string, SynergyResult> _resultsByInstanceId;
+            private readonly IReadOnlyList<SynergyLink> _links;
+
+            public IReadOnlyList<SynergyLink> Links => _links;
 
             public static FightStartSynergySnapshot Empty { get; } =
-                new(new Dictionary<string, SynergyResult>());
+                new(new Dictionary<string, SynergyResult>(), new List<SynergyLink>());
 
-            internal FightStartSynergySnapshot(IReadOnlyDictionary<string, SynergyResult> resultsByInstanceId)
+            internal FightStartSynergySnapshot(
+                IReadOnlyDictionary<string, SynergyResult> resultsByInstanceId,
+                IReadOnlyList<SynergyLink> links)
             {
                 _resultsByInstanceId = resultsByInstanceId;
+                _links = links;
             }
 
             public bool TryGet(string instanceId, out SynergyResult result)
@@ -45,6 +59,8 @@ namespace DeadManZone.Core.Combat
 
             var piecesById = new Dictionary<string, PlacedPiece>(System.StringComparer.Ordinal);
             var resultsById = new Dictionary<string, SynergyResult>(System.StringComparer.Ordinal);
+            var links = new List<SynergyLink>();
+
             foreach (var piece in board.Pieces)
             {
                 piecesById[piece.InstanceId] = piece;
@@ -72,12 +88,12 @@ namespace DeadManZone.Core.Combat
                     for (int ruleIndex = 0; ruleIndex < rules.Count; ruleIndex++)
                     {
                         var rule = rules[ruleIndex];
-                        ApplyRule(source, adjacentPieces, rule, resultsById);
+                        ApplyRule(source, sourceTagId, adjacentPieces, rule, resultsById, links);
                     }
                 }
             }
 
-            return new FightStartSynergySnapshot(resultsById);
+            return new FightStartSynergySnapshot(resultsById, links);
         }
 
         public static void ApplyToCombatants(
@@ -117,9 +133,11 @@ namespace DeadManZone.Core.Combat
 
         private static void ApplyRule(
             PlacedPiece sourcePiece,
+            string sourceTagId,
             IReadOnlyList<PlacedPiece> adjacentPieces,
             SynergyEffectDefinition rule,
-            Dictionary<string, SynergyResult> resultsById)
+            Dictionary<string, SynergyResult> resultsById,
+            List<SynergyLink> links)
         {
             if (rule.Direction == SynergyDirection.Outbound)
             {
@@ -129,7 +147,7 @@ namespace DeadManZone.Core.Combat
                     if (!rule.NeighborFilter.Matches(adjacentPiece.Definition))
                         continue;
 
-                    ApplyEffect(adjacentPiece.InstanceId, rule, resultsById);
+                    ApplyEffect(sourcePiece.InstanceId, adjacentPiece.InstanceId, sourceTagId, rule, resultsById, links);
                 }
 
                 return;
@@ -139,18 +157,22 @@ namespace DeadManZone.Core.Combat
             {
                 for (int i = 0; i < adjacentPieces.Count; i++)
                 {
-                    if (!rule.NeighborFilter.Matches(adjacentPieces[i].Definition))
+                    var adjacentPiece = adjacentPieces[i];
+                    if (!rule.NeighborFilter.Matches(adjacentPiece.Definition))
                         continue;
 
-                    ApplyEffect(sourcePiece.InstanceId, rule, resultsById);
+                    ApplyEffect(adjacentPiece.InstanceId, sourcePiece.InstanceId, sourceTagId, rule, resultsById, links);
                 }
             }
         }
 
         private static void ApplyEffect(
+            string sourceInstanceId,
             string targetInstanceId,
+            string sourceTagId,
             SynergyEffectDefinition rule,
-            Dictionary<string, SynergyResult> resultsById)
+            Dictionary<string, SynergyResult> resultsById,
+            List<SynergyLink> links)
         {
             if (!resultsById.TryGetValue(targetInstanceId, out var result))
                 result = default;
@@ -158,6 +180,14 @@ namespace DeadManZone.Core.Combat
             int amount = ResolveAmount(rule);
             if (amount == 0)
                 return;
+
+            links.Add(new SynergyLink
+            {
+                SourceInstanceId = sourceInstanceId,
+                TargetInstanceId = targetInstanceId,
+                SourceTagId = sourceTagId,
+                Stat = rule.Stat
+            });
 
             switch (rule.Stat)
             {

@@ -16,5 +16,7 @@ namespace DeadManZone.Core.Tags
         public IReadOnlyList<TagDefinition> IdentityTags { get; init; } = Array.Empty<TagDefinition>();
         public IReadOnlyList<TagDefinition> OptionalTags { get; init; } = Array.Empty<TagDefinition>();
         public int OverflowCount { get; init; }
+        public int SynergyDamageBonus { get; init; }
+        public int SynergyArmorBuffSteps { get; init; }
     }
 }

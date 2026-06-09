@@ -116,7 +116,9 @@ namespace DeadManZone.Presentation.Editor
                 boardView, shopView, reservesView, combatDirector, tacticPanel, hud, endOverlay, pauseMenu,
                 beginFight, menuBtn, rowLayout);
 
+            ShopBackgroundBootstrap.ApplyToBuildPanel(buildPanel.transform, theme);
             RunBuildUiBootstrap.EnsureOnBuildPanel(buildPanel.transform, boardView, rowLayout);
+            BuildUiChromeBootstrap.Apply(buildPanel.transform);
             RunHudLayoutFitter.EnsureOnBuildPanel(buildPanel.transform, builtHud.Root, rowLayout);
             ReservesLayoutFitter.EnsureOnBuildPanel(
                 buildPanel.transform,
@@ -157,6 +159,10 @@ namespace DeadManZone.Presentation.Editor
             float gridLeft = 0.02f;
             float gridRight = 0.98f;
 
+            var backdropGo = new GameObject("BattlefieldBackdrop", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            backdropGo.transform.SetParent(parent, false);
+            var backdrop = backdropGo.AddComponent<BoardBattlefieldBackdrop>();
+
             var gridRoot = new GameObject("TileGrid", typeof(RectTransform));
             gridRoot.transform.SetParent(parent, false);
             var gridRect = gridRoot.GetComponent<RectTransform>();
@@ -175,6 +181,21 @@ namespace DeadManZone.Presentation.Editor
             const int boardHeight = 10;
             var gridFitter = gridRoot.AddComponent<GridLayoutCellFitter>();
             gridFitter.Configure(boardWidth, boardHeight);
+
+            var overlayGo = new GameObject("GridOverlay", typeof(RectTransform), typeof(CanvasRenderer));
+            overlayGo.transform.SetParent(parent, false);
+            var gridOverlay = overlayGo.AddComponent<BoardGridOverlay>();
+            backdrop.Configure(gridRect, null);
+            gridOverlay.Configure(
+                gridRect,
+                grid,
+                boardWidth,
+                boardHeight,
+                rearCols,
+                supportCols,
+                theme.boardGridLineColor,
+                theme.boardZoneDividerColor);
+            overlayGo.SetActive(false);
 
             var (rearStrip, rearLabel) = CreateZoneStripSegment(parent, "REAR", theme.rearZoneColor, theme);
             var (supportStrip, supportLabel) = CreateZoneStripSegment(parent, "SUPPORT", theme.supportZoneColor, theme);
@@ -205,6 +226,8 @@ namespace DeadManZone.Presentation.Editor
             serialized.FindProperty("gridLayout").objectReferenceValue = grid;
             serialized.FindProperty("tilePrefab").objectReferenceValue = tilePrefab;
             serialized.FindProperty("theme").objectReferenceValue = theme;
+            serialized.FindProperty("battlefieldBackdrop").objectReferenceValue = backdrop;
+            serialized.FindProperty("gridOverlay").objectReferenceValue = gridOverlay;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return boardView;
         }
@@ -314,7 +337,17 @@ namespace DeadManZone.Presentation.Editor
                 "Defensive" => theme.engineersLaneTint,
                 _ => theme.requisitionLaneTint
             };
-            if (theme.inventoryPanelSprite != null)
+            if (theme.shopBackgroundSprite != null)
+            {
+                laneBg.color = Color.clear;
+                var tintOverlay = MenuSceneSetup.CreateStretchChild(row.transform, "LaneTint");
+                tintOverlay.transform.SetAsFirstSibling();
+                var tintImage = tintOverlay.AddComponent<Image>();
+                laneTint.a = Mathf.Clamp(theme.shopLaneTintScaleWithBackground * 0.35f, 0.04f, 0.18f);
+                tintImage.color = laneTint;
+                tintImage.raycastTarget = false;
+            }
+            else if (theme.inventoryPanelSprite != null)
             {
                 var tintOverlay = MenuSceneSetup.CreateStretchChild(row.transform, "LaneTint");
                 tintOverlay.transform.SetAsFirstSibling();

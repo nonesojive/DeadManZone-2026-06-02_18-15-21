@@ -6,6 +6,7 @@
     "DeadManZone.Presentation",
     "DeadManZone.Game",
     "DeadManZone.Data",
+    "DeadManZone.Data.Editor",
     "Unity.TextMeshPro",
     "Unity.UGUI"
   ],

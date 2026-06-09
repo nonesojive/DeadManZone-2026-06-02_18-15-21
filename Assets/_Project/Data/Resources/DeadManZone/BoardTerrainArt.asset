@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 989ab6c14df49e64aaf98338c52e3bd6, type: 3}
+  m_Name: BoardTerrainArt
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.BoardTerrainArtSO
+  battlefieldBackdrop: {fileID: 21300000, guid: 7f4e2a9c1b8d3e6f5a0c4d2e8b1f9a37, type: 3}
+  rearTiles:
+  - {fileID: 21300000, guid: 2625c54758009504393aebcb5020a15c, type: 3}
+  - {fileID: 21300000, guid: 9ea69126b18b0ad42a81c19f57aa44f0, type: 3}
+  supportTiles:
+  - {fileID: 21300000, guid: a3768a35cbb693f499d8f19c4c60d184, type: 3}
+  - {fileID: 21300000, guid: 7a68deeb615494c48bbb2922b39d9fb9, type: 3}
+  - {fileID: 21300000, guid: 657bab830b9cad846a37e6189b94c89f, type: 3}
+  - {fileID: 21300000, guid: 0f4a0c99025ef514495690f52eab6b9f, type: 3}
+  frontTiles:
+  - {fileID: 21300000, guid: 93d9a10f345a82d4083ccb974b80a029, type: 3}
+  - {fileID: 21300000, guid: dfd662df0feee1b4a851435c6b7750c7, type: 3}
+  - {fileID: 21300000, guid: 1beda1153e1300b41bf1825ce4d8459f, type: 3}
+  - {fileID: 21300000, guid: 3999fdd106b14fc49915c7be1ff49911, type: 3}
+  neutralTiles: []

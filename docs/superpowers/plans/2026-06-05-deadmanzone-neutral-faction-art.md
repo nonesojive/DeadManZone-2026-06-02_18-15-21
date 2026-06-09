@@ -8,7 +8,8 @@
 
 **Tech Stack:** Unity 6, C# Editor scripts, existing `PieceDefinitionSO` / `PieceShapeVisual` presentation layer.
 
-**Spec:** `docs/superpowers/specs/2026-06-05-deadmanzone-neutral-faction-art-design.md`
+**Spec:** `docs/superpowers/specs/2026-06-05-deadmanzone-neutral-faction-art-design.md`  
+**Visual commitment:** `docs/superpowers/specs/2026-06-06-deadmanzone-top-down-visual-commitment.md` (isometric tokens + top-down terrain; SuperGrok primary; 3D combat deferred)
 
 ---
 

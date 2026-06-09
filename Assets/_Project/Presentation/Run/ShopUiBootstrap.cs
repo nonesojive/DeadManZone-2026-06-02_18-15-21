@@ -1,5 +1,6 @@
 using DeadManZone.Presentation.Board;
 using DeadManZone.Presentation.Shop;
+using DeadManZone.Presentation.Visual;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -39,6 +40,9 @@ namespace DeadManZone.Presentation.Run
                 sharedTooltip = FindSharedTooltip();
 
             EnsureSharedTooltipMarker();
+            var buildPanel = shopArea.parent?.parent;
+            if (buildPanel != null)
+                ShopBackgroundBootstrap.ApplyToBuildPanel(buildPanel, UiThemeProvider.Current);
             ApplyLaneRows();
             ApplyRerollButtons();
         }

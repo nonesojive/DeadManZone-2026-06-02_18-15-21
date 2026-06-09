@@ -27,12 +27,13 @@ MonoBehaviour:
   systemTag: hq
   synergyTags: []
   abilityTags: []
-  maxHp: 22
+  maxHp: 220
   baseDamage: 0
   cooldownTicks: 3
   goldCost: 0
   requisitionCost: 0
   manpowerCost: 0
+  musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
   shopLane: 1

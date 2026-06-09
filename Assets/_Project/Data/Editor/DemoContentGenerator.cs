@@ -113,8 +113,23 @@ namespace DeadManZone.Data.Editor
             asset.baseMusterPerShop = baseMusterPerShop;
             asset.startingAuthority = startingAuthority;
             asset.startingMorale = startingMorale;
+            asset.tokenBackgroundColor = DefaultFactionTokenBackground(id);
             EditorUtility.SetDirty(asset);
             return asset;
+        }
+
+        private static Color DefaultFactionTokenBackground(string factionId)
+        {
+            return factionId switch
+            {
+                "iron_vanguard" => new Color(0.22f, 0.28f, 0.38f, 0.45f),
+                "dust_scourge" => new Color(0.42f, 0.34f, 0.24f, 0.45f),
+                "cartel_of_echoes" => new Color(0.32f, 0.26f, 0.42f, 0.45f),
+                "crimson_legion" => new Color(0.45f, 0.20f, 0.18f, 0.45f),
+                "ash_wraiths" => new Color(0.28f, 0.28f, 0.30f, 0.45f),
+                "neutral" => new Color(0.32f, 0.33f, 0.36f, 0.42f),
+                _ => new Color(0f, 0f, 0f, 0f)
+            };
         }
 
         internal static EnemyTemplateSO SaveEnemy(

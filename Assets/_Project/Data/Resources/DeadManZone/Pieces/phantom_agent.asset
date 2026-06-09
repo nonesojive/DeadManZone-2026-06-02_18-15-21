@@ -30,12 +30,13 @@ MonoBehaviour:
   - stealth
   - echo
   abilityTags: []
-  maxHp: 7
-  baseDamage: 3
+  maxHp: 70
+  baseDamage: 24
   cooldownTicks: 2
   goldCost: 7
   requisitionCost: 0
   manpowerCost: 1
+  musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
   shopLane: 0

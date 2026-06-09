@@ -33,6 +33,9 @@ namespace DeadManZone.Data
         public CommandActionFlags commandActions;
         public ShopLane shopLane = ShopLane.Offensive;
 
+        [Header("Shop")]
+        public bool includeInShopPool = true;
+
         [Header("Combat Stats")]
         public AttackSpeedTier attackSpeed = AttackSpeedTier.Medium;
         public AttackRangeTier attackRange = AttackRangeTier.Medium;

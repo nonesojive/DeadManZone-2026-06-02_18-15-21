@@ -16,6 +16,7 @@ namespace DeadManZone.Core.Tags
         public const string Utility = "utility";
         public const string Headquarters = "headquarters";
         public const string Sniper = "sniper";
+        public const string Defender = "defender";
 
         // System
         public const string Combatant = "combatant";

@@ -147,6 +147,45 @@ namespace DeadManZone.Presentation.DragDrop
                 footprintH * _cellSize + (footprintH - 1) * _cellSpacing + pad * 2f);
             rect.localEulerAngles = Vector3.zero;
 
+            float footprintWpx = footprintW * _cellSize + (footprintW - 1) * _cellSpacing;
+            float footprintHpx = footprintH * _cellSize + (footprintH - 1) * _cellSpacing;
+            var blockRootRect = _blockRoot as RectTransform;
+            var footprintBackground = PieceArtResolver.ResolveFootprintBackground(source, theme);
+            if (blockRootRect != null)
+            {
+                PieceFootprintBackground.Create(
+                    blockRootRect,
+                    new Vector2(pad, -pad),
+                    new Vector2(footprintWpx, footprintHpx),
+                    new Vector2(0f, 1f),
+                    new Vector2(0f, 1f),
+                    footprintBackground);
+
+                PieceFootprintOutline.Create(
+                    blockRootRect,
+                    new Vector2(pad, -pad),
+                    new Vector2(footprintWpx, footprintHpx),
+                    new Vector2(0f, 1f),
+                    new Vector2(0f, 1f));
+            }
+
+            if (PieceArtResolver.ShouldUseFootprintIcon(source, new GridCoord(0, 0), rotation, _definition))
+            {
+                var iconGo = new GameObject("FootprintIcon", typeof(RectTransform));
+                iconGo.transform.SetParent(_blockRoot, false);
+                var iconRect = iconGo.GetComponent<RectTransform>();
+                iconRect.anchorMin = Vector2.zero;
+                iconRect.anchorMax = Vector2.one;
+                iconRect.offsetMin = new Vector2(2f, 2f);
+                iconRect.offsetMax = new Vector2(-2f, -2f);
+
+                var iconImage = iconGo.AddComponent<Image>();
+                iconImage.sprite = source.icon;
+                iconImage.preserveAspect = true;
+                iconImage.raycastTarget = false;
+                return;
+            }
+
             var anchor = new GridCoord(0, 0);
             foreach (var cell in cells)
             {
@@ -175,10 +214,6 @@ namespace DeadManZone.Presentation.DragDrop
                 }
 
                 blockImage.raycastTarget = false;
-
-                var outline = block.AddComponent<Outline>();
-                outline.effectColor = new Color(0f, 0f, 0f, 0.5f);
-                outline.effectDistance = new Vector2(1f, -1f);
             }
         }
     }

@@ -27,12 +27,13 @@ MonoBehaviour:
   systemTag: combatant
   synergyTags: []
   abilityTags: []
-  maxHp: 14
-  baseDamage: 4
+  maxHp: 140
+  baseDamage: 32
   cooldownTicks: 3
   goldCost: 9
   requisitionCost: 1
   manpowerCost: 1
+  musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
   shopLane: 2
@@ -43,6 +44,6 @@ MonoBehaviour:
   attackType: 2
   grantedAbility: 0
   factionId: neutral
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 8cc8b7315bb26574ab909c59e8bb2e33, type: 3}
   categoryTint: {r: 0.38, g: 0.32, b: 0.48, a: 1}
   cellSprites: []

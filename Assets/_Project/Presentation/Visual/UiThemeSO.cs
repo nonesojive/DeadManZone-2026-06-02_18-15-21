@@ -42,6 +42,23 @@ namespace DeadManZone.Presentation.Visual
         public Color engineersLaneTint = new(0.18f, 0.24f, 0.2f, 0.35f);
         public Color requisitionLaneTint = new(0.26f, 0.18f, 0.24f, 0.35f);
 
+        [Header("Shop background")]
+        public Sprite shopBackgroundSprite;
+        public Color shopBackgroundScrimColor = new(0.04f, 0.05f, 0.07f, 0.52f);
+        [Range(0.1f, 1f)]
+        public float shopLaneTintScaleWithBackground = 0.45f;
+
+        [Header("Board terrain")]
+        [Range(0f, 1f)]
+        public float terrainZoneTintStrength = 0.2f;
+        [Range(0f, 0.5f)]
+        public float boardCellZoneOverlayAlpha = 0.1f;
+        public Color boardGridLineColor = new(1f, 1f, 1f, 0.14f);
+        public Color boardZoneDividerColor = new(1f, 1f, 1f, 0.28f);
+
+        [Header("Piece token backgrounds")]
+        public Color neutralTokenBackgroundColor = new(0.32f, 0.33f, 0.36f, 0.42f);
+
         [Header("Piece categories")]
         public Color unitTint = new(0.35f, 0.42f, 0.55f, 1f);
         public Color buildingTint = new(0.48f, 0.4f, 0.28f, 1f);
@@ -114,6 +131,12 @@ namespace DeadManZone.Presentation.Visual
 
         public Color GetTileDisplayColor(Color zoneColor) =>
             slotEmptySprite != null ? Color.Lerp(Color.white, zoneColor, 0.35f) : zoneColor;
+
+        public Color GetTerrainTileTint(Color zoneColor) =>
+            Color.Lerp(Color.white, zoneColor, terrainZoneTintStrength);
+
+        public Color GetBoardCellOverlayColor(Color zoneColor) =>
+            new Color(zoneColor.r, zoneColor.g, zoneColor.b, boardCellZoneOverlayAlpha);
 
         public Color GetReserveSlotColor() =>
             storageSlotEmptySprite != null ? new Color(0.92f, 0.91f, 0.88f, 1f) : cardColor;

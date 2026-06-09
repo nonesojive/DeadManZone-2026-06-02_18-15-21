@@ -16,6 +16,8 @@ namespace DeadManZone.Presentation.Board
         [SerializeField] private Image placementOverlay;
 
         private Color _baseColor;
+        private Sprite _terrainSprite;
+        private bool _useBackdropMode;
         private Coroutine _pulseRoutine;
 
         public GridCoord Coord { get; private set; }
@@ -34,11 +36,20 @@ namespace DeadManZone.Presentation.Board
 
         public void OnPointerClick(PointerEventData eventData) => Clicked?.Invoke(Coord);
 
-        public void Initialize(GridCoord coord, Color baseColor, bool isSpecial)
+        public void Initialize(
+            GridCoord coord,
+            Color baseColor,
+            bool isSpecial,
+            Sprite terrainSprite = null,
+            bool useBackdropMode = false)
         {
             Coord = coord;
             IsSpecial = isSpecial;
             _baseColor = baseColor;
+            _useBackdropMode = useBackdropMode;
+            if (terrainSprite != null)
+                _terrainSprite = terrainSprite;
+
             SetOverlay(baseColor, isSpecial, false);
 
             var hover = GetComponent<BoardTileHover>();
@@ -49,15 +60,13 @@ namespace DeadManZone.Presentation.Board
         public void SetBaseColor(Color color)
         {
             _baseColor = color;
-            if (baseImage != null)
-                baseImage.color = UiThemeProvider.Current.GetTileDisplayColor(color);
+            ApplyBaseVisual();
         }
 
         public void SetOverlay(Color baseColor, bool isSpecial, bool isInvalidPlacement)
         {
             _baseColor = baseColor;
-            if (baseImage != null)
-                baseImage.color = UiThemeProvider.Current.GetTileDisplayColor(baseColor);
+            ApplyBaseVisual();
 
             var theme = UiThemeProvider.Current;
             if (specialOverlay != null)
@@ -97,11 +106,48 @@ namespace DeadManZone.Presentation.Board
             if (baseImage == null)
                 yield break;
 
-            var original = _baseColor;
+            var theme = UiThemeProvider.Current;
+            var original = ResolveTileColor(theme);
             baseImage.color = Color.Lerp(original, flashColor, 0.65f);
             yield return new WaitForSeconds(0.12f);
-            baseImage.color = original;
+            ApplyBaseVisual();
             _pulseRoutine = null;
+        }
+
+        private void ApplyBaseVisual()
+        {
+            if (baseImage == null)
+                return;
+
+            var theme = UiThemeProvider.Current;
+            if (_useBackdropMode)
+            {
+                baseImage.sprite = null;
+                baseImage.color = theme.GetBoardCellOverlayColor(_baseColor);
+                return;
+            }
+
+            if (_terrainSprite != null)
+            {
+                baseImage.sprite = _terrainSprite;
+                baseImage.type = Image.Type.Simple;
+                baseImage.preserveAspect = false;
+                baseImage.color = theme.GetTerrainTileTint(_baseColor);
+                return;
+            }
+
+            baseImage.sprite = null;
+            baseImage.color = theme.GetTileDisplayColor(_baseColor);
+        }
+
+        private Color ResolveTileColor(UiThemeSO theme)
+        {
+            if (_useBackdropMode)
+                return theme.GetBoardCellOverlayColor(_baseColor);
+
+            return _terrainSprite != null
+                ? theme.GetTerrainTileTint(_baseColor)
+                : theme.GetTileDisplayColor(_baseColor);
         }
     }
 }

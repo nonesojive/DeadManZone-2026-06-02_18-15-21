@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Content;
+using DeadManZone.Core.Shop;
 using UnityEngine;
 
 namespace DeadManZone.Data
@@ -54,8 +55,8 @@ namespace DeadManZone.Data
             var registry = new ContentRegistry();
             foreach (var piece in pieces.Where(p => p != null))
             {
-                bool inShop = DemoShopPieceIds.Contains(piece.id);
-                registry.Register(piece.ToCore(), piece.shopLane, includeInShopPool: inShop);
+                var lane = ShopLaneResolver.ResolveLane(piece.combatRole);
+                registry.Register(piece.ToCore(), lane, includeInShopPool: piece.includeInShopPool);
             }
 
             return registry;

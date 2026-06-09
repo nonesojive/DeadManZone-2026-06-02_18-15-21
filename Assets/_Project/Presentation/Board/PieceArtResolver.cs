@@ -15,6 +15,16 @@ namespace DeadManZone.Presentation.Board
             return new Vector2Int(local.X, local.Y);
         }
 
+        public static bool ShouldUseFootprintIcon(
+            PieceDefinitionSO source,
+            GridCoord anchor,
+            PieceRotation rotation,
+            PieceDefinition definition)
+        {
+            return source?.icon != null
+                && !AllCellsHaveSprites(source, anchor, rotation, definition);
+        }
+
         public static bool AllCellsHaveSprites(
             PieceDefinitionSO source,
             GridCoord anchor,
@@ -39,6 +49,35 @@ namespace DeadManZone.Presentation.Board
                 return source.categoryTint;
 
             return theme.GetCategoryTint(definition.Category);
+        }
+
+        public static Color ResolveFootprintBackground(PieceDefinitionSO source, UiThemeSO theme)
+        {
+            theme ??= UiThemeProvider.Current;
+            var neutral = theme.neutralTokenBackgroundColor;
+
+            if (source == null || string.IsNullOrWhiteSpace(source.factionId)
+                || source.factionId == "neutral")
+                return neutral;
+
+            var faction = ContentDatabase.Load()?.GetFaction(source.factionId);
+            if (faction != null && faction.tokenBackgroundColor.a > 0.01f)
+                return faction.tokenBackgroundColor;
+
+            return DefaultFactionTokenBackground(source.factionId, neutral);
+        }
+
+        private static Color DefaultFactionTokenBackground(string factionId, Color neutralFallback)
+        {
+            return factionId switch
+            {
+                "iron_vanguard" => new Color(0.22f, 0.28f, 0.38f, 0.45f),
+                "dust_scourge" => new Color(0.42f, 0.34f, 0.24f, 0.45f),
+                "cartel_of_echoes" => new Color(0.32f, 0.26f, 0.42f, 0.45f),
+                "crimson_legion" => new Color(0.45f, 0.20f, 0.18f, 0.45f),
+                "ash_wraiths" => new Color(0.28f, 0.28f, 0.30f, 0.45f),
+                _ => neutralFallback
+            };
         }
     }
 }

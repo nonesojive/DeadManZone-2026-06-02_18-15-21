@@ -19,14 +19,29 @@ MonoBehaviour:
   - {x: 0, y: 0}
   tags:
   - Gas
+  primary: 
+  combatRole: 
+  systemTag: 
+  synergyTags: []
+  abilityTags: []
   maxHp: 8
   baseDamage: 4
   cooldownTicks: 4
   goldCost: 8
   requisitionCost: 3
   manpowerCost: 1
+  musterPerShop: 0
   shopModifiers: 0
   commandActions: 4
-  shopLane: 2
+  shopLane: 0
+  includeInShopPool: 1
+  attackSpeed: 1
+  attackRange: 1
+  movementSpeed: 2
+  armorType: 1
+  attackType: 1
+  grantedAbility: 0
+  factionId: neutral
   icon: {fileID: 0}
   categoryTint: {r: 0.38, g: 0.32, b: 0.48, a: 1}
+  cellSprites: []

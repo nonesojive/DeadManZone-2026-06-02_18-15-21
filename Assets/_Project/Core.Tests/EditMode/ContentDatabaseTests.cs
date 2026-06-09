@@ -1,5 +1,6 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Shop;
+using DeadManZone.Core.Tags;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -40,14 +41,16 @@ namespace DeadManZone.Core.Tests
             rifle.displayName = "Rifle Squad";
             rifle.category = PieceCategory.Unit;
             rifle.shapeCells = new[] { Vector2Int.zero };
-            rifle.shopLane = ShopLane.Offensive;
+            rifle.combatRole = GameTagIds.Assault;
+            rifle.includeInShopPool = true;
 
             var radio = ScriptableObject.CreateInstance<Data.PieceDefinitionSO>();
             radio.id = "radio_array";
             radio.displayName = "Radio Array";
             radio.category = PieceCategory.Building;
             radio.shapeCells = new[] { Vector2Int.zero, Vector2Int.up };
-            radio.shopLane = ShopLane.Defensive;
+            radio.combatRole = GameTagIds.Utility;
+            radio.includeInShopPool = true;
 
             typeof(Data.ContentDatabase)
                 .GetField("pieces", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
@@ -60,6 +63,40 @@ namespace DeadManZone.Core.Tests
 
             Object.DestroyImmediate(rifle);
             Object.DestroyImmediate(radio);
+            Object.DestroyImmediate(database);
+        }
+
+        [Test]
+        public void ContentDatabase_BuildRegistry_RespectsIncludeInShopPoolFlag()
+        {
+            var database = ScriptableObject.CreateInstance<Data.ContentDatabase>();
+            var inShop = ScriptableObject.CreateInstance<Data.PieceDefinitionSO>();
+            inShop.id = "in_shop";
+            inShop.displayName = "In Shop";
+            inShop.category = PieceCategory.Unit;
+            inShop.shapeCells = new[] { Vector2Int.zero };
+            inShop.combatRole = GameTagIds.Assault;
+            inShop.includeInShopPool = true;
+
+            var hidden = ScriptableObject.CreateInstance<Data.PieceDefinitionSO>();
+            hidden.id = "hidden_hq";
+            hidden.displayName = "Hidden HQ";
+            hidden.category = PieceCategory.Building;
+            hidden.shapeCells = new[] { Vector2Int.zero };
+            hidden.combatRole = GameTagIds.Headquarters;
+            hidden.includeInShopPool = false;
+
+            typeof(Data.ContentDatabase)
+                .GetField("pieces", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                ?.SetValue(database, new[] { inShop, hidden });
+
+            var registry = database.BuildRegistry();
+
+            Assert.AreEqual(1, registry.GetPool(ShopLane.Offensive).Count);
+            Assert.IsTrue(registry.TryGetById("hidden_hq", out _));
+
+            Object.DestroyImmediate(inShop);
+            Object.DestroyImmediate(hidden);
             Object.DestroyImmediate(database);
         }
     }

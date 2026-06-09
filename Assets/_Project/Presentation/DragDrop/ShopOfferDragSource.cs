@@ -1,6 +1,7 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Shop;
 using DeadManZone.Data;
+using DeadManZone.Game.Dev;
 using DeadManZone.Presentation.Board;
 using DeadManZone.Presentation.Shop;
 using UnityEngine;
@@ -22,7 +23,7 @@ namespace DeadManZone.Presentation.DragDrop
             var view = GetComponentInParent<ShopOfferView>();
             view?.SetPreviewVisible(false);
 
-            var registry = ContentDatabase.Load()?.BuildRegistry();
+            var registry = ContentRegistryProvider.Build(ContentDatabase.Load());
             var payload = new DragPayload
             {
                 SourceKind = DragSourceKind.ShopOffer,

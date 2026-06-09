@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DeadManZone.Core.Tags
 {
@@ -22,6 +23,7 @@ namespace DeadManZone.Core.Tags
                 [GameTagIds.Utility] = Create(GameTagIds.Utility, "Utility", TagCategory.CombatRole, "Tactical role focused on control and tools.", 72),
                 [GameTagIds.Headquarters] = Create(GameTagIds.Headquarters, "Headquarters", TagCategory.CombatRole, "Command center role for strategic effects.", 70),
                 [GameTagIds.Sniper] = Create(GameTagIds.Sniper, "Sniper", TagCategory.CombatRole, "Precision ranged eliminator role.", 68),
+                [GameTagIds.Defender] = Create(GameTagIds.Defender, "Defender", TagCategory.CombatRole, "Frontline bulwark role focused on holding ground.", 66),
 
                 // System
                 [GameTagIds.Combatant] = Create(GameTagIds.Combatant, "Combatant", TagCategory.System, "System marker for units that can enter combat.", 0, false),
@@ -59,6 +61,17 @@ namespace DeadManZone.Core.Tags
 
             return Catalog.TryGetValue(id, out tag);
         }
+
+        public static IReadOnlyList<TagDefinition> GetByCategory(TagCategory category) =>
+            Catalog.Values
+                .Where(t => t.Category == category)
+                .OrderByDescending(t => t.DisplayPriority)
+                .ToList();
+
+        public static IReadOnlyList<TagDefinition> GetAll() =>
+            Catalog.Values
+                .OrderByDescending(t => t.DisplayPriority)
+                .ToList();
 
         private static TagDefinition Create(
             string id,

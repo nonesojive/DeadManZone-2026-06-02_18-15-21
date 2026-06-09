@@ -23,9 +23,10 @@ namespace DeadManZone.Presentation.Board
         [SerializeField] private TMP_Text attackSpeedText;
         [SerializeField] private TMP_Text attackTypeText;
         [SerializeField] private TMP_Text armorTypeText;
+        [SerializeField] private TMP_Text synergyText;
 
         [Header("Tags")]
-        [SerializeField] private RectTransform tagChipContainer;
+[SerializeField] private RectTransform tagChipContainer;
         [SerializeField] private TMP_Text tagChipTemplate;
         [SerializeField] private TMP_Text overflowTooltipText;
 
@@ -48,8 +49,19 @@ namespace DeadManZone.Presentation.Board
             SetText(attackTypeText, $"Attack Type: {FormatAttackType(model.AttackType)}");
             SetText(armorTypeText, $"Armor Type: {FormatArmor(model.ArmorType)}");
 
+            if (synergyText != null)
+            {
+                string bonus = "";
+                if (model.SynergyDamageBonus > 0) bonus += $"+{model.SynergyDamageBonus} Damage ";
+                if (model.SynergyArmorBuffSteps > 0) bonus += $"+{model.SynergyArmorBuffSteps} Armor ";
+                
+                synergyText.gameObject.SetActive(!string.IsNullOrEmpty(bonus));
+                synergyText.text = "Synergy: " + bonus;
+                synergyText.color = theme != null ? theme.accentColor : Color.yellow;
+            }
+
             int visibleTagCount = model.IdentityTags.Count + model.OptionalTags.Count;
-            int totalChipCount = visibleTagCount + (model.OverflowCount > 0 ? 1 : 0);
+int totalChipCount = visibleTagCount + (model.OverflowCount > 0 ? 1 : 0);
             EnsureChipCount(totalChipCount);
 
             int index = 0;
@@ -179,9 +191,10 @@ namespace DeadManZone.Presentation.Board
             attackSpeedText ??= CreateLabel("AttackSpeed", 12f, FontStyles.Normal, true);
             attackTypeText ??= CreateLabel("AttackType", 12f, FontStyles.Normal, true);
             armorTypeText ??= CreateLabel("ArmorType", 12f, FontStyles.Normal, true);
+            synergyText ??= CreateLabel("SynergyBonus", 12f, FontStyles.Bold, false);
 
             if (tagChipContainer == null)
-            {
+{
                 var tagsGo = new GameObject("TagChips", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
                 tagsGo.transform.SetParent(_contentRoot, false);
                 tagChipContainer = tagsGo.GetComponent<RectTransform>();
