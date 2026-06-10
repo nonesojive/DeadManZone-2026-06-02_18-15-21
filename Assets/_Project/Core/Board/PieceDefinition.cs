@@ -13,6 +13,7 @@ namespace DeadManZone.Core.Board
         public string SystemTag { get; init; }
         public IReadOnlyList<string> SynergyTags { get; init; } = System.Array.Empty<string>();
         public IReadOnlyList<string> AbilityTags { get; init; } = System.Array.Empty<string>();
+        public IReadOnlyList<string> FlavorTags { get; init; } = System.Array.Empty<string>();
         public IReadOnlyList<string> Tags { get; init; } = System.Array.Empty<string>();
         public int MaxHp { get; init; }
         public int BaseDamage { get; init; }

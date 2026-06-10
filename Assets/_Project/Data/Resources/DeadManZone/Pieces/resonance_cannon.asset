@@ -22,12 +22,12 @@ MonoBehaviour:
   - Vehicle
   - Artillery
   - Combatant
-  - Echo
   primary: vehicle
   combatRole: artillery
   systemTag: combatant
   synergyTags: []
   abilityTags: []
+  flavorTags: []
   maxHp: 130
   baseDamage: 40
   cooldownTicks: 3
@@ -38,6 +38,7 @@ MonoBehaviour:
   shopModifiers: 0
   commandActions: 0
   shopLane: 2
+  includeInShopPool: 1
   attackSpeed: 1
   attackRange: 1
   movementSpeed: 2

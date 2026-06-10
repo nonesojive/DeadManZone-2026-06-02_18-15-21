@@ -21,12 +21,12 @@ MonoBehaviour:
   - Vehicle
   - Artillery
   - Combatant
-  - Gas
   primary: vehicle
   combatRole: artillery
   systemTag: combatant
   synergyTags: []
   abilityTags: []
+  flavorTags: []
   maxHp: 100
   baseDamage: 32
   cooldownTicks: 3
@@ -37,6 +37,7 @@ MonoBehaviour:
   shopModifiers: 0
   commandActions: 0
   shopLane: 2
+  includeInShopPool: 1
   attackSpeed: 1
   attackRange: 1
   movementSpeed: 2

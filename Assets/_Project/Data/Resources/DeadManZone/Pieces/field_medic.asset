@@ -21,12 +21,12 @@ MonoBehaviour:
   - Infantry
   - Support
   - Combatant
-  - Medic
   primary: infantry
   combatRole: support
   systemTag: combatant
   synergyTags: []
   abilityTags: []
+  flavorTags: []
   maxHp: 40
   baseDamage: 0
   cooldownTicks: 3
@@ -37,6 +37,7 @@ MonoBehaviour:
   shopModifiers: 0
   commandActions: 0
   shopLane: 1
+  includeInShopPool: 1
   attackSpeed: 2
   attackRange: 0
   movementSpeed: 2

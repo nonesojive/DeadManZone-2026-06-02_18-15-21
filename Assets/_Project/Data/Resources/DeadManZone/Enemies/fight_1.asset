@@ -13,13 +13,10 @@ MonoBehaviour:
   m_Name: fight_1
   m_EditorClassIdentifier: 
   fightNumber: 1
-  displayName: Neutral Patrol
+  displayName: Conscript Line
   previewTag: Infantry
   enemyFactionId: neutral
   placements:
-  - piece: {fileID: 11400000, guid: a40bb29dd67638d449e215b6fb2a23af, type: 2}
-    anchor: {x: 5, y: 4}
-    instanceId: 
-  - piece: {fileID: 11400000, guid: a40bb29dd67638d449e215b6fb2a23af, type: 2}
-    anchor: {x: 7, y: 4}
+  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
+    anchor: {x: 4, y: 4}
     instanceId: 

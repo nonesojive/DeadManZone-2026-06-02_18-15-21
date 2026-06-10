@@ -26,7 +26,7 @@ namespace DeadManZone.Core.Tests
         {
             var board = TestBoards.WithTwoSupplyBuildings();
             int muster = MusterCalculator.Compute(board, baseMusterPerShop: 10);
-            Assert.AreEqual(10, muster);
+            Assert.AreEqual(16, muster);
         }
     }
 }

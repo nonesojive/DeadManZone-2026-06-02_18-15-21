@@ -29,7 +29,8 @@ namespace DeadManZone.Data.Editor
             draft.combatRole = DrawTagPopup("Combat Role", draft.combatRole, TagPickerCatalog.CombatRoleTags, allowEmpty: true);
             draft.systemTag = DrawTagPopup("System Tag", draft.systemTag, TagPickerCatalog.SystemTags, allowEmpty: true);
             DrawSynergyChecklist(draft);
-            DrawAbilityTags(draft);
+            DrawAbilityChecklist(draft);
+            DrawFlavorChecklist(draft);
         }
 
         public static void DrawStats(UnitCreationDraft draft)
@@ -148,17 +149,32 @@ namespace DeadManZone.Data.Editor
             }
         }
 
-        private static void DrawAbilityTags(UnitCreationDraft draft)
+        private static void DrawAbilityChecklist(UnitCreationDraft draft)
         {
-            EditorGUILayout.LabelField("Ability Tags (comma-separated)");
-            var joined = string.Join(", ", draft.abilityTags);
-            var edited = EditorGUILayout.TextField(joined);
-            draft.abilityTags = edited
-                .Split(',')
-                .Select(s => s.Trim())
-                .Where(s => !string.IsNullOrEmpty(s))
-                .Distinct()
-                .ToList();
+            EditorGUILayout.LabelField("Ability Tags");
+            foreach (var tag in TagPickerCatalog.AbilityTags)
+            {
+                bool selected = draft.abilityTags.Contains(tag.Id);
+                bool next = EditorGUILayout.ToggleLeft(tag.DisplayName, selected);
+                if (next && !selected)
+                    draft.abilityTags.Add(tag.Id);
+                else if (!next && selected)
+                    draft.abilityTags.Remove(tag.Id);
+            }
+        }
+
+        private static void DrawFlavorChecklist(UnitCreationDraft draft)
+        {
+            EditorGUILayout.LabelField("Flavor Tags");
+            foreach (var tag in TagPickerCatalog.FlavorTags)
+            {
+                bool selected = draft.flavorTags.Contains(tag.Id);
+                bool next = EditorGUILayout.ToggleLeft(tag.DisplayName, selected);
+                if (next && !selected)
+                    draft.flavorTags.Add(tag.Id);
+                else if (!next && selected)
+                    draft.flavorTags.Remove(tag.Id);
+            }
         }
     }
 }

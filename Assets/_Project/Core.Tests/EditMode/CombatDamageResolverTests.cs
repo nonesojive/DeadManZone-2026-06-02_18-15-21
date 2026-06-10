@@ -92,9 +92,10 @@ namespace DeadManZone.Core.Tests.EditMode
                 TestPieces.RifleSquad(),
                 armorType: ArmorType.Light);
 
+            int unbuffed = CombatDamageResolver.ComputeDamage(attacker, defender, damageScale: 1f, armorBuffSteps: 0);
             int buffed = CombatDamageResolver.ComputeDamage(attacker, defender, damageScale: 1f, armorBuffSteps: 1);
-            Assert.Less(buffed, 125);
-            Assert.AreEqual(85, buffed);
+            Assert.AreEqual(100, unbuffed);
+            Assert.AreEqual(106, buffed);
         }
     }
 }

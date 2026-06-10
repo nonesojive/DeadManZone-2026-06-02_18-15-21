@@ -24,13 +24,12 @@ MonoBehaviour:
   - Vehicle
   - Tank
   - Combatant
-  - Vanguard
-  - Mechanical
   primary: vehicle
   combatRole: tank
   systemTag: combatant
   synergyTags: []
   abilityTags: []
+  flavorTags: []
   maxHp: 250
   baseDamage: 32
   cooldownTicks: 5
@@ -41,6 +40,7 @@ MonoBehaviour:
   shopModifiers: 0
   commandActions: 0
   shopLane: 0
+  includeInShopPool: 1
   attackSpeed: 0
   attackRange: 1
   movementSpeed: 1

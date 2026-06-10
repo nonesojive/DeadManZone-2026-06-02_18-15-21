@@ -70,7 +70,8 @@ namespace DeadManZone.Data.Editor
                 combatRole,
                 systemTag,
                 asset.synergyTags,
-                asset.abilityTags ?? System.Array.Empty<string>());
+                asset.abilityTags ?? System.Array.Empty<string>(),
+                asset.flavorTags ?? System.Array.Empty<string>());
             asset.factionId = factionId;
             asset.maxHp = maxHp;
             asset.baseDamage = baseDamage;

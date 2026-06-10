@@ -29,15 +29,51 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
-        public void Registry_HasNoSynergyTags()
+        public void Registry_HasSeventeenSynergyTags()
         {
-            Assert.AreEqual(0, TagRegistry.GetByCategory(TagCategory.Synergy).Count);
+            Assert.AreEqual(17, TagRegistry.GetByCategory(TagCategory.Synergy).Count);
+        }
+
+        [Test]
+        public void Registry_HasThirteenAbilityTags()
+        {
+            Assert.AreEqual(13, TagRegistry.GetByCategory(TagCategory.Ability).Count);
+        }
+
+        [Test]
+        public void Registry_HasTwelveFlavorTags()
+        {
+            Assert.AreEqual(12, TagRegistry.GetByCategory(TagCategory.Flavor).Count);
         }
 
         [Test]
         public void Registry_HasSevenAttackTypeTags()
         {
             Assert.AreEqual(7, TagRegistry.GetByCategory(TagCategory.AttackType).Count);
+        }
+
+        [Test]
+        public void Registry_MedicSynergyTag_HasSheetTooltip()
+        {
+            var tag = TagRegistry.Get(GameTagIds.Medic);
+            Assert.AreEqual(TagCategory.Synergy, tag.Category);
+            Assert.That(tag.Tooltip, Does.Contain("infantry"));
+        }
+
+        [Test]
+        public void Registry_StealthAbilityTag_HasSheetTooltip()
+        {
+            var tag = TagRegistry.Get(GameTagIds.Stealth);
+            Assert.AreEqual(TagCategory.Ability, tag.Category);
+            Assert.That(tag.Tooltip, Does.Contain("hidden"));
+        }
+
+        [Test]
+        public void Registry_FortifiedFlavorTag_HasSheetTooltip()
+        {
+            var tag = TagRegistry.Get(GameTagIds.Fortified);
+            Assert.AreEqual(TagCategory.Flavor, tag.Category);
+            Assert.That(tag.Tooltip, Does.Contain("armor"));
         }
     }
 }

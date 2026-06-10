@@ -197,7 +197,8 @@ namespace DeadManZone.Data.Editor
                 piece.combatRole,
                 piece.systemTag,
                 piece.synergyTags,
-                piece.abilityTags ?? Array.Empty<string>());
+                piece.abilityTags ?? Array.Empty<string>(),
+                piece.flavorTags ?? Array.Empty<string>());
 
             if (!AreArraysEqual(piece.tags, rebuiltLegacyTags))
             {

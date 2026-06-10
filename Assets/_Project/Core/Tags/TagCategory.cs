@@ -7,6 +7,8 @@ namespace DeadManZone.Core.Tags
         Faction,
         System,
         Synergy,
+        Ability,
+        Flavor,
         AttackType
     }
 }

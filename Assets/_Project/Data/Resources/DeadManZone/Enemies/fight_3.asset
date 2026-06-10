@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: fight_3
   m_EditorClassIdentifier: 
   fightNumber: 3
-  displayName: Ash Gas Line
-  previewTag: Gas
-  enemyFactionId: ash_wraiths
+  displayName: Field Support
+  previewTag: Infantry
+  enemyFactionId: neutral
   placements:
-  - piece: {fileID: 11400000, guid: 21b91e5e648d6184b84cc8bc0b3727cd, type: 2}
-    anchor: {x: 7, y: 4}
+  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
+    anchor: {x: 4, y: 4}
     instanceId: 
-  - piece: {fileID: 11400000, guid: 2bac63a69be7d37419e8dfa995588d3e, type: 2}
+  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
     anchor: {x: 5, y: 4}
     instanceId: 

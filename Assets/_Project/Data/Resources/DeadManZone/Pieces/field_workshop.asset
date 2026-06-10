@@ -21,12 +21,12 @@ MonoBehaviour:
   - Building
   - Utility
   - Non-Combatant
-  - Mechanical
   primary: building
   combatRole: utility
   systemTag: noncombatant
   synergyTags: []
   abilityTags: []
+  flavorTags: []
   maxHp: 120
   baseDamage: 0
   cooldownTicks: 3
@@ -37,6 +37,7 @@ MonoBehaviour:
   shopModifiers: 8
   commandActions: 0
   shopLane: 1
+  includeInShopPool: 1
   attackSpeed: 1
   attackRange: 1
   movementSpeed: 2

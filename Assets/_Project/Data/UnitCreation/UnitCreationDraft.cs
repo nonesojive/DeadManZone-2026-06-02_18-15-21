@@ -30,6 +30,7 @@ namespace DeadManZone.Data.UnitCreation
         public string systemTag = GameTagIds.Combatant;
         public List<string> synergyTags = new();
         public List<string> abilityTags = new();
+        public List<string> flavorTags = new();
 
         public int maxHp = 10;
         public int baseDamage;
@@ -83,6 +84,7 @@ namespace DeadManZone.Data.UnitCreation
                 systemTag = piece.systemTag,
                 synergyTags = new List<string>(piece.synergyTags ?? Array.Empty<string>()),
                 abilityTags = new List<string>(piece.abilityTags ?? Array.Empty<string>()),
+                flavorTags = new List<string>(piece.flavorTags ?? Array.Empty<string>()),
                 maxHp = piece.maxHp,
                 baseDamage = piece.baseDamage,
                 cooldownTicks = piece.cooldownTicks,
@@ -139,6 +141,7 @@ namespace DeadManZone.Data.UnitCreation
             piece.systemTag = systemTag;
             piece.synergyTags = synergyTags?.ToArray() ?? Array.Empty<string>();
             piece.abilityTags = abilityTags?.ToArray() ?? Array.Empty<string>();
+            piece.flavorTags = flavorTags?.ToArray() ?? Array.Empty<string>();
             piece.maxHp = maxHp;
             piece.baseDamage = baseDamage;
             piece.cooldownTicks = cooldownTicks;
@@ -165,7 +168,8 @@ namespace DeadManZone.Data.UnitCreation
                 combatRole,
                 systemTag,
                 piece.synergyTags,
-                piece.abilityTags);
+                piece.abilityTags,
+                piece.flavorTags);
 
             if (writeRegistration)
                 piece.includeInShopPool = includeInShopPool;

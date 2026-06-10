@@ -20,6 +20,7 @@ namespace DeadManZone.Data
         public string systemTag;
         public string[] synergyTags = System.Array.Empty<string>();
         public string[] abilityTags = System.Array.Empty<string>();
+        public string[] flavorTags = System.Array.Empty<string>();
         public int maxHp = 10;
         public int baseDamage;
         public int cooldownTicks = 3;
@@ -96,6 +97,7 @@ namespace DeadManZone.Data
                 SystemTag = systemTag,
                 SynergyTags = synergyTags ?? System.Array.Empty<string>(),
                 AbilityTags = abilityTags ?? System.Array.Empty<string>(),
+                FlavorTags = flavorTags ?? System.Array.Empty<string>(),
                 Tags = PieceTagQueries.BuildLegacyTags(
                     category,
                     baseDamage,
@@ -104,6 +106,7 @@ namespace DeadManZone.Data
                     systemTag,
                     synergyTags ?? System.Array.Empty<string>(),
                     abilityTags ?? System.Array.Empty<string>(),
+                    flavorTags ?? System.Array.Empty<string>(),
                     tags ?? System.Array.Empty<string>()),
                 MaxHp = maxHp,
                 BaseDamage = baseDamage,
@@ -157,6 +160,7 @@ namespace DeadManZone.Data
 
             WarnUnknownTagEntries("synergyTags", synergyTags);
             WarnUnknownTagEntries("abilityTags", abilityTags);
+            WarnUnknownTagEntries("flavorTags", flavorTags);
 
             void WarnUnknownTagEntries(string fieldName, string[] tagIds)
             {

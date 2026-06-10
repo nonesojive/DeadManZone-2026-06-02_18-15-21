@@ -25,6 +25,7 @@ namespace DeadManZone.Core.Tags
                 || MatchesTag(piece.SystemTag, targetKey)
                 || ContainsTag(piece.SynergyTags, targetKey)
                 || ContainsTag(piece.AbilityTags, targetKey)
+                || ContainsTag(piece.FlavorTags, targetKey)
                 || ContainsTag(piece.Tags, targetKey);
         }
 
@@ -68,6 +69,7 @@ namespace DeadManZone.Core.Tags
             AddRawTag(tags, seen, piece.SystemTag);
             AddRawTags(tags, seen, piece.SynergyTags);
             AddRawTags(tags, seen, piece.AbilityTags);
+            AddRawTags(tags, seen, piece.FlavorTags);
             AddRawTags(tags, seen, piece.Tags);
 
             return tags;
@@ -81,6 +83,7 @@ namespace DeadManZone.Core.Tags
             string systemTag,
             IReadOnlyList<string> synergyTags,
             IReadOnlyList<string> abilityTags,
+            IReadOnlyList<string> flavorTags = null,
             IReadOnlyList<string> legacyTags = null)
         {
             var tags = new List<string>();
@@ -92,6 +95,7 @@ namespace DeadManZone.Core.Tags
             AddLegacyTag(tags, seen, systemTag);
             AddLegacyTags(tags, seen, synergyTags);
             AddLegacyTags(tags, seen, abilityTags);
+            AddLegacyTags(tags, seen, flavorTags);
 
             if (string.IsNullOrWhiteSpace(systemTag) && ShouldAutoAddCombatant(category, baseDamage))
             {
@@ -116,19 +120,24 @@ namespace DeadManZone.Core.Tags
             AddAttackTypeTag(identityTags, seen, piece.AttackType);
 
             var abilityTags = new List<TagDefinition>();
+            var flavorTags = new List<TagDefinition>();
             var synergyTags = new List<TagDefinition>();
 
-            AddOptionalTags(abilityTags, seen, piece.AbilityTags, TagCategory.Synergy, 45, "Ability tag.");
+            AddOptionalTags(abilityTags, seen, piece.AbilityTags, TagCategory.Ability, 45, "Ability tag.");
+            AddOptionalTags(flavorTags, seen, piece.FlavorTags, TagCategory.Flavor, 40, "Flavor tag.");
             AddOptionalTags(synergyTags, seen, piece.SynergyTags, TagCategory.Synergy, 35, "Synergy tag.");
 
             // During migration, legacy flat tags may still be the only populated source.
             AddOptionalTags(synergyTags, seen, piece.Tags, TagCategory.Synergy, 20, "Legacy tag.");
 
             SortByPriority(abilityTags);
+            SortByPriority(flavorTags);
             SortByPriority(synergyTags);
 
-            var orderedOptional = new List<TagDefinition>(abilityTags.Count + synergyTags.Count);
+            var orderedOptional = new List<TagDefinition>(
+                abilityTags.Count + flavorTags.Count + synergyTags.Count);
             orderedOptional.AddRange(abilityTags);
+            orderedOptional.AddRange(flavorTags);
             orderedOptional.AddRange(synergyTags);
 
             int overflowCount = Math.Max(0, orderedOptional.Count - maxOptionalChips);

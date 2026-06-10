@@ -11,12 +11,12 @@ namespace DeadManZone.Data.Editor
 
             return new[]
             {
-                Save(1, "Neutral Patrol", "Infantry", "neutral",
-                    Placement(byId["mg_team"], 5, 4), Placement(byId["mg_team"], 7, 4)),
-                Save(2, "Crimson Skirmish", "Heavy Fire", "crimson_legion",
-                    Placement(byId["crimson_elite"], 6, 4), Placement(byId["crimson_elite"], 8, 4)),
-                Save(3, "Ash Gas Line", "Gas", "ash_wraiths",
-                    Placement(byId["wraith_stalker"], 7, 4), Placement(byId["wraith_phantom"], 5, 4)),
+                Save(1, "Conscript Line", "Infantry", "neutral",
+                    Placement(byId["conscript_rifleman"], 4, 4)),
+                Save(2, "Patrol", "Infantry", "neutral",
+                    Placement(byId["conscript_rifleman"], 4, 4), Placement(byId["field_medic"], 5, 4)),
+                Save(3, "Field Support", "Infantry", "neutral",
+                    Placement(byId["conscript_rifleman"], 4, 4), Placement(byId["conscript_rifleman"], 5, 4)),
                 Save(4, "Neutral Armor", "Vehicle", "neutral",
                     Placement(byId["armored_transport"], 6, 4), Placement(byId["mobile_cannon"], 4, 3)),
                 Save(5, "Crimson Assault", "Boss", "crimson_legion",

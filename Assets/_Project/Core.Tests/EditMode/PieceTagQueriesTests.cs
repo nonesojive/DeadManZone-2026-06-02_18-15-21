@@ -41,6 +41,25 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
+        public void GetPlayerVisibleTags_IncludesRegisteredKeywordTags()
+        {
+            var piece = new PieceDefinition
+            {
+                Primary = GameTagIds.Infantry,
+                CombatRole = GameTagIds.Assault,
+                SystemTag = GameTagIds.Combatant,
+                SynergyTags = new[] { GameTagIds.Medic },
+                AbilityTags = new[] { GameTagIds.Stealth },
+                FlavorTags = new[] { GameTagIds.Veteran }
+            };
+
+            var result = PieceTagQueries.GetPlayerVisibleTags(piece, maxOptionalChips: 4);
+            Assert.IsTrue(result.OptionalTags.Any(t => t.Id == GameTagIds.Stealth));
+            Assert.IsTrue(result.OptionalTags.Any(t => t.Id == GameTagIds.Veteran));
+            Assert.IsTrue(result.OptionalTags.Any(t => t.Id == GameTagIds.Medic));
+        }
+
+        [Test]
         public void GetPlayerVisibleTags_HidesSystemTags()
         {
             var piece = new PieceDefinition

@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: fight_2
   m_EditorClassIdentifier: 
   fightNumber: 2
-  displayName: Crimson Skirmish
-  previewTag: Heavy Fire
-  enemyFactionId: crimson_legion
+  displayName: Patrol
+  previewTag: Infantry
+  enemyFactionId: neutral
   placements:
-  - piece: {fileID: 11400000, guid: 299685d2f5635104d9c4fdf290754b75, type: 2}
-    anchor: {x: 6, y: 4}
+  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
+    anchor: {x: 4, y: 4}
     instanceId: 
-  - piece: {fileID: 11400000, guid: 299685d2f5635104d9c4fdf290754b75, type: 2}
-    anchor: {x: 8, y: 4}
+  - piece: {fileID: 11400000, guid: f3a4b5c6d7e8498899aabbccddeeff03, type: 2}
+    anchor: {x: 5, y: 4}
     instanceId: 
