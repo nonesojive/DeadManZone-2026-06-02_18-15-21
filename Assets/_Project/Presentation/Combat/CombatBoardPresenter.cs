@@ -9,6 +9,7 @@ using DeadManZone.Data;
 using DeadManZone.Game;
 using DeadManZone.Game.Dev;
 using DeadManZone.Presentation.Board;
+using DeadManZone.Presentation.Combat.Arena;
 using DeadManZone.Presentation.Visual;
 using TMPro;
 using UnityEngine;
@@ -61,6 +62,9 @@ namespace DeadManZone.Presentation.Combat
 
     private void OnCombatAdvanced(CombatAdvanceResult result)
     {
+      if (CombatPresentationMode.ArenaActive)
+        return;
+
       RestoreReplayStateBeforeSegment(result.CompletedPhase);
       _replayVisuals.SyncBoardView(boardView);
       ShowPhaseBanner(result.CompletedPhase);
@@ -121,6 +125,9 @@ namespace DeadManZone.Presentation.Combat
 
     private void OnEventReplayed(CombatEvent combatEvent)
     {
+      if (CombatPresentationMode.ArenaActive)
+        return;
+
       if (combatEvent == null)
         return;
 

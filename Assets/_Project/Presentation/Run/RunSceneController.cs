@@ -244,16 +244,11 @@ namespace DeadManZone.Presentation.Run
 
             if (combatActive)
             {
-                if (mainRowLayout != null)
-                    _buildBoardAnchorMax = mainRowLayout.BoardAnchorMax;
-
-                boardArea.anchorMin = Vector2.zero;
-                boardArea.anchorMax = Vector2.one;
-                boardArea.offsetMin = Vector2.zero;
-                boardArea.offsetMax = Vector2.zero;
+                boardArea.gameObject.SetActive(false);
                 return;
             }
 
+            boardArea.gameObject.SetActive(true);
             boardArea.anchorMin = Vector2.zero;
             boardArea.anchorMax = _buildBoardAnchorMax;
             boardArea.offsetMin = Vector2.zero;

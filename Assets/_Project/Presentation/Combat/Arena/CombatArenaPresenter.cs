@@ -29,8 +29,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void Awake()
         {
-            if (combatDirector == null)
-                combatDirector = GetComponent<CombatDirector>();
+            EnsureReferences();
 
             var database = ContentDatabase.Load();
             _registry = ContentRegistryProvider.Build(database);
@@ -39,6 +38,8 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void OnEnable()
         {
+            EnsureReferences();
+
             if (combatDirector != null)
                 combatDirector.EventReplayed += OnEventReplayed;
 
@@ -59,8 +60,19 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public IEnumerable<CombatUnitActor> GetActiveActors() => _actors.Values;
 
+        public void Configure(CombatDirector director, CombatArenaVfx arenaVfx)
+        {
+            if (director != null)
+                combatDirector = director;
+
+            if (arenaVfx != null)
+                vfx = arenaVfx;
+        }
+
         public void InitializeArena(BattlefieldState battlefield)
         {
+            EnsureReferences();
+
             if (battlefield == null)
                 return;
 
@@ -349,6 +361,15 @@ namespace DeadManZone.Presentation.Combat.Arena
             _pool?.ReleaseAll(_actors.Values);
             _actors.Clear();
             _anchors.Clear();
+        }
+
+        private void EnsureReferences()
+        {
+            if (combatDirector == null)
+                combatDirector = GetComponent<CombatDirector>();
+
+            if (vfx == null)
+                vfx = GetComponent<CombatArenaVfx>();
         }
     }
 }

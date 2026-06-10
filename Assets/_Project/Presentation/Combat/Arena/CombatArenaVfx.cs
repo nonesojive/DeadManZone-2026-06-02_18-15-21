@@ -14,6 +14,18 @@ namespace DeadManZone.Presentation.Combat.Arena
         [SerializeField] private float damageTextRise = 0.85f;
         [SerializeField] private float damageTextLifetime = 0.8f;
 
+        private void Awake()
+        {
+            if (freezeController == null)
+                freezeController = GetComponent<CombatArenaFreezeController>();
+        }
+
+        public void Configure(CombatArenaFreezeController controller)
+        {
+            if (controller != null)
+                freezeController = controller;
+        }
+
         public void PlayDamage(Vector3 worldPosition, int amount)
         {
             SpawnBurst(impactPrefab, worldPosition);

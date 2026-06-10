@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using DeadManZone.Core.Combat;
+using DeadManZone.Game;
 using UnityEngine;
 
 namespace DeadManZone.Presentation.Combat.Arena
@@ -14,20 +15,34 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void OnEnable()
         {
-            if (combatDirector == null)
-                combatDirector = GetComponent<CombatDirector>();
+            EnsureReferences();
 
             if (combatDirector != null)
                 combatDirector.PausedForCommands += OnPausedForCommands;
+
+            if (RunManager.Instance != null)
+                RunManager.Instance.CombatAdvanced += OnCombatAdvanced;
         }
 
         private void OnDisable()
         {
             if (combatDirector != null)
                 combatDirector.PausedForCommands -= OnPausedForCommands;
+
+            if (RunManager.Instance != null)
+                RunManager.Instance.CombatAdvanced -= OnCombatAdvanced;
         }
 
         public void Resume() => SetFrozen(false);
+
+        public void Configure(CombatDirector director, CombatArenaPresenter presenter)
+        {
+            if (director != null)
+                combatDirector = director;
+
+            if (presenter != null)
+                arenaPresenter = presenter;
+        }
 
         public void TrackParticle(ParticleSystem particle)
         {
@@ -43,6 +58,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         }
 
         private void OnPausedForCommands(CombatPhase _) => SetFrozen(true);
+
+        private void OnCombatAdvanced(CombatAdvanceResult _) => Resume();
 
         private void SetFrozen(bool frozen)
         {
@@ -79,6 +96,15 @@ namespace DeadManZone.Presentation.Combat.Arena
                     particle.Play(true);
                 }
             }
+        }
+
+        private void EnsureReferences()
+        {
+            if (combatDirector == null)
+                combatDirector = GetComponent<CombatDirector>();
+
+            if (arenaPresenter == null)
+                arenaPresenter = GetComponent<CombatArenaPresenter>();
         }
     }
 }
