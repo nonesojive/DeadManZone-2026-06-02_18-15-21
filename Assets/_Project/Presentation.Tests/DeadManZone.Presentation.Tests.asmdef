@@ -3,12 +3,13 @@
   "rootNamespace": "DeadManZone.Presentation.Tests",
   "references": [
     "DeadManZone.Core",
+    "DeadManZone.Core.Tests",
     "DeadManZone.Presentation",
-    "DeadManZone.Data",
-    "UnityEngine.TestRunner",
-    "UnityEditor.TestRunner"
+    "DeadManZone.Data"
   ],
-  "includePlatforms": [],
+  "includePlatforms": [
+    "Editor"
+  ],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
   "overrideReferences": true,
@@ -18,5 +19,8 @@
   "autoReferenced": false,
   "defineConstraints": [
     "UNITY_INCLUDE_TESTS"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
   ]
 }
