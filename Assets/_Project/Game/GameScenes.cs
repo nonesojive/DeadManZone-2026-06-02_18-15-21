@@ -6,6 +6,7 @@ namespace DeadManZone.Game
     {
         public const string MainMenu = "MainMenu";
         public const string Run = "Run";
+        public const string CombatArena = "CombatArena";
 
         public static void LoadMainMenu() => SceneManager.LoadScene(MainMenu);
 
