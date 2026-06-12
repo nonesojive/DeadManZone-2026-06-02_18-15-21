@@ -14,13 +14,9 @@ namespace DeadManZone.Core.Combat
             int requisition = 0)
         {
             var run = TickCombatRun.Start(playerBoard, enemyBoard, seed, requisition);
-            run.Continue(System.Array.Empty<PhaseCommand>());
-
-            var deploymentCommands = FilterCommands(commands, CombatPhase.Deployment);
-            run.Continue(deploymentCommands);
-
-            var grindCommands = FilterCommands(commands, CombatPhase.Grind);
-            run.Continue(grindCommands);
+            var result = run.Continue(System.Array.Empty<PhaseCommand>());
+            while (result.Status == CombatAdvanceStatus.AwaitingCommand)
+                result = run.Continue(FilterCommands(commands, run.CurrentPauseIndex));
 
             return new CombatResult
             {
@@ -31,8 +27,8 @@ namespace DeadManZone.Core.Combat
 
         private static IReadOnlyList<PhaseCommand> FilterCommands(
             IReadOnlyList<PhaseCommand> commands,
-            CombatPhase phase) =>
-            commands?.Where(c => c.AfterPhase == phase).ToList()
+            int checkpointIndex) =>
+            commands?.Where(c => c.AfterCheckpoint == checkpointIndex).ToList()
             ?? (IReadOnlyList<PhaseCommand>)System.Array.Empty<PhaseCommand>();
     }
 }

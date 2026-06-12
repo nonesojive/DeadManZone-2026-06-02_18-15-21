@@ -3,10 +3,16 @@ namespace DeadManZone.Core.Combat
     public static class CombatPacingConfig
     {
         public const int TicksPerSecond = 10;
-        public const int OpeningTicks = 50;
-        public const int MainFightTicks = 200;
-        public const int BriefPushTicks = 50;
-        public const int MaxGasTicks = 10_000;
+
+        /// <summary>Army HP fractions that fire command pauses, in firing order.</summary>
+        public static readonly float[] PauseThresholds = { 0.75f, 0.30f };
+
+        /// <summary>Global tick at which anti-stall gas starts ramping (~30s of fight).</summary>
+        public const int GasStartTick = 300;
+
+        /// <summary>Absolute fight-length bound; reaching it forces a draw.</summary>
+        public const int MaxFightTicks = 10_000;
+
         public const int GasRampReferenceTicks = 200;
     }
 }

@@ -10,7 +10,7 @@ namespace DeadManZone.Core.Combat
         public static int NeutralMoveCost => 2;
         public static int NormalMoveCost => 1;
 
-        public static int GetMoveCost(GridCoord from, GridCoord to, BattlefieldLayout layout, CombatSegment segment)
+        public static int GetMoveCost(GridCoord from, GridCoord to, BattlefieldLayout layout)
         {
             if (layout.IsNeutralColumn(to.X) || layout.IsNeutralColumn(from.X))
                 return NeutralMoveCost;
@@ -21,9 +21,8 @@ namespace DeadManZone.Core.Combat
         public static int GetStepChargeCost(
             GridCoord from,
             GridCoord to,
-            BattlefieldLayout layout,
-            CombatSegment segment) =>
-            GetMoveCost(from, to, layout, segment) == NeutralMoveCost
+            BattlefieldLayout layout) =>
+            GetMoveCost(from, to, layout) == NeutralMoveCost
                 ? CombatMovementSpeed.NeutralStepChargeCost
                 : CombatMovementSpeed.NormalStepChargeCost;
 
@@ -31,7 +30,6 @@ namespace DeadManZone.Core.Combat
             GridCoord current,
             GridCoord target,
             BattlefieldLayout layout,
-            CombatSegment segment,
             HashSet<GridCoord> blocked)
         {
             var neighbors = GetNeighbors(current, layout);

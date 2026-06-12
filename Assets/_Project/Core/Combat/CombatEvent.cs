@@ -1,15 +1,18 @@
 namespace DeadManZone.Core.Combat
 {
-    public enum CombatPhase
+    /// <summary>Why a combat pause fired: which checkpoint, which side crossed, at what threshold.</summary>
+    public sealed class PauseTriggerContext
     {
-        Deployment = 1,
-        Grind = 2,
-        FinalPush = 3
+        public int CheckpointIndex { get; init; }
+        public CombatSide TriggeredBy { get; init; }
+        public float Threshold { get; init; }
     }
 
     public sealed class CombatEvent
     {
-        public CombatPhase Phase { get; init; }
+        /// <summary>Playback segment: 0 = start→pause 1, 1 = pause 1→pause 2, 2 = remainder.</summary>
+        public int Segment { get; init; }
+        /// <summary>Global fight tick — never resets across segments.</summary>
         public int Tick { get; init; }
         public string ActorId { get; init; }
         public string ActionType { get; init; }
@@ -22,7 +25,7 @@ namespace DeadManZone.Core.Combat
         public System.Collections.Generic.List<CombatEvent> Events { get; } = new();
 
         public void Append(
-            CombatPhase phase,
+            int segment,
             int tick,
             string actorId,
             string actionType,
@@ -30,7 +33,7 @@ namespace DeadManZone.Core.Combat
             int value) =>
             Events.Add(new CombatEvent
             {
-                Phase = phase,
+                Segment = segment,
                 Tick = tick,
                 ActorId = actorId,
                 ActionType = actionType,

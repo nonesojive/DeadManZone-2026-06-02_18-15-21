@@ -11,17 +11,17 @@ namespace DeadManZone.Core.Combat
         public const int CannonBlastPrimaryDamage = 50;
         public const int CannonBlastSplashDamage = 25;
 
-        public static bool CanUseAtPause(GrantedAbility ability, CombatPhase completedPhase) =>
+        public static bool CanUseAtPause(GrantedAbility ability, int checkpointIndex) =>
             ability switch
             {
-                GrantedAbility.CannonBlast => completedPhase == CombatPhase.Grind,
-                _ => completedPhase == CombatPhase.Deployment || completedPhase == CombatPhase.Grind
+                GrantedAbility.CannonBlast => checkpointIndex == 1,
+                _ => checkpointIndex == 0 || checkpointIndex == 1
             };
 
-        public static int GetAuthorityCost(GrantedAbility ability, CombatPhase completedPhase) =>
+        public static int GetAuthorityCost(GrantedAbility ability, int checkpointIndex) =>
             ability switch
             {
-                GrantedAbility.GrenadeLob when completedPhase == CombatPhase.Deployment => 2,
+                GrantedAbility.GrenadeLob when checkpointIndex == 0 => 2,
                 GrantedAbility.GrenadeLob => 3,
                 GrantedAbility.ShieldAllies => 2,
                 GrantedAbility.CannonBlast => 4,
@@ -35,7 +35,8 @@ namespace DeadManZone.Core.Combat
             IList<CombatantState> playerCombatants,
             IList<CombatantState> enemyCombatants,
             CombatEventLog log,
-            CombatPhase phase,
+            int logSegment,
+            int logTick,
             GridCoord? targetCell = null)
         {
             var sourceCombatant = playerCombatants.FirstOrDefault(c =>
@@ -49,11 +50,11 @@ namespace DeadManZone.Core.Combat
             switch (ability)
             {
                 case GrantedAbility.GrenadeLob:
-                    return ExecuteGrenadeLob(sourceCombatant, enemyCombatants, log, phase, targetCell);
+                    return ExecuteGrenadeLob(sourceCombatant, enemyCombatants, log, logSegment, logTick, targetCell);
                 case GrantedAbility.ShieldAllies:
-                    return ExecuteShieldAllies(sourceCombatant, playerCombatants, log, phase);
+                    return ExecuteShieldAllies(sourceCombatant, playerCombatants, log, logSegment, logTick);
                 case GrantedAbility.CannonBlast:
-                    return ExecuteCannonBlast(sourceCombatant, enemyCombatants, log, phase, targetCell);
+                    return ExecuteCannonBlast(sourceCombatant, enemyCombatants, log, logSegment, logTick, targetCell);
                 default:
                     return CommandResult.Fail("Unknown ability");
             }
@@ -63,7 +64,8 @@ namespace DeadManZone.Core.Combat
             CombatantState source,
             IList<CombatantState> enemies,
             CombatEventLog log,
-            CombatPhase phase,
+            int logSegment,
+            int logTick,
             GridCoord? targetCell)
         {
             var target = ResolveTargetCell(enemies, targetCell);
@@ -78,7 +80,8 @@ namespace DeadManZone.Core.Combat
                 GrenadeLobDamage,
                 AttackType.Explosive,
                 log,
-                phase,
+                logSegment,
+                logTick,
                 "grenade_lob");
             return CommandResult.Ok();
         }
@@ -87,7 +90,8 @@ namespace DeadManZone.Core.Combat
             CombatantState source,
             IList<CombatantState> allies,
             CombatEventLog log,
-            CombatPhase phase)
+            int logSegment,
+            int logTick)
         {
             foreach (var ally in allies.Where(a => a.IsAlive && IsAdjacent(source.Position, a.Position)))
             {
@@ -95,7 +99,7 @@ namespace DeadManZone.Core.Combat
                     continue;
 
                 ally.ArmorBuffSteps += 1;
-                log.Append(phase, tick: -1, source.InstanceId, "shield_allies", ally.InstanceId, 1);
+                log.Append(logSegment, logTick, source.InstanceId, "shield_allies", ally.InstanceId, 1);
             }
 
             return CommandResult.Ok();
@@ -105,16 +109,17 @@ namespace DeadManZone.Core.Combat
             CombatantState source,
             IList<CombatantState> enemies,
             CombatEventLog log,
-            CombatPhase phase,
+            int logSegment,
+            int logTick,
             GridCoord? targetCell)
         {
             var primary = ResolvePrimaryTarget(enemies, targetCell);
             if (primary == null)
                 return CommandResult.Fail("No valid cannon target");
 
-            ApplyDamage(source, primary, CannonBlastPrimaryDamage, AttackType.Explosive, log, phase, "cannon_blast");
+            ApplyDamage(source, primary, CannonBlastPrimaryDamage, AttackType.Explosive, log, logSegment, logTick, "cannon_blast");
             foreach (var splash in enemies.Where(e => e.IsAlive && e.InstanceId != primary.InstanceId && IsAdjacent(primary.Position, e.Position)))
-                ApplyDamage(source, splash, CannonBlastSplashDamage, AttackType.Explosive, log, phase, "cannon_blast_splash");
+                ApplyDamage(source, splash, CannonBlastSplashDamage, AttackType.Explosive, log, logSegment, logTick, "cannon_blast_splash");
 
             return CommandResult.Ok();
         }
@@ -148,7 +153,8 @@ namespace DeadManZone.Core.Combat
             int baseDamage,
             AttackType attackType,
             CombatEventLog log,
-            CombatPhase phase,
+            int logSegment,
+            int logTick,
             string actionType)
         {
             foreach (var target in targets.Where(t => t.IsAlive && Manhattan(center, t.Position) <= radius))
@@ -163,9 +169,9 @@ namespace DeadManZone.Core.Combat
                 target.CurrentHp -= damage;
                 source.DamageDealtThisFight += damage;
                 target.DamageTakenThisFight += damage;
-                log.Append(phase, tick: -1, source.InstanceId, actionType, target.InstanceId, damage);
+                log.Append(logSegment, logTick, source.InstanceId, actionType, target.InstanceId, damage);
                 if (!target.IsAlive)
-                    log.Append(phase, tick: -1, target.InstanceId, "destroyed", source.InstanceId, 0);
+                    log.Append(logSegment, logTick, target.InstanceId, "destroyed", source.InstanceId, 0);
             }
         }
 
@@ -175,7 +181,8 @@ namespace DeadManZone.Core.Combat
             int baseDamage,
             AttackType attackType,
             CombatEventLog log,
-            CombatPhase phase,
+            int logSegment,
+            int logTick,
             string actionType)
         {
             var tempAttacker = new PieceDefinition
@@ -188,9 +195,9 @@ namespace DeadManZone.Core.Combat
             target.CurrentHp -= damage;
             source.DamageDealtThisFight += damage;
             target.DamageTakenThisFight += damage;
-            log.Append(phase, tick: -1, source.InstanceId, actionType, target.InstanceId, damage);
+            log.Append(logSegment, logTick, source.InstanceId, actionType, target.InstanceId, damage);
             if (!target.IsAlive)
-                log.Append(phase, tick: -1, target.InstanceId, "destroyed", source.InstanceId, 0);
+                log.Append(logSegment, logTick, target.InstanceId, "destroyed", source.InstanceId, 0);
         }
 
         private static bool HasInfantryTag(PieceDefinition definition) =>

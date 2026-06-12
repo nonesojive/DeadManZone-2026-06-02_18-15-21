@@ -12,7 +12,7 @@ namespace DeadManZone.Core.Combat
         public IReadOnlyList<AvailableCommand> GetAvailableCommands(
             BoardState board,
             int requisition,
-            CombatPhase completedPhase)
+            int checkpointIndex)
         {
             var list = new List<AvailableCommand>();
             var usedAbilities = new HashSet<GrantedAbility>();
@@ -22,7 +22,7 @@ namespace DeadManZone.Core.Combat
                 var ability = piece.Definition.GrantedAbility;
                 if (ability != GrantedAbility.None &&
                     !usedAbilities.Contains(ability) &&
-                    CombatAbilityExecutor.CanUseAtPause(ability, completedPhase))
+                    CombatAbilityExecutor.CanUseAtPause(ability, checkpointIndex))
                 {
                     usedAbilities.Add(ability);
                     list.Add(new AvailableCommand
@@ -30,7 +30,7 @@ namespace DeadManZone.Core.Combat
                         Type = CommandType.UseAbility,
                         SourcePieceId = piece.InstanceId,
                         Ability = ability,
-                        RequisitionCost = CombatAbilityExecutor.GetAuthorityCost(ability, completedPhase)
+                        RequisitionCost = CombatAbilityExecutor.GetAuthorityCost(ability, checkpointIndex)
                     });
                 }
 
@@ -72,8 +72,10 @@ namespace DeadManZone.Core.Combat
             IList<CombatantState> playerCombatants,
             IList<CombatantState> enemyCombatants,
             CombatEventLog log,
-            CombatPhase completedPhase)
+            int checkpointIndex,
+            int globalTick)
         {
+            int logSegment = checkpointIndex + 1;
             int authoritySnapshot = authority;
             var tacticCommand = commands?.FirstOrDefault(c =>
                 c.Type == CommandType.SetTactic || c.Type == CommandType.ChangeStance);
@@ -89,7 +91,7 @@ namespace DeadManZone.Core.Combat
                         previous,
                         hqAlive,
                         hasCommand,
-                        completedPhase,
+                        checkpointIndex,
                         ref authority,
                         out var reason))
                 {
@@ -98,7 +100,7 @@ namespace DeadManZone.Core.Combat
                 }
 
                 tactics.PlayerTactic = tacticCommand.Tactic;
-                log.Append(completedPhase, tick: -1, "tactic", "tactic_set", null, (int)tacticCommand.Tactic);
+                log.Append(logSegment, globalTick, "tactic", "tactic_set", null, (int)tacticCommand.Tactic);
             }
 
             var usedAbilities = new HashSet<GrantedAbility>();
@@ -108,7 +110,7 @@ namespace DeadManZone.Core.Combat
                     return CommandResult.Fail("Duplicate ability");
 
                 usedAbilities.Add(command.Ability);
-                int cost = CombatAbilityExecutor.GetAuthorityCost(command.Ability, completedPhase);
+                int cost = CombatAbilityExecutor.GetAuthorityCost(command.Ability, checkpointIndex);
                 if (authority < cost)
                 {
                     authority = authoritySnapshot;
@@ -122,7 +124,8 @@ namespace DeadManZone.Core.Combat
                     playerCombatants,
                     enemyCombatants,
                     log,
-                    completedPhase,
+                    logSegment,
+                    globalTick,
                     command.TargetCell);
                 if (!result.Success)
                 {
@@ -136,7 +139,16 @@ namespace DeadManZone.Core.Combat
             foreach (var command in commands.Where(c =>
                          c.Type is CommandType.SpendRequisitionBuff or CommandType.CallStrike))
             {
-                var legacy = TryApplyLegacy(command, board, ref authority, tactics, playerCombatants, enemyCombatants, log, completedPhase);
+                var legacy = TryApplyLegacy(
+                    command,
+                    board,
+                    ref authority,
+                    tactics,
+                    playerCombatants,
+                    enemyCombatants,
+                    log,
+                    logSegment,
+                    globalTick);
                 if (!legacy.Success)
                 {
                     authority = authoritySnapshot;
@@ -155,7 +167,8 @@ namespace DeadManZone.Core.Combat
             IList<CombatantState> playerCombatants,
             IList<CombatantState> enemyCombatants,
             CombatEventLog log,
-            CombatPhase completedPhase)
+            int checkpointIndex,
+            int globalTick)
         {
             if (command.Type is CommandType.SpendRequisitionBuff or CommandType.CallStrike)
             {
@@ -167,7 +180,8 @@ namespace DeadManZone.Core.Combat
                     playerCombatants,
                     enemyCombatants,
                     log,
-                    completedPhase);
+                    checkpointIndex + 1,
+                    globalTick);
             }
 
             return TryApplyBatch(
@@ -178,7 +192,8 @@ namespace DeadManZone.Core.Combat
                 playerCombatants,
                 enemyCombatants,
                 log,
-                completedPhase);
+                checkpointIndex,
+                globalTick);
         }
 
         private CommandResult TryApplyLegacy(
@@ -189,7 +204,8 @@ namespace DeadManZone.Core.Combat
             IList<CombatantState> playerCombatants,
             IList<CombatantState> enemyCombatants,
             CombatEventLog log,
-            CombatPhase completedPhase)
+            int logSegment,
+            int logTick)
         {
             var source = board.Pieces.FirstOrDefault(p => p.InstanceId == command.SourcePieceId);
             if (source == null)
@@ -204,7 +220,7 @@ namespace DeadManZone.Core.Combat
                         return CommandResult.Fail("Insufficient requisition");
                     requisition -= command.Cost;
                     tactics.PlayerDamageBuff += 2;
-                    log.Append(completedPhase, tick: -1, source.InstanceId, "requisition_buff", null, 2);
+                    log.Append(logSegment, logTick, source.InstanceId, "requisition_buff", null, 2);
                     return CommandResult.Ok();
 
                 case CommandType.CallStrike:
@@ -213,7 +229,7 @@ namespace DeadManZone.Core.Combat
                     if (requisition < command.Cost)
                         return CommandResult.Fail("Insufficient requisition");
                     requisition -= command.Cost;
-                    ApplyStrikeDamage(playerCombatants, enemyCombatants, log, completedPhase, source.InstanceId, damage: 5);
+                    ApplyStrikeDamage(playerCombatants, enemyCombatants, log, logSegment, logTick, source.InstanceId, damage: 5);
                     return CommandResult.Ok();
 
                 default:
@@ -225,7 +241,8 @@ namespace DeadManZone.Core.Combat
             IList<CombatantState> playerCombatants,
             IList<CombatantState> enemyCombatants,
             CombatEventLog log,
-            CombatPhase phase,
+            int logSegment,
+            int logTick,
             string actorId,
             int damage)
         {
@@ -234,9 +251,9 @@ namespace DeadManZone.Core.Combat
                 return;
 
             target.CurrentHp -= damage;
-            log.Append(phase, tick: -1, actorId, "call_strike", target.InstanceId, damage);
+            log.Append(logSegment, logTick, actorId, "call_strike", target.InstanceId, damage);
             if (!target.IsAlive)
-                log.Append(phase, tick: -1, target.InstanceId, "destroyed", actorId, 0);
+                log.Append(logSegment, logTick, target.InstanceId, "destroyed", actorId, 0);
         }
     }
 }

@@ -31,7 +31,7 @@ namespace DeadManZone.Core.Combat
             if (combatEvent == null)
                 return string.Empty;
 
-            string phase = combatEvent.Phase.ToString();
+            string phase = $"S{combatEvent.Segment}";
             int tick = combatEvent.Tick;
 
             return combatEvent.ActionType switch
@@ -50,6 +50,8 @@ namespace DeadManZone.Core.Combat
                     $"[{phase} t{tick}] Tactic set: {(TacticType)combatEvent.Value}",
                 "shield_allies" =>
                     $"[{phase} t{tick}] {Label(combatEvent.ActorId)} shielded {Label(combatEvent.TargetId)}",
+                "checkpoint" =>
+                    $"[{phase} t{tick}] Pause — {Label(combatEvent.TargetId)} forces at {combatEvent.Value}%",
                 _ when combatEvent.ActionType.Contains("damage") || combatEvent.ActionType.Contains("blast") ||
                        combatEvent.ActionType.Contains("strike") || combatEvent.ActionType.Contains("lob") =>
                     $"[{phase} t{tick}] {Label(combatEvent.ActorId)} → {Label(combatEvent.TargetId)}: {combatEvent.Value} ({combatEvent.ActionType})",

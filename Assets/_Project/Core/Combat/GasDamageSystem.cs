@@ -9,9 +9,9 @@ namespace DeadManZone.Core.Combat
         private const int NeutralGasBase = 3;
         private const int FrontGasBase = 1;
 
-        public static int GetDamage(GridCoord position, int segmentTick, BattlefieldLayout layout)
+        public static int GetDamage(GridCoord position, int ticksSinceGasStart, BattlefieldLayout layout)
         {
-            float ramp = 1f + segmentTick / (float)CombatPacingConfig.GasRampReferenceTicks;
+            float ramp = 1f + ticksSinceGasStart / (float)CombatPacingConfig.GasRampReferenceTicks;
             int baseDamage = layout.IsNeutralColumn(position.X) ? NeutralGasBase : FrontGasBase;
             return System.Math.Max(1, (int)(baseDamage * ramp));
         }

@@ -14,7 +14,8 @@ namespace DeadManZone.Core.Combat
 
     public sealed class PhaseCommand
     {
-        public CombatPhase AfterPhase { get; set; }
+        /// <summary>Pause index this command applies at: 0 = first pause, 1 = second.</summary>
+        public int AfterCheckpoint { get; set; }
         public CommandType Type { get; set; }
         public TacticType Tactic { get; set; }
         public GrantedAbility Ability { get; set; }

@@ -10,7 +10,7 @@ namespace DeadManZone.Core.Combat
             TacticType previous,
             bool hqAlive,
             bool hasCommandPiece,
-            CombatPhase pauseAfterPhase,
+            int checkpointIndex,
             ref int authority,
             out string reason)
         {
@@ -28,7 +28,7 @@ namespace DeadManZone.Core.Combat
                 return false;
             }
 
-            int cost = GetTacticCost(selected, previous, pauseAfterPhase);
+            int cost = GetTacticCost(selected, previous, checkpointIndex);
             if (authority < cost)
             {
                 reason = "Insufficient Authority";
@@ -39,14 +39,11 @@ namespace DeadManZone.Core.Combat
             return true;
         }
 
-        public static int GetTacticCost(TacticType selected, TacticType previous, CombatPhase pauseAfterPhase)
+        public static int GetTacticCost(TacticType selected, TacticType previous, int checkpointIndex)
         {
             int cost = selected == TacticType.ProtectSupport ? 1 : 0;
-            if (pauseAfterPhase != CombatPhase.Grind || selected == previous)
+            if (checkpointIndex != 1 || selected == previous)
                 return cost;
-
-            if (selected == TacticType.ProtectSupport)
-                return cost + 1;
 
             return cost + 1;
         }
@@ -54,15 +51,15 @@ namespace DeadManZone.Core.Combat
         public static int GetTotalPauseCost(
             TacticType selected,
             TacticType previous,
-            CombatPhase pauseAfterPhase,
+            int checkpointIndex,
             IEnumerable<GrantedAbility> abilities)
         {
-            int cost = GetTacticCost(selected, previous, pauseAfterPhase);
+            int cost = GetTacticCost(selected, previous, checkpointIndex);
             if (abilities == null)
                 return cost;
 
             foreach (var ability in abilities)
-                cost += CombatAbilityExecutor.GetAuthorityCost(ability, pauseAfterPhase);
+                cost += CombatAbilityExecutor.GetAuthorityCost(ability, checkpointIndex);
 
             return cost;
         }
@@ -72,7 +69,7 @@ namespace DeadManZone.Core.Combat
             TacticType previous,
             bool hqAlive,
             bool hasCommandPiece,
-            CombatPhase pauseAfterPhase,
+            int checkpointIndex,
             int authority,
             IEnumerable<GrantedAbility> abilities,
             out string reason)
@@ -91,7 +88,7 @@ namespace DeadManZone.Core.Combat
                 return false;
             }
 
-            int cost = GetTotalPauseCost(selected, previous, pauseAfterPhase, abilities);
+            int cost = GetTotalPauseCost(selected, previous, checkpointIndex, abilities);
             if (authority < cost)
             {
                 reason = "Insufficient Authority";

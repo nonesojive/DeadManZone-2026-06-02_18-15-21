@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
-using DeadManZone.Core.Run;
 using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
@@ -19,21 +18,23 @@ namespace DeadManZone.Core.Combat
         private readonly TacticState _tactics = new();
         private readonly CombatEventLog _log = new();
         private readonly HashSet<GridCoord> _occupied = new();
+        private bool _awaitingCommand;
 
         public BoardState PlayerBoard => _playerBoard;
         public int Authority { get; private set; }
         public int Requisition => Authority;
-        public CombatPhase LastCompletedPhase { get; private set; }
-        public CombatSegment ActiveSegment { get; private set; }
-        public int SegmentTick { get; private set; }
+        public int CheckpointsFired { get; private set; }
+        public int GlobalTick { get; private set; }
+        public PauseTriggerContext LastPauseTrigger { get; private set; }
         public CombatEventLog Log => _log;
         public bool IsFightOver { get; private set; }
         public bool PlayerWon { get; private set; }
         public bool IsDraw { get; private set; }
 
-        public bool AwaitingCommand =>
-            !IsFightOver &&
-            (LastCompletedPhase == CombatPhase.Deployment || LastCompletedPhase == CombatPhase.Grind);
+        public bool AwaitingCommand => !IsFightOver && _awaitingCommand;
+
+        /// <summary>Index of the pause currently awaiting commands, or -1.</summary>
+        public int CurrentPauseIndex => AwaitingCommand ? CheckpointsFired - 1 : -1;
 
         public TacticType PlayerTactic => _tactics.PlayerTactic;
 
@@ -77,132 +78,113 @@ namespace DeadManZone.Core.Combat
             if (IsFightOver)
                 return CompleteResult();
 
-            if (LastCompletedPhase == default)
+            if (_awaitingCommand)
             {
-                RunSegment(CombatSegment.Opening, CombatPhase.Deployment, SegmentTickBudget.Opening, 0.2f);
-                LastCompletedPhase = CombatPhase.Deployment;
-                return IsFightOver ? CompleteResult() : AwaitingResult(CombatPhase.Deployment);
+                ApplyCommands(commands, CheckpointsFired - 1);
+                _awaitingCommand = false;
+                if (TryEndFight(CheckpointsFired))
+                    return CompleteResult();
             }
 
-            if (LastCompletedPhase == CombatPhase.Deployment)
-            {
-                ApplyCommands(commands, CombatPhase.Deployment);
-                if (TryEndFight(CombatPhase.Deployment))
-                    return CompleteResult();
-
-                RunSegment(CombatSegment.MainFight, CombatPhase.Grind, SegmentTickBudget.MainFight, 1.0f);
-                LastCompletedPhase = CombatPhase.Grind;
-                return IsFightOver ? CompleteResult() : AwaitingResult(CombatPhase.Grind);
-            }
-
-            if (LastCompletedPhase == CombatPhase.Grind)
-            {
-                ApplyCommands(commands, CombatPhase.Grind);
-                if (TryEndFight(CombatPhase.Grind))
-                    return CompleteResult();
-
-                RunSegment(CombatSegment.BriefPush, CombatPhase.FinalPush, CombatPacingConfig.BriefPushTicks, 1.0f);
-                if (TryEndFight(CombatPhase.FinalPush))
-                    return CompleteResult();
-
-                RunGasUntilEnd();
-                LastCompletedPhase = CombatPhase.FinalPush;
-                return CompleteFight();
-            }
-
-            return CompleteResult();
+            int segment = CheckpointsFired;
+            RunUntilPauseOrEnd(segment);
+            return IsFightOver ? CompleteResult(segment) : AwaitingResult(segment);
         }
 
-        public void FastForwardToCheckpoint(CombatPhase completedPhase, IReadOnlyList<PhaseCommand> submittedCommands)
+        public void FastForwardToCheckpoint(int checkpointsFired, IReadOnlyList<PhaseCommand> submittedCommands)
         {
-            if (completedPhase == default)
+            if (checkpointsFired <= 0)
                 return;
 
             Continue(System.Array.Empty<PhaseCommand>());
-
-            if (completedPhase == CombatPhase.Deployment)
-                return;
-
-            Continue(FilterCommands(submittedCommands, CombatPhase.Deployment));
-
-            if (completedPhase == CombatPhase.Grind)
-                return;
-
-            Continue(FilterCommands(submittedCommands, CombatPhase.Grind));
+            while (!IsFightOver && _awaitingCommand && CheckpointsFired < checkpointsFired)
+                Continue(FilterCommands(submittedCommands, CheckpointsFired - 1));
         }
 
-        private void RunGasUntilEnd()
+        private void RunUntilPauseOrEnd(int segment)
         {
-            ActiveSegment = CombatSegment.GasFinal;
-            for (SegmentTick = 0; SegmentTick < CombatPacingConfig.MaxGasTicks; SegmentTick++)
+            while (!IsFightOver)
             {
-                if (TryEndFight(CombatPhase.FinalPush))
-                    break;
+                if (GlobalTick >= CombatPacingConfig.MaxFightTicks)
+                {
+                    EndAsDraw(segment);
+                    return;
+                }
 
-                TryMoveSide(_playerCombatants, _enemyCombatants, ActiveSegment, CombatPhase.FinalPush);
-                TryMoveSide(_enemyCombatants, _playerCombatants, ActiveSegment, CombatPhase.FinalPush);
-                if (TryEndFight(CombatPhase.FinalPush))
-                    break;
+                TryMoveSide(_playerCombatants, _enemyCombatants, segment);
+                TryMoveSide(_enemyCombatants, _playerCombatants, segment);
+                if (TryEndFight(segment))
+                    return;
 
-                ApplyGas(CombatPhase.FinalPush);
-                if (TryEndFight(CombatPhase.FinalPush))
-                    break;
+                if (GlobalTick >= CombatPacingConfig.GasStartTick)
+                {
+                    ApplyGas(segment);
+                    if (TryEndFight(segment))
+                        return;
+                }
 
-                ResolveAttacks(
-                    _playerCombatants,
-                    _enemyCombatants,
-                    _tactics.PlayerTactic,
-                    _tactics.PlayerDamageBuff,
-                    CombatPhase.FinalPush,
-                    1.2f);
-                if (TryEndFight(CombatPhase.FinalPush))
-                    break;
+                ResolveAttacks(_playerCombatants, _enemyCombatants, _tactics.PlayerTactic, _tactics.PlayerDamageBuff, segment);
+                if (TryEndFight(segment))
+                    return;
 
-                ResolveAttacks(
-                    _enemyCombatants,
-                    _playerCombatants,
-                    _tactics.EnemyTactic,
-                    _tactics.EnemyDamageBuff,
-                    CombatPhase.FinalPush,
-                    1.2f);
+                ResolveAttacks(_enemyCombatants, _playerCombatants, _tactics.EnemyTactic, _tactics.EnemyDamageBuff, segment);
+                if (TryEndFight(segment))
+                    return;
+
+                GlobalTick++;
+                if (TryFireCheckpoint(segment))
+                    return;
             }
         }
 
-        private void RunSegment(CombatSegment segment, CombatPhase phase, int tickBudget, float damageScale)
+        private bool TryFireCheckpoint(int segment)
         {
-            ActiveSegment = segment;
-            for (SegmentTick = 0; SegmentTick < tickBudget; SegmentTick++)
+            var thresholds = CombatPacingConfig.PauseThresholds;
+            if (CheckpointsFired >= thresholds.Length)
+                return false;
+
+            var player = ArmyHealthTracker.Evaluate(_playerCombatants);
+            var enemy = ArmyHealthTracker.Evaluate(_enemyCombatants);
+            float lowest = System.Math.Min(player.Fraction, enemy.Fraction);
+
+            int consumed = 0;
+            float lastThreshold = 0f;
+            while (CheckpointsFired + consumed < thresholds.Length &&
+                   lowest <= thresholds[CheckpointsFired + consumed])
             {
-                if (TryEndFight(phase))
-                    break;
-
-                TryMoveSide(_playerCombatants, _enemyCombatants, segment, phase);
-                TryMoveSide(_enemyCombatants, _playerCombatants, segment, phase);
-
-                if (TryEndFight(phase))
-                    break;
-
-                if (segment == CombatSegment.GasFinal)
-                    ApplyGas(phase);
-
-                if (TryEndFight(phase))
-                    break;
-
-                ResolveAttacks(_playerCombatants, _enemyCombatants, _tactics.PlayerTactic, _tactics.PlayerDamageBuff, phase, damageScale);
-                if (TryEndFight(phase))
-                    break;
-
-                ResolveAttacks(_enemyCombatants, _playerCombatants, _tactics.EnemyTactic, _tactics.EnemyDamageBuff, phase, damageScale);
-                if (TryEndFight(phase))
-                    break;
+                lastThreshold = thresholds[CheckpointsFired + consumed];
+                consumed++;
             }
+
+            if (consumed == 0)
+                return false;
+
+            var triggeredBy = player.Fraction <= enemy.Fraction ? CombatSide.Player : CombatSide.Enemy;
+            _log.Append(segment, GlobalTick, "combat", "checkpoint", triggeredBy.ToString(), (int)(lastThreshold * 100));
+
+            CheckpointsFired += consumed;
+            _awaitingCommand = true;
+            LastPauseTrigger = new PauseTriggerContext
+            {
+                CheckpointIndex = CheckpointsFired - 1,
+                TriggeredBy = triggeredBy,
+                Threshold = lastThreshold
+            };
+            return true;
+        }
+
+        private void EndAsDraw(int segment)
+        {
+            IsFightOver = true;
+            IsDraw = true;
+            PlayerWon = false;
+            _log.Append(segment, GlobalTick, "combat", "fight_end", "draw", 0);
         }
 
         private void TryMoveSide(
             IList<CombatantState> movers,
             IList<CombatantState> targets,
-            CombatSegment segment,
-            CombatPhase phase)
+            int segment)
         {
             var aliveTargets = targets.Where(t => t.IsAlive).ToList();
             if (aliveTargets.Count == 0)
@@ -230,11 +212,11 @@ namespace DeadManZone.Core.Combat
                     continue;
 
                 var goal = CombatMovementRules.SelectNearestEnemyPosition(mover.Position, aliveTargets);
-                var next = CombatMovement.StepTowardTarget(mover.Position, goal, _layout, segment, blocked);
+                var next = CombatMovement.StepTowardTarget(mover.Position, goal, _layout, blocked);
                 if (next == null || next.Value.Equals(mover.Position))
                     continue;
 
-                int cost = CombatMovement.GetStepChargeCost(mover.Position, next.Value, _layout, segment);
+                int cost = CombatMovement.GetStepChargeCost(mover.Position, next.Value, _layout);
                 if (mover.MoveCharge < cost)
                     continue;
 
@@ -244,8 +226,8 @@ namespace DeadManZone.Core.Combat
                 _occupied.Add(mover.Position);
                 blocked.Add(mover.Position);
                 _log.Append(
-                    phase,
-                    SegmentTick,
+                    segment,
+                    GlobalTick,
                     mover.InstanceId,
                     "move",
                     $"{next.Value.X},{next.Value.Y}",
@@ -253,18 +235,21 @@ namespace DeadManZone.Core.Combat
             }
         }
 
-        private void ApplyGas(CombatPhase phase)
+        private void ApplyGas(int segment)
         {
             foreach (var combatant in _playerCombatants.Concat(_enemyCombatants).Where(c => c.IsAlive).OrderBy(c => c.InstanceId))
             {
                 if (GasDamageSystem.IsMitigated(combatant.Definition))
                     continue;
 
-                int damage = GasDamageSystem.GetDamage(combatant.Position, SegmentTick, _layout);
+                int damage = GasDamageSystem.GetDamage(
+                    combatant.Position,
+                    GlobalTick - CombatPacingConfig.GasStartTick,
+                    _layout);
                 combatant.CurrentHp -= damage;
-                _log.Append(phase, SegmentTick, "gas", combatant.InstanceId, "gas_damage", damage);
+                _log.Append(segment, GlobalTick, "gas", "gas_damage", combatant.InstanceId, damage);
                 if (!combatant.IsAlive)
-                    LogDestroyed(phase, combatant.InstanceId, "gas");
+                    LogDestroyed(segment, combatant.InstanceId, "gas");
             }
         }
 
@@ -273,8 +258,7 @@ namespace DeadManZone.Core.Combat
             IList<CombatantState> defenders,
             TacticType tactic,
             int damageBuff,
-            CombatPhase phase,
-            float damageScale)
+            int segment)
         {
             foreach (var actor in attackers.Where(a => a.IsAlive && a.CanAttack).OrderBy(a => a.InstanceId))
             {
@@ -291,44 +275,45 @@ namespace DeadManZone.Core.Combat
                 int damage = CombatDamageResolver.ComputeDamage(
                     actor.Definition,
                     target.Definition,
-                    damageScale,
+                    1f,
                     target.ArmorBuffSteps,
                     actor.DamageBonus + damageBuff);
                 target.CurrentHp -= damage;
                 actor.DamageDealtThisFight += damage;
                 target.DamageTakenThisFight += damage;
-                _log.Append(phase, SegmentTick, actor.InstanceId, "damage", target.InstanceId, damage);
+                _log.Append(segment, GlobalTick, actor.InstanceId, "damage", target.InstanceId, damage);
                 if (!target.IsAlive)
-                    LogDestroyed(phase, target.InstanceId, actor.InstanceId);
+                    LogDestroyed(segment, target.InstanceId, actor.InstanceId);
                 actor.CooldownRemaining = CombatAttackSpeed.GetEffectiveCooldown(
                     actor.Definition.CooldownTicks,
                     actor.Definition.AttackSpeed);
             }
         }
 
-        private void ApplyCommands(IReadOnlyList<PhaseCommand> commands, CombatPhase completedPhase)
+        private void ApplyCommands(IReadOnlyList<PhaseCommand> commands, int checkpointIndex)
         {
-            var phaseCommands = FilterCommands(commands, completedPhase);
-            if (phaseCommands.Count == 0)
+            var pauseCommands = FilterCommands(commands, checkpointIndex);
+            if (pauseCommands.Count == 0)
                 return;
 
             int authority = Authority;
             _commandProcessor.TryApplyBatch(
-                phaseCommands,
+                pauseCommands,
                 _playerBoard,
                 ref authority,
                 _tactics,
                 _playerCombatants,
                 _enemyCombatants,
                 _log,
-                completedPhase);
+                checkpointIndex,
+                GlobalTick);
             Authority = authority;
 
             foreach (var combatant in _playerCombatants)
                 combatant.ArmorBuffSteps = 0;
         }
 
-        private bool TryEndFight(CombatPhase phase)
+        private bool TryEndFight(int segment)
         {
             var (fightOver, playerWon, isDraw) = CombatWinChecker.Evaluate(_playerCombatants, _enemyCombatants);
             if (!fightOver)
@@ -338,28 +323,25 @@ namespace DeadManZone.Core.Combat
             PlayerWon = playerWon;
             IsDraw = isDraw;
             string outcome = isDraw ? "draw" : playerWon ? "victory" : "defeat";
-            _log.Append(phase, SegmentTick, "combat", "fight_end", outcome, 0);
+            _log.Append(segment, GlobalTick, "combat", "fight_end", outcome, 0);
             return true;
         }
 
-        private void LogDestroyed(CombatPhase phase, string victimId, string sourceId) =>
-            _log.Append(phase, SegmentTick, victimId, "destroyed", sourceId, 0);
+        private void LogDestroyed(int segment, string victimId, string sourceId) =>
+            _log.Append(segment, GlobalTick, victimId, "destroyed", sourceId, 0);
 
-        private CombatAdvanceResult CompleteFight()
-        {
-            TryEndFight(CombatPhase.FinalPush);
-            return CompleteResult();
-        }
-
-        private CombatAdvanceResult AwaitingResult(CombatPhase phase) =>
+        private CombatAdvanceResult AwaitingResult(int segment) =>
             new CombatAdvanceResult
             {
                 Status = CombatAdvanceStatus.AwaitingCommand,
-                CompletedPhase = phase,
+                SegmentIndex = segment,
+                PauseTrigger = LastPauseTrigger,
                 EventLog = _log
             };
 
-        private CombatAdvanceResult CompleteResult()
+        private CombatAdvanceResult CompleteResult() => CompleteResult(CheckpointsFired);
+
+        private CombatAdvanceResult CompleteResult(int segment)
         {
             var (total, lost, hqDamaged) = ComputePlayerLossStats();
             var survivors = _playerCombatants
@@ -370,7 +352,7 @@ namespace DeadManZone.Core.Combat
             return new CombatAdvanceResult
             {
                 Status = CombatAdvanceStatus.Completed,
-                CompletedPhase = LastCompletedPhase,
+                SegmentIndex = segment,
                 PlayerWon = PlayerWon,
                 IsDraw = IsDraw,
                 EventLog = _log,
@@ -464,7 +446,8 @@ namespace DeadManZone.Core.Combat
 
         private static IReadOnlyList<PhaseCommand> FilterCommands(
             IReadOnlyList<PhaseCommand> commands,
-            CombatPhase phase) =>
-            commands?.Where(c => c.AfterPhase == phase).ToList() ?? new List<PhaseCommand>();
+            int checkpointIndex) =>
+            commands?.Where(c => c.AfterCheckpoint == checkpointIndex).ToList()
+            ?? (IReadOnlyList<PhaseCommand>)new List<PhaseCommand>();
     }
 }
