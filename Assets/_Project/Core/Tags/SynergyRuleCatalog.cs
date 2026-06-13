@@ -5,7 +5,45 @@ namespace DeadManZone.Core.Tags
 {
     public static class SynergyRuleCatalog
     {
-        private static readonly SynergyEffectDefinition[] Rules = Array.Empty<SynergyEffectDefinition>();
+        private static readonly SynergyEffectDefinition[] Rules =
+        {
+            new()
+            {
+                SourceSynergyTagId = GameTagIds.Medic,
+                Direction = SynergyDirection.Outbound,
+                NeighborFilter = new NeighborFilter { PrimaryTagId = GameTagIds.Infantry },
+                Stat = SynergyStat.ArmorType,
+                ModType = SynergyModType.Flat,
+                Magnitude = 1
+            },
+            new()
+            {
+                SourceSynergyTagId = GameTagIds.Command,
+                Direction = SynergyDirection.Outbound,
+                NeighborFilter = new NeighborFilter { CombatRoleTagId = GameTagIds.Artillery },
+                Stat = SynergyStat.Damage,
+                ModType = SynergyModType.Flat,
+                Magnitude = 2
+            },
+            new()
+            {
+                SourceSynergyTagId = GameTagIds.Echo,
+                Direction = SynergyDirection.Outbound,
+                NeighborFilter = new NeighborFilter { AbilityTagId = GameTagIds.Stealth },
+                Stat = SynergyStat.Damage,
+                ModType = SynergyModType.Flat,
+                Magnitude = 1
+            },
+            new()
+            {
+                SourceSynergyTagId = GameTagIds.Inspiring,
+                Direction = SynergyDirection.Outbound,
+                NeighborFilter = NeighborFilter.Any,
+                Stat = SynergyStat.MoveChargePercent,
+                ModType = SynergyModType.Flat,
+                Magnitude = 5
+            }
+        };
 
         private static readonly IReadOnlyDictionary<string, IReadOnlyList<SynergyEffectDefinition>> RulesBySourceTag =
             BuildBySourceTag(Rules);
