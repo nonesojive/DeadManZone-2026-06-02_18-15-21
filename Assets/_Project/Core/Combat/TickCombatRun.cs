@@ -216,14 +216,18 @@ namespace DeadManZone.Core.Combat
                 if (!CombatMovementRules.ShouldAttemptMove(mover, aliveTargets))
                     continue;
 
-                var goal = CombatMovementRules.SelectNearestEnemyPosition(mover.AnchorPosition, aliveTargets);
+                var goal = RoleEngagement.ComputeGoal(mover, movers, aliveTargets, _layout);
+                if (IsGoalBlockedByFriendly(goal, mover.InstanceId, movers))
+                    continue;
+
                 var next = ShapePathfinder.FindStep(
                     mover.AnchorPosition,
                     goal,
                     mover.ShapeOffsets,
                     mover.InstanceId,
                     _occupancyGrid,
-                    _layout);
+                    _layout,
+                    spawnAnchorY: mover.SpawnAnchorY);
                 if (next == null || next.Value.Equals(mover.AnchorPosition))
                     continue;
 
@@ -418,6 +422,23 @@ namespace DeadManZone.Core.Combat
             }
         }
 
+        private static bool IsGoalBlockedByFriendly(
+            GridCoord goal,
+            string moverInstanceId,
+            IList<CombatantState> allies)
+        {
+            foreach (var ally in allies)
+            {
+                if (!ally.IsAlive || ally.InstanceId == moverInstanceId)
+                    continue;
+
+                if (ally.AnchorPosition.Equals(goal))
+                    return true;
+            }
+
+            return false;
+        }
+
         private List<CombatantState> SpawnCombatants(BoardState board, CombatSide side, int xOffset)
         {
             int halfWidth = board.Layout.Width;
@@ -445,6 +466,7 @@ namespace DeadManZone.Core.Combat
                     CurrentHp = piece.Definition.MaxHp,
                     CooldownRemaining = 0,
                     AnchorPosition = anchor,
+                    SpawnAnchorY = piece.Anchor.Y,
                     ShapeOffsets = offsets
                 };
                 combatant.RecomputeOccupiedCells();

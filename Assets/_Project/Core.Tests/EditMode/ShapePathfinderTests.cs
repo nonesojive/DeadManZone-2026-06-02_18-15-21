@@ -102,5 +102,33 @@ namespace DeadManZone.Core.Tests.EditMode
             Assert.AreEqual(first, second);
             Assert.IsNotNull(first);
         }
+
+        [Test]
+        public void FindStep_PrefersStayingNearSpawnLane()
+        {
+            var layout = new BattlefieldLayout(
+                playerHalfWidth: 9,
+                neutralWidth: 0,
+                enemyHalfWidth: 9,
+                height: 10);
+            var occupancy = new CombatOccupancyGrid();
+            occupancy.Place("block_a", new GridCoord(3, 5), SingleCellOffsets);
+            occupancy.Place("block_b", new GridCoord(4, 5), SingleCellOffsets);
+
+            var current = new GridCoord(2, 5);
+            var goal = new GridCoord(8, 5);
+
+            var step = ShapePathfinder.FindStep(
+                current,
+                goal,
+                SingleCellOffsets,
+                moverInstanceId: "mover",
+                occupancy,
+                layout,
+                spawnAnchorY: 5);
+
+            Assert.IsNotNull(step);
+            Assert.AreEqual(new GridCoord(2, 4), step.Value, "Lane bias should prefer Y=4 over Y=7 when spawn lane is Y=5.");
+        }
     }
 }

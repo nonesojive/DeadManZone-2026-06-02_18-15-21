@@ -26,6 +26,7 @@ namespace DeadManZone.Core.Combat
         public int DamageDealtThisFight { get; set; }
         public int DamageTakenThisFight { get; set; }
         public GridCoord AnchorPosition { get; set; }
+        public int SpawnAnchorY { get; init; }
         public IReadOnlyList<GridCoord> ShapeOffsets { get; init; }
         public IReadOnlyList<GridCoord> OccupiedCells { get; private set; }
 

@@ -12,6 +12,7 @@ namespace DeadManZone.Core.Combat
     public static class ShapePathfinder
     {
         private const int MaxIterations = 2048;
+        private const int LaneBiasPenalty = 2;
 
         private static readonly GridCoord[] NeighborDeltas =
         {
@@ -27,12 +28,21 @@ namespace DeadManZone.Core.Combat
             IReadOnlyList<GridCoord> shapeOffsets,
             string moverInstanceId,
             CombatOccupancyGrid occupancy,
-            BattlefieldLayout layout)
+            BattlefieldLayout layout,
+            int? spawnAnchorY = null)
         {
             if (currentAnchor.Equals(goalAnchor))
                 return null;
 
-            if (TryFindPath(currentAnchor, goalAnchor, shapeOffsets, moverInstanceId, occupancy, layout, out var path)
+            if (TryFindPath(
+                    currentAnchor,
+                    goalAnchor,
+                    shapeOffsets,
+                    moverInstanceId,
+                    occupancy,
+                    layout,
+                    spawnAnchorY,
+                    out var path)
                 && path.Count >= 2)
             {
                 return path[1];
@@ -44,7 +54,8 @@ namespace DeadManZone.Core.Combat
                 shapeOffsets,
                 moverInstanceId,
                 occupancy,
-                layout);
+                layout,
+                spawnAnchorY);
         }
 
         private static bool TryFindPath(
@@ -54,6 +65,7 @@ namespace DeadManZone.Core.Combat
             string moverInstanceId,
             CombatOccupancyGrid occupancy,
             BattlefieldLayout layout,
+            int? spawnAnchorY,
             out List<GridCoord> path)
         {
             path = null;
@@ -89,7 +101,7 @@ namespace DeadManZone.Core.Combat
                         continue;
 
                     int tentativeG = gScore[current]
-                        + CombatMovement.GetStepChargeCost(current, neighbor, layout);
+                        + GetStepCost(current, neighbor, layout, spawnAnchorY);
 
                     if (gScore.TryGetValue(neighbor, out var existingG) && tentativeG >= existingG)
                         continue;
@@ -111,7 +123,8 @@ namespace DeadManZone.Core.Combat
             IReadOnlyList<GridCoord> shapeOffsets,
             string moverInstanceId,
             CombatOccupancyGrid occupancy,
-            BattlefieldLayout layout)
+            BattlefieldLayout layout,
+            int? spawnAnchorY)
         {
             int currentHeuristic = Manhattan(currentAnchor, goalAnchor);
             GridCoord? best = null;
@@ -138,6 +151,19 @@ namespace DeadManZone.Core.Combat
             }
 
             return best;
+        }
+
+        private static int GetStepCost(
+            GridCoord from,
+            GridCoord to,
+            BattlefieldLayout layout,
+            int? spawnAnchorY)
+        {
+            int cost = CombatMovement.GetStepChargeCost(from, to, layout);
+            if (spawnAnchorY.HasValue && System.Math.Abs(to.Y - spawnAnchorY.Value) > 1)
+                cost += LaneBiasPenalty;
+
+            return cost;
         }
 
         private static IEnumerable<GridCoord> GetValidNeighbors(
