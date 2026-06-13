@@ -131,7 +131,9 @@ Audit `AttackTypeProfileCatalog` + `CombatDamageResolver`. Every `AttackType` ×
 | Concept | Description |
 |---------|-------------|
 | **`LastEnemyFactionId`** | Faction id of the opponent in the most recent fight (from `EnemyTemplateSO.enemyFactionId` today; from procedural board metadata later) |
-| **Salvage chance** | Per-shop probability (0–100%) that a given offer slot pulls from the salvage pool instead of the normal pool |
+| **Base salvage chance** | Per **player faction** — defined on `FactionSO` (e.g. IronMarch 10%, Dust Scourge 18%) |
+| **Salvage boost** | Bonus % from **pieces on board** (buildings/units with salvage modifier tags or flags) |
+| **Salvage chance** | Final % used per offer slot after aftermath calculation |
 | **Salvage pool** | Lane-eligible pieces where `FactionId == LastEnemyFactionId` and `FactionId != playerFactionId` |
 | **Normal pool** | Existing `ShopPoolFilter` neutral vs own-faction weighting — unchanged |
 | **Salvage offer** | A shop slot that rolled salvage; piece comes from salvage pool; tagged for UI |
@@ -142,18 +144,53 @@ Audit `AttackTypeProfileCatalog` + `CombatDamageResolver`. Every `AttackType` ×
 
 #### 3.1.2 Salvage chance (computed after each fight)
 
-Set in aftermath, consumed on next shop generation, then recalculated after the following fight.
+Set in aftermath, consumed on next shop generation, recalculated after the following fight.
 
-| Input | Effect on salvage chance (tunable defaults) |
-|-------|---------------------------------------------|
-| Base (any fight completed) | +15% |
-| Victory | +20% |
-| Defeat / draw | +5% (still scavenged the battlefield) |
+**Faction base (always the floor):**
+
+Each playable faction defines `baseSalvageChancePercent` on `FactionSO`. Examples for tuning (not final balance):
+
+| Faction | Base salvage % (example) |
+|---------|--------------------------|
+| IronMarch Union | 10 |
+| Dust Scourge | 18 |
+| Cartel of Echoes | 12 |
+
+**Piece boosts (victory only):**
+
+Pieces on the player board can add salvage chance via `ShopModifierFlags.SalvageChanceBoost5` (+5% each, stackable) or a dedicated `salvageChanceBonus` int field on `PieceDefinition` for finer steps. Evaluated from **deployed board at fight start** (same snapshot used for muster/synergies). Typical sources: salvage yard building, scavenger unit, Dust Scourge-themed pieces.
+
+**Outcome rules (locked):**
+
+| Outcome | Salvage chance formula |
+|---------|------------------------|
+| **Defeat** | `FactionBase` only — no piece boosts, no victory bonus |
+| **Draw** | `FactionBase` only (same as defeat) |
+| **Victory** | `FactionBase` + `BoardSalvageBoost` + `VictoryBonus` |
+
+| Victory bonus (tunable) | Default |
+|-------------------------|---------|
+| Win bonus | +10% |
 | Unique enemy piece types destroyed | +2% each, cap +10% |
-| Dust Scourge player faction | ×1.25 on final chance |
-| **Cap** | 50% per offer slot (prevents all-salvage shops) |
+| **Global cap** | 50% per offer slot |
 
 Chance applies **per offer slot** independently during `ShopGenerator.RollLane`.
+
+**Formula (victory):**
+
+```
+SalvageChance = min(50,
+    FactionSO.baseSalvageChancePercent
+  + Sum(piece.salvageChanceBonus on board)
+  + VictoryBonus
+  + DestroyedTypeBonus)
+```
+
+**Formula (defeat / draw):**
+
+```
+SalvageChance = FactionSO.baseSalvageChancePercent
+```
 
 #### 3.1.3 Shop generation flow
 
@@ -174,16 +211,16 @@ On fight end (`RunOrchestrator` aftermath):
 
 1. Read `enemyFactionId` from current fight’s enemy template (or procedural metadata).  
 2. Set `RunState.LastEnemyFactionId`.  
-3. Compute `RunState.SalvageChancePercent` from outcome + destroyed-piece tally.  
+3. Compute `RunState.SalvageChancePercent` via `SalvageChanceCalculator` (faction base, outcome, board boosts on victory only).  
 4. Persist in save schema.
 
 #### 3.1.5 Sell refunds (sub-feature)
 
-`SalvageCalculator` remains for **selling pieces** during build phase (50% Supplies, 50% Authority). Does **not** affect salvage chance or last-enemy faction. Dust Scourge +25% applies to refunds only unless design later merges bonuses.
+`SalvageCalculator` remains for **selling pieces** during build phase (50% Supplies, 50% Authority). Does **not** affect salvage shop chance. Dust Scourge +25% sell-refund bonus stays on refunds only; faction salvage aptitude is expressed via higher `baseSalvageChancePercent` on `FactionSO`.
 
 #### 3.1.6 UI & tooltips
 
-- Run HUD: small indicator when salvage is active — e.g. “Salvage: Crimson Legion (35%)”  
+- Run HUD: “Salvage: Crimson Legion — 28%” (shows last enemy + current chance breakdown on hover)  
 - Salvaged shop offers: **“Salvaged”** badge + faction chip  
 - UnitCard: “Salvaged from your last battle against {FactionName}”  
 - Tooltip on salvage HUD explains the mechanic for sandbox testers  
@@ -192,10 +229,13 @@ On fight end (`RunOrchestrator` aftermath):
 
 | Module | Role |
 |--------|------|
+| `FactionSO.baseSalvageChancePercent` | Per-faction base salvage aptitude |
 | `SalvageState` | `LastEnemyFactionId`, `SalvageChancePercent` on `RunState` + serialization |
-| `SalvageChanceCalculator` | Aftermath inputs → chance percent |
+| `SalvageChanceCalculator` | Outcome + board boosts → final chance |
+| `SalvageBoardBoostAggregator` | Sum piece salvage bonuses from deployed board |
 | `SalvageShopPool` | Filter registry by last enemy faction + lane + fight index |
 | `ShopGenerator` | Per-slot salvage roll + `IsSalvaged` flag on `ShopOffer` |
+| `ShopModifierFlags.SalvageChanceBoost5` | Piece-level +5% salvage boost (victory only) |
 | `SalvageCalculator` | Sell refunds (unchanged scope) |
 
 #### 3.1.8 Future: randomized enemy boards
@@ -206,9 +246,11 @@ Sandbox implements salvage against **fixed templates** (`EnemyTemplateSO.enemyFa
 
 - Fight 1 shop: zero salvage offers with unset last enemy  
 - After fight vs Crimson: salvage pool contains only Crimson pieces  
-- Salvage chance 0 → no salvage slots; 100% fixture → all slots salvage (test hook)  
+- **Defeat:** chance equals faction base only; piece boosts ignored  
+- **Victory:** chance equals base + board boosts + victory bonus (fixture)  
+- Salvage chance 0 → no salvage slots; 100% test hook → all slots salvage  
 - Deterministic shop with fixed seed + salvage chance  
-- Dust Scourge ×1.25 chance  
+- Two pieces with +5% boost → +10% on victory only  
 - Save/resume preserves `LastEnemyFactionId` and chance  
 - Salvage offer does not include player-faction pieces
 
@@ -350,7 +392,7 @@ Author via Unit Creator after Tag Creator lands.
 | Combat feel | Top Troops: full footprint, A*, role engagement, lane bias |
 | Multi-cell | Full rigid footprint; no combat rotation v1 |
 | Buildings | Spawn, block paths, render in arena |
-| Salvage | Last fight’s enemy faction → per-slot shop chance; sell refunds are sub-feature |
+| Salvage | Faction base chance + piece boosts on victory; defeat = base only; last enemy → shop pool |
 | Shop | Availability matrix + composition specialty lane |
 | Synergies | Demo rule set in combat + economy |
 | Tooling | Tag Creator → Unit Creator live sync |
@@ -362,7 +404,8 @@ Author via Unit Creator after Tag Creator lands.
 
 These are locked structurally but values are data-tuned during sandbox pass:
 
-- Salvage chance per fight outcome / destroyed types / cap  
+- Per-faction `baseSalvageChancePercent` on `FactionSO`  
+- Piece salvage boost values; victory bonus; destroyed-type bonus; 50% cap  
 - Specialty lane wildcard weights  
 - Role engagement distances and lane bias strength  
 - Spacing hold vs charge override threshold  
