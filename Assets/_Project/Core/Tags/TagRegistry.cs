@@ -86,6 +86,19 @@ namespace DeadManZone.Core.Tags
                     entry.DisplayPriority);
             }
 
+            foreach (var entry in CustomTagCatalog.All)
+            {
+                if (catalog.ContainsKey(entry.Id))
+                    continue;
+
+                catalog[entry.Id] = Create(
+                    entry.Id,
+                    entry.DisplayName,
+                    entry.Category,
+                    entry.Tooltip,
+                    entry.DisplayPriority);
+            }
+
             return catalog;
         }
 

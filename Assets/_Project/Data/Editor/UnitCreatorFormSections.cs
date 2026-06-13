@@ -25,12 +25,20 @@ namespace DeadManZone.Data.Editor
         public static void DrawTags(UnitCreationDraft draft)
         {
             EditorGUILayout.LabelField("Tags", EditorStyles.boldLabel);
-            draft.primary = DrawTagPopup("Primary", draft.primary, TagPickerCatalog.PrimaryTags);
-            draft.combatRole = DrawTagPopup("Combat Role", draft.combatRole, TagPickerCatalog.CombatRoleTags, allowEmpty: true);
-            draft.systemTag = DrawTagPopup("System Tag", draft.systemTag, TagPickerCatalog.SystemTags, allowEmpty: true);
-            DrawSynergyChecklist(draft);
-            DrawAbilityChecklist(draft);
-            DrawFlavorChecklist(draft);
+            draft.primary = DrawTagPopup("Primary", draft.primary, TagRegistry.GetByCategory(TagCategory.Primary));
+            draft.combatRole = DrawTagPopup(
+                "Combat Role",
+                draft.combatRole,
+                TagRegistry.GetByCategory(TagCategory.CombatRole),
+                allowEmpty: true);
+            draft.systemTag = DrawTagPopup(
+                "System Tag",
+                draft.systemTag,
+                TagRegistry.GetByCategory(TagCategory.System),
+                allowEmpty: true);
+            DrawCategoryChecklist("Synergy Tags", draft.synergyTags, TagRegistry.GetByCategory(TagCategory.Synergy));
+            DrawCategoryChecklist("Ability Tags", draft.abilityTags, TagRegistry.GetByCategory(TagCategory.Ability));
+            DrawCategoryChecklist("Flavor Tags", draft.flavorTags, TagRegistry.GetByCategory(TagCategory.Flavor));
         }
 
         public static void DrawStats(UnitCreationDraft draft)
@@ -135,45 +143,20 @@ namespace DeadManZone.Data.Editor
             return ids[index];
         }
 
-        private static void DrawSynergyChecklist(UnitCreationDraft draft)
+        private static void DrawCategoryChecklist(
+            string label,
+            System.Collections.Generic.List<string> selectedIds,
+            System.Collections.Generic.IReadOnlyList<TagDefinition> options)
         {
-            EditorGUILayout.LabelField("Synergy Tags");
-            foreach (var tag in TagPickerCatalog.SynergyTags)
+            EditorGUILayout.LabelField(label);
+            foreach (var tag in options)
             {
-                bool selected = draft.synergyTags.Contains(tag.Id);
+                bool selected = selectedIds.Contains(tag.Id);
                 bool next = EditorGUILayout.ToggleLeft(tag.DisplayName, selected);
                 if (next && !selected)
-                    draft.synergyTags.Add(tag.Id);
+                    selectedIds.Add(tag.Id);
                 else if (!next && selected)
-                    draft.synergyTags.Remove(tag.Id);
-            }
-        }
-
-        private static void DrawAbilityChecklist(UnitCreationDraft draft)
-        {
-            EditorGUILayout.LabelField("Ability Tags");
-            foreach (var tag in TagPickerCatalog.AbilityTags)
-            {
-                bool selected = draft.abilityTags.Contains(tag.Id);
-                bool next = EditorGUILayout.ToggleLeft(tag.DisplayName, selected);
-                if (next && !selected)
-                    draft.abilityTags.Add(tag.Id);
-                else if (!next && selected)
-                    draft.abilityTags.Remove(tag.Id);
-            }
-        }
-
-        private static void DrawFlavorChecklist(UnitCreationDraft draft)
-        {
-            EditorGUILayout.LabelField("Flavor Tags");
-            foreach (var tag in TagPickerCatalog.FlavorTags)
-            {
-                bool selected = draft.flavorTags.Contains(tag.Id);
-                bool next = EditorGUILayout.ToggleLeft(tag.DisplayName, selected);
-                if (next && !selected)
-                    draft.flavorTags.Add(tag.Id);
-                else if (!next && selected)
-                    draft.flavorTags.Remove(tag.Id);
+                    selectedIds.Remove(tag.Id);
             }
         }
     }
