@@ -223,10 +223,10 @@ namespace DeadManZone.Core.Combat
         }
 
         private static int GetEnemyFrontColumnX(IReadOnlyList<CombatantState> enemies) =>
-            GetFrontColumnX(enemies[0].Side == CombatSide.Player ? CombatSide.Enemy : CombatSide.Player, enemies);
+            GetFrontColumnX(enemies[0].Side, enemies);
 
         private static int GetEnemyRearColumnX(IReadOnlyList<CombatantState> enemies) =>
-            GetRearColumnX(enemies[0].Side == CombatSide.Player ? CombatSide.Enemy : CombatSide.Player, enemies);
+            GetRearColumnX(enemies[0].Side, enemies);
 
         private static int GetFriendlyFrontColumnX(CombatSide side, IReadOnlyList<CombatantState> allies) =>
             GetFrontColumnX(side, allies);
