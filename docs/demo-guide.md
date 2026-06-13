@@ -4,7 +4,7 @@
 
 | Faction | ID | Theme |
 |---------|-----|-------|
-| Ironmarch Vanguard | `iron_vanguard` | Industrial brass, heavy armor, command focus |
+| IronMarch Union | `iron_vanguard` | Industrial brass, heavy armor, command focus |
 | Dust Scourge | `dust_scourge` | Nomadic scavengers, gas warfare, salvage bonus |
 | Cartel of Echoes | `cartel_of_echoes` | Stealth, echo tech, adjacency synergies |
 

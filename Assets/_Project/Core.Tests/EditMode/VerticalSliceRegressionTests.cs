@@ -163,7 +163,7 @@ namespace DeadManZone.Core.Tests
             state.FightIndex = 2;
             state.Supplies = 37;
             state.Authority = 5;
-            state.SaveSchemaVersion = 4;
+            state.SaveSchemaVersion = 5;
             state.Reserves = new ReservesSnapshot
             {
                 Width = ReservesState.Width,
@@ -215,7 +215,9 @@ namespace DeadManZone.Core.Tests
                     {
                         CombatSeed = VerticalSliceTestFixtures.RegressionRunSeed + state.FightIndex * 1000,
                         EnemyBoard = enemyTemplate.ToBoardSnapshot(),
-                        CompletedPhase = CombatPhase.Deployment,
+                        CheckpointsFired = 1,
+                        LastSegmentIndex = 0,
+                        GlobalTick = 0,
                         AwaitingCommand = true,
                         Authority = 4,
                         Requisition = 4,
@@ -223,7 +225,7 @@ namespace DeadManZone.Core.Tests
                         {
                             new()
                             {
-                                AfterPhase = CombatPhase.Deployment,
+                                AfterCheckpoint = 0,
                                 Type = CommandType.SetTactic,
                                 Tactic = TacticType.Advance,
                                 SourcePieceId = "bunker_1"
@@ -233,7 +235,7 @@ namespace DeadManZone.Core.Tests
                         {
                             new()
                             {
-                                Phase = CombatPhase.Deployment,
+                                Segment = 0,
                                 Tick = 0,
                                 ActorId = "rifle_1",
                                 ActionType = "damage",
@@ -290,7 +292,8 @@ namespace DeadManZone.Core.Tests
                     Assert.NotNull(actual.Combat);
                     Assert.AreEqual(expected.Combat.CombatSeed, actual.Combat.CombatSeed);
                     Assert.AreEqual(expected.Combat.AwaitingCommand, actual.Combat.AwaitingCommand);
-                    Assert.AreEqual(expected.Combat.CompletedPhase, actual.Combat.CompletedPhase);
+                    Assert.AreEqual(expected.Combat.CheckpointsFired, actual.Combat.CheckpointsFired);
+                    Assert.AreEqual(expected.Combat.LastSegmentIndex, actual.Combat.LastSegmentIndex);
                     Assert.AreEqual(
                         expected.Combat.Authority > 0 ? expected.Combat.Authority : expected.Combat.Requisition,
                         actual.Combat.Authority > 0 ? actual.Combat.Authority : actual.Combat.Requisition);
@@ -315,7 +318,7 @@ namespace DeadManZone.Core.Tests
             {
                 var a = first.Events[i];
                 var b = second.Events[i];
-                Assert.AreEqual(a.Phase, b.Phase, $"Fight {fightNumber} event {i} phase.");
+                Assert.AreEqual(a.Segment, b.Segment, $"Fight {fightNumber} event {i} segment.");
                 Assert.AreEqual(a.Tick, b.Tick, $"Fight {fightNumber} event {i} tick.");
                 Assert.AreEqual(a.ActionType, b.ActionType, $"Fight {fightNumber} event {i} action.");
                 Assert.AreEqual(a.ActorId, b.ActorId, $"Fight {fightNumber} event {i} actor.");

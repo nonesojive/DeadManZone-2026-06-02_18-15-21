@@ -35,12 +35,12 @@ namespace DeadManZone.Presentation.Combat
 
         /// <summary>
         /// Restores piece positions from spawn, then applies combat log events.
-        /// Skips <paramref name="excludePhase"/> so that phase can be replayed visually.
+        /// Skips <paramref name="excludeSegment"/> so that segment can be replayed visually.
         /// </summary>
         public void RestoreFromBattlefieldAndEvents(
             BattlefieldState battlefield,
             IEnumerable<CombatEvent> events,
-            CombatPhase? excludePhase = null)
+            int? excludeSegment = null)
         {
             ResetFromBattlefield(battlefield);
             if (events == null)
@@ -48,7 +48,7 @@ namespace DeadManZone.Presentation.Combat
 
             foreach (var combatEvent in OrderEvents(events))
             {
-                if (excludePhase.HasValue && combatEvent.Phase == excludePhase.Value)
+                if (excludeSegment.HasValue && combatEvent.Segment == excludeSegment.Value)
                     continue;
 
                 ApplyEventToState(combatEvent);
@@ -122,7 +122,7 @@ namespace DeadManZone.Presentation.Combat
         }
 
         private static IEnumerable<CombatEvent> OrderEvents(IEnumerable<CombatEvent> events) =>
-            events.OrderBy(e => (int)e.Phase).ThenBy(e => e.Tick).ThenBy(e => e.ActorId);
+            events.OrderBy(e => e.Segment).ThenBy(e => e.Tick).ThenBy(e => e.ActorId);
 
         private void ApplyDestroy(string instanceId, BoardView boardView)
         {

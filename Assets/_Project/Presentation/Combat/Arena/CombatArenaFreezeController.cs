@@ -57,7 +57,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 particle.Pause(true);
         }
 
-        private void OnPausedForCommands(CombatPhase _) => SetFrozen(true);
+        private void OnPausedForCommands(PauseTriggerContext _) => SetFrozen(true);
 
         private void OnCombatAdvanced(CombatAdvanceResult _) => Resume();
 

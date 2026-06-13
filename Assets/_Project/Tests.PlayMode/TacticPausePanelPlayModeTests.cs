@@ -48,7 +48,13 @@ namespace DeadManZone.PlayMode.Tests
 
             var context = new CombatPauseContext
             {
-                CompletedPhase = CombatPhase.Grind,
+                CheckpointIndex = 1,
+                Trigger = new PauseTriggerContext
+                {
+                    CheckpointIndex = 1,
+                    TriggeredBy = CombatSide.Enemy,
+                    Threshold = 0.30f
+                },
                 Authority = 0,
                 ActiveTactic = TacticType.DisciplinedFire,
                 PendingSelectedTactic = TacticType.Advance,
@@ -86,7 +92,7 @@ namespace DeadManZone.PlayMode.Tests
 
             panel.ShowPause(new CombatPauseContext
             {
-                CompletedPhase = CombatPhase.Deployment,
+                CheckpointIndex = 0,
                 Authority = 2,
                 ActiveTactic = TacticType.DisciplinedFire,
                 HqAlive = true,

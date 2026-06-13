@@ -44,7 +44,7 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(RunPhase.Build, _orchestrator.State.Phase);
             Assert.AreEqual(1, _orchestrator.State.FightIndex);
             Assert.Greater(_orchestrator.State.Shop.Offers.Count, 0);
-            Assert.AreEqual(4, _orchestrator.State.SaveSchemaVersion);
+            Assert.AreEqual(5, _orchestrator.State.SaveSchemaVersion);
             Assert.AreEqual(ReservesState.Width, _orchestrator.State.Reserves.Width);
             Assert.AreEqual(ReservesState.Height, _orchestrator.State.Reserves.Height);
             Assert.IsEmpty(_orchestrator.State.Reserves.Pieces);
@@ -219,14 +219,16 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(RunPhase.Combat, _orchestrator.State.Phase);
             Assert.AreEqual(CombatAdvanceStatus.AwaitingCommand, openingStep.Status);
             Assert.IsTrue(_orchestrator.State.Combat.AwaitingCommand);
-            Assert.AreEqual(CombatPhase.Deployment, _orchestrator.State.Combat.CompletedPhase);
+            Assert.AreEqual(1, _orchestrator.State.Combat.CheckpointsFired);
+            Assert.AreEqual(0, _orchestrator.State.Combat.LastSegmentIndex);
 
             _orchestrator.SaveAndExit();
             var reloaded = new RunOrchestrator(_database);
             Assert.IsTrue(reloaded.TryLoadSavedRun());
             Assert.AreEqual(RunPhase.Combat, reloaded.State.Phase);
             Assert.IsTrue(reloaded.State.Combat.AwaitingCommand);
-            Assert.AreEqual(CombatPhase.Deployment, reloaded.State.Combat.CompletedPhase);
+            Assert.AreEqual(1, reloaded.State.Combat.CheckpointsFired);
+            Assert.AreEqual(0, reloaded.State.Combat.LastSegmentIndex);
         }
 
         [Test]
@@ -330,7 +332,7 @@ namespace DeadManZone.Core.Tests
             {
                 new PhaseCommand
                 {
-                    AfterPhase = CombatPhase.Deployment,
+                    AfterCheckpoint = 0,
                     Type = CommandType.SetTactic,
                     Tactic = TacticType.Advance,
                     SourcePieceId = "player_tactic"
@@ -349,7 +351,7 @@ namespace DeadManZone.Core.Tests
             {
                 new PhaseCommand
                 {
-                    AfterPhase = CombatPhase.Deployment,
+                    AfterCheckpoint = 0,
                     Type = CommandType.SetTactic,
                     Tactic = TacticType.Advance,
                     SourcePieceId = "player_tactic"
@@ -372,12 +374,12 @@ namespace DeadManZone.Core.Tests
             if (_orchestrator.State.Combat == null || !_orchestrator.State.Combat.AwaitingCommand)
                 return;
 
-            var completedPhase = _orchestrator.State.Combat.CompletedPhase;
+            var checkpointIndex = _orchestrator.State.Combat.CheckpointsFired - 1;
             var commands = new List<PhaseCommand>
             {
                 new PhaseCommand
                 {
-                    AfterPhase = completedPhase,
+                    AfterCheckpoint = checkpointIndex,
                     Type = CommandType.SetTactic,
                     Tactic = TacticType.Advance,
                     SourcePieceId = "player_tactic"
@@ -395,7 +397,7 @@ namespace DeadManZone.Core.Tests
 
                 commands.Add(new PhaseCommand
                 {
-                    AfterPhase = completedPhase,
+                    AfterCheckpoint = checkpointIndex,
                     Type = CommandType.UseAbility,
                     Ability = cmd.Ability,
                     SourcePieceId = cmd.SourcePieceId,

@@ -16,7 +16,7 @@ namespace DeadManZone.Core.Combat
             var armor = StepArmor(defender.ArmorType, armorBuffSteps);
             float afterArmor = baseDamage * BaselineArmorMultiplier(armor);
             float typeMultiplier = AttackTypeMultiplier(attacker.AttackType, armor, defender);
-            return System.Math.Max(1, (int)(afterArmor * typeMultiplier));
+            return System.Math.Max(1, (int)System.Math.Round(afterArmor * typeMultiplier));
         }
 
         public static ArmorType StepArmor(ArmorType baseArmor, int steps)

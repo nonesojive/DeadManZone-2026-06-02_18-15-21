@@ -32,7 +32,7 @@ namespace DeadManZone.Core.Tests
         public static BoardState StandardPlayer()
         {
             var board = new BoardState(Layout);
-            board.TryPlace(TestPieces.RifleSquad(), FrontLineAnchor());
+            board.TryPlace(TestPieces.RifleSquad(), FrontLineAnchor(), instanceId: "player_rifle_1");
             return board;
         }
 

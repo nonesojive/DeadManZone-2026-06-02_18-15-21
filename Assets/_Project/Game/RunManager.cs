@@ -237,7 +237,7 @@ namespace DeadManZone.Game
                 foreach (var record in combat.EventLog)
                 {
                     log.Append(
-                        record.Phase,
+                        record.Segment,
                         record.Tick,
                         record.ActorId,
                         record.ActionType,
@@ -251,7 +251,7 @@ namespace DeadManZone.Game
                 Status = combat is { AwaitingCommand: true }
                     ? CombatAdvanceStatus.AwaitingCommand
                     : CombatAdvanceStatus.Completed,
-                CompletedPhase = combat?.CompletedPhase ?? default,
+                SegmentIndex = combat?.LastSegmentIndex ?? 0,
                 EventLog = log
             };
         }

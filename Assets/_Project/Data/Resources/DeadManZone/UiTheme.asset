@@ -35,7 +35,7 @@ MonoBehaviour:
   generalLaneTint: {r: 0.2, g: 0.22, b: 0.28, a: 0.35}
   engineersLaneTint: {r: 0.18, g: 0.24, b: 0.2, a: 0.35}
   requisitionLaneTint: {r: 0.26, g: 0.18, b: 0.24, a: 0.35}
-  shopBackgroundSprite: {fileID: 21300000, guid: 2cedce6bf0655994ab0a9dde14ede040, type: 3}
+  shopBackgroundSprite: {fileID: 21300000, guid: 54bf25e70d3f4fd88f3f37a179b12cde, type: 3}
   shopBackgroundScrimColor: {r: 0.04, g: 0.05, b: 0.07, a: 0.38}
   shopLaneTintScaleWithBackground: 0.45
   terrainZoneTintStrength: 0.12

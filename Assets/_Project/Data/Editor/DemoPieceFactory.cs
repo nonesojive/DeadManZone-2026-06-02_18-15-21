@@ -24,8 +24,10 @@ namespace DeadManZone.Data.Editor
 
         private static PieceDefinitionSO[] CreateIronmarchPieces() => new[]
         {
-            SaveMappedPiece("hq_command", "Command HQ", PieceCategory.Building, ShopLane.Defensive,
-                Double, "iron_vanguard", maxHp: 80, goldCost: 0, manpowerCost: 8),
+            SaveMappedPiece("ironmarch_hq", "IronMarch High Command", PieceCategory.Building, ShopLane.Defensive,
+                new[] { new Vector2Int(0, 0), new Vector2Int(0, 1), new Vector2Int(0, 2), new Vector2Int(0, 3),
+                    new Vector2Int(1, 1), new Vector2Int(1, 2), new Vector2Int(2, 0) },
+                "iron_vanguard", maxHp: 80, goldCost: 0, manpowerCost: 8),
             SaveMappedPiece("rifle_squad", "Rifle Squad", PieceCategory.Unit, ShopLane.Offensive,
                 Single, "iron_vanguard",
                 maxHp: 100, baseDamage: 20, manpowerCost: 10, goldCost: 5),

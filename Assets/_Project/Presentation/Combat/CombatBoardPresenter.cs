@@ -65,9 +65,9 @@ namespace DeadManZone.Presentation.Combat
       if (CombatPresentationMode.ArenaActive)
         return;
 
-      RestoreReplayStateBeforeSegment(result.CompletedPhase);
+      RestoreReplayStateBeforeSegment(result.SegmentIndex);
       _replayVisuals.SyncBoardView(boardView);
-      ShowPhaseBanner(result.CompletedPhase);
+      ShowSegmentBanner(result.SegmentIndex);
     }
 
     private void InitializeReplayState()
@@ -80,11 +80,11 @@ namespace DeadManZone.Presentation.Combat
       if (state.Phase != RunPhase.Combat || state.Combat?.EnemyBoard == null)
         return;
 
-      var excludePhase = state.Combat.AwaitingCommand ? state.Combat.CompletedPhase : (CombatPhase?)null;
-      RestoreReplayStateBeforeSegment(excludePhase);
+      var excludeSegment = state.Combat.AwaitingCommand ? state.Combat.LastSegmentIndex : (int?)null;
+      RestoreReplayStateBeforeSegment(excludeSegment);
     }
 
-    private void RestoreReplayStateBeforeSegment(CombatPhase? excludePhase)
+    private void RestoreReplayStateBeforeSegment(int? excludeSegment)
     {
       if (RunManager.Instance == null || !RunManager.Instance.HasActiveRun || _registry == null)
         return;
@@ -98,7 +98,7 @@ namespace DeadManZone.Presentation.Combat
       var battlefield = BattlefieldState.FromBoards(playerBoard, enemyBoard);
       var events = ConvertSavedEvents(state.Combat.EventLog);
 
-      _replayVisuals.RestoreFromBattlefieldAndEvents(battlefield, events, excludePhase);
+      _replayVisuals.RestoreFromBattlefieldAndEvents(battlefield, events, excludeSegment);
       _instanceAnchors.Clear();
       foreach (var pair in _replayVisuals.Anchors)
         _instanceAnchors[pair.Key] = pair.Value;
@@ -113,7 +113,7 @@ namespace DeadManZone.Presentation.Combat
       {
         yield return new CombatEvent
         {
-          Phase = record.Phase,
+          Segment = record.Segment,
           Tick = record.Tick,
           ActorId = record.ActorId,
           ActionType = record.ActionType,
@@ -201,18 +201,12 @@ namespace DeadManZone.Presentation.Combat
       return tile != null;
     }
 
-    private void ShowPhaseBanner(CombatPhase phase)
+    private void ShowSegmentBanner(int segment)
     {
       if (phaseBannerText == null)
         return;
 
-      phaseBannerText.text = phase switch
-      {
-        CombatPhase.Deployment => "Deployment",
-        CombatPhase.Grind => "The Grind",
-        CombatPhase.FinalPush => "Final Push",
-        _ => phase.ToString()
-      };
+      phaseBannerText.text = segment == 0 ? "The Battle Begins" : "The Fight Continues";
 
       if (_bannerRoutine != null)
         StopCoroutine(_bannerRoutine);

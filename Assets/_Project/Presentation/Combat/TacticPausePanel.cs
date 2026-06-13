@@ -64,7 +64,7 @@ namespace DeadManZone.Presentation.Combat
             _selectedTactic = _context.PendingSelectedTactic ?? _context.ActiveTactic;
 
             if (titleText != null)
-                titleText.text = GetPhaseTitle(_context.CompletedPhase);
+                titleText.text = GetPauseTitle(_context);
 
             BuildTacticToggles();
             BuildAbilityToggles();
@@ -221,7 +221,7 @@ namespace DeadManZone.Presentation.Combat
             int totalCost = TacticPauseValidator.GetTotalPauseCost(
                 _selectedTactic,
                 _context.ActiveTactic,
-                _context.CompletedPhase,
+                _context.CheckpointIndex,
                 selectedAbilities);
 
             if (authorityText != null)
@@ -232,7 +232,7 @@ namespace DeadManZone.Presentation.Combat
                 _context.ActiveTactic,
                 _context.HqAlive,
                 _context.HasCommandPiece,
-                _context.CompletedPhase,
+                _context.CheckpointIndex,
                 _context.Authority,
                 selectedAbilities,
                 out var reason);
@@ -269,7 +269,7 @@ namespace DeadManZone.Presentation.Combat
             {
                 new PhaseCommand
                 {
-                    AfterPhase = _context.CompletedPhase,
+                    AfterCheckpoint = _context.CheckpointIndex,
                     Type = CommandType.SetTactic,
                     Tactic = _selectedTactic,
                     SourcePieceId = "player_tactic"
@@ -280,7 +280,7 @@ namespace DeadManZone.Presentation.Combat
             {
                 commands.Add(new PhaseCommand
                 {
-                    AfterPhase = _context.CompletedPhase,
+                    AfterCheckpoint = _context.CheckpointIndex,
                     Type = CommandType.UseAbility,
                     Ability = binding.Command.Ability,
                     SourcePieceId = binding.Command.SourcePieceId,
@@ -293,13 +293,15 @@ namespace DeadManZone.Presentation.Combat
             combatDirector?.ContinueCombat();
         }
 
-        private static string GetPhaseTitle(CombatPhase phase) =>
-            phase switch
-            {
-                CombatPhase.Deployment => "Pause — After Opening",
-                CombatPhase.Grind => "Pause — After Main Fight",
-                _ => "Combat Pause"
-            };
+        private static string GetPauseTitle(CombatPauseContext context)
+        {
+            if (context?.Trigger == null)
+                return "Combat Pause";
+
+            string side = context.Trigger.TriggeredBy == CombatSide.Player ? "Your" : "Enemy";
+            int percent = (int)(context.Trigger.Threshold * 100);
+            return $"Pause — {side} forces at {percent}%";
+        }
 
         private static string FormatAbility(GrantedAbility ability) =>
             ability switch

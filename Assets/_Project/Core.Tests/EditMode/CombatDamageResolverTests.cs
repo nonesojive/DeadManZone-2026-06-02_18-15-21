@@ -23,7 +23,7 @@ namespace DeadManZone.Core.Tests.EditMode
             var attacker = TestPieces.With(TestPieces.RifleSquad(), baseDamage: 100, attackType: AttackType.Ballistic);
             var defender = TestPieces.With(TestPieces.RifleSquad(), armorType: ArmorType.Heavy);
             int damage = CombatDamageResolver.ComputeDamage(attacker, defender, damageScale: 1f, armorBuffSteps: 0);
-            Assert.AreEqual(59, damage);
+            Assert.AreEqual(60, damage);
         }
 
         [Test]
@@ -39,7 +39,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 TestPieces.With(TestPieces.RifleSquad(), armorType: ArmorType.Light),
                 1f,
                 0);
-            Assert.AreEqual(94, vsHeavy);
+            Assert.AreEqual(95, vsHeavy);
             Assert.AreEqual(85, vsLight);
         }
 

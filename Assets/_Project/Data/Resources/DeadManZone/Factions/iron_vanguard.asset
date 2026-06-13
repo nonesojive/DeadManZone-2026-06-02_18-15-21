@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: iron_vanguard
   m_EditorClassIdentifier: 
   factionId: iron_vanguard
-  displayName: Ironmarch Vanguard
+  displayName: IronMarch Union
   boardWidth: 9
   boardHeight: 10
   rearCols: 4
@@ -27,6 +27,6 @@ MonoBehaviour:
   baseMusterPerShop: 12
   startingAuthority: 2
   startingMorale: 100
-  hqPieceId: hq_command
+  hqPieceId: ironmarch_hq
   hqSpawnAnchor: {x: 0, y: 4}
   hqSpawnRotation: 0

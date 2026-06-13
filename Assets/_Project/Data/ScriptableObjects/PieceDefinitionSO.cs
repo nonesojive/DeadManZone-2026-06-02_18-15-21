@@ -52,6 +52,14 @@ namespace DeadManZone.Data
         [Tooltip("Optional per-cell board sprites keyed by local shape offset (pre-rotation).")]
         public PieceCellSprite[] cellSprites;
 
+        [Header("Combat Arena (3D)")]
+        [Tooltip("Optional 3D prefab for combat arena presentation. Board/shop still use icon + cellSprites.")]
+        public GameObject combatArenaPrefab;
+        [Tooltip("Uniform scale applied before height fitting. 1 = asset default.")]
+        public float combatArenaModelScale = 1f;
+        [Tooltip("Target model height in meters. 0 uses combat arena default (~1.6).")]
+        public float combatArenaModelHeight;
+
         public bool HasCellArt()
         {
             if (cellSprites == null)

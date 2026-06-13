@@ -21,6 +21,10 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private GameObject bottomBar;
         [SerializeField] private BuildRowLayoutFitter mainRowLayout;
 
+        private GameObject _topBar;
+        private GameObject _mainRow;
+        private GameObject _runHudPanel;
+
         [Header("Views")]
         [SerializeField] private BoardView boardView;
         [SerializeField] private ShopView shopView;
@@ -90,6 +94,16 @@ namespace DeadManZone.Presentation.Run
         }
 
         private void OnRunStateChanged(RunState state) => RefreshAll();
+
+        public void RefreshCombatPresentation()
+        {
+            if (RunManager.Instance == null || !RunManager.Instance.HasActiveRun)
+                return;
+
+            var state = RunManager.Instance.State;
+            bool showBattlefield = state.Phase == RunPhase.Combat || state.Phase == RunPhase.Aftermath;
+            SetCombatPresentationLayout(showBattlefield);
+        }
 
         private void RefreshAll()
         {
@@ -196,7 +210,32 @@ namespace DeadManZone.Presentation.Run
                 if (bottom != null)
                     bottomBar = bottom.gameObject;
             }
+
+            if (_topBar == null)
+            {
+                var top = buildPanel.transform.Find("TopBar");
+                if (top != null)
+                    _topBar = top.gameObject;
+            }
+
+            if (_mainRow == null)
+            {
+                var mainRow = buildPanel.transform.Find("MainRow");
+                if (mainRow != null)
+                    _mainRow = mainRow.gameObject;
+            }
+
+            if (_runHudPanel == null)
+            {
+                var hudPanel = buildPanel.transform.Find(RunHudPanelBuilder.PanelName);
+                if (hudPanel == null)
+                    hudPanel = buildPanel.transform.Find("TopBar/" + RunHudPanelBuilder.PanelName);
+
+                _runHudPanel = hudPanel != null ? hudPanel.gameObject : null;
+            }
         }
+
+        internal Transform BuildPanelTransform => buildPanel != null ? buildPanel.transform : null;
 
         private void EnsureMainRowLayoutFitter()
         {
@@ -233,11 +272,22 @@ namespace DeadManZone.Presentation.Run
 
         private void SetCombatPresentationLayout(bool combatActive)
         {
+            EnsureLayoutReferences();
+
             if (shopArea != null)
                 shopArea.SetActive(!combatActive);
 
             if (bottomBar != null)
                 bottomBar.SetActive(!combatActive);
+
+            if (_topBar != null)
+                _topBar.SetActive(!combatActive);
+
+            if (_mainRow != null)
+                _mainRow.SetActive(!combatActive);
+
+            if (_runHudPanel != null)
+                _runHudPanel.SetActive(!combatActive);
 
             if (boardArea == null)
                 return;

@@ -1,3 +1,4 @@
+using DeadManZone.Core.Board;
 using DeadManZone.Data;
 using UnityEngine;
 
@@ -26,6 +27,31 @@ namespace DeadManZone.Presentation.Combat.Arena
             ConfigureCamera();
         }
 
+        public void FrameBattlefield(BattlefieldLayout layout)
+        {
+            if (layout == null || config == null)
+                return;
+
+            EnsureGround();
+            ConfigureCamera();
+
+            if (arenaCamera != null)
+                CombatArenaCameraFramer.Frame(arenaCamera, layout, config);
+
+            FitGroundToLayout(layout);
+        }
+
+        private void FitGroundToLayout(BattlefieldLayout layout)
+        {
+            if (groundRoot == null || config == null)
+                return;
+
+            const float planeMeshSize = 10f;
+            float boardWidth = layout.TotalWidth * config.cellWidth;
+            float boardDepth = layout.Height * config.cellDepth;
+            groundRoot.localScale = new Vector3(boardWidth / planeMeshSize, 1f, boardDepth / planeMeshSize);
+        }
+
         private void OnDestroy()
         {
             if (Instance == this)
@@ -42,6 +68,14 @@ namespace DeadManZone.Presentation.Combat.Arena
                 ground.transform.localScale = new Vector3(3f, 1f, 2f);
                 groundRoot = ground.transform;
             }
+
+            var groundRenderer = groundRoot.GetComponent<Renderer>();
+            if (groundRenderer != null)
+            {
+                var groundMat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+                groundMat.color = new Color(0.28f, 0.24f, 0.18f);
+                groundRenderer.sharedMaterial = groundMat;
+            }
         }
 
         private void ConfigureCamera()
@@ -51,22 +85,12 @@ namespace DeadManZone.Presentation.Combat.Arena
                 var camGo = new GameObject("ArenaCamera");
                 camGo.transform.SetParent(transform, false);
                 arenaCamera = camGo.AddComponent<Camera>();
-                arenaCamera.tag = "MainCamera";
             }
 
-            if (config == null)
-                return;
-
-            arenaCamera.fieldOfView = config.fieldOfView;
-            float elev = config.cameraElevationDegrees * Mathf.Deg2Rad;
-            float azim = config.cameraAzimuthDegrees * Mathf.Deg2Rad;
-            var offset = new Vector3(
-                Mathf.Cos(elev) * Mathf.Cos(azim),
-                Mathf.Sin(elev),
-                Mathf.Cos(elev) * Mathf.Sin(azim)) * config.cameraDistance;
-
-            arenaCamera.transform.position = offset;
-            arenaCamera.transform.LookAt(Vector3.zero);
+            arenaCamera.tag = "MainCamera";
+            arenaCamera.depth = 10f;
+            arenaCamera.clearFlags = CameraClearFlags.SolidColor;
+            arenaCamera.backgroundColor = new Color(0.12f, 0.11f, 0.10f);
 
             if (unitsRoot == null)
             {
@@ -74,6 +98,22 @@ namespace DeadManZone.Presentation.Combat.Arena
                 root.transform.SetParent(transform, false);
                 unitsRoot = root.transform;
             }
+
+            EnsureLighting();
+        }
+
+        private void EnsureLighting()
+        {
+            if (transform.Find("ArenaLight") != null)
+                return;
+
+            var lightGo = new GameObject("ArenaLight");
+            lightGo.transform.SetParent(transform, false);
+            lightGo.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+            var light = lightGo.AddComponent<Light>();
+            light.type = LightType.Directional;
+            light.intensity = 1.1f;
+            light.color = new Color(1f, 0.96f, 0.88f);
         }
     }
 }

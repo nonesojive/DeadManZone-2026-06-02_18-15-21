@@ -3,6 +3,7 @@ using DeadManZone.Game;
 using DeadManZone.Presentation.Board;
 using DeadManZone.Presentation.Reserves;
 using DeadManZone.Presentation.Combat;
+using DeadManZone.Presentation.Combat.Arena;
 using DeadManZone.Presentation.DragDrop;
 using DeadManZone.Presentation.Run;
 using DeadManZone.Presentation.Shop;
@@ -109,8 +110,9 @@ namespace DeadManZone.Presentation.Editor
             var tacticPanel = CreateTacticPausePanel(combatPanel.transform, theme, out var bannerText, out var bannerGroup);
             var battleReport = CreateBattleReportPanel(combatPanel.transform, theme);
             var flowPresenter = combatPanel.AddComponent<CombatFlowPresenter>();
+            var healthBarPresenter = CreateArmyHealthBars(combatPanel.transform, theme);
 
-            WireFlowPresenter(flowPresenter, combatDirector, tacticPanel, battleReport, loadingOverlay, loadingText);
+            WireFlowPresenter(flowPresenter, combatDirector, tacticPanel, battleReport, loadingOverlay, loadingText, healthBarPresenter);
             WireCombatBoardPresenter(combatBoard, combatDirector, boardView, bannerText, bannerGroup);
             WireController(controller, buildPanel, buildCanvasGroup, combatPanel, boardAreaGo, shopAreaGo, bottomBar,
                 boardView, shopView, reservesView, combatDirector, tacticPanel, hud, endOverlay, pauseMenu,
@@ -1017,13 +1019,84 @@ namespace DeadManZone.Presentation.Editor
             return presenter;
         }
 
+        private static ArmyHealthBarPresenter CreateArmyHealthBars(Transform parent, UiThemeSO theme)
+        {
+            var root = CreateRegion(parent, "ArmyHealthBars", new Vector2(0.08f, 0.88f), new Vector2(0.92f, 0.96f));
+            var layout = root.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 24f;
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = true;
+
+            var playerBar = CreateSingleArmyHealthBar(root.transform, "PlayerArmyBar", theme, new Color(0.2f, 0.75f, 0.35f));
+            var enemyBar = CreateSingleArmyHealthBar(root.transform, "EnemyArmyBar", theme, new Color(0.85f, 0.25f, 0.2f));
+
+            var presenter = root.AddComponent<ArmyHealthBarPresenter>();
+            var serialized = new SerializedObject(presenter);
+            serialized.FindProperty("playerBar").objectReferenceValue = playerBar;
+            serialized.FindProperty("enemyBar").objectReferenceValue = enemyBar;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return presenter;
+        }
+
+        private static ArmyHealthBarView CreateSingleArmyHealthBar(
+            Transform parent,
+            string name,
+            UiThemeSO theme,
+            Color fillColor)
+        {
+            var barRoot = CreateRegion(parent, name, Vector2.zero, Vector2.one);
+            var layoutElement = barRoot.AddComponent<LayoutElement>();
+            layoutElement.minHeight = 18f;
+            layoutElement.preferredHeight = 22f;
+
+            var background = barRoot.AddComponent<Image>();
+            UiThemeApplicator.ApplyPanel(background, theme);
+            background.color = new Color(0.08f, 0.1f, 0.12f, 0.85f);
+
+            var fillRegion = CreateRegion(barRoot.transform, "FillRegion", new Vector2(0.02f, 0.2f), new Vector2(0.98f, 0.8f));
+            var fillImage = fillRegion.AddComponent<Image>();
+            fillImage.type = Image.Type.Filled;
+            fillImage.fillMethod = Image.FillMethod.Horizontal;
+            fillImage.fillOrigin = (int)Image.OriginHorizontal.Left;
+            fillImage.color = fillColor;
+            fillImage.fillAmount = 1f;
+            if (fillImage.sprite == null)
+                fillImage.sprite = DeadManZone.Presentation.UI.UiWhiteSprite.Get();
+
+            CreateThresholdNotch(fillRegion.transform, 0.75f, theme);
+            CreateThresholdNotch(fillRegion.transform, 0.30f, theme);
+
+            var view = barRoot.AddComponent<ArmyHealthBarView>();
+            var serialized = new SerializedObject(view);
+            serialized.FindProperty("fillImage").objectReferenceValue = fillImage;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return view;
+        }
+
+        private static void CreateThresholdNotch(Transform parent, float normalizedX, UiThemeSO theme)
+        {
+            const float notchWidth = 0.008f;
+            var notch = CreateRegion(
+                parent,
+                normalizedX >= 0.5f ? "Notch75" : "Notch30",
+                new Vector2(normalizedX - notchWidth * 0.5f, 0f),
+                new Vector2(normalizedX + notchWidth * 0.5f, 1f));
+            var image = notch.AddComponent<Image>();
+            image.color = theme != null ? theme.textSecondary : new Color(1f, 1f, 1f, 0.65f);
+            image.raycastTarget = false;
+        }
+
         private static void WireFlowPresenter(
             CombatFlowPresenter presenter,
             CombatDirector director,
             TacticPausePanel panel,
             BattleReportPresenter battleReport,
             GameObject loadingOverlay,
-            TMP_Text loadingText)
+            TMP_Text loadingText,
+            ArmyHealthBarPresenter healthBarPresenter)
         {
             var serialized = new SerializedObject(presenter);
             serialized.FindProperty("combatDirector").objectReferenceValue = director;
@@ -1031,6 +1104,7 @@ namespace DeadManZone.Presentation.Editor
             serialized.FindProperty("battleReportPresenter").objectReferenceValue = battleReport;
             serialized.FindProperty("loadingOverlay").objectReferenceValue = loadingOverlay;
             serialized.FindProperty("loadingText").objectReferenceValue = loadingText;
+            serialized.FindProperty("healthBarPresenter").objectReferenceValue = healthBarPresenter;
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 

@@ -18,7 +18,7 @@ namespace DeadManZone.Core.Tests
             board.TryPlace(grenadeThrower, TestBoards.FrontLineAnchor());
 
             var processor = new CommandProcessor();
-            var available = processor.GetAvailableCommands(board, requisition: 2, CombatPhase.Deployment);
+            var available = processor.GetAvailableCommands(board, requisition: 2, checkpointIndex: 0);
 
             Assert.That(available.Any(c => c.Type == CommandType.UseAbility && c.Ability == GrantedAbility.GrenadeLob), Is.True);
         }
@@ -34,7 +34,7 @@ namespace DeadManZone.Core.Tests
             int requisition = 0;
             var command = new PhaseCommand
             {
-                AfterPhase = CombatPhase.Deployment,
+                AfterCheckpoint = 0,
                 Type = CommandType.SpendRequisitionBuff,
                 Cost = 1,
                 SourcePieceId = board.Pieces.First().InstanceId
@@ -48,7 +48,8 @@ namespace DeadManZone.Core.Tests
                 playerCombatants: new System.Collections.Generic.List<CombatantState>(),
                 enemyCombatants: new System.Collections.Generic.List<CombatantState>(),
                 log: new CombatEventLog(),
-                completedPhase: CombatPhase.Deployment);
+                checkpointIndex: 0,
+                globalTick: 0);
 
             Assert.IsFalse(result.Success);
             Assert.That(result.Reason, Does.Contain("requisition").IgnoreCase);

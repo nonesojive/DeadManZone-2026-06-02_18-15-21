@@ -13,7 +13,7 @@ namespace DeadManZone.Data.Editor
         private static readonly Dictionary<string, PieceTagMapping> PieceMappings =
             new(StringComparer.Ordinal)
             {
-                ["hq_command"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Headquarters, GameTagIds.Hq),
+                ["ironmarch_hq"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Headquarters, GameTagIds.Hq),
                 ["rifle_squad"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
                 ["diesel_walker"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, GameTagIds.Combatant),
                 ["radio_array"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant),

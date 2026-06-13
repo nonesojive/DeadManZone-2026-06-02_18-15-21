@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c3e5f7a9b0d2e4f60718293a4b5c6d7, type: 3}
   m_Name: DeadManZoneDefaultVisualProfile
   m_EditorClassIdentifier: DeadManZone.Presentation::DeadManZone.Presentation.Visual.VisualProfileSO
-  displayName: Iron Vanguard
+  displayName: Bunker Survival
   uiTheme: {fileID: 11400000, guid: a7b3c9d1e2f4056789012345678abcd1, type: 2}
   mainMenuAtmosphere: {fileID: 11400000, guid: f1a2b3c4d5e6789012345678abcdef01, type: 2}
   mainMenuLighting: {fileID: 11400000, guid: f1a2b3c4d5e6789012345678abcdef03, type: 2}

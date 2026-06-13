@@ -42,20 +42,12 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             if (combatDirector != null)
                 combatDirector.EventReplayed += OnEventReplayed;
-
-            if (RunManager.Instance != null)
-                RunManager.Instance.CombatAdvanced += OnCombatAdvanced;
-
-            InitializeReplayState();
         }
 
         private void OnDisable()
         {
             if (combatDirector != null)
                 combatDirector.EventReplayed -= OnEventReplayed;
-
-            if (RunManager.Instance != null)
-                RunManager.Instance.CombatAdvanced -= OnCombatAdvanced;
         }
 
         public IEnumerable<CombatUnitActor> GetActiveActors() => _actors.Values;
@@ -67,6 +59,17 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             if (arenaVfx != null)
                 vfx = arenaVfx;
+        }
+
+        /// <summary>Called when the additive arena scene unloads so pooled actors are not reused.</summary>
+        public void OnArenaUnloaded()
+        {
+            _actors.Clear();
+            _anchors.Clear();
+            _pool?.Clear();
+            _pool = null;
+            _mapper = null;
+            _arenaCameraTransform = null;
         }
 
         public void InitializeArena(BattlefieldState battlefield)
@@ -85,12 +88,11 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
 
             _mapper = new CombatGridMapper(battlefield.Layout, config.cellWidth, config.cellDepth);
+            bootstrap.FrameBattlefield(battlefield.Layout);
             _arenaCameraTransform = bootstrap.ArenaCamera != null ? bootstrap.ArenaCamera.transform : null;
 
             Transform poolRoot = bootstrap.UnitsRoot != null ? bootstrap.UnitsRoot : transform;
-            _pool ??= new CombatUnitActorPool(poolRoot);
-
-            ClearActors();
+            ResetArenaActors(poolRoot);
 
             foreach (var cell in battlefield.Cells)
             {
@@ -105,6 +107,9 @@ namespace DeadManZone.Presentation.Combat.Arena
                 actor.Initialize(
                     cell.InstanceId,
                     source != null ? source.icon : null,
+                    source != null ? source.combatArenaPrefab : null,
+                    source != null ? source.combatArenaModelScale : 1f,
+                    source != null ? source.combatArenaModelHeight : 0f,
                     _arenaCameraTransform,
                     _mapper,
                     cell.Position,
@@ -120,19 +125,54 @@ namespace DeadManZone.Presentation.Combat.Arena
         public void RestoreState(
             BattlefieldState battlefield,
             IEnumerable<CombatEvent> events,
-            CombatPhase? excludePhase = null)
+            int? excludeSegment = null)
         {
             InitializeArena(battlefield);
+            ApplySavedAnchors(battlefield, events, excludeSegment);
+            SyncActorsToAnchors(battlefield);
+        }
+
+        private void ApplySavedAnchors(
+            BattlefieldState battlefield,
+            IEnumerable<CombatEvent> events,
+            int? excludeSegment)
+        {
+            _anchors.Clear();
+            if (battlefield != null)
+            {
+                foreach (var cell in battlefield.Cells)
+                {
+                    if (cell?.Definition == null)
+                        continue;
+
+                    _anchors[cell.InstanceId] = cell.Position;
+                }
+            }
+
             if (events == null)
                 return;
 
             foreach (var combatEvent in OrderEvents(events))
             {
-                if (excludePhase.HasValue && combatEvent.Phase == excludePhase.Value)
+                if (excludeSegment.HasValue && combatEvent.Segment == excludeSegment.Value)
                     continue;
 
                 ApplyEventStateOnly(combatEvent);
             }
+        }
+
+        private void SyncActorsToAnchors(BattlefieldState battlefield)
+        {
+            if (_pool == null || _mapper == null || battlefield == null)
+                return;
+
+            var bootstrap = CombatArenaBootstrap.Instance;
+            var config = bootstrap?.Config;
+            if (config == null)
+                return;
+
+            Transform poolRoot = bootstrap.UnitsRoot != null ? bootstrap.UnitsRoot : transform;
+            DestroyOrphanActors(poolRoot);
 
             var removedIds = new List<string>();
             foreach (var pair in _actors)
@@ -148,6 +188,35 @@ namespace DeadManZone.Presentation.Combat.Arena
                 _actors.Remove(instanceId);
             }
 
+            foreach (var cell in battlefield.Cells)
+            {
+                if (cell?.Definition == null)
+                    continue;
+
+                if (!PieceTagQueries.HasTag(cell.Definition, GameTagIds.Combatant))
+                    continue;
+
+                if (!_anchors.ContainsKey(cell.InstanceId) || _actors.ContainsKey(cell.InstanceId))
+                    continue;
+
+                var actor = _pool.Rent();
+                var source = GetPiece(cell.Definition.Id);
+                actor.Initialize(
+                    cell.InstanceId,
+                    source != null ? source.icon : null,
+                    source != null ? source.combatArenaPrefab : null,
+                    source != null ? source.combatArenaModelScale : 1f,
+                    source != null ? source.combatArenaModelHeight : 0f,
+                    _arenaCameraTransform,
+                    _mapper,
+                    _anchors[cell.InstanceId],
+                    config.moveLerpSeconds,
+                    config.attackLungeSeconds,
+                    config.attackLungeDistance);
+
+                _actors[cell.InstanceId] = actor;
+            }
+
             foreach (var pair in _anchors)
             {
                 if (_actors.TryGetValue(pair.Key, out var actor))
@@ -155,40 +224,18 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
         }
 
-        private void OnCombatAdvanced(CombatAdvanceResult result)
+        private void DestroyOrphanActors(Transform poolRoot)
         {
-            if (!CombatPresentationMode.ArenaActive || result == null)
+            if (poolRoot == null)
                 return;
 
-            RestoreStateBeforeSegment();
-        }
-
-        private void InitializeReplayState()
-        {
-            if (!CombatPresentationMode.ArenaActive)
-                return;
-
-            RestoreStateBeforeSegment();
-        }
-
-        private void RestoreStateBeforeSegment()
-        {
-            if (RunManager.Instance == null || !RunManager.Instance.HasActiveRun || _registry == null)
-                return;
-
-            var state = RunManager.Instance.State;
-            if (state?.Phase != RunPhase.Combat || state.Combat?.EnemyBoard == null)
-                return;
-
-            var playerBoard = RunManager.Instance.Orchestrator.GetPlayerBoard();
-            var enemyBoard = BoardSnapshotMapper.ToBoard(state.Combat.EnemyBoard, _registry);
-            var battlefield = BattlefieldState.FromBoards(playerBoard, enemyBoard);
-            var excludePhase = state.Combat.AwaitingCommand ? state.Combat.CompletedPhase : (CombatPhase?)null;
-
-            RestoreState(
-                battlefield,
-                ConvertSavedEvents(state.Combat.EventLog),
-                excludePhase);
+            for (int i = poolRoot.childCount - 1; i >= 0; i--)
+            {
+                var child = poolRoot.GetChild(i);
+                var actor = child.GetComponent<CombatUnitActor>();
+                if (actor != null && !_actors.ContainsValue(actor))
+                    Destroy(child.gameObject);
+            }
         }
 
         private void OnEventReplayed(CombatEvent combatEvent)
@@ -327,7 +374,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             {
                 yield return new CombatEvent
                 {
-                    Phase = record.Phase,
+                    Segment = record.Segment,
                     Tick = record.Tick,
                     ActorId = record.ActorId,
                     ActionType = record.ActionType,
@@ -338,7 +385,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         }
 
         private static IEnumerable<CombatEvent> OrderEvents(IEnumerable<CombatEvent> events) =>
-            events.OrderBy(e => (int)e.Phase).ThenBy(e => e.Tick).ThenBy(e => e.ActorId);
+            events.OrderBy(e => e.Segment).ThenBy(e => e.Tick).ThenBy(e => e.ActorId);
 
         private static bool TryParseCoord(string value, out GridCoord coord)
         {
@@ -356,11 +403,25 @@ namespace DeadManZone.Presentation.Combat.Arena
             return true;
         }
 
-        private void ClearActors()
+        private void ResetArenaActors(Transform poolRoot)
         {
-            _pool?.ReleaseAll(_actors.Values);
+            foreach (var actor in _actors.Values)
+            {
+                if (actor != null)
+                    Destroy(actor.gameObject);
+            }
+
             _actors.Clear();
             _anchors.Clear();
+            _pool?.Clear();
+
+            if (poolRoot != null)
+            {
+                for (int i = poolRoot.childCount - 1; i >= 0; i--)
+                    Destroy(poolRoot.GetChild(i).gameObject);
+            }
+
+            _pool = new CombatUnitActorPool(poolRoot);
         }
 
         private void EnsureReferences()

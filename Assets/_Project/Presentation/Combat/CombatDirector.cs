@@ -17,11 +17,12 @@ namespace DeadManZone.Presentation.Combat
         private bool _continueAfterPlayback;
         private float _secondsPerTick = CombatSegmentPlayback.SecondsPerTick;
         private CombatAdvanceStatus _playbackAdvanceStatus;
-        private CombatPhase _playbackSegmentPhase;
+        private int _playbackSegment;
+        private PauseTriggerContext _playbackPauseTrigger;
 
         public bool IsPlaying => _playbackRoutine != null;
         public event Action<CombatEvent> EventReplayed;
-        public event Action<CombatPhase> PausedForCommands;
+        public event Action<PauseTriggerContext> PausedForCommands;
         public event Action CombatPresentationCompleted;
 
         private void OnEnable()
@@ -42,19 +43,19 @@ namespace DeadManZone.Presentation.Combat
                 return;
 
             var combat = RunManager.Instance.State.Combat;
-            if (combat.CompletedPhase == default && !combat.AwaitingCommand)
+            if (combat.CheckpointsFired == 0 && !combat.AwaitingCommand)
             {
                 AdvanceCombatNow();
                 return;
             }
 
             if (combat.AwaitingCommand)
-                PlaySegmentFromSave(combat.CompletedPhase, CombatAdvanceStatus.AwaitingCommand);
+                PlaySegmentFromSave(combat.LastSegmentIndex, CombatAdvanceStatus.AwaitingCommand);
         }
 
-        public void PlayLog(CombatEventLog eventLog, CombatPhase segmentPhase)
+        public void PlayLog(CombatEventLog eventLog, int segment)
         {
-            PlaySegment(eventLog?.Events, segmentPhase, CombatAdvanceStatus.AwaitingCommand);
+            PlaySegment(eventLog?.Events, segment, CombatAdvanceStatus.AwaitingCommand);
         }
 
         public void ContinueCombat()
@@ -75,10 +76,11 @@ namespace DeadManZone.Presentation.Combat
 
         private void OnCombatAdvanced(CombatAdvanceResult result)
         {
-            PlaySegment(result.EventLog?.Events, result.CompletedPhase, result.Status);
+            _playbackPauseTrigger = result.PauseTrigger;
+            PlaySegment(result.EventLog?.Events, result.SegmentIndex, result.Status);
         }
 
-        private void PlaySegmentFromSave(CombatPhase segmentPhase, CombatAdvanceStatus status)
+        private void PlaySegmentFromSave(int segment, CombatAdvanceStatus status)
         {
             if (RunManager.Instance?.State?.Combat?.EventLog == null)
                 return;
@@ -86,7 +88,7 @@ namespace DeadManZone.Presentation.Combat
             var events = RunManager.Instance.State.Combat.EventLog
                 .Select(e => new CombatEvent
                 {
-                    Phase = e.Phase,
+                    Segment = e.Segment,
                     Tick = e.Tick,
                     ActorId = e.ActorId,
                     ActionType = e.ActionType,
@@ -95,32 +97,35 @@ namespace DeadManZone.Presentation.Combat
                 })
                 .ToList();
 
-            PlaySegment(events, segmentPhase, status);
+            PlaySegment(events, segment, status);
         }
 
         private void PlaySegment(
             IEnumerable<CombatEvent> events,
-            CombatPhase segmentPhase,
+            int segment,
             CombatAdvanceStatus status)
         {
             StopPlayback();
             _playbackAdvanceStatus = status;
-            _playbackSegmentPhase = segmentPhase;
-            _playbackRoutine = StartCoroutine(PlaybackSegmentRoutine(events, segmentPhase, status));
+            _playbackSegment = segment;
+            _playbackRoutine = StartCoroutine(PlaybackSegmentRoutine(events, segment, status));
         }
 
         private IEnumerator PlaybackSegmentRoutine(
             IEnumerable<CombatEvent> events,
-            CombatPhase segmentPhase,
+            int segment,
             CombatAdvanceStatus status)
         {
-            var eventsByTick = CombatSegmentPlayback.GroupEventsByTick(segmentPhase, events);
+            var eventsByTick = CombatSegmentPlayback.GroupEventsByTick(segment, events);
             bool segmentEndsFight = status == CombatAdvanceStatus.Completed ||
-                                    CombatSegmentPlayback.SegmentContainsFightEnd(events, segmentPhase);
-            int lastTick = CombatSegmentPlayback.ResolveLastTick(segmentPhase, events, segmentEndsFight);
+                                    CombatSegmentPlayback.SegmentContainsFightEnd(events, segment);
+            int firstTick = CombatSegmentPlayback.ResolveFirstTick(segment, events);
+            int lastTick = CombatSegmentPlayback.ResolveLastTick(segment, events);
+            if (segmentEndsFight && lastTick < 0)
+                lastTick = 0;
             bool fightEnded = false;
 
-            for (int tick = 0; tick <= lastTick && !fightEnded; tick++)
+            for (int tick = System.Math.Max(0, firstTick); tick <= lastTick && !fightEnded; tick++)
             {
                 if (eventsByTick.TryGetValue(tick, out var tickEvents))
                 {
@@ -158,9 +163,11 @@ namespace DeadManZone.Presentation.Combat
             }
 
             if (_playbackAdvanceStatus == CombatAdvanceStatus.AwaitingCommand &&
-                ShouldPauseAfterPlayback(_playbackSegmentPhase))
+                ShouldPauseAfterPlayback(_playbackSegment))
             {
-                PausedForCommands?.Invoke(_playbackSegmentPhase);
+                var trigger = _playbackPauseTrigger
+                    ?? RunManager.Instance?.Orchestrator?.GetCombatPauseContext()?.Trigger;
+                PausedForCommands?.Invoke(trigger);
                 return;
             }
 
@@ -178,10 +185,10 @@ namespace DeadManZone.Presentation.Combat
             }
         }
 
-        private static bool ShouldPauseAfterPlayback(CombatPhase segmentPhase)
+        private static bool ShouldPauseAfterPlayback(int segment)
         {
             var combat = RunManager.Instance?.State?.Combat;
-            return combat is { AwaitingCommand: true } && combat.CompletedPhase == segmentPhase;
+            return combat is { AwaitingCommand: true } && combat.LastSegmentIndex == segment;
         }
 
         private void AdvanceCombatNow()

@@ -1,10 +1,12 @@
 using System.Collections;
+using System.Collections.Generic;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Content;
 using DeadManZone.Core.Run;
 using DeadManZone.Data;
 using DeadManZone.Game;
+using DeadManZone.Game.Dev;
 using DeadManZone.Presentation.Combat.Arena;
 using TMPro;
 using UnityEngine;
@@ -25,6 +27,7 @@ namespace DeadManZone.Presentation.Combat
         [SerializeField] private CombatArenaSceneLoader arenaLoader;
         [SerializeField] private CombatArenaPresenter arenaPresenter;
         [SerializeField] private CombatArenaFreezeController freezeController;
+        [SerializeField] private ArmyHealthBarPresenter healthBarPresenter;
 
         private Coroutine _loadingRoutine;
         private ContentRegistry _contentRegistry;
@@ -46,6 +49,7 @@ namespace DeadManZone.Presentation.Combat
             {
                 combatDirector.PausedForCommands += OnPausedForCommands;
                 combatDirector.CombatPresentationCompleted += OnCombatPresentationCompleted;
+                combatDirector.EventReplayed += OnCombatEventReplayed;
             }
 
             if (RunManager.Instance != null)
@@ -63,6 +67,7 @@ namespace DeadManZone.Presentation.Combat
             {
                 combatDirector.PausedForCommands -= OnPausedForCommands;
                 combatDirector.CombatPresentationCompleted -= OnCombatPresentationCompleted;
+                combatDirector.EventReplayed -= OnCombatEventReplayed;
             }
 
             if (RunManager.Instance != null)
@@ -133,7 +138,7 @@ namespace DeadManZone.Presentation.Combat
             battleReportPresenter?.ShowFromRunState();
         }
 
-        private void OnPausedForCommands(CombatPhase completedPhase)
+        private void OnPausedForCommands(PauseTriggerContext trigger)
         {
             if (RunManager.Instance == null)
                 return;
@@ -152,7 +157,8 @@ namespace DeadManZone.Presentation.Combat
 
             var available = RunManager.Instance.Orchestrator.GetAvailableCommands();
             int budget = RunManager.Instance.Orchestrator.GetPrimaryActionBudget();
-            phaseCommandPanel.ShowCommands(available, completedPhase, budget, budget);
+            int pauseIndex = context?.CheckpointIndex ?? 0;
+            phaseCommandPanel.ShowCommands(available, pauseIndex, budget, budget);
         }
 
         private void ShowLoadingOverlay()
@@ -170,6 +176,23 @@ namespace DeadManZone.Presentation.Combat
                 loadingOverlay.SetActive(false);
         }
 
+        private void EnsureHealthBarPresenter()
+        {
+            if (healthBarPresenter == null || !healthBarPresenter.IsWired)
+            {
+                var barsRoot = transform.Find("ArmyHealthBars");
+                if (barsRoot != null)
+                    healthBarPresenter = barsRoot.GetComponent<ArmyHealthBarPresenter>();
+            }
+
+            if (healthBarPresenter == null || !healthBarPresenter.IsWired)
+                healthBarPresenter = CombatHealthBarUiFactory.CreateUnder(transform);
+
+            var orphan = GetComponent<ArmyHealthBarPresenter>();
+            if (orphan != null && orphan != healthBarPresenter && !orphan.IsWired)
+                Destroy(orphan);
+        }
+
         private void EnsureArenaComponents()
         {
             arenaLoader ??= GetComponent<CombatArenaSceneLoader>();
@@ -181,13 +204,28 @@ namespace DeadManZone.Presentation.Combat
             freezeController ??= GetComponent<CombatArenaFreezeController>();
             freezeController ??= gameObject.AddComponent<CombatArenaFreezeController>();
 
+#if UNITY_EDITOR
+            if (GetComponent<CombatArenaCameraTuner>() == null)
+                gameObject.AddComponent<CombatArenaCameraTuner>();
+#endif
+
             var arenaVfx = GetComponent<CombatArenaVfx>();
             if (arenaVfx == null)
                 arenaVfx = gameObject.AddComponent<CombatArenaVfx>();
 
+            EnsureHealthBarPresenter();
+
             arenaPresenter?.Configure(combatDirector, arenaVfx);
             freezeController?.Configure(combatDirector, arenaPresenter);
             arenaVfx?.Configure(freezeController);
+        }
+
+        private void OnCombatEventReplayed(CombatEvent combatEvent)
+        {
+            if (healthBarPresenter == null || !healthBarPresenter.IsWired)
+                EnsureHealthBarPresenter();
+
+            healthBarPresenter?.HandleReplayEvent(combatEvent);
         }
 
         private void InitializeContentRegistry()
@@ -212,7 +250,39 @@ namespace DeadManZone.Presentation.Combat
 
             var enemyBoard = BoardSnapshotMapper.ToBoard(state.Combat.EnemyBoard, _contentRegistry);
             var battlefield = BattlefieldState.FromBoards(playerBoard, enemyBoard);
-            arenaPresenter.InitializeArena(battlefield);
+            var excludeSegment = state.Combat.AwaitingCommand ? state.Combat.LastSegmentIndex : (int?)null;
+            var savedEvents = new List<CombatEvent>(ConvertSavedEvents(state.Combat.EventLog));
+
+            healthBarPresenter?.InitializeFromBattlefield(battlefield);
+            foreach (var savedEvent in savedEvents)
+            {
+                if (excludeSegment.HasValue && savedEvent.Segment == excludeSegment.Value)
+                    continue;
+
+                healthBarPresenter?.ApplyEventStateOnly(savedEvent);
+            }
+
+            healthBarPresenter?.SnapBars();
+            arenaPresenter.RestoreState(battlefield, savedEvents, excludeSegment);
+        }
+
+        private static IEnumerable<CombatEvent> ConvertSavedEvents(IReadOnlyList<CombatEventRecord> records)
+        {
+            if (records == null)
+                yield break;
+
+            foreach (var record in records)
+            {
+                yield return new CombatEvent
+                {
+                    Segment = record.Segment,
+                    Tick = record.Tick,
+                    ActorId = record.ActorId,
+                    ActionType = record.ActionType,
+                    TargetId = record.TargetId,
+                    Value = record.Value
+                };
+            }
         }
     }
 }

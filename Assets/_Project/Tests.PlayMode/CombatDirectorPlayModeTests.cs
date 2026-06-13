@@ -26,12 +26,12 @@ namespace DeadManZone.PlayMode.Tests
             director.SetSecondsPerTickForTests(0f);
 
             var log = new CombatEventLog();
-            log.Append(CombatPhase.Deployment, 0, "a", "move", "x", 0);
-            log.Append(CombatPhase.Deployment, 1, "a", "damage", "x", 2);
+            log.Append(0, 0, "a", "move", "x", 0);
+            log.Append(0, 1, "a", "damage", "x", 2);
 
             int replayed = 0;
             director.EventReplayed += _ => replayed++;
-            director.PlayLog(log, CombatPhase.Deployment);
+            director.PlayLog(log, segment: 0);
 
             yield return new WaitUntil(() => !director.IsPlaying);
 

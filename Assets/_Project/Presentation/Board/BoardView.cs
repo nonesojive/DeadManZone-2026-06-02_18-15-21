@@ -55,6 +55,7 @@ private PieceDefinition _selectedPiece;
                 return;
 
             SyncPiecesOverlay();
+            SyncSynergySidePanelLayout();
             Canvas.ForceUpdateCanvases();
             GetComponent<BoardZoneStripLayout>()?.ApplyLayout();
             SyncBattlefieldPresentation();
@@ -553,6 +554,14 @@ private PieceDefinition _selectedPiece;
             _piecesOverlay.sizeDelta = gridRect.sizeDelta;
             _piecesOverlay.offsetMin = gridRect.offsetMin;
             _piecesOverlay.offsetMax = gridRect.offsetMax;
+        }
+
+        private void SyncSynergySidePanelLayout()
+        {
+            if (_synergySidePanel == null)
+                return;
+
+            _synergySidePanel.SyncToBoard(transform as RectTransform);
         }
 
         private Vector2? ResolveCellCenterInOverlay(GridCoord cell)

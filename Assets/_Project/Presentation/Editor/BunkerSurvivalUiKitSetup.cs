@@ -1,3 +1,5 @@
+using System.IO;
+using System.Text.RegularExpressions;
 using DeadManZone.Presentation.Visual;
 using UnityEditor;
 using UnityEngine;
@@ -35,6 +37,20 @@ namespace DeadManZone.Presentation.Editor
                 $"- Theme: {ThemeAssetPath}\n" +
                 $"- Preset profile: {PresetProfilePath}\n" +
                 $"Use DeadManZone/UI Kit/Restyle All Scenes With Bunker Kit to rebuild scenes.");
+        }
+
+        [MenuItem("DeadManZone/UI Kit/Fix Bunker Survival Meta Sprite Borders")]
+        public static void FixBunkerSurvivalMetaSpriteBorders()
+        {
+            if (!AssetDatabase.IsValidFolder(KitRoot))
+            {
+                Debug.LogError($"Bunker Survival UI kit not found at {KitRoot}.");
+                return;
+            }
+
+            int fixedCount = FixInvalidSpriteBorderMetas(KitRoot);
+            AssetDatabase.Refresh();
+            Debug.Log($"Fixed spriteBorder YAML in {fixedCount} BunkerSurvivalUI .meta files.");
         }
 
         [MenuItem("DeadManZone/UI Kit/Apply Bunker Survival Theme To Active Profile")]
@@ -174,6 +190,29 @@ namespace DeadManZone.Presentation.Editor
             if (!string.IsNullOrEmpty(parent) && !AssetDatabase.IsValidFolder(parent))
                 EnsureFolder(parent);
             AssetDatabase.CreateFolder(parent, leaf);
+        }
+
+        /// <summary>
+        /// Unity 6 rejects spriteBorder: {L, B, R, T}; rewrite to named Vector4 fields.
+        /// </summary>
+        internal static int FixInvalidSpriteBorderMetas(string assetsRoot)
+        {
+            var pattern = new Regex(@"spriteBorder: \{(\d+), (\d+), (\d+), (\d+)\}");
+            string assetsPath = Path.GetFullPath(assetsRoot);
+            int fixedCount = 0;
+
+            foreach (string metaPath in Directory.GetFiles(assetsPath, "*.meta", SearchOption.AllDirectories))
+            {
+                string text = File.ReadAllText(metaPath);
+                string updated = pattern.Replace(text, "spriteBorder: {x: $1, y: $2, z: $3, w: $4}");
+                if (updated == text)
+                    continue;
+
+                File.WriteAllText(metaPath, updated);
+                fixedCount++;
+            }
+
+            return fixedCount;
         }
     }
 }

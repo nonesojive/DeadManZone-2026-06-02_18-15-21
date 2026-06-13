@@ -13,9 +13,32 @@ namespace DeadManZone.Presentation.Board
         [SerializeField] private VerticalLayoutGroup layoutGroup;
         private readonly List<SynergyTraitItem> _items = new();
 
+        public void SyncToBoard(RectTransform boardRect)
+        {
+            if (boardRect == null)
+                return;
+
+            var rect = transform as RectTransform;
+            if (rect == null)
+                return;
+
+            // Sit on the board's right edge (shop side) so trait chips never cover tiles.
+            rect.SetParent(boardRect, false);
+            rect.anchorMin = new Vector2(1f, 0.08f);
+            rect.anchorMax = new Vector2(1f, 0.88f);
+            rect.pivot = new Vector2(0f, 0.5f);
+            rect.anchoredPosition = new Vector2(6f, 0f);
+            rect.sizeDelta = new Vector2(168f, 0f);
+            transform.SetAsLastSibling();
+        }
+
         public void Refresh(BoardState board, UiThemeSO theme)
         {
-            if (board == null) return;
+            if (board == null)
+            {
+                gameObject.SetActive(false);
+                return;
+            }
 
             // Count unique pieces per synergy tag
             var counts = new Dictionary<string, int>(System.StringComparer.OrdinalIgnoreCase);
@@ -66,21 +89,20 @@ namespace DeadManZone.Presentation.Board
                     i++;
                 }
             }
+
+            gameObject.SetActive(i > 0);
         }
 
         public static SynergySidePanel Create(Transform parent, UiThemeSO theme)
         {
             var go = new GameObject("SynergySidePanel", typeof(RectTransform), typeof(Image));
-            go.transform.SetParent(parent, false);
-            var rect = go.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0f, 0.1f);
-            rect.anchorMax = new Vector2(0f, 0.9f);
-            rect.pivot = new Vector2(0f, 0.5f);
-            rect.sizeDelta = new Vector2(180f, 0f);
-            rect.anchoredPosition = new Vector2(10f, 0f);
+            var panel = go.AddComponent<SynergySidePanel>();
+            if (parent is RectTransform boardRect)
+                panel.SyncToBoard(boardRect);
 
             var bg = go.GetComponent<Image>();
-            bg.color = new Color(0f, 0f, 0f, 0.4f);
+            bg.color = Color.clear;
+            bg.raycastTarget = false;
 
             var layoutGo = new GameObject("Layout", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
             layoutGo.transform.SetParent(go.transform, false);
@@ -99,8 +121,8 @@ namespace DeadManZone.Presentation.Board
             var fitter = layoutGo.GetComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            var panel = go.AddComponent<SynergySidePanel>();
             panel.layoutGroup = group;
+            panel.gameObject.SetActive(false);
             return panel;
         }
     }

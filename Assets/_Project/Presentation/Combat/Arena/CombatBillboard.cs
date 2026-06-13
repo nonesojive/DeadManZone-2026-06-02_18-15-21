@@ -25,8 +25,15 @@ namespace DeadManZone.Presentation.Combat.Arena
             var renderer = visualRoot.GetComponent<MeshRenderer>();
             if (renderer != null && sprite != null)
             {
-                var mat = new Material(Shader.Find("Unlit/Texture"));
+                var shader = Shader.Find("Sprites/Default")
+                    ?? Shader.Find("Universal Render Pipeline/Unlit")
+                    ?? Shader.Find("Unlit/Texture");
+                var mat = new Material(shader);
                 mat.mainTexture = sprite.texture;
+                if (mat.HasProperty("_BaseMap"))
+                    mat.SetTexture("_BaseMap", sprite.texture);
+                if (mat.HasProperty("_BaseColor"))
+                    mat.SetColor("_BaseColor", Color.white);
                 renderer.material = mat;
             }
         }

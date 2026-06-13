@@ -14,10 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatArenaConfigSO
   cellWidth: 1.8
   cellDepth: 1.8
-  cameraElevationDegrees: 35
-  cameraAzimuthDegrees: 225
-  cameraDistance: 28
-  fieldOfView: 45
+  cameraElevationDegrees: 100
+  cameraAzimuthDegrees: 90
+  cameraDistance: 50
+  fieldOfView: 30
+  autoFrameWidth: 0
+  horizontalViewportPadding: 1
+  autoFrameVerticalPosition: 0
+  boardVerticalViewportCenter: 0.3
+  lookAtDepthOffset: 0.63060164
+  useManualCameraPose: 1
+  lookAtWorld: {x: 0.12542187, y: 0.00008812826, z: 0.63060164}
   moveLerpSeconds: 0.4
   attackLungeSeconds: 0.15
   attackLungeDistance: 0.35

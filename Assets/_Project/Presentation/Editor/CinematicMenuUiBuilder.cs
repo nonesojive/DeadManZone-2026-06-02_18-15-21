@@ -192,7 +192,7 @@ namespace DeadManZone.Presentation.Editor
             MenuSceneSetup.CreateLabelPublic(panel.transform, "Choose Faction", 36, FontStyles.Bold,
                 new Vector2(0.5f, 0.78f), new Vector2(500, 60)).color = theme.textPrimary;
 
-            ironBtn = CreateMenuButton(panel.transform, "IronVanguardButton", "Ironmarch Vanguard",
+            ironBtn = CreateMenuButton(panel.transform, "IronVanguardButton", "IronMarch Union",
                 new Vector2(0.5f, 0.56f), menuTheme, theme, accent: true);
             dustBtn = CreateMenuButton(panel.transform, "DustScourgeButton", "Dust Scourge",
                 new Vector2(0.5f, 0.46f), menuTheme, theme, accent: true);

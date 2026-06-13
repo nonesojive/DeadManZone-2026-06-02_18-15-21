@@ -20,7 +20,7 @@ namespace DeadManZone.Core.Tests
             Assert.NotNull(faction, "iron_vanguard faction required for regression tests.");
 
             var board = new BoardState(faction.CreateBoardLayout());
-            Place(board, database, "hq_command", new GridCoord(0, 4), "hq_player");
+            Place(board, database, "ironmarch_hq", new GridCoord(0, 4), "hq_player");
             Place(board, database, "radio_array", new GridCoord(2, 4), "radio_1");
             Place(board, database, "mobile_cannon", new GridCoord(4, 0), "cannon_1");
             Place(board, database, "grenade_thrower", new GridCoord(6, 2), "grenade_1");
@@ -39,22 +39,22 @@ namespace DeadManZone.Core.Tests
 
             commands.Add(new PhaseCommand
             {
-                AfterPhase = CombatPhase.Deployment,
+                AfterCheckpoint = 0,
                 Type = CommandType.SetTactic,
                 Tactic = TacticType.Advance,
                 SourcePieceId = radioId ?? "player_tactic"
             });
             commands.Add(new PhaseCommand
             {
-                AfterPhase = CombatPhase.Grind,
+                AfterCheckpoint = 1,
                 Type = CommandType.SetTactic,
                 Tactic = TacticType.Advance,
                 SourcePieceId = radioId ?? "player_tactic"
             });
 
-            TryAddAbility(commands, board, "grenade_thrower", GrantedAbility.GrenadeLob, CombatPhase.Deployment);
-            TryAddAbility(commands, board, "armored_transport", GrantedAbility.ShieldAllies, CombatPhase.Deployment);
-            TryAddAbility(commands, board, "mobile_cannon", GrantedAbility.CannonBlast, CombatPhase.Grind);
+            TryAddAbility(commands, board, "grenade_thrower", GrantedAbility.GrenadeLob, checkpointIndex: 0);
+            TryAddAbility(commands, board, "armored_transport", GrantedAbility.ShieldAllies, checkpointIndex: 0);
+            TryAddAbility(commands, board, "mobile_cannon", GrantedAbility.CannonBlast, checkpointIndex: 1);
 
             return commands;
         }
@@ -64,7 +64,7 @@ namespace DeadManZone.Core.Tests
             BoardState board,
             string pieceId,
             GrantedAbility ability,
-            CombatPhase phase)
+            int checkpointIndex)
         {
             var piece = board.Pieces.FirstOrDefault(p => p.Definition.Id == pieceId);
             if (piece == null)
@@ -72,7 +72,7 @@ namespace DeadManZone.Core.Tests
 
             commands.Add(new PhaseCommand
             {
-                AfterPhase = phase,
+                AfterCheckpoint = checkpointIndex,
                 Type = CommandType.UseAbility,
                 Ability = ability,
                 SourcePieceId = piece.InstanceId

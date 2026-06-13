@@ -82,7 +82,7 @@ namespace DeadManZone.Core.Meta
             {
                 Id = AchievementIds.WinIronmarch,
                 DisplayName = "Iron Line Holds",
-                Description = "Clear the gauntlet as Ironmarch Vanguard.",
+                Description = "Clear the gauntlet as IronMarch Union.",
                 SteamApiName = "ACH_WIN_IRONMARCH"
             },
             new AchievementDefinition

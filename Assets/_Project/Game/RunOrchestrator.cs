@@ -49,6 +49,8 @@ namespace DeadManZone.Game
             State = loaded;
             Faction = _content.GetFaction(State.FactionId);
             RestoreActiveCombatFromSave();
+            if (State.SaveSchemaVersion < 5)
+                State.SaveSchemaVersion = 5;
             return Faction != null;
         }
 
@@ -153,7 +155,9 @@ namespace DeadManZone.Game
 
             _activeCombat = TickCombatRun.Start(playerBoard, enemyBoard, combatSeed, State.Authority);
             State.Combat.AwaitingCommand = false;
-            State.Combat.CompletedPhase = default;
+            State.Combat.CheckpointsFired = 0;
+            State.Combat.GlobalTick = 0;
+            State.Combat.LastSegmentIndex = 0;
             Persist();
         }
 
@@ -185,7 +189,7 @@ namespace DeadManZone.Game
             return _commandProcessor.GetAvailableCommands(
                 GetPlayerBoard(),
                 _activeCombat.Requisition,
-                _activeCombat.LastCompletedPhase);
+                _activeCombat.CurrentPauseIndex);
         }
 
         public int GetPrimaryActionBudget()
@@ -208,7 +212,8 @@ namespace DeadManZone.Game
 
             return new CombatPauseContext
             {
-                CompletedPhase = _activeCombat.LastCompletedPhase,
+                CheckpointIndex = _activeCombat.CurrentPauseIndex,
+                Trigger = _activeCombat.LastPauseTrigger,
                 Authority = _activeCombat.Requisition,
                 ActiveTactic = _activeCombat.PlayerTactic,
                 HqAlive = _activeCombat.IsPlayerHqAlive,
@@ -268,8 +273,9 @@ namespace DeadManZone.Game
             if (_activeCombat == null)
                 throw new InvalidOperationException("No active combat.");
 
+            int pauseIndex = _activeCombat.CurrentPauseIndex;
             var pending = State.Combat.SubmittedCommands
-                .Where(c => c.AfterPhase == State.Combat.CompletedPhase)
+                .Where(c => c.AfterCheckpoint == pauseIndex)
                 .ToList();
             var result = _activeCombat.Continue(pending);
             SyncCombatFromRunner(result);
@@ -460,14 +466,14 @@ namespace DeadManZone.Game
             State.Combat.Requisition = _activeCombat.Requisition;
             State.Combat.Authority = _activeCombat.Authority;
             State.Combat.PlayerTactic = _activeCombat.PlayerTactic;
-            State.Combat.ActiveSegment = (int)_activeCombat.ActiveSegment;
-            State.Combat.SegmentTick = _activeCombat.SegmentTick;
-            State.Combat.CompletedPhase = _activeCombat.LastCompletedPhase;
+            State.Combat.CheckpointsFired = _activeCombat.CheckpointsFired;
+            State.Combat.GlobalTick = _activeCombat.GlobalTick;
+            State.Combat.LastSegmentIndex = step.SegmentIndex;
             State.Combat.AwaitingCommand = step.Status == CombatAdvanceStatus.AwaitingCommand;
             State.Combat.EventLog = _activeCombat.Log.Events
                 .Select(e => new CombatEventRecord
                 {
-                    Phase = e.Phase,
+                    Segment = e.Segment,
                     Tick = e.Tick,
                     ActorId = e.ActorId,
                     ActionType = e.ActionType,
@@ -483,6 +489,16 @@ namespace DeadManZone.Game
             if (State.Phase != RunPhase.Combat || State.Combat == null)
                 return;
 
+            if (State.SaveSchemaVersion < 5 && State.Phase == RunPhase.Combat)
+            {
+                State.Combat.SubmittedCommands = new List<PhaseCommand>();
+                State.Combat.EventLog = new List<CombatEventRecord>();
+                State.Combat.CheckpointsFired = 0;
+                State.Combat.GlobalTick = 0;
+                State.Combat.LastSegmentIndex = 0;
+                State.Combat.AwaitingCommand = false;
+            }
+
             var playerBoard = GetPlayerBoard();
             var enemyBoard = BoardSnapshotMapper.ToBoard(State.Combat.EnemyBoard, _registry);
             _activeCombat = TickCombatRun.Start(
@@ -492,7 +508,7 @@ namespace DeadManZone.Game
                 State.Combat.Authority > 0 ? State.Combat.Authority : State.Combat.Requisition);
 
             _activeCombat.FastForwardToCheckpoint(
-                State.Combat.CompletedPhase,
+                State.Combat.CheckpointsFired,
                 State.Combat.SubmittedCommands);
 
             if (State.Combat.PlayerTactic != default)

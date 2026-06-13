@@ -32,7 +32,7 @@ namespace DeadManZone.Data.Editor
         {
             return new[]
             {
-                SavePiece("hq_command", "Command HQ", PieceCategory.Building, ShopLane.Defensive,
+                SavePiece("ironmarch_hq", "IronMarch High Command", PieceCategory.Building, ShopLane.Defensive,
                     new[] { Vector2Int.zero, Vector2Int.right }, new[] { "HQ" },
                     maxHp: 25, goldCost: 0, manpowerCost: 0),
                 SavePiece("command_bunker", "Command Bunker", PieceCategory.Building, ShopLane.Defensive,
@@ -132,7 +132,7 @@ namespace DeadManZone.Data.Editor
             var path = $"{Root}/Factions/iron_vanguard.asset";
             var asset = LoadOrCreate<FactionSO>(path);
             asset.factionId = "iron_vanguard";
-            asset.displayName = "Iron Vanguard";
+            asset.displayName = "IronMarch Union";
             EditorUtility.SetDirty(asset);
             return asset;
         }

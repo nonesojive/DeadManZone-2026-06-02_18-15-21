@@ -50,7 +50,7 @@ namespace DeadManZone.Core.Tests
             {
                 new PhaseCommand
                 {
-                    AfterPhase = CombatPhase.Deployment,
+                    AfterCheckpoint = 0,
                     Type = CommandType.SetTactic,
                     Tactic = TacticType.Advance,
                     SourcePieceId = "player_tactic"
@@ -65,7 +65,8 @@ namespace DeadManZone.Core.Tests
                 playerCombatants: new List<CombatantState>(),
                 enemyCombatants: new List<CombatantState>(),
                 log,
-                CombatPhase.Deployment);
+                checkpointIndex: 0,
+                globalTick: 0);
 
             Assert.IsTrue(result.Success, result.Reason);
             Assert.IsTrue(log.Events.Any(e => e.ActionType == "tactic_set"));

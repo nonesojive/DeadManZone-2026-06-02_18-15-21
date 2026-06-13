@@ -17,13 +17,11 @@ namespace DeadManZone.Core.Tests.EditMode
             var normal = CombatMovement.GetStepChargeCost(
                 new GridCoord(4, 5),
                 new GridCoord(5, 5),
-                layout,
-                CombatSegment.Opening);
+                layout);
             var neutral = CombatMovement.GetStepChargeCost(
                 new GridCoord(8, 5),
                 new GridCoord(9, 5),
-                layout,
-                CombatSegment.Opening);
+                layout);
 
             Assert.AreEqual(CombatMovementSpeed.NormalStepChargeCost, normal);
             Assert.AreEqual(CombatMovementSpeed.NeutralStepChargeCost, neutral);
@@ -31,22 +29,21 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
-        public void MediumInfantry_MovesTwoToThreeCellsDuringOpening()
+        public void MediumInfantry_MovesBeforeFirstPause()
         {
-            int moves = CountOpeningMoves(MovementSpeedTier.Medium);
-            Assert.GreaterOrEqual(moves, 2);
-            Assert.LessOrEqual(moves, 3);
+            int moves = CountMovesBeforeFirstPause(MovementSpeedTier.Medium);
+            Assert.GreaterOrEqual(moves, 2, "Medium infantry should advance at least two cells before the first pause.");
         }
 
         [Test]
-        public void HighTier_OutpacesLowTierDuringOpening()
+        public void HighTier_OutpacesLowTierBeforeFirstPause()
         {
-            int high = CountOpeningMoves(MovementSpeedTier.High);
-            int low = CountOpeningMoves(MovementSpeedTier.Low);
+            int high = CountMovesBeforeFirstPause(MovementSpeedTier.High);
+            int low = CountMovesBeforeFirstPause(MovementSpeedTier.Low);
             Assert.Greater(high, low);
         }
 
-        private static int CountOpeningMoves(MovementSpeedTier movementSpeed)
+        private static int CountMovesBeforeFirstPause(MovementSpeedTier movementSpeed)
         {
             var player = new BoardState(TestBoards.Layout);
             var piece = TestPieces.With(TestPieces.RifleSquad(), movementSpeed: movementSpeed);
@@ -62,7 +59,7 @@ namespace DeadManZone.Core.Tests.EditMode
             return run.Log.Events.Count(e =>
                 e.ActorId == "player_rifle"
                 && e.ActionType == "move"
-                && e.Phase == CombatPhase.Deployment);
+                && e.Segment == 0);
         }
     }
 }

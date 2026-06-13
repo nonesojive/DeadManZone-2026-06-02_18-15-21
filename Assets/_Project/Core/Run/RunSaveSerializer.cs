@@ -6,7 +6,7 @@ namespace DeadManZone.Core.Run
 {
     public static class RunSaveSerializer
     {
-        private const int CurrentSchemaVersion = 4;
+        private const int CurrentSchemaVersion = 5;
         private const int LegacyMigrationTargetVersion = 2;
         private const int LegacyDefaultManpower = 100;
         private const int LegacyDefaultMorale = 100;

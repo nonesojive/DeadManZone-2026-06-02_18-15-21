@@ -7,7 +7,8 @@ namespace DeadManZone.Core.Run
 {
     public sealed class CombatPauseContext
     {
-        public CombatPhase CompletedPhase { get; init; }
+        public int CheckpointIndex { get; init; }
+        public PauseTriggerContext Trigger { get; init; }
         public int Authority { get; init; }
         public TacticType ActiveTactic { get; init; }
         public bool HqAlive { get; init; }
@@ -21,12 +22,12 @@ namespace DeadManZone.Core.Run
     {
         public int CombatSeed { get; set; }
         public BoardSnapshot EnemyBoard { get; set; }
-        public CombatPhase CompletedPhase { get; set; }
+        public int CheckpointsFired { get; set; }
+        public int GlobalTick { get; set; }
+        public int LastSegmentIndex { get; set; }
         public bool AwaitingCommand { get; set; }
         public int Requisition { get; set; }
         public int Authority { get; set; }
-        public int ActiveSegment { get; set; }
-        public int SegmentTick { get; set; }
         public TacticType PlayerTactic { get; set; } = TacticType.DisciplinedFire;
         public TacticType? PendingSelectedTactic { get; set; }
         public List<GrantedAbility> PendingSelectedAbilities { get; set; } = new();
@@ -36,7 +37,7 @@ namespace DeadManZone.Core.Run
 
     public sealed class CombatEventRecord
     {
-        public CombatPhase Phase { get; set; }
+        public int Segment { get; set; }
         public int Tick { get; set; }
         public string ActorId { get; set; }
         public string ActionType { get; set; }
@@ -46,7 +47,7 @@ namespace DeadManZone.Core.Run
 
     public sealed class RunState
     {
-        public int SaveSchemaVersion { get; set; } = 4;
+        public int SaveSchemaVersion { get; set; } = 5;
         public int FightIndex { get; set; } = 1;
         public int Supplies { get; set; }
         public int Manpower { get; set; }
@@ -87,7 +88,7 @@ namespace DeadManZone.Core.Run
                 Morale = startingMorale,
                 Phase = RunPhase.Build,
                 FightIndex = 1,
-                SaveSchemaVersion = 4,
+                SaveSchemaVersion = 5,
                 Reserves = new ReservesSnapshot
                 {
                     Width = ReservesState.Width,

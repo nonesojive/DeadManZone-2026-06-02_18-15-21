@@ -36,7 +36,8 @@ namespace DeadManZone.Core.Tests.EditMode
                 new[] { source },
                 new[] { enemy },
                 log,
-                CombatPhase.Deployment,
+                logSegment: 0,
+                logTick: 0,
                 targetCell: enemy.Position);
 
             Assert.IsTrue(result.Success);
@@ -44,10 +45,10 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
-        public void CannonBlast_OnlyValidOnGrindPause()
+        public void CannonBlast_OnlyValidOnSecondCheckpoint()
         {
-            Assert.IsFalse(CombatAbilityExecutor.CanUseAtPause(GrantedAbility.CannonBlast, CombatPhase.Deployment));
-            Assert.IsTrue(CombatAbilityExecutor.CanUseAtPause(GrantedAbility.CannonBlast, CombatPhase.Grind));
+            Assert.IsFalse(CombatAbilityExecutor.CanUseAtPause(GrantedAbility.CannonBlast, checkpointIndex: 0));
+            Assert.IsTrue(CombatAbilityExecutor.CanUseAtPause(GrantedAbility.CannonBlast, checkpointIndex: 1));
         }
     }
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
+using DeadManZone.Core.Run;
 using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
@@ -37,6 +38,10 @@ namespace DeadManZone.Core.Combat
         public int CurrentPauseIndex => AwaitingCommand ? CheckpointsFired - 1 : -1;
 
         public TacticType PlayerTactic => _tactics.PlayerTactic;
+
+        public IReadOnlyList<CombatantState> PlayerCombatantsForTests => _playerCombatants;
+
+        public IReadOnlyList<CombatantState> EnemyCombatantsForTests => _enemyCombatants;
 
         public bool IsPlayerHqAlive =>
             _playerCombatants.Any(c => c.HasTag(GameTagIds.Hq) && c.IsAlive);

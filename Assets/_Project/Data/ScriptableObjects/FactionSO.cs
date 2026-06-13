@@ -10,7 +10,7 @@ namespace DeadManZone.Data
     public class FactionSO : ScriptableObject
     {
         public string factionId = "iron_vanguard";
-        public string displayName = "Iron Vanguard";
+        public string displayName = "IronMarch Union";
         public int boardWidth = 9;
         public int boardHeight = 10;
         public int rearCols = 4;
@@ -34,7 +34,7 @@ namespace DeadManZone.Data
         public Color tokenBackgroundColor = new Color(0f, 0f, 0f, 0f);
 
         [Header("HQ")]
-        public string hqPieceId = "hq_command";
+        public string hqPieceId = "ironmarch_hq";
         public Vector2Int hqSpawnAnchor = new(0, 4);
         public int hqSpawnRotation = 0;
 

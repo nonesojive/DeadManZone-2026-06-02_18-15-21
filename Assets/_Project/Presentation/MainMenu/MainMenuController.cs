@@ -97,7 +97,7 @@ namespace DeadManZone.Presentation.MainMenu
 
         private void RefreshFactionButtons()
         {
-            SetFactionButton(ironVanguardButton, "iron_vanguard", "Ironmarch Vanguard");
+            SetFactionButton(ironVanguardButton, "iron_vanguard", "IronMarch Union");
             SetFactionButton(dustScourgeButton, "dust_scourge", "Dust Scourge");
             SetFactionButton(cartelButton, "cartel_of_echoes", "Cartel of Echoes");
         }
@@ -145,7 +145,7 @@ namespace DeadManZone.Presentation.MainMenu
             if (factionDetailText != null)
             {
                 factionDetailText.text =
-                    "Ironmarch Vanguard — heavy industry and command.\n" +
+                    "IronMarch Union — heavy industry and command.\n" +
                     "Dust Scourge — nomadic scavengers with gas warfare.\n" +
                     "Cartel of Echoes — stealth resonance and synergy.";
             }

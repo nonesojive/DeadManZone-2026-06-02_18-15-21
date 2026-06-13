@@ -12,9 +12,12 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public CombatUnitActor Rent()
         {
-            if (_available.Count > 0)
+            while (_available.Count > 0)
             {
                 var actor = _available.Pop();
+                if (actor == null)
+                    continue;
+
                 actor.gameObject.SetActive(true);
                 return actor;
             }
@@ -23,6 +26,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             go.transform.SetParent(_root, false);
             return go.AddComponent<CombatUnitActor>();
         }
+
+        public void Clear() => _available.Clear();
 
         public void Release(CombatUnitActor actor)
         {

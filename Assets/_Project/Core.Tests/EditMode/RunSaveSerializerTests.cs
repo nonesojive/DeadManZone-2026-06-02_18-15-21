@@ -116,7 +116,9 @@ namespace DeadManZone.Core.Tests
                 Combat = new CombatSaveState
                 {
                     CombatSeed = 999,
-                    CompletedPhase = CombatPhase.Deployment,
+                    CheckpointsFired = 1,
+                    LastSegmentIndex = 0,
+                    GlobalTick = 0,
                     AwaitingCommand = true,
                     Requisition = 3,
                     PlayerTactic = TacticType.StandGround,
@@ -129,7 +131,7 @@ namespace DeadManZone.Core.Tests
                     {
                         new PhaseCommand
                         {
-                            AfterPhase = CombatPhase.Deployment,
+                            AfterCheckpoint = 0,
                             Type = CommandType.SetTactic,
                             Tactic = TacticType.Advance,
                             SourcePieceId = "bunker_1"
@@ -139,7 +141,7 @@ namespace DeadManZone.Core.Tests
                     {
                         new CombatEventRecord
                         {
-                            Phase = CombatPhase.Deployment,
+                            Segment = 0,
                             Tick = 0,
                             ActorId = "rifle_1",
                             ActionType = "move",
@@ -153,7 +155,8 @@ namespace DeadManZone.Core.Tests
 
             Assert.AreEqual(RunPhase.Combat, loaded.Phase);
             Assert.IsTrue(loaded.Combat.AwaitingCommand);
-            Assert.AreEqual(CombatPhase.Deployment, loaded.Combat.CompletedPhase);
+            Assert.AreEqual(1, loaded.Combat.CheckpointsFired);
+            Assert.AreEqual(0, loaded.Combat.LastSegmentIndex);
             Assert.AreEqual(TacticType.StandGround, loaded.Combat.PlayerTactic);
             Assert.AreEqual(TacticType.Advance, loaded.Combat.PendingSelectedTactic);
             Assert.AreEqual(GrantedAbility.GrenadeLob, loaded.Combat.PendingSelectedAbilities[0]);

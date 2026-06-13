@@ -20,7 +20,7 @@ namespace DeadManZone.Presentation.Combat
         [SerializeField] private Image panelBackground;
 
         private readonly List<AvailableCommand> _available = new();
-        private CombatPhase _completedPhase;
+        private int _pauseIndex;
         private int _budget;
 
         private void Awake()
@@ -39,7 +39,7 @@ namespace DeadManZone.Presentation.Combat
 
         public void ShowCommands(
             IReadOnlyList<AvailableCommand> availableCommands,
-            CombatPhase completedPhase,
+            int pauseIndex,
             int budget,
             int totalSlots)
         {
@@ -47,7 +47,7 @@ namespace DeadManZone.Presentation.Combat
             if (availableCommands != null)
                 _available.AddRange(availableCommands);
 
-            _completedPhase = completedPhase;
+            _pauseIndex = pauseIndex;
             _budget = Mathf.Max(0, budget);
             gameObject.SetActive(true);
 
@@ -56,18 +56,18 @@ namespace DeadManZone.Presentation.Combat
 
             var theme = UiThemeProvider.Current;
             UiThemeApplicator.ApplyLabel(commandsText, false, theme);
-            commandsText.text = BuildDisplayText(completedPhase, budget, totalSlots).TrimEnd();
+            commandsText.text = BuildDisplayText(pauseIndex, budget, totalSlots).TrimEnd();
         }
 
         public void Hide() => gameObject.SetActive(false);
 
         public void InitializeForTests(TMP_Text testCommandsText) => commandsText = testCommandsText;
 
-        private string BuildDisplayText(CombatPhase completedPhase, int budget, int totalSlots)
+        private string BuildDisplayText(int pauseIndex, int budget, int totalSlots)
         {
             var sb = new StringBuilder();
-            sb.AppendLine(GetPhaseTitle(completedPhase));
-            sb.AppendLine(GetPhaseFlavor(completedPhase));
+            sb.AppendLine(GetPauseTitle(pauseIndex));
+            sb.AppendLine(GetPauseFlavor(pauseIndex));
             sb.AppendLine(FormatBudget(budget, totalSlots));
 
             if (_available.Count == 0)
@@ -84,22 +84,13 @@ namespace DeadManZone.Presentation.Combat
             return sb.ToString();
         }
 
-        private static string GetPhaseTitle(CombatPhase phase) =>
-            phase switch
-            {
-                CombatPhase.Deployment => "After Deployment",
-                CombatPhase.Grind => "After the Grind",
-                CombatPhase.FinalPush => "After Final Push",
-                _ => $"After {phase}"
-            };
+        private static string GetPauseTitle(int pauseIndex) =>
+            pauseIndex == 0 ? "First Pause" : "Second Pause";
 
-        private static string GetPhaseFlavor(CombatPhase phase) =>
-            phase switch
-            {
-                CombatPhase.Deployment => "Issue orders before the lines close.",
-                CombatPhase.Grind => "Spend requisition while the trenches hold.",
-                _ => "Command your remaining forces."
-            };
+        private static string GetPauseFlavor(int pauseIndex) =>
+            pauseIndex == 0
+                ? "The lines have buckled — issue orders."
+                : "The fight nears its end — commit your reserves.";
 
         private static string FormatBudget(int budget, int totalSlots)
         {
@@ -161,7 +152,7 @@ namespace DeadManZone.Presentation.Combat
 
                 toSubmit.Add(new PhaseCommand
                 {
-                    AfterPhase = _completedPhase,
+                    AfterCheckpoint = _pauseIndex,
                     Type = cmd.Type,
                     SourcePieceId = cmd.SourcePieceId,
                     Cost = cmd.RequisitionCost,

@@ -40,7 +40,7 @@ namespace DeadManZone.PlayMode.Tests
                 new() { Type = CommandType.SpendRequisitionBuff, SourcePieceId = "depot_1", RequisitionCost = 1 }
             };
 
-            panel.ShowCommands(commands, CombatPhase.Deployment, 1, 2);
+            panel.ShowCommands(commands, pauseIndex: 0, budget: 1, totalSlots: 2);
             yield return null;
 
             StringAssert.Contains("All-Out Assault", text.text);

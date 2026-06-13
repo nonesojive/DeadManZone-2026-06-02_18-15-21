@@ -6,11 +6,13 @@ namespace DeadManZone.Core.Tests.EditMode
     public sealed class CombatPacingConfigTests
     {
         [Test]
-        public void OpeningAndMainFightTicks_MatchDemoSpec()
+        public void PauseThresholdsAndGasTiming_MatchSpec()
         {
-            Assert.AreEqual(50, CombatPacingConfig.OpeningTicks);
-            Assert.AreEqual(200, CombatPacingConfig.MainFightTicks);
-            Assert.AreEqual(50, CombatPacingConfig.BriefPushTicks);
+            Assert.AreEqual(2, CombatPacingConfig.PauseThresholds.Length);
+            Assert.AreEqual(0.75f, CombatPacingConfig.PauseThresholds[0], 0.0001f);
+            Assert.AreEqual(0.30f, CombatPacingConfig.PauseThresholds[1], 0.0001f);
+            Assert.AreEqual(300, CombatPacingConfig.GasStartTick);
+            Assert.AreEqual(10_000, CombatPacingConfig.MaxFightTicks);
             Assert.AreEqual(10, CombatPacingConfig.TicksPerSecond);
         }
     }

@@ -50,11 +50,11 @@ namespace DeadManZone.Presentation.Editor
             var profile = LoadOrCreateAsset(DefaultProfilePath, () =>
             {
                 var created = ScriptableObject.CreateInstance<VisualProfileSO>();
-                created.displayName = "Iron Vanguard";
+                created.displayName = "IronMarch Union";
                 return created;
             });
 
-            profile.displayName = uiTheme.UsesButtonSprites ? "Bunker Survival" : "Iron Vanguard";
+            profile.displayName = uiTheme.UsesButtonSprites ? "Bunker Survival" : "IronMarch Union";
             profile.uiTheme = uiTheme;
             profile.mainMenuAtmosphere = mainMenuAtmosphere;
             profile.mainMenuLighting = mainMenuLighting;

@@ -1,6 +1,6 @@
 # DeadManZone
 
-Unity 6 demo: 10-fight gauntlet, 3 playable factions (Ironmarch Vanguard, Dust Scourge, Cartel of Echoes), neutral + 2 enemy faction variety, tick combat with tactics, synergies, salvage, achievements, and local leaderboards.
+Unity 6 demo: 10-fight gauntlet, 3 playable factions (IronMarch Union, Dust Scourge, Cartel of Echoes), neutral + 2 enemy faction variety, tick combat with tactics, synergies, salvage, achievements, and local leaderboards.
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ Legacy vertical slice only: **DeadManZone → Generate Vertical Slice Content**.
 
 | Faction | Unlock |
 |---------|--------|
-| Ironmarch Vanguard | Default |
+| IronMarch Union | Default |
 | Dust Scourge | After first campaign win |
 | Cartel of Echoes | After first campaign win |
 

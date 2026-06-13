@@ -27,6 +27,6 @@ MonoBehaviour:
   baseMusterPerShop: 12
   startingAuthority: 2
   startingMorale: 90
-  hqPieceId: hq_command
+  hqPieceId: ironmarch_hq
   hqSpawnAnchor: {x: 0, y: 4}
   hqSpawnRotation: 0

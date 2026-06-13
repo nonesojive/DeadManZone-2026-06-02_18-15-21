@@ -27,7 +27,7 @@ namespace DeadManZone.Core.Tests.EditMode
             Assert.NotNull(faction);
 
             var board = new BoardState(faction.CreateBoardLayout());
-            var hq = GetPiece(database, "hq_command");
+            var hq = GetPiece(database, "ironmarch_hq");
             var conscript = GetPiece(database, "conscript_rifleman");
             Assert.NotNull(hq);
             Assert.NotNull(conscript);
@@ -64,20 +64,17 @@ namespace DeadManZone.Core.Tests.EditMode
             var run = RunThroughGrind(player, enemy, seed);
             return !run.IsFightOver
                    && run.AwaitingCommand
-                   && run.LastCompletedPhase == CombatPhase.Grind;
+                   && run.CheckpointsFired >= 2;
         }
 
         /// <summary>Player was not eliminated during grind (early win or pause #2 both pass).</summary>
         public static bool SurvivedWithoutLossDuringGrind(BoardState player, BoardState enemy, int seed)
         {
             var run = RunThroughGrind(player, enemy, seed);
-            if (run.LastCompletedPhase != CombatPhase.Grind)
-                return false;
+            if (run.IsFightOver)
+                return run.PlayerWon && !run.IsDraw;
 
-            if (!run.IsFightOver && run.AwaitingCommand)
-                return true;
-
-            return run.IsFightOver && run.PlayerWon && !run.IsDraw;
+            return run.AwaitingCommand && run.CheckpointsFired >= 2;
         }
 
         public static float MeasurePauseTwoReachRate(int fightIndex, ContentDatabase database, int seedBase = 5000)
@@ -126,7 +123,7 @@ namespace DeadManZone.Core.Tests.EditMode
             {
                 new PhaseCommand
                 {
-                    AfterPhase = CombatPhase.Deployment,
+                    AfterCheckpoint = 0,
                     Type = CommandType.SetTactic,
                     Tactic = TacticType.DisciplinedFire,
                     SourcePieceId = "player_tactic"
