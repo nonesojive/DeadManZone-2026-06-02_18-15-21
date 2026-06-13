@@ -142,6 +142,7 @@ namespace DeadManZone.Game
                 throw new InvalidOperationException($"No enemy template for fight {State.FightIndex}.");
 
             var enemyBoard = enemyTemplate.BuildBoard(Faction, _registry);
+            ResetAuthorityForBuildRound();
             int combatSeed = State.RunSeed + State.FightIndex * 1000;
 
             State.Phase = RunPhase.Combat;

@@ -90,36 +90,14 @@ namespace DeadManZone.Core.Tests
                 return;
 
             var checkpointIndex = _orchestrator.State.Combat.CheckpointsFired - 1;
-            var commands = new List<PhaseCommand>
-            {
-                new()
-                {
-                    AfterCheckpoint = checkpointIndex,
-                    Type = CommandType.SetTactic,
-                    Tactic = TacticType.Advance,
-                    SourcePieceId = "player_tactic"
-                }
-            };
-
             int authority = _orchestrator.State.Combat.Authority > 0
                 ? _orchestrator.State.Combat.Authority
                 : _orchestrator.State.Combat.Requisition;
 
-            foreach (var cmd in _orchestrator.GetAvailableCommands())
-            {
-                if (cmd.Type != CommandType.UseAbility || cmd.RequisitionCost > authority)
-                    continue;
-
-                commands.Add(new PhaseCommand
-                {
-                    AfterCheckpoint = checkpointIndex,
-                    Type = CommandType.UseAbility,
-                    Ability = cmd.Ability,
-                    SourcePieceId = cmd.SourcePieceId,
-                    Cost = cmd.RequisitionCost
-                });
-                authority -= cmd.RequisitionCost;
-            }
+            var commands = VerticalSliceTestFixtures.BuildAggressiveCommandsForCheckpoint(
+                _orchestrator.GetPlayerBoard(),
+                checkpointIndex,
+                authority);
 
             _orchestrator.SubmitCombatCommands(commands);
         }

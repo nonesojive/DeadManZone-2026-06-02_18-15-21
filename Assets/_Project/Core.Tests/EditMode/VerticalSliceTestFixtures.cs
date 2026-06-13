@@ -59,6 +59,39 @@ namespace DeadManZone.Core.Tests
             return commands;
         }
 
+        public static List<PhaseCommand> BuildAggressiveCommandsForCheckpoint(
+            BoardState board,
+            int checkpointIndex,
+            int availableAuthority)
+        {
+            var commands = new List<PhaseCommand>();
+            int remaining = availableAuthority;
+
+            foreach (var command in BuildAggressiveCommands(board))
+            {
+                if (command.AfterCheckpoint != checkpointIndex)
+                    continue;
+
+                if (command.Type == CommandType.SetTactic)
+                {
+                    commands.Add(command);
+                    continue;
+                }
+
+                if (command.Type != CommandType.UseAbility)
+                    continue;
+
+                int cost = CombatAbilityExecutor.GetAuthorityCost(command.Ability, checkpointIndex);
+                if (cost > remaining)
+                    continue;
+
+                commands.Add(command);
+                remaining -= cost;
+            }
+
+            return commands;
+        }
+
         private static void TryAddAbility(
             List<PhaseCommand> commands,
             BoardState board,

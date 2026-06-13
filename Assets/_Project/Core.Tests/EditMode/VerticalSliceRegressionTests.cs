@@ -101,6 +101,43 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
+        public void GauntletBoard_WinsFightOne_WithBoardAuthority()
+        {
+            var faction = _database.GetFaction("iron_vanguard");
+            var registry = _database.BuildRegistry();
+            var player = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
+            var enemy = _database.GetEnemyTemplate(1).BuildBoard(faction, registry);
+            int authority = AuthorityCalculator.ComputeRoundPool(player);
+            var commands = new List<PhaseCommand>();
+            int remaining = authority;
+
+            foreach (int checkpoint in new[] { 0, 1 })
+            {
+                var batch = VerticalSliceTestFixtures.BuildAggressiveCommandsForCheckpoint(
+                    player,
+                    checkpoint,
+                    remaining);
+
+                foreach (var command in batch)
+                {
+                    if (command.Type == CommandType.UseAbility)
+                        remaining -= CombatAbilityExecutor.GetAuthorityCost(command.Ability, checkpoint);
+                }
+
+                commands.AddRange(batch);
+            }
+
+            var result = new CombatResolver().Resolve(
+                player,
+                enemy,
+                VerticalSliceTestFixtures.RegressionRunSeed + 1000,
+                commands,
+                authority);
+
+            Assert.IsTrue(result.PlayerWon, "Gauntlet board should win fight 1 with HQ+radio authority pool.");
+        }
+
+        [Test]
         public void Serialize_RoundTripsEveryRunPhase()
         {
             foreach (RunPhase phase in Enum.GetValues(typeof(RunPhase)))
