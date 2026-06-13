@@ -210,7 +210,7 @@ On fight end (`RunOrchestrator` aftermath):
 
 1. Read `enemyFactionId` from current fight’s enemy template (or procedural metadata).  
 2. Set `RunState.LastEnemyFactionId`.  
-3. Compute `RunState.SalvageChancePercent` via `SalvageChanceCalculator` (faction base, outcome, board boosts on victory only).  
+3. Compute `RunState.SalvageChancePercent` via `SalvageChanceCalculator` (faction base, outcome, board boosts on victory/draw).  
 4. Persist in save schema.
 
 #### 3.1.5 Sell refunds (sub-feature)
