@@ -24,7 +24,7 @@ A systems sandbox where any mechanic can be tested in isolation with confidence.
 | 4 | Buildings spawn in combat, block paths, render in arena |
 | 5 | Attack type × armor type matrix fully wired and test-covered |
 | 6 | Adjacency synergies fire in combat (not just UI counts) |
-| 7 | **Salvage system** drives off-faction shop appearance; sell refunds are one sub-feature |
+| 7 | **Salvage system** offers pieces from the **last fight’s enemy faction** in shop; sell refunds are one sub-feature |
 | 8 | Specialty lane shows correct offers based on board composition |
 | 9 | Emergency Draft, Critical Mass, Tactics functional end-to-end |
 | 10 | Tag Creator adds tags → Unit Creator picks them up automatically |
@@ -122,70 +122,95 @@ Audit `AttackTypeProfileCatalog` + `CombatDamageResolver`. Every `AttackType` ×
 
 **Current state:** Only `SalvageCalculator.cs` exists — sell-refund math (50% Supplies, 50% Authority). Original demo spec explicitly deferred **“Salvage (enemy faction stock)”** and **“salvage shop.”** This is **not** the complete salvage system.
 
-**Design intent:** Salvage is the run-level **scavenging layer** that controls how often **off-faction** pieces (enemy factions, other playable factions — not neutral baseline) appear in the shop. Selling pieces for resource refunds is a **sub-feature**, not the whole system.
+**Design intent (locked):** After each fight, the player may see pieces from the **faction they just fought** in the next shop refresh. Thematically this is scavenged gear and survivors absorbed into your army. All factions are eventually playable; enemy fights use the same piece rosters — salvage is how you **acquire another faction’s kit** mid-run.
+
+**Long-term context:** Enemy boards will become **procedurally randomized** per fight. Salvage always keys off **`LastEnemyFactionId`** from the most recent combat, whether that board came from a fixed template or a generator.
 
 #### 3.1.1 Concepts
 
 | Concept | Description |
 |---------|-------------|
-| **Salvage stock** | Per-run meter(s) tracking scavenged material, keyed by source faction |
-| **Off-faction pool** | Pieces where `FactionId` ≠ player faction and `FactionId` ≠ `neutral` |
-| **Neutral baseline** | Existing fight-index neutral weight (`ShopPoolFilter`) — unchanged role |
-| **Salvage offers** | Shop slots weighted by salvage stock toward off-faction pieces |
+| **`LastEnemyFactionId`** | Faction id of the opponent in the most recent fight (from `EnemyTemplateSO.enemyFactionId` today; from procedural board metadata later) |
+| **Salvage chance** | Per-shop probability (0–100%) that a given offer slot pulls from the salvage pool instead of the normal pool |
+| **Salvage pool** | Lane-eligible pieces where `FactionId == LastEnemyFactionId` and `FactionId != playerFactionId` |
+| **Normal pool** | Existing `ShopPoolFilter` neutral vs own-faction weighting — unchanged |
+| **Salvage offer** | A shop slot that rolled salvage; piece comes from salvage pool; tagged for UI |
 
-#### 3.1.2 Salvage stock sources
+**Run start / fight 1:** No prior fight → `LastEnemyFactionId` unset → salvage chance effectively 0.
 
-| Source | When | Default gain (tunable) |
-|--------|------|------------------------|
-| Fight victory | Aftermath | +N based on enemy template faction (e.g. Crimson +3, Ash Wraiths +3) |
-| Enemy pieces destroyed | Aftermath (optional detail) | +1 per unique enemy piece type destroyed |
-| Sell piece (any) | Build phase | +1 global salvage (represents stripping gear) |
-| Dust Scourge bonus | Any source | +25% salvage stock gain (mirrors existing refund bonus theme) |
-| Salvage-tagged building on board | Each build round | +1 passive (if `salvage` optional tag exists on piece) |
+**Neutral enemy fights:** If `LastEnemyFactionId == "neutral"`, salvage pool is neutral pieces. Overlap with baseline neutral weight is acceptable; salvage slots still get the **“Salvaged”** badge and use the last-fight thematic (field pickups after militia engagement).
 
-Stock persists in `RunState` and serializes in save schema.
+#### 3.1.2 Salvage chance (computed after each fight)
 
-#### 3.1.3 Shop weighting (replaces binary neutral/faction logic for off-faction)
+Set in aftermath, consumed on next shop generation, then recalculated after the following fight.
 
-`ShopPoolFilter` becomes a three-tier weight model:
+| Input | Effect on salvage chance (tunable defaults) |
+|-------|---------------------------------------------|
+| Base (any fight completed) | +15% |
+| Victory | +20% |
+| Defeat / draw | +5% (still scavenged the battlefield) |
+| Unique enemy piece types destroyed | +2% each, cap +10% |
+| Dust Scourge player faction | ×1.25 on final chance |
+| **Cap** | 50% per offer slot (prevents all-salvage shops) |
+
+Chance applies **per offer slot** independently during `ShopGenerator.RollLane`.
+
+#### 3.1.3 Shop generation flow
 
 ```
-totalWeight = ownFaction + neutral + offFaction
-
-ownFaction  = baseOwnWeight(fightIndex)           // e.g. 15% → 75% curve
-neutral     = GetNeutralWeight(fightIndex)        // existing 85% → 25% curve
-offFaction  = SalvageShopWeighting.Compute(stock)   // 0% at stock 0, caps at ~20% at high stock
+For each offer slot in lane:
+  1. If LastEnemyFactionId is set AND rng roll < SalvageChance:
+       pick from salvage pool (lane + fight-index filtered)
+       mark offer as IsSalvaged = true
+  2. Else:
+       existing ShopPoolFilter.PickWeighted (neutral vs own faction)
 ```
 
-- **Off-faction cap:** Max ~20% of roll weight until fight 7+ (prevents early-game confusion)  
-- **Stock decay (optional v1):** None — stock only grows; tune later if snowballing  
-- **Per-faction stock:** When rolling off-faction, pick faction proportional to that faction’s stock (fighting Crimson Legion increases Crimson piece odds)
+Salvage pieces use normal pricing (no discount unless a building modifier applies). Player can buy and deploy them like any piece — cross-faction hybrids are intentional.
 
-#### 3.1.4 UI & tooltips
+#### 3.1.4 Aftermath wiring
 
-- Salvage stock shown on run HUD (icon + number, or per-faction pips)  
-- Off-faction shop offers get a **“Salvaged”** badge  
-- UnitCard tooltip line: “Appears in shop via Salvage (Crimson stock: 6)”  
-- Sell action shows refund **and** +salvage gain
+On fight end (`RunOrchestrator` aftermath):
 
-#### 3.1.5 Modules
+1. Read `enemyFactionId` from current fight’s enemy template (or procedural metadata).  
+2. Set `RunState.LastEnemyFactionId`.  
+3. Compute `RunState.SalvageChancePercent` from outcome + destroyed-piece tally.  
+4. Persist in save schema.
+
+#### 3.1.5 Sell refunds (sub-feature)
+
+`SalvageCalculator` remains for **selling pieces** during build phase (50% Supplies, 50% Authority). Does **not** affect salvage chance or last-enemy faction. Dust Scourge +25% applies to refunds only unless design later merges bonuses.
+
+#### 3.1.6 UI & tooltips
+
+- Run HUD: small indicator when salvage is active — e.g. “Salvage: Crimson Legion (35%)”  
+- Salvaged shop offers: **“Salvaged”** badge + faction chip  
+- UnitCard: “Salvaged from your last battle against {FactionName}”  
+- Tooltip on salvage HUD explains the mechanic for sandbox testers  
+
+#### 3.1.7 Modules
 
 | Module | Role |
 |--------|------|
-| `SalvageStockState` | RunState fields + serialization |
-| `SalvageStockCalculator` | Gains from aftermath, sell, buildings |
-| `SalvageShopWeighting` | Off-faction weight from stock |
-| `SalvageCalculator` | Renamed conceptually to sell-refund; keep file, add tests for stock gain on sell |
-| `ShopPoolFilter` | Three-tier weighting integration |
+| `SalvageState` | `LastEnemyFactionId`, `SalvageChancePercent` on `RunState` + serialization |
+| `SalvageChanceCalculator` | Aftermath inputs → chance percent |
+| `SalvageShopPool` | Filter registry by last enemy faction + lane + fight index |
+| `ShopGenerator` | Per-slot salvage roll + `IsSalvaged` flag on `ShopOffer` |
+| `SalvageCalculator` | Sell refunds (unchanged scope) |
 
-#### 3.1.6 Tests
+#### 3.1.8 Future: randomized enemy boards
 
-- Stock increases on win and sell  
-- Off-faction weight = 0 at stock 0  
-- Off-faction weight increases monotonically with stock  
-- Deterministic shop roll with fixed seed + stock fixture  
-- Dust Scourge +25% stock gain  
-- Save/resume preserves stock
+Sandbox implements salvage against **fixed templates** (`EnemyTemplateSO.enemyFactionId` already exists). Procedural enemy generator (deferred) must output the same `enemyFactionId` field so salvage requires no rework.
+
+#### 3.1.9 Tests
+
+- Fight 1 shop: zero salvage offers with unset last enemy  
+- After fight vs Crimson: salvage pool contains only Crimson pieces  
+- Salvage chance 0 → no salvage slots; 100% fixture → all slots salvage (test hook)  
+- Deterministic shop with fixed seed + salvage chance  
+- Dust Scourge ×1.25 chance  
+- Save/resume preserves `LastEnemyFactionId` and chance  
+- Salvage offer does not include player-faction pieces
 
 ### 3.2 Shop availability matrix
 
@@ -195,10 +220,10 @@ Extend fight-index pool gating (existing `ShopGenerator` + `ContentRegistry` poo
 |-------------|-----------|-----------|-------|
 | 1–2 | Basic infantry, 1×1 | Medic, supply buildings | Tutorial-soft |
 | 3–5 | + vehicles, multi-cell | + utility buildings | Specialty unlocks |
-| 6–8 | + artillery, assault | + combat buildings | Salvage off-faction more relevant |
+| 6–8 | + artillery, assault | + combat buildings | Salvage from last enemy faction more valuable |
 | 9–10 | Full faction pool | Full building pool | All synergies relevant |
 
-Filters: `FactionId`, `ShopLane`, `fightIndex`, `combatRole`, `primaryTag`, `isNeutral`, `isOffFaction`.
+Filters: `FactionId`, `ShopLane`, `fightIndex`, `combatRole`, `primaryTag`, `isNeutral`, `isSalvaged`.
 
 ### 3.3 Specialty lane rules
 
@@ -277,7 +302,7 @@ Keep demo rules. New tags add rules via `CriticalMassRuleCatalog` (subsection of
 | Tag chips | Primary + CombatRole + up to 4 Optional |
 | Synergy block | Live `SynergyEngine` eval on current board |
 | Critical mass hint | Threshold diff from `CriticalMassRules` |
-| Salvage context | Off-faction badge explanation when applicable |
+| Salvage context | “Salvaged from {last enemy faction}” when `IsSalvaged` |
 | Ability | `GrantedAbility` name + description |
 
 ### 5.2 Minimal test content
@@ -293,7 +318,7 @@ Author via Unit Creator after Tag Creator lands.
 | Phase | Duration | Deliverables |
 |-------|----------|--------------|
 | **0 — Wire stubs** | 2–3 days | Emergency Draft, SynergyRuleCatalog, Muster synergy, specialty lane |
-| **0b — Salvage system** | 4–5 days | Stock state, aftermath gains, shop weighting, UI badge, tests |
+| **0b — Salvage system** | 3–4 days | Last-enemy faction state, per-slot salvage roll, UI badge, tests |
 | **1 — Combat footprints** | 4–5 days | Occupancy grid, footprint spawn |
 | **2 — Pathfinding** | 4–5 days | ShapePathfinder, building obstacles, determinism |
 | **3 — Role engagement** | 3–4 days | Extended role profiles, lane bias, spacing |
@@ -312,7 +337,7 @@ Author via Unit Creator after Tag Creator lands.
 - Determinism gate on every combat movement change  
 - Role fixture per combat role  
 - Synergy fixture per rule  
-- Salvage fixture: stock → shop weight → offer faction  
+- Salvage fixture: last enemy faction + chance → salvaged offer faction  
 - Sandbox smoke: dev menu test board → fight → verify all 13 criteria  
 
 ---
@@ -325,7 +350,7 @@ Author via Unit Creator after Tag Creator lands.
 | Combat feel | Top Troops: full footprint, A*, role engagement, lane bias |
 | Multi-cell | Full rigid footprint; no combat rotation v1 |
 | Buildings | Spawn, block paths, render in arena |
-| Salvage | Run stock → off-faction shop weight; sell refunds are sub-feature |
+| Salvage | Last fight’s enemy faction → per-slot shop chance; sell refunds are sub-feature |
 | Shop | Availability matrix + composition specialty lane |
 | Synergies | Demo rule set in combat + economy |
 | Tooling | Tag Creator → Unit Creator live sync |
@@ -337,7 +362,7 @@ Author via Unit Creator after Tag Creator lands.
 
 These are locked structurally but values are data-tuned during sandbox pass:
 
-- Salvage gain per fight / per sell / cap / off-faction weight curve  
+- Salvage chance per fight outcome / destroyed types / cap  
 - Specialty lane wildcard weights  
 - Role engagement distances and lane bias strength  
 - Spacing hold vs charge override threshold  
