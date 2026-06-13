@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Tags;
@@ -23,11 +25,32 @@ namespace DeadManZone.Core.Combat
         public int ArmorBuffSteps { get; set; }
         public int DamageDealtThisFight { get; set; }
         public int DamageTakenThisFight { get; set; }
-        public GridCoord Position { get; set; }
+        public GridCoord AnchorPosition { get; set; }
+        public IReadOnlyList<GridCoord> ShapeOffsets { get; init; }
+        public IReadOnlyList<GridCoord> OccupiedCells { get; private set; }
+
+        [Obsolete("Use AnchorPosition")]
+        public GridCoord Position
+        {
+            get => AnchorPosition;
+            set => AnchorPosition = value;
+        }
+
         public bool IsAlive => CurrentHp > 0;
 
         public bool HasTag(string tag) => PieceTagQueries.HasTag(Definition, tag);
 
         public bool CanAttack => IsAlive && Definition.BaseDamage > 0;
+
+        public void RecomputeOccupiedCells()
+        {
+            if (ShapeOffsets == null || ShapeOffsets.Count == 0)
+            {
+                OccupiedCells = Array.Empty<GridCoord>();
+                return;
+            }
+
+            OccupiedCells = CombatFootprint.ComputeOccupiedCells(AnchorPosition, ShapeOffsets);
+        }
     }
 }
