@@ -21,10 +21,8 @@ MonoBehaviour:
   primary: building
   combatRole: utility
   systemTag: noncombatant
-  synergyTags:
-  []
-  abilityTags:
-  []
+  synergyTags: []
+  abilityTags: []
   flavorTags: []
   maxHp: 55
   baseDamage: 0

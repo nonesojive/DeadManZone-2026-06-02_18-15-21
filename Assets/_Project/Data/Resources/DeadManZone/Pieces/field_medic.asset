@@ -23,8 +23,7 @@ MonoBehaviour:
   systemTag: combatant
   synergyTags:
   - medic
-  abilityTags:
-  []
+  abilityTags: []
   flavorTags: []
   maxHp: 40
   baseDamage: 0

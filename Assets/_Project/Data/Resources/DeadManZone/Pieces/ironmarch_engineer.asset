@@ -23,8 +23,7 @@ MonoBehaviour:
   systemTag: combatant
   synergyTags:
   - mechanic
-  abilityTags:
-  []
+  abilityTags: []
   flavorTags: []
   maxHp: 80
   baseDamage: 8

@@ -22,10 +22,8 @@ MonoBehaviour:
   primary: vehicle
   combatRole: tank
   systemTag: combatant
-  synergyTags:
-  []
-  abilityTags:
-  []
+  synergyTags: []
+  abilityTags: []
   flavorTags: []
   maxHp: 160
   baseDamage: 16

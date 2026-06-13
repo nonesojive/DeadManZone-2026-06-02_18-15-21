@@ -22,8 +22,7 @@ MonoBehaviour:
   primary: infantry
   combatRole: artillery
   systemTag: combatant
-  synergyTags:
-  []
+  synergyTags: []
   abilityTags:
   - grenadier
   flavorTags: []

@@ -21,10 +21,8 @@ MonoBehaviour:
   primary: infantry
   combatRole: sniper
   systemTag: combatant
-  synergyTags:
-  []
-  abilityTags:
-  []
+  synergyTags: []
+  abilityTags: []
   flavorTags: []
   maxHp: 70
   baseDamage: 28

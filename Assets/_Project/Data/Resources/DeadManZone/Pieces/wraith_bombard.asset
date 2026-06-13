@@ -22,10 +22,8 @@ MonoBehaviour:
   primary: vehicle
   combatRole: artillery
   systemTag: combatant
-  synergyTags:
-  []
-  abilityTags:
-  []
+  synergyTags: []
+  abilityTags: []
   flavorTags: []
   maxHp: 150
   baseDamage: 40

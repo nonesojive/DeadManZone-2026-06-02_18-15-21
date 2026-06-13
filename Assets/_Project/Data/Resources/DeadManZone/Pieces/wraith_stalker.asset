@@ -21,8 +21,7 @@ MonoBehaviour:
   primary: infantry
   combatRole: sniper
   systemTag: combatant
-  synergyTags:
-  []
+  synergyTags: []
   abilityTags:
   - stealth
   flavorTags: []

@@ -21,8 +21,7 @@ MonoBehaviour:
   primary: infantry
   combatRole: assault
   systemTag: combatant
-  synergyTags:
-  []
+  synergyTags: []
   abilityTags:
   - flamethrower
   flavorTags: []
