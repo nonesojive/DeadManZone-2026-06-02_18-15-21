@@ -216,9 +216,14 @@ namespace DeadManZone.Core.Combat
                 if (!CombatMovementRules.ShouldAttemptMove(mover, aliveTargets))
                     continue;
 
-                var blockedForMover = BuildBlockedCells(mover.InstanceId);
                 var goal = CombatMovementRules.SelectNearestEnemyPosition(mover.AnchorPosition, aliveTargets);
-                var next = CombatMovement.StepTowardTarget(mover.AnchorPosition, goal, _layout, blockedForMover);
+                var next = ShapePathfinder.FindStep(
+                    mover.AnchorPosition,
+                    goal,
+                    mover.ShapeOffsets,
+                    mover.InstanceId,
+                    _occupancyGrid,
+                    _layout);
                 if (next == null || next.Value.Equals(mover.AnchorPosition))
                     continue;
 
@@ -411,20 +416,6 @@ namespace DeadManZone.Core.Combat
                     combatant.AnchorPosition,
                     combatant.ShapeOffsets);
             }
-        }
-
-        private HashSet<GridCoord> BuildBlockedCells(string excludeInstanceId = null)
-        {
-            var blocked = new HashSet<GridCoord>();
-            foreach (var entry in _occupancyGrid.Snapshot())
-            {
-                if (excludeInstanceId != null && entry.Value == excludeInstanceId)
-                    continue;
-
-                blocked.Add(entry.Key);
-            }
-
-            return blocked;
         }
 
         private List<CombatantState> SpawnCombatants(BoardState board, CombatSide side, int xOffset)
