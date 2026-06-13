@@ -55,5 +55,8 @@ namespace DeadManZone.Core.Combat
 
         public IReadOnlyDictionary<GridCoord, string> Snapshot() =>
             new Dictionary<GridCoord, string>(_occupancy);
+
+        private static bool IsInBounds(GridCoord cell, BattlefieldLayout layout) =>
+            cell.X >= 0 && cell.X < layout.TotalWidth && cell.Y >= 0 && cell.Y < layout.Height;
     }
 }

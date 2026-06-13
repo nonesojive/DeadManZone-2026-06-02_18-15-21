@@ -18,7 +18,7 @@ namespace DeadManZone.Core.Combat
         private readonly List<CombatantState> _enemyCombatants;
         private readonly TacticState _tactics = new();
         private readonly CombatEventLog _log = new();
-        private readonly HashSet<GridCoord> _occupied = new();
+        private CombatOccupancyGrid _occupancyGrid = new();
         private bool _awaitingCommand;
 
         public BoardState PlayerBoard => _playerBoard;
@@ -42,6 +42,8 @@ namespace DeadManZone.Core.Combat
         public IReadOnlyList<CombatantState> PlayerCombatantsForTests => _playerCombatants;
 
         public IReadOnlyList<CombatantState> EnemyCombatantsForTests => _enemyCombatants;
+
+        public IReadOnlyDictionary<GridCoord, string> OccupancySnapshotForTests => _occupancyGrid.Snapshot();
 
         public bool IsPlayerHqAlive =>
             _playerCombatants.Any(c => c.HasTag(GameTagIds.Hq) && c.IsAlive);
@@ -195,8 +197,6 @@ namespace DeadManZone.Core.Combat
             if (aliveTargets.Count == 0)
                 return;
 
-            var blocked = new HashSet<GridCoord>(_occupied);
-
             foreach (var mover in movers.Where(m => m.IsAlive && m.HasTag(GameTagIds.Combatant)).OrderBy(m => m.InstanceId))
             {
                 if (mover.Definition.MovementSpeed == MovementSpeedTier.None)
@@ -216,20 +216,20 @@ namespace DeadManZone.Core.Combat
                 if (!CombatMovementRules.ShouldAttemptMove(mover, aliveTargets))
                     continue;
 
-                var goal = CombatMovementRules.SelectNearestEnemyPosition(mover.Position, aliveTargets);
-                var next = CombatMovement.StepTowardTarget(mover.Position, goal, _layout, blocked);
-                if (next == null || next.Value.Equals(mover.Position))
+                var blockedForMover = BuildBlockedCells(mover.InstanceId);
+                var goal = CombatMovementRules.SelectNearestEnemyPosition(mover.AnchorPosition, aliveTargets);
+                var next = CombatMovement.StepTowardTarget(mover.AnchorPosition, goal, _layout, blockedForMover);
+                if (next == null || next.Value.Equals(mover.AnchorPosition))
                     continue;
 
-                int cost = CombatMovement.GetStepChargeCost(mover.Position, next.Value, _layout);
+                int cost = CombatMovement.GetStepChargeCost(mover.AnchorPosition, next.Value, _layout);
                 if (mover.MoveCharge < cost)
                     continue;
 
                 mover.MoveCharge -= cost;
-                _occupied.Remove(mover.Position);
-                mover.Position = next.Value;
-                _occupied.Add(mover.Position);
-                blocked.Add(mover.Position);
+                _occupancyGrid.Move(mover.InstanceId, next.Value, mover.ShapeOffsets);
+                mover.AnchorPosition = next.Value;
+                mover.RecomputeOccupiedCells();
                 _log.Append(
                     segment,
                     GlobalTick,
@@ -400,37 +400,68 @@ namespace DeadManZone.Core.Combat
 
         private void RebuildOccupied()
         {
-            _occupied.Clear();
-            foreach (var c in _playerCombatants.Concat(_enemyCombatants).Where(c => c.IsAlive))
-                _occupied.Add(c.Position);
+            _occupancyGrid = new CombatOccupancyGrid();
+            foreach (var combatant in _playerCombatants.Concat(_enemyCombatants).Where(c => c.IsAlive))
+            {
+                if (combatant.ShapeOffsets == null || combatant.ShapeOffsets.Count == 0)
+                    continue;
+
+                _occupancyGrid.Place(
+                    combatant.InstanceId,
+                    combatant.AnchorPosition,
+                    combatant.ShapeOffsets);
+            }
         }
 
-        private static List<CombatantState> SpawnCombatants(BoardState board, CombatSide side, int xOffset)
+        private HashSet<GridCoord> BuildBlockedCells(string excludeInstanceId = null)
+        {
+            var blocked = new HashSet<GridCoord>();
+            foreach (var entry in _occupancyGrid.Snapshot())
+            {
+                if (excludeInstanceId != null && entry.Value == excludeInstanceId)
+                    continue;
+
+                blocked.Add(entry.Key);
+            }
+
+            return blocked;
+        }
+
+        private List<CombatantState> SpawnCombatants(BoardState board, CombatSide side, int xOffset)
         {
             int halfWidth = board.Layout.Width;
-            return board.Pieces
-                .OrderBy(p => p.InstanceId)
-                .Where(p => p.Definition.MaxHp > 0)
-                .Select(p =>
+            var combatants = new List<CombatantState>();
+
+            foreach (var piece in board.Pieces
+                         .OrderBy(p => p.InstanceId)
+                         .Where(p => p.Definition.MaxHp > 0))
+            {
+                int rotationIndex = (int)piece.Rotation / 90;
+                int localX = side == CombatSide.Enemy
+                    ? BattlefieldLayout.MirrorEnemyAnchorX(
+                        piece.Anchor.X,
+                        piece.Definition.Shape,
+                        halfWidth,
+                        piece.Rotation)
+                    : piece.Anchor.X;
+                var anchor = new GridCoord(xOffset + localX, piece.Anchor.Y);
+                var offsets = CombatFootprint.ComputeOffsets(piece.Definition.Shape, rotationIndex);
+                var combatant = new CombatantState
                 {
-                    int localX = side == CombatSide.Enemy
-                        ? BattlefieldLayout.MirrorEnemyAnchorX(
-                            p.Anchor.X,
-                            p.Definition.Shape,
-                            halfWidth,
-                            p.Rotation)
-                        : p.Anchor.X;
-                    return new CombatantState
-                    {
-                        InstanceId = p.InstanceId,
-                        Side = side,
-                        Definition = p.Definition,
-                        CurrentHp = p.Definition.MaxHp,
-                        CooldownRemaining = 0,
-                        Position = new GridCoord(xOffset + localX, p.Anchor.Y)
-                    };
-                })
-                .ToList();
+                    InstanceId = piece.InstanceId,
+                    Side = side,
+                    Definition = piece.Definition,
+                    CurrentHp = piece.Definition.MaxHp,
+                    CooldownRemaining = 0,
+                    AnchorPosition = anchor,
+                    ShapeOffsets = offsets
+                };
+                combatant.RecomputeOccupiedCells();
+                _occupancyGrid.Place(combatant.InstanceId, anchor, offsets);
+                combatants.Add(combatant);
+            }
+
+            return combatants;
         }
 
         private void ApplyTacticDamageBuffs()
