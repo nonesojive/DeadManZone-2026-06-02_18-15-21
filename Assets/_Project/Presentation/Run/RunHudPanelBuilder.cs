@@ -11,7 +11,7 @@ namespace DeadManZone.Presentation.Run
     public static class RunHudPanelBuilder
     {
         public const string PanelName = "RunHudPanel";
-        public const int PanelVersion = 2;
+        public const int PanelVersion = 3;
 
         public sealed class BuiltPanel
         {
@@ -19,6 +19,7 @@ namespace DeadManZone.Presentation.Run
             public TMP_Text FightTitle;
             public TMP_Text FightIndex;
             public TMP_Text GateMessage;
+            public TMP_Text SalvageIndicator;
             public TMP_Text SuppliesValue;
             public TMP_Text ManpowerValue;
             public TMP_Text AuthorityValue;
@@ -69,6 +70,11 @@ namespace DeadManZone.Presentation.Run
                 new Vector2(0f, 2f), new Vector2(320f, 18f), TextAlignmentOptions.Center, theme, secondary: true);
             gateMessage.gameObject.SetActive(false);
 
+            var salvageIndicator = CreateHudLabel(header.transform, "", 12, FontStyles.Normal,
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(0f, 0f), new Vector2(360f, 20f), TextAlignmentOptions.Center, theme, secondary: true);
+            salvageIndicator.gameObject.SetActive(false);
+
             AddHorizontalRule(grid.transform, 1f, theme);
 
             var supplies = CreateResourceColumn(grid.transform, "Supplies", theme, 0);
@@ -82,6 +88,7 @@ namespace DeadManZone.Presentation.Run
                 FightTitle = fightTitle,
                 FightIndex = fightIndex,
                 GateMessage = gateMessage,
+                SalvageIndicator = salvageIndicator,
                 SuppliesValue = supplies,
                 ManpowerValue = manpower,
                 AuthorityValue = authority,
@@ -117,7 +124,8 @@ namespace DeadManZone.Presentation.Run
                 panel.SuppliesValue,
                 panel.ManpowerValue,
                 panel.AuthorityValue,
-                panel.MoraleValue);
+                panel.MoraleValue,
+                panel.SalvageIndicator);
         }
 
         public static void ApplyFrameStyle(Image frame, UiThemeSO theme)

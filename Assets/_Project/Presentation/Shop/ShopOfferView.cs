@@ -22,6 +22,7 @@ namespace DeadManZone.Presentation.Shop
         [SerializeField] private TMP_Text pieceIdText;
         [SerializeField] private Image priceBadgeBackground;
         [SerializeField] private TMP_Text priceBadgeText;
+        [SerializeField] private TMP_Text salvagedBadgeText;
         [SerializeField] private Button lockIconButton;
         [SerializeField] private Image lockIconImage;
         [SerializeField] private Image lockedIndicator;
@@ -147,6 +148,8 @@ namespace DeadManZone.Presentation.Shop
             if (priceBadgeBackground != null)
                 UiThemeApplicator.ApplyCard(priceBadgeBackground);
 
+            UpdateSalvagedBadge(offer);
+
             if (lockedIndicator != null)
             {
                 lockedIndicator.enabled = isLocked;
@@ -187,6 +190,51 @@ namespace DeadManZone.Presentation.Shop
             var blocks = previewRoot.Find("Blocks") as RectTransform;
             if (blocks != null)
                 piecePreview.Initialize(blocks);
+        }
+
+        private void UpdateSalvagedBadge(ShopOffer offer)
+        {
+            if (offer == null || !offer.IsSalvaged)
+            {
+                if (salvagedBadgeText != null)
+                    salvagedBadgeText.gameObject.SetActive(false);
+                return;
+            }
+
+            EnsureSalvagedBadge();
+            if (salvagedBadgeText == null)
+                return;
+
+            salvagedBadgeText.gameObject.SetActive(true);
+            salvagedBadgeText.text = "Salvaged";
+            salvagedBadgeText.color = UiThemeProvider.Current.accentColor;
+        }
+
+        private void EnsureSalvagedBadge()
+        {
+            if (salvagedBadgeText != null)
+                return;
+
+            var parent = nameStripRoot != null ? nameStripRoot : transform as RectTransform;
+            if (parent == null)
+                return;
+
+            var badgeGo = new GameObject("SalvagedBadge", typeof(RectTransform));
+            badgeGo.transform.SetParent(parent, false);
+
+            var rect = badgeGo.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-4f, -4f);
+            rect.sizeDelta = new Vector2(72f, 18f);
+
+            salvagedBadgeText = badgeGo.AddComponent<TextMeshProUGUI>();
+            salvagedBadgeText.fontSize = 11f;
+            salvagedBadgeText.fontStyle = FontStyles.Bold;
+            salvagedBadgeText.alignment = TextAlignmentOptions.TopRight;
+            salvagedBadgeText.raycastTarget = false;
+            UiThemeApplicator.ApplyLabel(salvagedBadgeText, secondary: false);
         }
 
         private void UpdateLockIcon(bool isLocked)

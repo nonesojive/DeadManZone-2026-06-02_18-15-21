@@ -1,4 +1,5 @@
 using DeadManZone.Core.Run;
+using DeadManZone.Data;
 using DeadManZone.Game;
 using DeadManZone.Presentation.Visual;
 using TMPro;
@@ -11,10 +12,13 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private TMP_Text fightTitleText;
         [SerializeField] private TMP_Text fightIndexText;
         [SerializeField] private TMP_Text gateMessageText;
+        [SerializeField] private TMP_Text salvageIndicatorText;
         [SerializeField] private TMP_Text suppliesValueText;
         [SerializeField] private TMP_Text manpowerValueText;
         [SerializeField] private TMP_Text authorityValueText;
         [SerializeField] private TMP_Text moraleValueText;
+
+        private ContentDatabase _database;
 
         public void Configure(
             TMP_Text fightTitle,
@@ -23,7 +27,8 @@ namespace DeadManZone.Presentation.Run
             TMP_Text suppliesValue,
             TMP_Text manpowerValue,
             TMP_Text authorityValue,
-            TMP_Text moraleValue)
+            TMP_Text moraleValue,
+            TMP_Text salvageIndicator = null)
         {
             fightTitleText = fightTitle;
             fightIndexText = fightIndex;
@@ -32,6 +37,7 @@ namespace DeadManZone.Presentation.Run
             manpowerValueText = manpowerValue;
             authorityValueText = authorityValue;
             moraleValueText = moraleValue;
+            salvageIndicatorText = salvageIndicator;
         }
 
         public void Refresh(RunState state, string battleGateMessage = null)
@@ -64,6 +70,29 @@ namespace DeadManZone.Presentation.Run
                 if (hasGate)
                     gateMessageText.text = battleGateMessage;
             }
+
+            RefreshSalvageIndicator(state);
+        }
+
+        private void RefreshSalvageIndicator(RunState state)
+        {
+            if (salvageIndicatorText == null)
+                return;
+
+            if (state == null || string.IsNullOrEmpty(state.LastEnemyFactionId))
+            {
+                salvageIndicatorText.gameObject.SetActive(false);
+                return;
+            }
+
+            _database ??= ContentDatabase.Load();
+            var faction = _database?.GetFaction(state.LastEnemyFactionId);
+            string displayName = faction != null && !string.IsNullOrEmpty(faction.displayName)
+                ? faction.displayName
+                : state.LastEnemyFactionId;
+
+            salvageIndicatorText.gameObject.SetActive(true);
+            salvageIndicatorText.text = $"Salvage: {displayName} — {state.SalvageChancePercent}%";
         }
 
         public void ApplyTheme(UiThemeSO theme)
@@ -74,6 +103,7 @@ namespace DeadManZone.Presentation.Run
             ApplyLabel(fightTitleText, false, theme);
             ApplyLabel(fightIndexText, false, theme);
             ApplyLabel(gateMessageText, true, theme);
+            ApplyLabel(salvageIndicatorText, true, theme);
             ApplyLabel(suppliesValueText, false, theme);
             ApplyLabel(manpowerValueText, false, theme);
             ApplyLabel(authorityValueText, false, theme);

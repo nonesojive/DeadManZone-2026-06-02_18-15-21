@@ -26,6 +26,7 @@ namespace DeadManZone.Game
 
         private TickCombatRun _activeCombat;
         private CombatAdvanceResult _pendingCombatCompletion;
+        private BoardState _fightStartPlayerBoard;
 
         public RunState State { get; private set; }
         public FactionSO Faction { get; private set; }
@@ -133,6 +134,7 @@ namespace DeadManZone.Game
                 throw new InvalidOperationException(failureReason);
 
             var playerBoard = GetPlayerBoard();
+            _fightStartPlayerBoard = playerBoard;
             RecordCriticalMassIfTriggered();
 
             var enemyTemplate = _content.GetEnemyTemplate(State.FightIndex);
@@ -370,6 +372,7 @@ namespace DeadManZone.Game
         {
             State.LastCombatLogText = CombatLogFormatter.FormatAll(result.EventLog?.Events);
             _activeCombat = null;
+            var enemyBoardAtFightEnd = State.Combat?.EnemyBoard;
             bool playerWon = result.PlayerWon;
             bool isDraw = result.IsDraw;
             var playerCombatants = result.PlayerCombatantsAtEnd ?? Array.Empty<CombatantState>();
@@ -392,6 +395,7 @@ namespace DeadManZone.Game
                     casualties,
                     suppliesEarned: 0,
                     moraleDelta: -moraleLoss);
+                ApplySalvageAftermath(result, enemyBoardAtFightEnd);
                 State.Combat = null;
 
                 if (State.Morale <= 0)
@@ -436,6 +440,7 @@ namespace DeadManZone.Game
                 };
             }
 
+            ApplySalvageAftermath(result, enemyBoardAtFightEnd);
             State.Combat = null;
 
             if (State.FightIndex >= MaxFights)
@@ -453,6 +458,28 @@ namespace DeadManZone.Game
             ApplyMuster();
             RefreshShop();
             Persist();
+        }
+
+        private void ApplySalvageAftermath(CombatAdvanceResult result, BoardSnapshot enemyBoard)
+        {
+            var enemyTemplate = _content.GetEnemyTemplate(State.FightIndex);
+            if (enemyTemplate == null)
+                return;
+
+            State.LastEnemyFactionId = enemyTemplate.enemyFactionId;
+
+            var fightStartBoard = _fightStartPlayerBoard ?? GetPlayerBoard();
+            int boardBoost = SalvageBoardBoostAggregator.SumBoardBoost(fightStartBoard);
+            var outcome = SalvageAftermathHelper.ResolveOutcome(result.PlayerWon, result.IsDraw);
+            int destroyedUniqueTypes = SalvageAftermathHelper.CountDestroyedEnemyTypes(
+                result.EventLog,
+                enemyBoard);
+
+            State.SalvageChancePercent = SalvageChanceCalculator.Compute(
+                Faction.baseSalvageChancePercent,
+                boardBoost,
+                outcome,
+                destroyedUniqueTypes);
         }
 
         private void PlaceStartingHq()
