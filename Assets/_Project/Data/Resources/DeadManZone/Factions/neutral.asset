@@ -27,6 +27,8 @@ MonoBehaviour:
   baseMusterPerShop: 12
   startingAuthority: 2
   startingMorale: 100
+  baseSalvageChancePercent: 10
+  tokenBackgroundColor: {r: 0.32, g: 0.33, b: 0.36, a: 0.42}
   hqPieceId: ironmarch_hq
   hqSpawnAnchor: {x: 0, y: 4}
   hqSpawnRotation: 0

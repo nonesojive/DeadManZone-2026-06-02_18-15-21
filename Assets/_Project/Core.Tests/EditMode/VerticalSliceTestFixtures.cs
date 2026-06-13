@@ -21,7 +21,7 @@ namespace DeadManZone.Core.Tests
 
             var board = new BoardState(faction.CreateBoardLayout());
             Place(board, database, "ironmarch_hq", new GridCoord(0, 4), "hq_player");
-            Place(board, database, "radio_array", new GridCoord(2, 4), "radio_1");
+            Place(board, database, "radio_array", new GridCoord(1, 4), "radio_1");
             Place(board, database, "mobile_cannon", new GridCoord(4, 0), "cannon_1");
             Place(board, database, "grenade_thrower", new GridCoord(6, 2), "grenade_1");
             Place(board, database, "armored_transport", new GridCoord(4, 3), "transport_1");

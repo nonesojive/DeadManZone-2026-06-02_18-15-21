@@ -29,7 +29,8 @@ namespace DeadManZone.Data.Editor
 
                 ["conscript_rifleman"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
                 ["grenade_thrower"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Artillery, GameTagIds.Combatant),
-                ["field_medic"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Support, GameTagIds.Combatant),
+                ["field_medic"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Support, GameTagIds.Combatant,
+                    synergyTags: new[] { GameTagIds.Medic }),
                 ["armored_transport"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, GameTagIds.Combatant),
                 ["mobile_cannon"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant),
                 ["neutral_supply_depot"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant),
@@ -191,7 +192,15 @@ namespace DeadManZone.Data.Editor
             changed |= SetIfChanged(ref piece.combatRole, mapping.CombatRole);
             changed |= SetIfChanged(ref piece.systemTag, mapping.SystemTag);
 
-            if (piece.synergyTags != null && piece.synergyTags.Length > 0)
+            if (mapping.SynergyTags != null && mapping.SynergyTags.Length > 0)
+            {
+                if (!AreArraysEqual(piece.synergyTags, mapping.SynergyTags))
+                {
+                    piece.synergyTags = mapping.SynergyTags;
+                    changed = true;
+                }
+            }
+            else if (piece.synergyTags != null && piece.synergyTags.Length > 0)
             {
                 piece.synergyTags = Array.Empty<string>();
                 changed = true;
@@ -245,16 +254,22 @@ namespace DeadManZone.Data.Editor
 
         internal readonly struct PieceTagMapping
         {
-            public PieceTagMapping(string primary, string combatRole, string systemTag)
+            public PieceTagMapping(
+                string primary,
+                string combatRole,
+                string systemTag,
+                string[] synergyTags = null)
             {
                 Primary = primary;
                 CombatRole = combatRole;
                 SystemTag = systemTag;
+                SynergyTags = synergyTags ?? Array.Empty<string>();
             }
 
             public string Primary { get; }
             public string CombatRole { get; }
             public string SystemTag { get; }
+            public string[] SynergyTags { get; }
         }
     }
 }

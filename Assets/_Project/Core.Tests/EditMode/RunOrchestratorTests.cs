@@ -176,7 +176,7 @@ namespace DeadManZone.Core.Tests
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 505);
             var board = _orchestrator.GetPlayerBoard();
             var radio = GetPiece("radio_array");
-            Assert.IsTrue(board.TryPlace(radio, new Core.Common.GridCoord(2, 4), "radio_1").Success);
+            Assert.IsTrue(board.TryPlace(radio, new Core.Common.GridCoord(1, 4), "radio_1").Success);
             _orchestrator.SavePlayerBoard(board);
 
             Assert.IsTrue(_orchestrator.TryMovePlacedPiece("radio_1", new Core.Common.GridCoord(0, 2)));
@@ -193,7 +193,7 @@ namespace DeadManZone.Core.Tests
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 606);
             var board = _orchestrator.GetPlayerBoard();
             var radio = GetPiece("radio_array");
-            Assert.IsTrue(board.TryPlace(radio, new Core.Common.GridCoord(2, 4), "radio_1").Success);
+            Assert.IsTrue(board.TryPlace(radio, new Core.Common.GridCoord(1, 4), "radio_1").Success);
             _orchestrator.SavePlayerBoard(board);
 
             Assert.IsTrue(_orchestrator.TryMoveBoardToReserves(
@@ -209,7 +209,7 @@ namespace DeadManZone.Core.Tests
         {
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 909);
             var board = _orchestrator.GetPlayerBoard();
-            Assert.IsTrue(board.TryPlace(GetPiece("radio_array"), new Core.Common.GridCoord(2, 4), "radio_1").Success);
+            Assert.IsTrue(board.TryPlace(GetPiece("radio_array"), new Core.Common.GridCoord(1, 4), "radio_1").Success);
             Assert.IsTrue(board.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(), "rifle_1").Success);
             _orchestrator.SavePlayerBoard(board);
 

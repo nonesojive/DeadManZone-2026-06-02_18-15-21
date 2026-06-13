@@ -5,7 +5,7 @@ namespace DeadManZone.Data.Editor
         public static FactionSO[] CreateAll() => new[]
         {
             DemoContentGenerator.SaveFaction("iron_vanguard", "IronMarch Union", "ironmarch_hq",
-                baseMusterPerShop: 12, baseSalvageChancePercent: 10),
+                startingSupplies: 125, baseMusterPerShop: 12, baseSalvageChancePercent: 10),
             DemoContentGenerator.SaveFaction("dust_scourge", "Dust Scourge", "dust_hq",
                 baseMusterPerShop: 10, baseSalvageChancePercent: 18),
             DemoContentGenerator.SaveFaction("cartel_of_echoes", "Cartel of Echoes", "echo_hq",

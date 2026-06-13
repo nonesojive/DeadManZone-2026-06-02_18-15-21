@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -11,18 +11,20 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
   m_Name: ironmarch_engineer
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   id: ironmarch_engineer
   displayName: Combat Engineer
   category: 1
   shapeCells:
   - {x: 0, y: 0}
-  tags: []
+  tags:
+  - Infantry
+  - Support
+  - Combatant
   primary: infantry
   combatRole: support
   systemTag: combatant
-  synergyTags:
-  - mechanic
+  synergyTags: []
   abilityTags: []
   flavorTags: []
   maxHp: 80
@@ -41,9 +43,12 @@ MonoBehaviour:
   attackRange: 1
   movementSpeed: 2
   armorType: 2
-  attackType: 5
+  attackType: 6
   grantedAbility: 0
   factionId: iron_vanguard
   icon: {fileID: 0}
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
   cellSprites: []
+  combatArenaPrefab: {fileID: 0}
+  combatArenaModelScale: 1
+  combatArenaModelHeight: 0

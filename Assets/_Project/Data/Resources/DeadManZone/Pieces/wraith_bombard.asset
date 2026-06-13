@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -11,14 +11,17 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
   m_Name: wraith_bombard
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   id: wraith_bombard
   displayName: Grave Bombard
   category: 2
   shapeCells:
   - {x: 0, y: 0}
   - {x: 1, y: 0}
-  tags: []
+  tags:
+  - Vehicle
+  - Artillery
+  - Combatant
   primary: vehicle
   combatRole: artillery
   systemTag: combatant
@@ -34,16 +37,19 @@ MonoBehaviour:
   musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
-  shopLane: 0
+  shopLane: 2
   includeInShopPool: 1
   salvageChanceBonus: 0
   attackSpeed: 1
   attackRange: 2
   movementSpeed: 2
-  armorType: 1
+  armorType: 2
   attackType: 2
   grantedAbility: 0
   factionId: ash_wraiths
   icon: {fileID: 0}
-  categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  categoryTint: {r: 0.32999998, g: 0.26999998, b: 0.42999998, a: 1}
   cellSprites: []
+  combatArenaPrefab: {fileID: 0}
+  combatArenaModelScale: 1
+  combatArenaModelHeight: 0

@@ -31,7 +31,14 @@ namespace DeadManZone.Core.Tests.EditMode
         [Test]
         public void Registry_HasSeventeenSynergyTags()
         {
-            Assert.AreEqual(17, TagRegistry.GetByCategory(TagCategory.Synergy).Count);
+            int customSynergyCount = 0;
+            foreach (var entry in CustomTagCatalog.GeneratedEntries)
+            {
+                if (entry.Category == TagCategory.Synergy)
+                    customSynergyCount++;
+            }
+
+            Assert.AreEqual(17 + customSynergyCount, TagRegistry.GetByCategory(TagCategory.Synergy).Count);
         }
 
         [Test]

@@ -1,1 +1,12 @@
-{"Items":[]}
+﻿{
+    "Items": [
+        {
+            "Id": "testsynergy",
+            "DisplayName": "Test Synergy",
+            "Category": 4,
+            "Tooltip": "test",
+            "DisplayPriority": 20,
+            "PlayerVisible": true
+        }
+    ]
+}

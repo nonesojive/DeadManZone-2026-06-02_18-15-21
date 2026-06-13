@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -11,14 +11,17 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
   m_Name: neutral_field_gun
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   id: neutral_field_gun
   displayName: Neutral Field Gun
   category: 0
   shapeCells:
   - {x: 0, y: 0}
   - {x: 0, y: 1}
-  tags: []
+  tags:
+  - Building
+  - Artillery
+  - Combatant
   primary: building
   combatRole: artillery
   systemTag: combatant
@@ -40,10 +43,13 @@ MonoBehaviour:
   attackSpeed: 1
   attackRange: 1
   movementSpeed: 2
-  armorType: 1
+  armorType: 2
   attackType: 2
   grantedAbility: 0
   factionId: neutral
   icon: {fileID: 0}
   categoryTint: {r: 0.48, g: 0.4, b: 0.28, a: 1}
   cellSprites: []
+  combatArenaPrefab: {fileID: 0}
+  combatArenaModelScale: 1
+  combatArenaModelHeight: 0

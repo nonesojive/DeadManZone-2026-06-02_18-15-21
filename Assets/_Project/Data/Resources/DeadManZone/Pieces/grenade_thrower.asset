@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -11,14 +11,18 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
   m_Name: grenade_thrower
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   id: grenade_thrower
   displayName: Grenade Thrower
   category: 1
   shapeCells:
   - {x: 0, y: 0}
   - {x: 0, y: 1}
-  tags: []
+  tags:
+  - Infantry
+  - Artillery
+  - Combatant
+  - Grenadier
   primary: infantry
   combatRole: artillery
   systemTag: combatant
@@ -35,12 +39,12 @@ MonoBehaviour:
   musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
-  shopLane: 2
+  shopLane: 0
   includeInShopPool: 1
   salvageChanceBonus: 0
   attackSpeed: 1
-  attackRange: 2
-  movementSpeed: 1
+  attackRange: 1
+  movementSpeed: 2
   armorType: 1
   attackType: 2
   grantedAbility: 1
@@ -48,3 +52,6 @@ MonoBehaviour:
   icon: {fileID: 0}
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
   cellSprites: []
+  combatArenaPrefab: {fileID: 0}
+  combatArenaModelScale: 1
+  combatArenaModelHeight: 0

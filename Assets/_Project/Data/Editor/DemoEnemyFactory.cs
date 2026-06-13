@@ -18,7 +18,7 @@ namespace DeadManZone.Data.Editor
                 Save(3, "Field Support", "Infantry", "neutral",
                     Placement(byId["conscript_rifleman"], 4, 4), Placement(byId["conscript_rifleman"], 5, 4)),
                 Save(4, "Neutral Armor", "Vehicle", "neutral",
-                    Placement(byId["armored_transport"], 6, 4), Placement(byId["mobile_cannon"], 4, 3)),
+                    Placement(byId["armored_transport"], 6, 4), Placement(byId["mobile_cannon"], 4, 1)),
                 Save(5, "Crimson Assault", "Boss", "crimson_legion",
                     Placement(byId["crimson_tank"], 7, 4), Placement(byId["crimson_elite"], 5, 4),
                     Placement(byId["crimson_artillery"], 0, 0)),
