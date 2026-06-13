@@ -182,6 +182,23 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
+        public void SerializeDeserialize_PreservesSalvageState()
+        {
+            var state = new RunState
+            {
+                LastEnemyFactionId = "dust_scourge",
+                SalvageChancePercent = 23,
+                SaveSchemaVersion = 6
+            };
+
+            var loaded = RunSaveSerializer.FromJson(RunSaveSerializer.ToJson(state));
+
+            Assert.AreEqual("dust_scourge", loaded.LastEnemyFactionId);
+            Assert.AreEqual(23, loaded.SalvageChancePercent);
+            Assert.AreEqual(6, loaded.SaveSchemaVersion);
+        }
+
+        [Test]
         public void TryFromJson_ReturnsFalseOnCorruptData()
         {
             Assert.IsFalse(RunSaveSerializer.TryFromJson("{ not valid json", out _));

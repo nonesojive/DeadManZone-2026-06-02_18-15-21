@@ -44,7 +44,7 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(RunPhase.Build, _orchestrator.State.Phase);
             Assert.AreEqual(1, _orchestrator.State.FightIndex);
             Assert.Greater(_orchestrator.State.Shop.Offers.Count, 0);
-            Assert.AreEqual(5, _orchestrator.State.SaveSchemaVersion);
+            Assert.AreEqual(6, _orchestrator.State.SaveSchemaVersion);
             Assert.AreEqual(ReservesState.Width, _orchestrator.State.Reserves.Width);
             Assert.AreEqual(ReservesState.Height, _orchestrator.State.Reserves.Height);
             Assert.IsEmpty(_orchestrator.State.Reserves.Pieces);

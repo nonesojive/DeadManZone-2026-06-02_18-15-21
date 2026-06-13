@@ -102,7 +102,8 @@ namespace DeadManZone.Data.Editor
             int startingManpower = 100,
             int baseMusterPerShop = 12,
             int startingAuthority = 2,
-            int startingMorale = 100)
+            int startingMorale = 100,
+            int baseSalvageChancePercent = 10)
         {
             var path = $"{Root}/Factions/{id}.asset";
             var asset = LoadOrCreate<FactionSO>(path);
@@ -114,6 +115,7 @@ namespace DeadManZone.Data.Editor
             asset.baseMusterPerShop = baseMusterPerShop;
             asset.startingAuthority = startingAuthority;
             asset.startingMorale = startingMorale;
+            asset.baseSalvageChancePercent = baseSalvageChancePercent;
             asset.tokenBackgroundColor = DefaultFactionTokenBackground(id);
             EditorUtility.SetDirty(asset);
             return asset;

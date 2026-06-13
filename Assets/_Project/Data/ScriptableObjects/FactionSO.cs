@@ -29,6 +29,10 @@ namespace DeadManZone.Data
         public int startingAuthority = 2;
         public int startingMorale = 100;
 
+        [Header("Salvage")]
+        [Range(0, 50)]
+        public int baseSalvageChancePercent = 10;
+
         [Header("Visuals")]
         [Tooltip("Semi-transparent fill behind unit tokens on board, shop, and drag ghost.")]
         public Color tokenBackgroundColor = new Color(0f, 0f, 0f, 0f);

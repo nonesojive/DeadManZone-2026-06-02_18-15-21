@@ -47,7 +47,7 @@ namespace DeadManZone.Core.Run
 
     public sealed class RunState
     {
-        public int SaveSchemaVersion { get; set; } = 5;
+        public int SaveSchemaVersion { get; set; } = 6;
         public int FightIndex { get; set; } = 1;
         public int Supplies { get; set; }
         public int Manpower { get; set; }
@@ -66,6 +66,8 @@ namespace DeadManZone.Core.Run
         public ShopOfferRecord LockedOffer { get; set; }
         public CombatSaveState Combat { get; set; }
         public BattleReport LastBattleReport { get; set; }
+        public string LastEnemyFactionId { get; set; }
+        public int SalvageChancePercent { get; set; }
 
         /// <summary>DEV-ONLY: formatted log from the most recently completed fight.</summary>
         public string LastCombatLogText { get; set; }
@@ -88,7 +90,7 @@ namespace DeadManZone.Core.Run
                 Morale = startingMorale,
                 Phase = RunPhase.Build,
                 FightIndex = 1,
-                SaveSchemaVersion = 5,
+                SaveSchemaVersion = 6,
                 Reserves = new ReservesSnapshot
                 {
                     Width = ReservesState.Width,

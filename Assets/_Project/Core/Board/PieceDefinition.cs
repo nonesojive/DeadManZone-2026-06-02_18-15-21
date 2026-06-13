@@ -23,6 +23,7 @@ namespace DeadManZone.Core.Board
         public int ManpowerCost { get; init; }
         public int MusterPerShop { get; init; }
         public ShopModifierFlags ShopModifiers { get; init; }
+        public int SalvageChanceBonus { get; init; }
         public CommandActionFlags CommandActions { get; init; }
         public AttackSpeedTier AttackSpeed { get; init; } = AttackSpeedTier.Medium;
         public AttackRangeTier AttackRange { get; init; } = AttackRangeTier.Medium;
@@ -40,7 +41,8 @@ namespace DeadManZone.Core.Board
         ExtraGeneralSlot = 1 << 0,
         GoldDiscount10 = 1 << 1,
         EnemyTagPreview = 1 << 2,
-        GuaranteeEngineerOffer = 1 << 3
+        GuaranteeEngineerOffer = 1 << 3,
+        SalvageChanceBoost5 = 1 << 4
     }
 
     [System.Flags]

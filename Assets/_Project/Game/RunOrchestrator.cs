@@ -49,8 +49,8 @@ namespace DeadManZone.Game
             State = loaded;
             Faction = _content.GetFaction(State.FactionId);
             RestoreActiveCombatFromSave();
-            if (State.SaveSchemaVersion < 5)
-                State.SaveSchemaVersion = 5;
+            if (State.SaveSchemaVersion < 6)
+                State.SaveSchemaVersion = 6;
             return Faction != null;
         }
 

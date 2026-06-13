@@ -37,6 +37,9 @@ namespace DeadManZone.Data
         [Header("Shop")]
         public bool includeInShopPool = true;
 
+        [Header("Salvage")]
+        public int salvageChanceBonus;
+
         [Header("Combat Stats")]
         public AttackSpeedTier attackSpeed = AttackSpeedTier.Medium;
         public AttackRangeTier attackRange = AttackRangeTier.Medium;
@@ -124,6 +127,7 @@ namespace DeadManZone.Data
                 ManpowerCost = manpowerCost,
                 MusterPerShop = musterPerShop,
                 ShopModifiers = shopModifiers,
+                SalvageChanceBonus = salvageChanceBonus,
                 CommandActions = commandActions,
                 AttackSpeed = attackSpeed,
                 AttackRange = attackRange,

@@ -41,6 +41,7 @@ namespace DeadManZone.Data.UnitCreation
         public int musterPerShop;
 
         public ShopModifierFlags shopModifiers;
+        public int salvageChanceBonus;
         public CommandActionFlags commandActions;
         public AttackSpeedTier attackSpeed = AttackSpeedTier.Medium;
         public AttackRangeTier attackRange = AttackRangeTier.Medium;
@@ -93,6 +94,7 @@ namespace DeadManZone.Data.UnitCreation
                 manpowerCost = piece.manpowerCost,
                 musterPerShop = piece.musterPerShop,
                 shopModifiers = piece.shopModifiers,
+                salvageChanceBonus = piece.salvageChanceBonus,
                 commandActions = piece.commandActions,
                 attackSpeed = piece.attackSpeed,
                 attackRange = piece.attackRange,
@@ -150,6 +152,7 @@ namespace DeadManZone.Data.UnitCreation
             piece.manpowerCost = manpowerCost;
             piece.musterPerShop = musterPerShop;
             piece.shopModifiers = shopModifiers;
+            piece.salvageChanceBonus = salvageChanceBonus;
             piece.commandActions = commandActions;
             piece.attackSpeed = attackSpeed;
             piece.attackRange = attackRange;
