@@ -1,7 +1,9 @@
 using System.Linq;
 using DeadManZone.Core.Board;
+using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Tags;
+using DeadManZone.Core.Tests;
 using NUnit.Framework;
 
 namespace DeadManZone.Core.Tests.EditMode
@@ -50,6 +52,110 @@ namespace DeadManZone.Core.Tests.EditMode
             Assert.AreEqual(1, model.OptionalTags.Count);
             Assert.AreEqual(0, model.OverflowCount);
             Assert.IsTrue(model.OptionalTags.Any(t => t.Id == "flamethrower"));
+        }
+
+        [Test]
+        public void Build_IncludesAttackAndArmorTooltips()
+        {
+            var piece = new PieceDefinition
+            {
+                Id = "fire_unit",
+                DisplayName = "Fire Unit",
+                Category = PieceCategory.Unit,
+                Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
+                Primary = GameTagIds.Infantry,
+                CombatRole = GameTagIds.Assault,
+                SystemTag = GameTagIds.Combatant,
+                AttackType = AttackType.Fire,
+                ArmorType = ArmorType.Heavy
+            };
+
+            PieceCardViewModel model = PieceCardViewModelBuilder.Build(piece);
+
+            StringAssert.Contains("Light armor", model.AttackTypeTooltip);
+            StringAssert.Contains("Heavy plating", model.ArmorTypeTooltip);
+        }
+
+        [Test]
+        public void Build_WithSalvagedContext_IncludesSalvageLine()
+        {
+            var piece = TestPieces.RifleSquad();
+            var context = new PieceCardBuildContext
+            {
+                IsSalvaged = true,
+                LastEnemyFactionId = "dust_scourge",
+                LastEnemyFactionDisplayName = "Dust Scourge"
+            };
+
+            PieceCardViewModel model = PieceCardViewModelBuilder.Build(piece, context);
+
+            Assert.AreEqual("Salvaged from Dust Scourge", model.SalvageContext);
+        }
+
+        [Test]
+        public void Build_WithBoardAndMedicSynergy_IncludesSynergyLinesAndBonus()
+        {
+            var medic = TestPieces.CreateUnit(
+                "Field Medic",
+                systemTag: GameTagIds.Combatant,
+                synergyTags: new[] { GameTagIds.Medic });
+            var infantry = TestPieces.CreateUnit(
+                "Rifle Squad",
+                primary: GameTagIds.Infantry,
+                systemTag: GameTagIds.Combatant);
+
+            var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
+            var board = new BoardState(layout);
+            Assert.IsTrue(board.TryPlace(medic, TestBoards.SupportLineAnchor(0), "medic_1").Success);
+            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(1), "infantry_1").Success);
+
+            var snapshot = SynergyEngine.EvaluateFightStart(board);
+            Assert.IsTrue(snapshot.TryGet("infantry_1", out var synergy));
+
+            var context = new PieceCardBuildContext
+            {
+                Board = board,
+                InstanceId = "infantry_1",
+                Synergy = synergy,
+                SynergySnapshot = snapshot
+            };
+
+            PieceCardViewModel model = PieceCardViewModelBuilder.Build(infantry, context);
+
+            Assert.AreEqual(1, model.SynergyArmorBuffSteps);
+            Assert.AreEqual(1, model.SynergyLines.Count);
+            StringAssert.Contains("Field Medic", model.SynergyLines[0]);
+            StringAssert.Contains("+1 Armor", model.SynergyLines[0]);
+        }
+
+        [Test]
+        public void Build_WithTwoInfantry_IncludesCriticalMassProgressHint()
+        {
+            var infantry = TestPieces.CreateUnit(
+                "inf",
+                primary: GameTagIds.Infantry,
+                combatRole: GameTagIds.Assault,
+                systemTag: GameTagIds.Combatant);
+
+            var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
+            var board = new BoardState(layout);
+            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(0), "a").Success);
+            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(1), "b").Success);
+
+            var context = new PieceCardBuildContext { Board = board };
+            PieceCardViewModel model = PieceCardViewModelBuilder.Build(infantry, context);
+
+            StringAssert.Contains("2/3", model.CriticalMassHint);
+            StringAssert.Contains("Infantry", model.CriticalMassHint);
+        }
+
+        [Test]
+        public void Build_WithGrantedAbility_IncludesAbilityText()
+        {
+            var piece = TestPieces.With(TestPieces.RifleSquad(), grantedAbility: GrantedAbility.GrenadeLob);
+            PieceCardViewModel model = PieceCardViewModelBuilder.Build(piece);
+
+            StringAssert.Contains("Grenade Lob", model.AbilityText);
         }
     }
 }

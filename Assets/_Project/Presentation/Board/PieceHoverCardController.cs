@@ -19,7 +19,20 @@ namespace DeadManZone.Presentation.Board
 
         private void Awake() => Hide();
 
-        public void Show(PieceDefinition definition, Vector2 screenPosition, SynergyEngine.SynergyResult? synergy = null)
+        public void Show(
+            PieceDefinition definition,
+            Vector2 screenPosition,
+            SynergyEngine.SynergyResult? synergy = null)
+        {
+            Show(definition, screenPosition, synergy.HasValue
+                ? new PieceCardBuildContext { Synergy = synergy }
+                : null);
+        }
+
+        public void Show(
+            PieceDefinition definition,
+            Vector2 screenPosition,
+            PieceCardBuildContext context)
         {
             if (definition == null)
                 return;
@@ -29,7 +42,7 @@ namespace DeadManZone.Presentation.Board
             if (card == null)
                 return;
 
-            PieceCardViewModel model = PieceCardViewModelBuilder.Build(definition, synergy);
+            PieceCardViewModel model = PieceCardViewModelBuilder.Build(definition, context);
             string overflowTooltip = BuildOverflowTooltip(definition, model);
             card.Bind(model, overflowTooltip);
             card.SetScreenPosition(canvas, screenPosition, screenOffset);

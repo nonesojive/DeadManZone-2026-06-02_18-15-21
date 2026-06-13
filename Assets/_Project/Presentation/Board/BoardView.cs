@@ -281,6 +281,10 @@ private PieceDefinition _selectedPiece;
             return null;
         }
 
+        public SynergyEngine.FightStartSynergySnapshot GetSynergySnapshot() => _lastSynergySnapshot;
+
+        public BoardState GetBoardState() => _boardState;
+
         public void RefreshZoneColors()
 {
             if (_layout == null)

@@ -69,13 +69,19 @@ namespace DeadManZone.Presentation.DragDrop
             if (_definition == null)
                 return;
 
-            SynergyEngine.SynergyResult? synergy = null;
+            PieceCardBuildContext context = null;
             if (_boardView != null && !string.IsNullOrEmpty(instanceId))
             {
-                synergy = _boardView.GetSynergyForInstance(instanceId);
+                context = new PieceCardBuildContext
+                {
+                    Synergy = _boardView.GetSynergyForInstance(instanceId),
+                    SynergySnapshot = _boardView.GetSynergySnapshot(),
+                    Board = _boardView.GetBoardState(),
+                    InstanceId = instanceId
+                };
             }
 
-            _hoverCardController?.Show(_definition, eventData.position, synergy);
+            _hoverCardController?.Show(_definition, eventData.position, context);
         }
 
         public void OnPointerExit(PointerEventData eventData) =>

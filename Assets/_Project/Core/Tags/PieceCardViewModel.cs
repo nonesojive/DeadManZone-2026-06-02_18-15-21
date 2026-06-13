@@ -18,5 +18,12 @@ namespace DeadManZone.Core.Tags
         public int OverflowCount { get; init; }
         public int SynergyDamageBonus { get; init; }
         public int SynergyArmorBuffSteps { get; init; }
+        public int SynergyMoveChargeBonus { get; init; }
+        public IReadOnlyList<string> SynergyLines { get; init; } = Array.Empty<string>();
+        public string CriticalMassHint { get; init; } = string.Empty;
+        public string SalvageContext { get; init; } = string.Empty;
+        public string AttackTypeTooltip { get; init; } = string.Empty;
+        public string ArmorTypeTooltip { get; init; } = string.Empty;
+        public string AbilityText { get; init; } = string.Empty;
     }
 }
