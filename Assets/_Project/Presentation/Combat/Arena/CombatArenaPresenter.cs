@@ -26,6 +26,9 @@ namespace DeadManZone.Presentation.Combat.Arena
         private CombatGridMapper _mapper;
         private ContentRegistry _registry;
         private Transform _arenaCameraTransform;
+        private CombatArenaBuildingSpawner _buildingSpawner = new();
+
+        public bool HasBuildingVisualForTests(string instanceId) => _buildingSpawner.HasVisual(instanceId);
 
         private void Awake()
         {
@@ -70,6 +73,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _pool = null;
             _mapper = null;
             _arenaCameraTransform = null;
+            _buildingSpawner.Clear();
         }
 
         public void InitializeArena(BattlefieldState battlefield)
@@ -93,6 +97,9 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             Transform poolRoot = bootstrap.UnitsRoot != null ? bootstrap.UnitsRoot : transform;
             ResetArenaActors(poolRoot);
+
+            Transform buildingsRoot = bootstrap.BuildingsRoot != null ? bootstrap.BuildingsRoot : poolRoot;
+            _buildingSpawner.SpawnAll(battlefield, _mapper, buildingsRoot, GetPiece);
 
             foreach (var cell in battlefield.Cells)
             {
@@ -414,6 +421,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _actors.Clear();
             _anchors.Clear();
             _pool?.Clear();
+            _buildingSpawner.Clear();
 
             if (poolRoot != null)
             {

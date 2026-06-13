@@ -54,5 +54,23 @@ namespace DeadManZone.Core.Tests.EditMode
             Assert.AreEqual(1, rifle.OccupiedCells.Count);
             Assert.AreEqual(rifle.AnchorPosition, rifle.OccupiedCells[0]);
         }
+
+        [Test]
+        public void SpawnFight_NonCombatantBuilding_BlocksFootprintCells()
+        {
+            var player = TestBoards.HqOnly();
+            var enemy = TestBoards.WeakEnemyOnly();
+            var run = TickCombatRun.Start(player, enemy, seed: 11);
+
+            var hq = run.PlayerCombatantsForTests.Single(c => c.HasTag(GameTagIds.Hq));
+            var snapshot = run.OccupancySnapshotForTests;
+
+            Assert.Greater(hq.OccupiedCells.Count, 1, "HQ footprint should occupy multiple cells.");
+            foreach (var cell in hq.OccupiedCells)
+            {
+                Assert.IsTrue(snapshot.ContainsKey(cell), $"Expected HQ occupancy at {cell.X},{cell.Y}");
+                Assert.AreEqual(hq.InstanceId, snapshot[cell]);
+            }
+        }
     }
 }

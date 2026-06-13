@@ -8,11 +8,13 @@ namespace DeadManZone.Presentation.Combat.Arena
     {
         [SerializeField] private Camera arenaCamera;
         [SerializeField] private Transform unitsRoot;
+        [SerializeField] private Transform buildingsRoot;
         [SerializeField] private Transform groundRoot;
         [SerializeField] private CombatArenaConfigSO config;
 
         public Camera ArenaCamera => arenaCamera;
         public Transform UnitsRoot => unitsRoot;
+        public Transform BuildingsRoot => buildingsRoot;
         public CombatArenaConfigSO Config => config;
 
         public static CombatArenaBootstrap Instance { get; private set; }
@@ -97,6 +99,13 @@ namespace DeadManZone.Presentation.Combat.Arena
                 var root = new GameObject("UnitsRoot");
                 root.transform.SetParent(transform, false);
                 unitsRoot = root.transform;
+            }
+
+            if (buildingsRoot == null)
+            {
+                var root = new GameObject("BuildingsRoot");
+                root.transform.SetParent(transform, false);
+                buildingsRoot = root.transform;
             }
 
             EnsureLighting();

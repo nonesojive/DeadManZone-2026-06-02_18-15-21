@@ -24,6 +24,10 @@ namespace DeadManZone.Presentation.Combat.Arena
             return new Vector3(x, 0f, z);
         }
 
+        public float CellWidth => _cellWidth;
+
+        public float CellDepth => _cellDepth;
+
         public bool TryWorldToCoord(Vector3 world, out GridCoord coord)
         {
             float xIndex = world.x / _cellWidth + _layout.TotalWidth * 0.5f - 0.5f;
