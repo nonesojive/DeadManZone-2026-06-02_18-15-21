@@ -133,14 +133,22 @@ namespace DeadManZone.Core.Tests.EditMode
             }
         }
 
+        private static BoardState CreateUnitPlacementBoard() =>
+            new(BoardLayout.CreateHorizontalZones(
+                TestBoards.DefaultWidth,
+                TestBoards.DefaultHeight,
+                rearCols: 3,
+                supportCols: TestBoards.DefaultSupportCols,
+                specialTiles: Array.Empty<GridCoord>()));
+
         [Test]
         public void Criterion06_AdjacencySynergies_ApplyAtCombatStart()
         {
-            var board = new BoardState(TestBoards.Layout);
+            var board = CreateUnitPlacementBoard();
             var medic = FindPiece("field_medic").ToCore();
             var infantry = FindPiece("conscript_rifleman").ToCore();
-            Assert.IsTrue(board.TryPlace(medic, TestBoards.SupportLineAnchor(0, 4), "medic_1").Success);
-            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(1, 4), "conscript_1").Success);
+            Assert.IsTrue(board.TryPlace(medic, TestBoards.SupportLineAnchor(0), "medic_1").Success);
+            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(1), "conscript_1").Success);
 
             var run = TickCombatRun.Start(board, TestBoards.WeakEnemyOnly(), seed: 3);
             var conscript = run.PlayerCombatantsForTests.Single(c => c.InstanceId == "conscript_1");
@@ -192,7 +200,7 @@ namespace DeadManZone.Core.Tests.EditMode
             Assert.IsTrue(EmergencyDraft.TryUse(state, manpowerShortfall: 3));
             Assert.IsTrue(state.EmergencyDraftUsed);
 
-            var board = new BoardState(TestBoards.Layout);
+            var board = CreateUnitPlacementBoard();
             var infantry = TestPieces.CreateUnit(
                 "inf",
                 primary: GameTagIds.Infantry,
@@ -223,9 +231,9 @@ namespace DeadManZone.Core.Tests.EditMode
         {
             var medic = FindPiece("field_medic").ToCore();
             var infantry = FindPiece("conscript_rifleman").ToCore();
-            var board = new BoardState(TestBoards.Layout);
-            Assert.IsTrue(board.TryPlace(medic, TestBoards.SupportLineAnchor(0, 4), "medic_1").Success);
-            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(1, 4), "conscript_1").Success);
+            var board = CreateUnitPlacementBoard();
+            Assert.IsTrue(board.TryPlace(medic, TestBoards.SupportLineAnchor(0), "medic_1").Success);
+            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(1), "conscript_1").Success);
 
             var snapshot = SynergyEngine.EvaluateFightStart(board);
             Assert.IsTrue(snapshot.TryGet("conscript_1", out var synergy));
