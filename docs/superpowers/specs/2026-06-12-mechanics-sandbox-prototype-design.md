@@ -156,17 +156,16 @@ Each playable faction defines `baseSalvageChancePercent` on `FactionSO`. Example
 | Dust Scourge | 18 |
 | Cartel of Echoes | 12 |
 
-**Piece boosts (victory only):**
+**Piece boosts (victory / draw):**
 
-Pieces on the player board can add salvage chance via `ShopModifierFlags.SalvageChanceBoost5` (+5% each, stackable) or a dedicated `salvageChanceBonus` int field on `PieceDefinition` for finer steps. Evaluated from **deployed board at fight start** (same snapshot used for muster/synergies). Typical sources: salvage yard building, scavenger unit, Dust Scourge-themed pieces.
+Pieces on the player board can add salvage chance via `ShopModifierFlags.SalvageChanceBoost5` (+5% each, stackable) or a dedicated `salvageChanceBonus` int field on `PieceDefinition` for finer steps. Evaluated from **deployed board at fight start** (same snapshot used for muster/synergies). Applies on **victory and draw**; ignored on defeat. Typical sources: salvage yard building, scavenger unit, Dust Scourge-themed pieces.
 
 **Outcome rules (locked):**
 
 | Outcome | Salvage chance formula |
 |---------|------------------------|
 | **Defeat** | `FactionBase` only — no piece boosts, no victory bonus |
-| **Draw** | `FactionBase` only (same as defeat) |
-| **Victory** | `FactionBase` + `BoardSalvageBoost` + `VictoryBonus` |
+| **Victory / Draw** | `FactionBase` + `BoardSalvageBoost` + `VictoryBonus` (+ destroyed-type bonus) |
 
 | Victory bonus (tunable) | Default |
 |-------------------------|---------|
@@ -176,7 +175,7 @@ Pieces on the player board can add salvage chance via `ShopModifierFlags.Salvage
 
 Chance applies **per offer slot** independently during `ShopGenerator.RollLane`.
 
-**Formula (victory):**
+**Formula (victory / draw):**
 
 ```
 SalvageChance = min(50,
@@ -186,7 +185,7 @@ SalvageChance = min(50,
   + DestroyedTypeBonus)
 ```
 
-**Formula (defeat / draw):**
+**Formula (defeat):**
 
 ```
 SalvageChance = FactionSO.baseSalvageChancePercent
@@ -235,7 +234,7 @@ On fight end (`RunOrchestrator` aftermath):
 | `SalvageBoardBoostAggregator` | Sum piece salvage bonuses from deployed board |
 | `SalvageShopPool` | Filter registry by last enemy faction + lane + fight index |
 | `ShopGenerator` | Per-slot salvage roll + `IsSalvaged` flag on `ShopOffer` |
-| `ShopModifierFlags.SalvageChanceBoost5` | Piece-level +5% salvage boost (victory only) |
+| `ShopModifierFlags.SalvageChanceBoost5` | Piece-level +5% salvage boost (victory / draw) |
 | `SalvageCalculator` | Sell refunds (unchanged scope) |
 
 #### 3.1.8 Future: randomized enemy boards
@@ -247,10 +246,10 @@ Sandbox implements salvage against **fixed templates** (`EnemyTemplateSO.enemyFa
 - Fight 1 shop: zero salvage offers with unset last enemy  
 - After fight vs Crimson: salvage pool contains only Crimson pieces  
 - **Defeat:** chance equals faction base only; piece boosts ignored  
-- **Victory:** chance equals base + board boosts + victory bonus (fixture)  
+- **Victory / Draw:** chance equals base + board boosts + victory bonus (fixture)  
 - Salvage chance 0 → no salvage slots; 100% test hook → all slots salvage  
 - Deterministic shop with fixed seed + salvage chance  
-- Two pieces with +5% boost → +10% on victory only  
+- Two pieces with +5% boost → +10% on victory/draw only  
 - Save/resume preserves `LastEnemyFactionId` and chance  
 - Salvage offer does not include player-faction pieces
 
@@ -392,7 +391,7 @@ Author via Unit Creator after Tag Creator lands.
 | Combat feel | Top Troops: full footprint, A*, role engagement, lane bias |
 | Multi-cell | Full rigid footprint; no combat rotation v1 |
 | Buildings | Spawn, block paths, render in arena |
-| Salvage | Faction base chance + piece boosts on victory; defeat = base only; last enemy → shop pool |
+| Salvage | Faction base chance + piece boosts on victory/draw; defeat = base only; last enemy → shop pool |
 | Shop | Availability matrix + composition specialty lane |
 | Synergies | Demo rule set in combat + economy |
 | Tooling | Tag Creator → Unit Creator live sync |
