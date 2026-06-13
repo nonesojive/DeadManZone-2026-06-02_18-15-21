@@ -189,8 +189,8 @@ namespace DeadManZone.Core.Combat
         }
 
         private void TryMoveSide(
-            IList<CombatantState> movers,
-            IList<CombatantState> targets,
+            IReadOnlyList<CombatantState> movers,
+            IReadOnlyList<CombatantState> targets,
             int segment)
         {
             var aliveTargets = targets.Where(t => t.IsAlive).ToList();
@@ -425,7 +425,7 @@ namespace DeadManZone.Core.Combat
         private static bool IsGoalBlockedByFriendly(
             GridCoord goal,
             string moverInstanceId,
-            IList<CombatantState> allies)
+            IReadOnlyList<CombatantState> allies)
         {
             foreach (var ally in allies)
             {

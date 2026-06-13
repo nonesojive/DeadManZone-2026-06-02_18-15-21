@@ -5,13 +5,12 @@ using DeadManZone.Core.Common;
 namespace DeadManZone.Core.Combat
 {
     /// <summary>
-    /// A* pathfinding on anchor positions with full footprint validation.
-    /// Returns only the first step toward the goal; if A* cannot reach the goal within
-    /// its iteration budget, falls back to one greedy step that reduces Manhattan distance.
+    /// Footprint-aware pathfinding for one combat tick step.
+    /// Uses greedy movement when unobstructed, otherwise bounded BFS (no per-tick full A* sort).
     /// </summary>
     public static class ShapePathfinder
     {
-        private const int MaxIterations = 2048;
+        private const int MaxBfsExpansions = 128;
         private const int LaneBiasPenalty = 2;
 
         private static readonly GridCoord[] NeighborDeltas =
@@ -34,21 +33,7 @@ namespace DeadManZone.Core.Combat
             if (currentAnchor.Equals(goalAnchor))
                 return null;
 
-            if (TryFindPath(
-                    currentAnchor,
-                    goalAnchor,
-                    shapeOffsets,
-                    moverInstanceId,
-                    occupancy,
-                    layout,
-                    spawnAnchorY,
-                    out var path)
-                && path.Count >= 2)
-            {
-                return path[1];
-            }
-
-            return GreedyFallbackStep(
+            var greedy = GreedyStepTowardGoal(
                 currentAnchor,
                 goalAnchor,
                 shapeOffsets,
@@ -56,68 +41,25 @@ namespace DeadManZone.Core.Combat
                 occupancy,
                 layout,
                 spawnAnchorY);
-        }
+            if (greedy != null)
+                return greedy;
 
-        private static bool TryFindPath(
-            GridCoord start,
-            GridCoord goal,
-            IReadOnlyList<GridCoord> shapeOffsets,
-            string moverInstanceId,
-            CombatOccupancyGrid occupancy,
-            BattlefieldLayout layout,
-            int? spawnAnchorY,
-            out List<GridCoord> path)
-        {
-            path = null;
-
-            var openSet = new List<GridCoord> { start };
-            var cameFrom = new Dictionary<GridCoord, GridCoord>();
-            var gScore = new Dictionary<GridCoord, int> { [start] = 0 };
-            var closedSet = new HashSet<GridCoord>();
-
-            int iterations = 0;
-            while (openSet.Count > 0 && iterations++ < MaxIterations)
+            if (TryBfsFirstStep(
+                    currentAnchor,
+                    goalAnchor,
+                    shapeOffsets,
+                    moverInstanceId,
+                    occupancy,
+                    layout,
+                    out var bfsStep))
             {
-                openSet.Sort(CompareOpenSetNodes(goal, gScore));
-                var current = openSet[0];
-                openSet.RemoveAt(0);
-
-                if (current.Equals(goal))
-                {
-                    path = ReconstructPath(cameFrom, start, goal);
-                    return true;
-                }
-
-                closedSet.Add(current);
-
-                foreach (var neighbor in GetValidNeighbors(
-                             current,
-                             shapeOffsets,
-                             moverInstanceId,
-                             occupancy,
-                             layout))
-                {
-                    if (closedSet.Contains(neighbor))
-                        continue;
-
-                    int tentativeG = gScore[current]
-                        + GetStepCost(current, neighbor, layout, spawnAnchorY);
-
-                    if (gScore.TryGetValue(neighbor, out var existingG) && tentativeG >= existingG)
-                        continue;
-
-                    cameFrom[neighbor] = current;
-                    gScore[neighbor] = tentativeG;
-
-                    if (!openSet.Contains(neighbor))
-                        openSet.Add(neighbor);
-                }
+                return bfsStep;
             }
 
-            return false;
+            return null;
         }
 
-        private static GridCoord? GreedyFallbackStep(
+        private static GridCoord? GreedyStepTowardGoal(
             GridCoord currentAnchor,
             GridCoord goalAnchor,
             IReadOnlyList<GridCoord> shapeOffsets,
@@ -129,6 +71,7 @@ namespace DeadManZone.Core.Combat
             int currentHeuristic = Manhattan(currentAnchor, goalAnchor);
             GridCoord? best = null;
             int bestHeuristic = currentHeuristic;
+            int bestCost = int.MaxValue;
 
             foreach (var neighbor in GetValidNeighbors(
                          currentAnchor,
@@ -138,19 +81,85 @@ namespace DeadManZone.Core.Combat
                          layout))
             {
                 int heuristic = Manhattan(neighbor, goalAnchor);
-                if (heuristic > bestHeuristic)
+                if (heuristic >= currentHeuristic)
                     continue;
 
-                if (best == null
-                    || heuristic < bestHeuristic
-                    || CompareCoords(neighbor, best.Value) < 0)
+                int cost = GetStepCost(currentAnchor, neighbor, layout, spawnAnchorY);
+                if (heuristic < bestHeuristic
+                    || (heuristic == bestHeuristic && cost < bestCost)
+                    || (heuristic == bestHeuristic && cost == bestCost && CompareCoords(neighbor, best ?? neighbor) < 0))
                 {
                     bestHeuristic = heuristic;
+                    bestCost = cost;
                     best = neighbor;
                 }
             }
 
             return best;
+        }
+
+        private static bool TryBfsFirstStep(
+            GridCoord start,
+            GridCoord goal,
+            IReadOnlyList<GridCoord> shapeOffsets,
+            string moverInstanceId,
+            CombatOccupancyGrid occupancy,
+            BattlefieldLayout layout,
+            out GridCoord? firstStep)
+        {
+            firstStep = null;
+
+            var queue = new Queue<GridCoord>();
+            var cameFrom = new Dictionary<GridCoord, GridCoord>();
+            var visited = new HashSet<GridCoord> { start };
+
+            queue.Enqueue(start);
+            int expansions = 0;
+
+            while (queue.Count > 0 && expansions++ < MaxBfsExpansions)
+            {
+                var current = queue.Dequeue();
+                if (current.Equals(goal))
+                {
+                    firstStep = FirstStepOnPath(cameFrom, start, goal);
+                    return firstStep != null;
+                }
+
+                foreach (var neighbor in GetValidNeighbors(
+                             current,
+                             shapeOffsets,
+                             moverInstanceId,
+                             occupancy,
+                             layout))
+                {
+                    if (!visited.Add(neighbor))
+                        continue;
+
+                    cameFrom[neighbor] = current;
+                    queue.Enqueue(neighbor);
+                }
+            }
+
+            return false;
+        }
+
+        private static GridCoord? FirstStepOnPath(
+            IReadOnlyDictionary<GridCoord, GridCoord> cameFrom,
+            GridCoord start,
+            GridCoord goal)
+        {
+            if (start.Equals(goal) || !cameFrom.ContainsKey(goal))
+                return null;
+
+            var current = goal;
+            while (true)
+            {
+                var previous = cameFrom[current];
+                if (previous.Equals(start))
+                    return current;
+
+                current = previous;
+            }
         }
 
         private static int GetStepCost(
@@ -181,49 +190,6 @@ namespace DeadManZone.Core.Combat
 
                 yield return neighbor;
             }
-        }
-
-        private static List<GridCoord> ReconstructPath(
-            IReadOnlyDictionary<GridCoord, GridCoord> cameFrom,
-            GridCoord start,
-            GridCoord goal)
-        {
-            var path = new List<GridCoord> { goal };
-            var current = goal;
-
-            while (!current.Equals(start))
-            {
-                current = cameFrom[current];
-                path.Add(current);
-            }
-
-            path.Reverse();
-            return path;
-        }
-
-        private static System.Comparison<GridCoord> CompareOpenSetNodes(
-            GridCoord goal,
-            IReadOnlyDictionary<GridCoord, int> gScore)
-        {
-            return (a, b) =>
-            {
-                int fA = gScore.GetValueOrDefault(a, int.MaxValue) + Manhattan(a, goal);
-                int fB = gScore.GetValueOrDefault(b, int.MaxValue) + Manhattan(b, goal);
-                if (fA != fB)
-                    return fA.CompareTo(fB);
-
-                int hA = Manhattan(a, goal);
-                int hB = Manhattan(b, goal);
-                if (hA != hB)
-                    return hA.CompareTo(hB);
-
-                int gA = gScore.GetValueOrDefault(a, int.MaxValue);
-                int gB = gScore.GetValueOrDefault(b, int.MaxValue);
-                if (gA != gB)
-                    return gA.CompareTo(gB);
-
-                return CompareCoords(a, b);
-            };
         }
 
         private static int CompareCoords(GridCoord a, GridCoord b)
