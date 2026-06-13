@@ -48,12 +48,6 @@ namespace DeadManZone.Core.Combat
             bool isStructure = PieceTagQueries.HasPrimaryTag(defender, GameTagIds.Building)
                 || PieceTagQueries.HasPrimaryTag(defender, GameTagIds.Structure);
 
-            if (profile.StrongArmor.HasValue && armor == profile.StrongArmor.Value)
-                return profile.StrongMultiplier;
-
-            if (profile.WeakArmor.HasValue && armor == profile.WeakArmor.Value)
-                return profile.WeakMultiplier;
-
             if (profile.StrongVsStructures && isStructure)
                 return profile.StrongMultiplier;
 
@@ -67,7 +61,7 @@ namespace DeadManZone.Core.Combat
                         && PieceTagQueries.HasPrimaryTag(defender, GameTagIds.Structure))))
                 return profile.WeakMultiplier;
 
-            return profile.NeutralMultiplier;
+            return profile.GetMultiplierForArmor(armor);
         }
     }
 }

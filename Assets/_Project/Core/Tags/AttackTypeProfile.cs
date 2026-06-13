@@ -16,5 +16,17 @@ namespace DeadManZone.Core.Tags
         public string StrongPrimaryTagId { get; init; }
         public string WeakPrimaryTagId { get; init; }
         public bool StrongVsStructures { get; init; }
+
+        /// <summary>Armor-only multiplier before primary-tag or structure overrides.</summary>
+        public float GetMultiplierForArmor(ArmorType armor)
+        {
+            if (StrongArmor.HasValue && armor == StrongArmor.Value)
+                return StrongMultiplier;
+
+            if (WeakArmor.HasValue && armor == WeakArmor.Value)
+                return WeakMultiplier;
+
+            return NeutralMultiplier;
+        }
     }
 }

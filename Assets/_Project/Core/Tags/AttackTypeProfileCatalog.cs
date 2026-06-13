@@ -35,8 +35,15 @@ namespace DeadManZone.Core.Tags
                 strongArmor: ArmorType.Heavy,
                 strongVsStructures: true,
                 strongMultiplier: 1.30f),
-            Profile(AttackType.Fire, "Fire", "Applies burn status"),
-            Profile(AttackType.Melee, "Melee", "Close-quarters attack (matchups TBD)"),
+            Profile(AttackType.Fire, "Fire", "Strong vs Light armor, weak vs Heavy; applies burn",
+                strongArmor: ArmorType.Light,
+                weakArmor: ArmorType.Heavy,
+                strongMultiplier: 1.20f),
+            Profile(AttackType.Melee, "Melee", "Strong vs Light armor, weak vs Heavy",
+                strongArmor: ArmorType.Light,
+                weakArmor: ArmorType.Heavy,
+                strongMultiplier: 1.25f,
+                weakMultiplier: 0.80f),
             Profile(
                 AttackType.Gas,
                 "Gas",
@@ -57,6 +64,15 @@ namespace DeadManZone.Core.Tags
             }
 
             return null;
+        }
+
+        public static float GetArmorMatrixMultiplier(AttackType attackType, ArmorType armor)
+        {
+            if (attackType == AttackType.None)
+                return 1f;
+
+            var profile = Get(attackType);
+            return profile?.GetMultiplierForArmor(armor) ?? 1f;
         }
 
         private static AttackTypeProfile Profile(
