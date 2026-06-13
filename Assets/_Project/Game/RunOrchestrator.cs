@@ -287,7 +287,22 @@ namespace DeadManZone.Game
             return result;
         }
 
-        public bool TryEmergencyDraft() => false;
+        public bool TryEmergencyDraft()
+        {
+            int shortfall = ComputeManpowerShortfallForNextFight();
+            if (!EmergencyDraft.TryUse(State, shortfall))
+                return false;
+
+            Persist();
+            return true;
+        }
+
+        private int ComputeManpowerShortfallForNextFight()
+        {
+            var board = GetPlayerBoard();
+            int upkeep = ManpowerCalculator.ComputeUpkeep(board, _registry);
+            return Math.Max(0, upkeep - State.Manpower);
+        }
 
         public bool TryRerollLane(ShopLane lane)
         {
