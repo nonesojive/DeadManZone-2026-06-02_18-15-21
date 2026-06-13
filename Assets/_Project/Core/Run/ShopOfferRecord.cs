@@ -10,6 +10,7 @@ namespace DeadManZone.Core.Run
         public string PieceId { get; set; }
         public int GoldPrice { get; set; }
         public int RequisitionPrice { get; set; }
+        public bool IsSalvaged { get; set; }
 
         public static ShopOfferRecord FromOffer(ShopOffer offer) =>
             offer == null
@@ -21,7 +22,8 @@ namespace DeadManZone.Core.Run
                     SlotIndex = offer.SlotIndex,
                     PieceId = offer.PieceId,
                     GoldPrice = offer.GoldPrice,
-                    RequisitionPrice = offer.RequisitionPrice
+                    RequisitionPrice = offer.RequisitionPrice,
+                    IsSalvaged = offer.IsSalvaged
                 };
 
         public ShopOffer ToOffer() =>
@@ -32,7 +34,8 @@ namespace DeadManZone.Core.Run
                 SlotIndex = SlotIndex,
                 PieceId = PieceId,
                 GoldPrice = GoldPrice,
-                RequisitionPrice = RequisitionPrice
+                RequisitionPrice = RequisitionPrice,
+                IsSalvaged = IsSalvaged
             };
     }
 }

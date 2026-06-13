@@ -8,5 +8,6 @@ namespace DeadManZone.Core.Shop
         public string PieceId { get; set; }
         public int GoldPrice { get; set; }
         public int RequisitionPrice { get; set; }
+        public bool IsSalvaged { get; set; }
     }
 }

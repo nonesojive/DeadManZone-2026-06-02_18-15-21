@@ -245,7 +245,13 @@ namespace DeadManZone.Game
         {
             var board = GetPlayerBoard();
             int shopSeed = State.RunSeed + State.FightIndex * 100 + State.RerollCountThisRound;
-            var shop = _shopGenerator.Generate(board, State.FactionId, State.FightIndex, shopSeed);
+            var shop = _shopGenerator.Generate(
+                board,
+                State.FactionId,
+                State.FightIndex,
+                shopSeed,
+                State.LastEnemyFactionId,
+                State.SalvageChancePercent);
             ApplyLockedSlot(shop);
             State.Shop = shop;
         }
@@ -285,7 +291,9 @@ namespace DeadManZone.Game
                 State.FightIndex,
                 State.FactionId,
                 fixedSlots,
-                board);
+                board,
+                State.LastEnemyFactionId,
+                State.SalvageChancePercent);
 
             State.Shop.Offers.RemoveAll(o => o.Lane == lane);
             State.Shop.Offers.AddRange(rerolled);

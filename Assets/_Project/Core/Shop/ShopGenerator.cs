@@ -24,6 +24,8 @@ namespace DeadManZone.Core.Shop
             string factionId,
             int round,
             int seed,
+            string lastEnemyFactionId = null,
+            int salvageChancePercent = 0,
             bool? specialtyUnlocked = null)
         {
             var rng = new Rng(seed);
@@ -32,14 +34,14 @@ namespace DeadManZone.Core.Shop
             bool specialtyOpen = specialtyUnlocked ?? SpecialtyLaneUnlock.IsUnlocked(board, factionId, _registry);
 
             int offensiveSlots = OffersPerLane + modifiers.ExtraGeneralSlots;
-            RollLane(ShopLane.Offensive, offensiveSlots, modifiers, rng, offers, round, factionId);
-            RollLane(ShopLane.Defensive, OffersPerLane, modifiers, rng, offers, round, factionId);
+            RollLane(ShopLane.Offensive, offensiveSlots, modifiers, rng, offers, round, factionId, lastEnemyFactionId, salvageChancePercent);
+            RollLane(ShopLane.Defensive, OffersPerLane, modifiers, rng, offers, round, factionId, lastEnemyFactionId, salvageChancePercent);
 
             if (modifiers.GuaranteeEngineerOffer && !offers.Any(o => o.Lane == ShopLane.Defensive))
                 InjectDefensiveOffer(offers, modifiers, rng, round);
 
             if (specialtyOpen)
-                RollLane(ShopLane.Specialty, OffersPerLane, modifiers, rng, offers, round, factionId, board);
+                RollLane(ShopLane.Specialty, OffersPerLane, modifiers, rng, offers, round, factionId, lastEnemyFactionId, salvageChancePercent, board);
 
             return new ShopState
             {
@@ -88,10 +90,22 @@ namespace DeadManZone.Core.Shop
             int round,
             string factionId,
             IReadOnlyDictionary<int, ShopOffer> fixedSlots = null,
-            BoardState board = null)
+            BoardState board = null,
+            string lastEnemyFactionId = null,
+            int salvageChancePercent = 0)
         {
             var rng = new Rng(seed);
-            return RollLane(lane, slotCount, modifiers, rng, round, factionId, fixedSlots, board);
+            return RollLane(
+                lane,
+                slotCount,
+                modifiers,
+                rng,
+                round,
+                factionId,
+                lastEnemyFactionId,
+                salvageChancePercent,
+                fixedSlots,
+                board);
         }
 
         private void RollLane(
@@ -102,9 +116,21 @@ namespace DeadManZone.Core.Shop
             List<ShopOffer> offers,
             int round,
             string factionId,
+            string lastEnemyFactionId,
+            int salvageChancePercent,
             BoardState board = null)
         {
-            foreach (var rolled in RollLane(lane, slotCount, modifiers, rng, round, factionId, fixedSlots: null, board))
+            foreach (var rolled in RollLane(
+                         lane,
+                         slotCount,
+                         modifiers,
+                         rng,
+                         round,
+                         factionId,
+                         lastEnemyFactionId,
+                         salvageChancePercent,
+                         fixedSlots: null,
+                         board))
                 offers.Add(rolled);
         }
 
@@ -115,6 +141,8 @@ namespace DeadManZone.Core.Shop
             Rng rng,
             int round,
             string factionId,
+            string lastEnemyFactionId,
+            int salvageChancePercent,
             IReadOnlyDictionary<int, ShopOffer> fixedSlots,
             BoardState board = null)
         {
@@ -145,10 +173,26 @@ namespace DeadManZone.Core.Shop
                 if (available.Count == 0)
                     break;
 
+                bool trySalvage = !string.IsNullOrEmpty(lastEnemyFactionId)
+                    && salvageChancePercent > 0
+                    && rng.NextInt(0, 100) < salvageChancePercent;
+
+                if (trySalvage)
+                {
+                    var salvagePool = SalvageShopPool.GetPool(_registry, lane, lastEnemyFactionId, factionId, round);
+                    if (salvagePool.Count > 0)
+                    {
+                        var piece = salvagePool[rng.NextInt(0, salvagePool.Count)];
+                        available.RemoveAll(p => p.Id == piece.Id);
+                        results.Add(CreateOffer(lane, piece, modifiers, rng, round, i, isSalvaged: true));
+                        continue;
+                    }
+                }
+
                 int index = rng.NextInt(0, available.Count);
-                var piece = ShopPoolFilter.PickWeighted(available, round, rng, playerFactionId: factionId) ?? available[index];
-                available.RemoveAll(p => p.Id == piece.Id);
-                results.Add(CreateOffer(lane, piece, modifiers, rng, round, i));
+                var picked = ShopPoolFilter.PickWeighted(available, round, rng, playerFactionId: factionId) ?? available[index];
+                available.RemoveAll(p => p.Id == picked.Id);
+                results.Add(CreateOffer(lane, picked, modifiers, rng, round, i));
             }
 
             return results;
@@ -162,7 +206,8 @@ namespace DeadManZone.Core.Shop
                 SlotIndex = slotIndex,
                 PieceId = source.PieceId,
                 GoldPrice = source.GoldPrice,
-                RequisitionPrice = source.RequisitionPrice
+                RequisitionPrice = source.RequisitionPrice,
+                IsSalvaged = source.IsSalvaged
             };
 
         private void InjectDefensiveOffer(
@@ -185,7 +230,8 @@ namespace DeadManZone.Core.Shop
             ShopModifiers modifiers,
             Rng rng,
             int round,
-            int slotIndex)
+            int slotIndex,
+            bool isSalvaged = false)
         {
             int gold = ApplyGoldDiscount(piece.GoldCost, modifiers.GoldDiscountPercent);
             int requisition = piece.RequisitionCost;
@@ -200,7 +246,8 @@ namespace DeadManZone.Core.Shop
                 SlotIndex = slotIndex,
                 PieceId = piece.Id,
                 GoldPrice = gold,
-                RequisitionPrice = requisition
+                RequisitionPrice = requisition,
+                IsSalvaged = isSalvaged
             };
         }
 
