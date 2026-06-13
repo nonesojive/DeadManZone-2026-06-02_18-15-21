@@ -284,7 +284,8 @@ namespace DeadManZone.Game
                 shopSeed,
                 State.FightIndex,
                 State.FactionId,
-                fixedSlots);
+                fixedSlots,
+                board);
 
             State.Shop.Offers.RemoveAll(o => o.Lane == lane);
             State.Shop.Offers.AddRange(rerolled);

@@ -3,6 +3,7 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Content;
 using DeadManZone.Core.Shop;
+using DeadManZone.Core.Tags;
 using NUnit.Framework;
 
 namespace DeadManZone.Core.Tests
@@ -117,6 +118,22 @@ namespace DeadManZone.Core.Tests
             var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 42, specialtyUnlocked: true);
 
             Assert.That(shop.Offers.Any(o => o.Lane == ShopLane.Specialty), Is.True);
+        }
+
+        [Test]
+        public void SpecialtyLane_EmptyBoard_BiasesTowardAssaultOrTankPool()
+        {
+            var board = new BoardState(DefaultLayout());
+            var registry = new ContentRegistry();
+            registry.Register(TestPieces.CreateUnit("assault_special", combatRole: GameTagIds.Assault), ShopLane.Specialty);
+            registry.Register(TestPieces.CreateUnit("support_special", combatRole: GameTagIds.Support), ShopLane.Specialty);
+
+            var generator = new ShopGenerator(registry);
+            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 7, specialtyUnlocked: true);
+            var specialtyOffers = shop.Offers.Where(o => o.Lane == ShopLane.Specialty).ToList();
+
+            Assert.That(specialtyOffers, Is.Not.Empty);
+            Assert.IsTrue(specialtyOffers.All(o => o.PieceId == "assault_special"));
         }
     }
 }

@@ -39,7 +39,7 @@ namespace DeadManZone.Core.Shop
                 InjectDefensiveOffer(offers, modifiers, rng, round);
 
             if (specialtyOpen)
-                RollLane(ShopLane.Specialty, OffersPerLane, modifiers, rng, offers, round, factionId);
+                RollLane(ShopLane.Specialty, OffersPerLane, modifiers, rng, offers, round, factionId, board);
 
             return new ShopState
             {
@@ -87,10 +87,11 @@ namespace DeadManZone.Core.Shop
             int seed,
             int round,
             string factionId,
-            IReadOnlyDictionary<int, ShopOffer> fixedSlots = null)
+            IReadOnlyDictionary<int, ShopOffer> fixedSlots = null,
+            BoardState board = null)
         {
             var rng = new Rng(seed);
-            return RollLane(lane, slotCount, modifiers, rng, round, factionId, fixedSlots);
+            return RollLane(lane, slotCount, modifiers, rng, round, factionId, fixedSlots, board);
         }
 
         private void RollLane(
@@ -100,9 +101,10 @@ namespace DeadManZone.Core.Shop
             Rng rng,
             List<ShopOffer> offers,
             int round,
-            string factionId)
+            string factionId,
+            BoardState board = null)
         {
-            foreach (var rolled in RollLane(lane, slotCount, modifiers, rng, round, factionId, fixedSlots: null))
+            foreach (var rolled in RollLane(lane, slotCount, modifiers, rng, round, factionId, fixedSlots: null, board))
                 offers.Add(rolled);
         }
 
@@ -113,7 +115,8 @@ namespace DeadManZone.Core.Shop
             Rng rng,
             int round,
             string factionId,
-            IReadOnlyDictionary<int, ShopOffer> fixedSlots)
+            IReadOnlyDictionary<int, ShopOffer> fixedSlots,
+            BoardState board = null)
         {
             fixedSlots ??= new Dictionary<int, ShopOffer>();
             var results = new List<ShopOffer>();
@@ -122,6 +125,12 @@ namespace DeadManZone.Core.Shop
                 return results;
 
             var available = pool.ToList();
+            if (lane == ShopLane.Specialty && board != null)
+            {
+                var context = SpecialtyLaneRuleCatalog.Resolve(board, _registry);
+                available = SpecialtyLaneRuleCatalog.FilterPool(available, context).ToList();
+            }
+
             foreach (var fixedOffer in fixedSlots.Values)
                 available.RemoveAll(p => p.Id == fixedOffer.PieceId);
 
