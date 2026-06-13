@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -11,30 +11,27 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
   m_Name: ironmarch_hq
-  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
+  m_EditorClassIdentifier:
   id: ironmarch_hq
   displayName: IronMarch High Command
   category: 0
   shapeCells:
   - {x: 0, y: 0}
   - {x: 0, y: 1}
-  - {x: 1, y: 1}
-  - {x: 2, y: 1}
   - {x: 0, y: 2}
-  - {x: 1, y: 2}
   - {x: 0, y: 3}
-  tags:
-  - Building
-  - Headquarters
-  - HQ
-  - Command
+  - {x: 1, y: 1}
+  - {x: 1, y: 2}
+  - {x: 2, y: 0}
+  tags: []
   primary: building
   combatRole: headquarters
   systemTag: hq
-  synergyTags: []
-  abilityTags: []
-  flavorTags:
-  - command
+  synergyTags:
+  []
+  abilityTags:
+  []
+  flavorTags: []
   maxHp: 80
   baseDamage: 0
   cooldownTicks: 3
@@ -45,17 +42,15 @@ MonoBehaviour:
   shopModifiers: 0
   commandActions: 0
   shopLane: 1
-  includeInShopPool: 1
+  includeInShopPool: 0
+  salvageChanceBonus: 0
   attackSpeed: 1
   attackRange: 1
-  movementSpeed: 0
-  armorType: 0
-  attackType: 0
+  movementSpeed: 2
+  armorType: 1
+  attackType: 1
   grantedAbility: 0
   factionId: iron_vanguard
   icon: {fileID: 0}
   categoryTint: {r: 0.48, g: 0.4, b: 0.28, a: 1}
   cellSprites: []
-  combatArenaPrefab: {fileID: 0}
-  combatArenaModelScale: 1
-  combatArenaModelHeight: 0

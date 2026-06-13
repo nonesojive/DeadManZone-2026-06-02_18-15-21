@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
-  m_Name: conscript_rifleman
+  m_Name: ironmarch_breacher
   m_EditorClassIdentifier:
-  id: conscript_rifleman
-  displayName: Conscript Rifleman
+  id: ironmarch_breacher
+  displayName: Assault Breacher
   category: 1
   shapeCells:
   - {x: 0, y: 0}
@@ -24,14 +24,14 @@ MonoBehaviour:
   synergyTags:
   []
   abilityTags:
-  []
+  - flamethrower
   flavorTags: []
-  maxHp: 60
-  baseDamage: 12
+  maxHp: 110
+  baseDamage: 26
   cooldownTicks: 3
-  goldCost: 4
+  goldCost: 7
   requisitionCost: 0
-  manpowerCost: 6
+  manpowerCost: 8
   musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
@@ -40,11 +40,11 @@ MonoBehaviour:
   salvageChanceBonus: 0
   attackSpeed: 1
   attackRange: 1
-  movementSpeed: 2
-  armorType: 1
-  attackType: 1
+  movementSpeed: 3
+  armorType: 2
+  attackType: 4
   grantedAbility: 0
-  factionId: neutral
+  factionId: iron_vanguard
   icon: {fileID: 0}
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
   cellSprites: []

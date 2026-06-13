@@ -10,35 +10,35 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
-  m_Name: conscript_rifleman
+  m_Name: neutral_supply_depot
   m_EditorClassIdentifier:
-  id: conscript_rifleman
-  displayName: Conscript Rifleman
-  category: 1
+  id: neutral_supply_depot
+  displayName: Neutral Supply Depot
+  category: 0
   shapeCells:
   - {x: 0, y: 0}
   tags: []
-  primary: infantry
-  combatRole: assault
-  systemTag: combatant
+  primary: building
+  combatRole: utility
+  systemTag: noncombatant
   synergyTags:
   []
   abilityTags:
   []
   flavorTags: []
-  maxHp: 60
-  baseDamage: 12
+  maxHp: 55
+  baseDamage: 0
   cooldownTicks: 3
-  goldCost: 4
+  goldCost: 5
   requisitionCost: 0
-  manpowerCost: 6
-  musterPerShop: 0
-  shopModifiers: 0
+  manpowerCost: 0
+  musterPerShop: 2
+  shopModifiers: 2
   commandActions: 0
-  shopLane: 2
+  shopLane: 1
   includeInShopPool: 1
-  salvageChanceBonus: 0
-  attackSpeed: 1
+  salvageChanceBonus: 5
+  attackSpeed: 0
   attackRange: 1
   movementSpeed: 2
   armorType: 1
@@ -46,5 +46,5 @@ MonoBehaviour:
   grantedAbility: 0
   factionId: neutral
   icon: {fileID: 0}
-  categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  categoryTint: {r: 0.48, g: 0.4, b: 0.28, a: 1}
   cellSprites: []

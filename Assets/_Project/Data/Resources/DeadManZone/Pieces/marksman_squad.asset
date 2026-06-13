@@ -10,36 +10,36 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
-  m_Name: conscript_rifleman
+  m_Name: marksman_squad
   m_EditorClassIdentifier:
-  id: conscript_rifleman
-  displayName: Conscript Rifleman
+  id: marksman_squad
+  displayName: Marksman Squad
   category: 1
   shapeCells:
   - {x: 0, y: 0}
   tags: []
   primary: infantry
-  combatRole: assault
+  combatRole: sniper
   systemTag: combatant
   synergyTags:
   []
   abilityTags:
   []
   flavorTags: []
-  maxHp: 60
-  baseDamage: 12
-  cooldownTicks: 3
-  goldCost: 4
+  maxHp: 55
+  baseDamage: 26
+  cooldownTicks: 4
+  goldCost: 6
   requisitionCost: 0
-  manpowerCost: 6
+  manpowerCost: 5
   musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
-  shopLane: 2
+  shopLane: 0
   includeInShopPool: 1
   salvageChanceBonus: 0
-  attackSpeed: 1
-  attackRange: 1
+  attackSpeed: 0
+  attackRange: 2
   movementSpeed: 2
   armorType: 1
   attackType: 1

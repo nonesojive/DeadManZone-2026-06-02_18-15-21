@@ -27,7 +27,7 @@ namespace DeadManZone.Data.Editor
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("DeadManZone demo content generated (5 factions, expanded roster).");
+            Debug.Log($"DeadManZone demo content generated ({pieces.Length} pieces, {factions.Length} factions, {enemies.Length} fights).");
         }
 
         internal static PieceDefinitionSO SavePiece(
@@ -50,7 +50,14 @@ namespace DeadManZone.Data.Editor
             int musterPerShop = 0,
             ShopModifierFlags shopModifiers = ShopModifierFlags.None,
             CommandActionFlags commandActions = CommandActionFlags.None,
-            GrantedAbility grantedAbility = GrantedAbility.None)
+            GrantedAbility grantedAbility = GrantedAbility.None,
+            string[] abilityTags = null,
+            int salvageChanceBonus = 0,
+            AttackType attackType = AttackType.Ballistic,
+            ArmorType armorType = ArmorType.Light,
+            AttackSpeedTier attackSpeed = AttackSpeedTier.Medium,
+            AttackRangeTier attackRange = AttackRangeTier.Medium,
+            MovementSpeedTier movementSpeed = MovementSpeedTier.Medium)
         {
             var path = $"{Root}/Pieces/{id}.asset";
             var asset = LoadOrCreate<PieceDefinitionSO>(path);
@@ -63,6 +70,7 @@ namespace DeadManZone.Data.Editor
             asset.combatRole = combatRole;
             asset.systemTag = systemTag;
             asset.synergyTags = synergyTags ?? System.Array.Empty<string>();
+            asset.abilityTags = abilityTags ?? System.Array.Empty<string>();
             asset.tags = PieceTagQueries.BuildLegacyTags(
                 category,
                 baseDamage,
@@ -70,7 +78,7 @@ namespace DeadManZone.Data.Editor
                 combatRole,
                 systemTag,
                 asset.synergyTags,
-                asset.abilityTags ?? System.Array.Empty<string>(),
+                asset.abilityTags,
                 asset.flavorTags ?? System.Array.Empty<string>());
             asset.factionId = factionId;
             asset.maxHp = maxHp;
@@ -83,6 +91,12 @@ namespace DeadManZone.Data.Editor
             asset.shopModifiers = shopModifiers;
             asset.commandActions = commandActions;
             asset.grantedAbility = grantedAbility;
+            asset.salvageChanceBonus = salvageChanceBonus;
+            asset.attackType = attackType;
+            asset.armorType = armorType;
+            asset.attackSpeed = attackSpeed;
+            asset.attackRange = attackRange;
+            asset.movementSpeed = movementSpeed;
             asset.categoryTint = category switch
             {
                 PieceCategory.Unit => FactionTint(factionId, 0.35f, 0.42f, 0.55f),

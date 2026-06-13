@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -11,21 +11,20 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
   m_Name: phantom_agent
-  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
+  m_EditorClassIdentifier:
   id: phantom_agent
   displayName: Phantom Agent
   category: 1
   shapeCells:
   - {x: 0, y: 0}
-  tags:
-  - Infantry
-  - Sniper
-  - Combatant
+  tags: []
   primary: infantry
   combatRole: sniper
   systemTag: combatant
-  synergyTags: []
-  abilityTags: []
+  synergyTags:
+  []
+  abilityTags:
+  - stealth
   flavorTags: []
   maxHp: 70
   baseDamage: 24
@@ -36,15 +35,16 @@ MonoBehaviour:
   musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
-  shopLane: 0
+  shopLane: 2
   includeInShopPool: 1
+  salvageChanceBonus: 0
   attackSpeed: 1
   attackRange: 1
   movementSpeed: 2
   armorType: 1
-  attackType: 1
+  attackType: 2
   grantedAbility: 0
   factionId: cartel_of_echoes
   icon: {fileID: 0}
-  categoryTint: {r: 0.29999998, g: 0.42, b: 0.70000005, a: 1}
+  categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
   cellSprites: []

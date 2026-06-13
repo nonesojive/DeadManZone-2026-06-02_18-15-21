@@ -10,28 +10,31 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
-  m_Name: conscript_rifleman
+  m_Name: ironmarch_heavy_tank
   m_EditorClassIdentifier:
-  id: conscript_rifleman
-  displayName: Conscript Rifleman
+  id: ironmarch_heavy_tank
+  displayName: IronMarch Heavy Tank
   category: 1
   shapeCells:
   - {x: 0, y: 0}
+  - {x: 1, y: 0}
+  - {x: 0, y: 1}
+  - {x: 1, y: 1}
   tags: []
-  primary: infantry
-  combatRole: assault
+  primary: vehicle
+  combatRole: tank
   systemTag: combatant
   synergyTags:
   []
   abilityTags:
   []
   flavorTags: []
-  maxHp: 60
-  baseDamage: 12
-  cooldownTicks: 3
-  goldCost: 4
+  maxHp: 320
+  baseDamage: 36
+  cooldownTicks: 6
+  goldCost: 14
   requisitionCost: 0
-  manpowerCost: 6
+  manpowerCost: 14
   musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
@@ -40,11 +43,11 @@ MonoBehaviour:
   salvageChanceBonus: 0
   attackSpeed: 1
   attackRange: 1
-  movementSpeed: 2
-  armorType: 1
-  attackType: 1
+  movementSpeed: 1
+  armorType: 3
+  attackType: 2
   grantedAbility: 0
-  factionId: neutral
+  factionId: iron_vanguard
   icon: {fileID: 0}
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
   cellSprites: []

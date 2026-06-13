@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: ContentDatabase
   m_EditorClassIdentifier: 
   pieces:
+  - {fileID: 11400000, guid: 2287d513d933fab4faff29e19b18b4b6, type: 2}
   - {fileID: 11400000, guid: 8937bdc205c84fd4caaf1320ece884bd, type: 2}
   - {fileID: 11400000, guid: 05c51c0c32d885f4c8f973aea0e45007, type: 2}
   - {fileID: 11400000, guid: 5e91eecb2707bbf49ab99e364754925e, type: 2}
@@ -21,11 +22,22 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ee6b934080063644aa7945a89189ffa5, type: 2}
   - {fileID: 11400000, guid: 6ca910e7398b63442b4607d55d4704b9, type: 2}
   - {fileID: 11400000, guid: cbb2e9bf5a6912347853a9523bf8ed2a, type: 2}
+  - {fileID: 11400000, guid: fa2ad1321dc14bd9b613f9bfa11cef1b, type: 2}
+  - {fileID: 11400000, guid: fab40bd9182a4f7780e44edf6b002512, type: 2}
+  - {fileID: 11400000, guid: 87e444e6b57947a5acaa1ec7922f3e0e, type: 2}
+  - {fileID: 11400000, guid: c97b7b2e2cdf41c5875474cb4a788011, type: 2}
+  - {fileID: 11400000, guid: 314bf5c728ac4b6397ded551d7d21122, type: 2}
+  - {fileID: 11400000, guid: 9e95ce5d6054415fb50bfcd914872109, type: 2}
   - {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
   - {fileID: 11400000, guid: f2a3b4c5d6e7488899aabbccddeeff02, type: 2}
   - {fileID: 11400000, guid: f3a4b5c6d7e8498899aabbccddeeff03, type: 2}
   - {fileID: 11400000, guid: f4a5b6c7d8e9508899aabbccddeeff04, type: 2}
   - {fileID: 11400000, guid: f5a6b7c8d9ea518899aabbccddeeff05, type: 2}
+  - {fileID: 11400000, guid: 2ba14f20cc5f4673a34176a26f2646b4, type: 2}
+  - {fileID: 11400000, guid: 73ad5a50c7c6444a89a1c0ddcdcfefca, type: 2}
+  - {fileID: 11400000, guid: f31d1fb3a4ff43c8b23b01ad7100d9ee, type: 2}
+  - {fileID: 11400000, guid: e03a473459274475b48d51d6fca020f4, type: 2}
+  - {fileID: 11400000, guid: 19f1d71f3c4c4894a3a4c33a124d4dc7, type: 2}
   - {fileID: 11400000, guid: 23d96bc671af2224d8ce15cf8dad95c3, type: 2}
   - {fileID: 11400000, guid: 6aad41f66dad20c4582ff74e58887cb0, type: 2}
   - {fileID: 11400000, guid: 3e038eae6443bc0498dddcb4e827d45d, type: 2}
@@ -40,8 +52,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 21b91e5e648d6184b84cc8bc0b3727cd, type: 2}
   - {fileID: 11400000, guid: 2bac63a69be7d37419e8dfa995588d3e, type: 2}
   - {fileID: 11400000, guid: 881b1fa02cdcdea4c9392831b2cfad8b, type: 2}
-  - {fileID: 11400000, guid: 2287d513d933fab4faff29e19b18b4b6, type: 2}
-  - {fileID: 11400000, guid: 54edea90120d21e4b9b8f7a520e0a601, type: 2}
   factions:
   - {fileID: 11400000, guid: 2fd2c6378baacfd4787b66b4ee914fae, type: 2}
   - {fileID: 11400000, guid: b44e3968d4507d64f8192f2b7a857e00, type: 2}

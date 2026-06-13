@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -11,22 +11,22 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
   m_Name: field_gun_nest
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   id: field_gun_nest
   displayName: Field Gun Nest
   category: 0
   shapeCells:
   - {x: 0, y: 0}
   - {x: 0, y: 1}
-  tags:
-  - Building
-  - Artillery
-  - Combatant
+  tags: []
   primary: building
   combatRole: artillery
   systemTag: combatant
-  synergyTags: []
-  abilityTags: []
+  synergyTags:
+  []
+  abilityTags:
+  []
+  flavorTags: []
   maxHp: 180
   baseDamage: 24
   cooldownTicks: 3
@@ -36,13 +36,14 @@ MonoBehaviour:
   musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
-  shopLane: 2
+  shopLane: 1
   includeInShopPool: 1
+  salvageChanceBonus: 0
   attackSpeed: 1
-  attackRange: 1
+  attackRange: 2
   movementSpeed: 2
   armorType: 1
-  attackType: 1
+  attackType: 2
   grantedAbility: 0
   factionId: iron_vanguard
   icon: {fileID: 0}

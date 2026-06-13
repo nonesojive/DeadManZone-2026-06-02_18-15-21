@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -11,39 +11,45 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
   m_Name: mobile_cannon
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   id: mobile_cannon
   displayName: Mobile Cannon
   category: 2
   shapeCells:
   - {x: 0, y: 0}
   - {x: 1, y: 0}
-  tags:
-  - Vehicle
-  - Artillery
-  - Combatant
+  - {x: 2, y: 0}
+  - {x: 0, y: 1}
+  - {x: 1, y: 1}
+  - {x: 2, y: 1}
+  tags: []
   primary: vehicle
   combatRole: artillery
   systemTag: combatant
-  synergyTags: []
-  abilityTags: []
-  maxHp: 140
-  baseDamage: 32
+  synergyTags:
+  []
+  abilityTags:
+  []
+  flavorTags: []
+  maxHp: 180
+  baseDamage: 36
   cooldownTicks: 3
-  goldCost: 9
-  requisitionCost: 1
-  manpowerCost: 1
+  goldCost: 10
+  requisitionCost: 2
+  manpowerCost: 10
   musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
-  shopLane: 2
+  shopLane: 0
+  includeInShopPool: 1
+  salvageChanceBonus: 0
   attackSpeed: 0
   attackRange: 2
   movementSpeed: 1
-  armorType: 2
+  armorType: 3
   attackType: 2
-  grantedAbility: 0
+  grantedAbility: 3
   factionId: neutral
-  icon: {fileID: 21300000, guid: 8cc8b7315bb26574ab909c59e8bb2e33, type: 3}
-  categoryTint: {r: 0.38, g: 0.32, b: 0.48, a: 1}
+  icon: {fileID: 0}
+  categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
   cellSprites: []
