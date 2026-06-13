@@ -99,7 +99,7 @@ namespace DeadManZone.PlayMode.Tests
 
             var board = new BoardState(faction.CreateBoardLayout());
             Place(board, database, "ironmarch_hq", new GridCoord(0, 4), "hq_player");
-            Place(board, database, "field_gun_nest", new GridCoord(4, 4), "field_gun_1");
+            Place(board, database, "field_gun_nest", new GridCoord(3, 2), "field_gun_1");
             Place(board, database, "supply_depot", new GridCoord(2, 6), "supply_1");
             return board;
         }
