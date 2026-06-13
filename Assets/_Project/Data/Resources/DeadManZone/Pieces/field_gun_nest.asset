@@ -47,9 +47,9 @@ MonoBehaviour:
   attackType: 2
   grantedAbility: 0
   factionId: iron_vanguard
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 1e07d55974df4a5a8f251b9e0989b14b, type: 3}
   categoryTint: {r: 0.48, g: 0.4, b: 0.28, a: 1}
   cellSprites: []
-  combatArenaPrefab: {fileID: 0}
+  combatArenaPrefab: {fileID: 4302680415063808780, guid: 6a80a8416ad3a414288776a97c837f5c, type: 3}
   combatArenaModelScale: 1
   combatArenaModelHeight: 0

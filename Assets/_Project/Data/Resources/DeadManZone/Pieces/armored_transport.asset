@@ -48,9 +48,9 @@ MonoBehaviour:
   attackType: 1
   grantedAbility: 2
   factionId: neutral
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 5ef0edfc4802be44d859f0adff2fbdee, type: 3}
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
   cellSprites: []
-  combatArenaPrefab: {fileID: 0}
-  combatArenaModelScale: 1
-  combatArenaModelHeight: 0
+  combatArenaPrefab: {fileID: 2823587197348254914, guid: 6b8d7bf0f403a3048823ac6d1b6b50f1, type: 3}
+  combatArenaModelScale: 0.9
+  combatArenaModelHeight: 1.2
