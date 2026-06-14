@@ -34,7 +34,6 @@ namespace DeadManZone.Presentation.Board
         private readonly Dictionary<string, PieceShapeVisual> _shapeVisualsByInstance = new();
         private RectTransform _piecesOverlay;
         private BoardSynergyOverlay _synergyOverlay;
-        private SynergySidePanel _synergySidePanel;
         private SynergyEngine.FightStartSynergySnapshot _lastSynergySnapshot;
         private BoardLayout _layout;
         private BoardState _boardState;
@@ -55,7 +54,6 @@ private PieceDefinition _selectedPiece;
                 return;
 
             SyncPiecesOverlay();
-            SyncSynergySidePanelLayout();
             Canvas.ForceUpdateCanvases();
             GetComponent<BoardZoneStripLayout>()?.ApplyLayout();
             SyncBattlefieldPresentation();
@@ -67,6 +65,7 @@ private PieceDefinition _selectedPiece;
         private void Awake()
         {
             BoardZoneStripBootstrap.Ensure(this);
+            RemoveLegacySynergySidePanel(transform);
             EnsureBattlefieldPresentation();
             ResolvePieceHoverCardController();
         }
@@ -514,9 +513,6 @@ private PieceDefinition _selectedPiece;
             if (_synergyOverlay != null)
                 _synergyOverlay.RefreshLinks(_boardState, _shapeVisualsByInstance);
 
-            if (_synergySidePanel != null)
-                _synergySidePanel.Refresh(_boardState, theme);
-
             hoverController?.Hide();
 }
 
@@ -528,6 +524,7 @@ private PieceDefinition _selectedPiece;
                 return;
 
             RemoveStrayOverlayChildrenFromGrid();
+            RemoveLegacySynergySidePanel(transform);
 
             if (_piecesOverlay == null)
             {
@@ -539,10 +536,25 @@ private PieceDefinition _selectedPiece;
                 overlayGo.transform.SetSiblingIndex(gridRect.GetSiblingIndex() + 1);
                 _piecesOverlay = overlayGo.GetComponent<RectTransform>();
                 _synergyOverlay = overlayGo.AddComponent<BoardSynergyOverlay>();
-                _synergySidePanel = SynergySidePanel.Create(parent, theme);
             }
 
             SyncPiecesOverlay();
+        }
+
+        private static void RemoveLegacySynergySidePanel(Transform searchRoot)
+        {
+            if (searchRoot == null)
+                return;
+
+            foreach (var panel in searchRoot.GetComponentsInChildren<SynergySidePanel>(true))
+            {
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                    UnityEngine.Object.DestroyImmediate(panel.gameObject);
+                else
+#endif
+                    UnityEngine.Object.Destroy(panel.gameObject);
+            }
         }
 
         private void SyncPiecesOverlay()
@@ -558,14 +570,6 @@ private PieceDefinition _selectedPiece;
             _piecesOverlay.sizeDelta = gridRect.sizeDelta;
             _piecesOverlay.offsetMin = gridRect.offsetMin;
             _piecesOverlay.offsetMax = gridRect.offsetMax;
-        }
-
-        private void SyncSynergySidePanelLayout()
-        {
-            if (_synergySidePanel == null)
-                return;
-
-            _synergySidePanel.SyncToBoard(transform as RectTransform);
         }
 
         private Vector2? ResolveCellCenterInOverlay(GridCoord cell)

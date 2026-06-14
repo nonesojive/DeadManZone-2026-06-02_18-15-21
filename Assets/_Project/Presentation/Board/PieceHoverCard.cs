@@ -128,6 +128,21 @@ int totalChipCount = visibleTagCount + (model.OverflowCount > 0 ? 1 : 0);
             canvasGroup.blocksRaycasts = false;
         }
 
+        /// <summary>Stretch card content to fill a fixed parent panel (center column unit card).</summary>
+        public void ConfigureEmbeddedLayout()
+        {
+            EnsureRuntimeUi();
+            if (cardRoot == null)
+                return;
+
+            cardRoot.anchorMin = Vector2.zero;
+            cardRoot.anchorMax = Vector2.one;
+            cardRoot.pivot = new Vector2(0.5f, 0.5f);
+            cardRoot.offsetMin = Vector2.zero;
+            cardRoot.offsetMax = Vector2.zero;
+            cardRoot.sizeDelta = Vector2.zero;
+        }
+
         public void Hide()
         {
             if (cardRoot != null && canvasGroup != null)

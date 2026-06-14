@@ -5,12 +5,11 @@ using UnityEngine.UI;
 namespace DeadManZone.Presentation.Run
 {
     /// <summary>
-    /// Applies bunker backdrop across the full build/shop screen (board, reserves, shop, HUD).
+    /// Clears shop scene backdrop and panel chrome on the build screen.
     /// </summary>
     public static class ShopBackgroundBootstrap
     {
         private const string SceneBackdropName = "ShopSceneBackdrop";
-        private const string ScrimName = "ShopSceneScrim";
         private const string LegacyShopBackgroundName = "ShopBackground";
 
         public static void ApplyToBuildPanel(Transform buildPanel, UiThemeSO theme = null)
@@ -19,16 +18,13 @@ namespace DeadManZone.Presentation.Run
                 return;
 
             theme ??= UiThemeProvider.Current;
-            if (theme.shopBackgroundSprite == null)
-                return;
-
+            RemoveSceneBackdrop(buildPanel);
             RemoveLegacyShopAreaBackground(buildPanel);
-            EnsureSceneBackdrop(buildPanel, theme);
-            ClearPanelBackgrounds(buildPanel);
+            ClearShopPanelBackgrounds(buildPanel);
             SoftenLaneRows(FindShopArea(buildPanel), theme);
         }
 
-        /// <summary>Backward-compatible entry; forwards to the full shop-scene backdrop.</summary>
+        /// <summary>Backward-compatible entry; forwards to build panel cleanup.</summary>
         public static void Apply(Transform shopArea, UiThemeSO theme = null)
         {
             var buildPanel = shopArea != null ? shopArea.parent?.parent : null;
@@ -46,59 +42,34 @@ namespace DeadManZone.Presentation.Run
                 backdrop.gameObject.SetActive(visible);
         }
 
-        private static void EnsureSceneBackdrop(Transform buildPanel, UiThemeSO theme)
+        public static void RemoveSceneBackdrop(Transform buildPanel)
         {
-            var bgTransform = buildPanel.Find(SceneBackdropName);
-            Image bgImage;
-            if (bgTransform == null)
-            {
-                var bgGo = new GameObject(SceneBackdropName, typeof(RectTransform));
-                bgGo.transform.SetParent(buildPanel, false);
-                bgGo.transform.SetAsFirstSibling();
-                Stretch(bgGo.GetComponent<RectTransform>());
-                bgImage = bgGo.AddComponent<Image>();
-                bgImage.raycastTarget = false;
-
-                var scrimGo = new GameObject(ScrimName, typeof(RectTransform));
-                scrimGo.transform.SetParent(bgGo.transform, false);
-                Stretch(scrimGo.GetComponent<RectTransform>());
-                var scrimImage = scrimGo.AddComponent<Image>();
-                scrimImage.raycastTarget = false;
-            }
-            else
-            {
-                bgImage = bgTransform.GetComponent<Image>();
-                Stretch(bgTransform.GetComponent<RectTransform>());
-            }
-
-            if (bgImage == null)
+            if (buildPanel == null)
                 return;
 
-            bgImage.sprite = theme.shopBackgroundSprite;
-            bgImage.type = Image.Type.Simple;
-            bgImage.preserveAspect = false;
-            bgImage.color = Color.white;
-
-            var scrim = bgImage.transform.Find(ScrimName)?.GetComponent<Image>();
-            if (scrim != null)
-                scrim.color = theme.shopBackgroundScrimColor;
+            var backdrop = buildPanel.Find(SceneBackdropName);
+            if (backdrop != null)
+            {
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                    Object.DestroyImmediate(backdrop.gameObject);
+                else
+#endif
+                    Object.Destroy(backdrop.gameObject);
+            }
         }
 
-        private static void ClearPanelBackgrounds(Transform buildPanel)
+        private static void ClearShopPanelBackgrounds(Transform buildPanel)
         {
-            var panelImage = buildPanel.GetComponent<Image>();
-            if (panelImage != null)
-                panelImage.color = Color.clear;
-
-            foreach (var barName in new[] { "TopBar", "BottomBar" })
+            var shopPanel = buildPanel.Find("MainRow/ShopArea/ShopPanel");
+            if (shopPanel != null)
             {
-                var bar = buildPanel.Find(barName);
-                if (bar == null)
-                    continue;
-
-                var image = bar.GetComponent<Image>();
-                if (image != null)
-                    image.color = Color.clear;
+                var shopImage = shopPanel.GetComponent<Image>();
+                if (shopImage != null)
+                {
+                    shopImage.sprite = null;
+                    shopImage.color = Color.clear;
+                }
             }
         }
 
@@ -118,7 +89,7 @@ namespace DeadManZone.Presentation.Run
 
         private static void SoftenLaneRows(Transform shopArea, UiThemeSO theme)
         {
-            if (shopArea == null)
+            if (shopArea == null || theme == null)
                 return;
 
             float laneAlpha = Mathf.Clamp(theme.shopLaneTintScaleWithBackground * 0.35f, 0.04f, 0.18f);
@@ -141,14 +112,6 @@ namespace DeadManZone.Presentation.Run
                     tintOverlay.color = c;
                 }
             }
-        }
-
-        private static void Stretch(RectTransform rect)
-        {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
         }
     }
 }

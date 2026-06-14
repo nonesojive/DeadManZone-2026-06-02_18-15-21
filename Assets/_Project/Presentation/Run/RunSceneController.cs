@@ -3,6 +3,7 @@ using DeadManZone.Core.Run;
 using DeadManZone.Game;
 using DeadManZone.Presentation.Board;
 using DeadManZone.Presentation.Combat;
+using DeadManZone.Presentation.Combat.Arena;
 using DeadManZone.Presentation.Reserves;
 using DeadManZone.Presentation.Shop;
 using UnityEngine;
@@ -66,13 +67,14 @@ namespace DeadManZone.Presentation.Run
 
             if (shopArea != null)
             {
-                ShopLaneLayoutFitter.EnsureOnShopArea(shopArea.transform);
                 ShopUiBootstrap.EnsureOnShopArea(shopArea.transform, boardView, shopView?.ModifiersTooltip);
             }
 
             if (buildPanel != null)
             {
                 RunBuildUiBootstrap.EnsureOnBuildPanel(buildPanel.transform, boardView, mainRowLayout);
+                EnsureBuildScreenHudController();
+                EnsureCenterColumnLayout();
                 RefreshBuildUiLayout();
             }
 
@@ -127,16 +129,16 @@ namespace DeadManZone.Presentation.Run
             bool runEnded = state.Phase == RunPhase.Victory || state.Phase == RunPhase.Defeat;
 
             if (buildPanel != null)
-                buildPanel.SetActive(true);
+            {
+                bool hideForArena = (inCombat || aftermath) && CombatPresentationMode.ArenaActive;
+                buildPanel.SetActive(!hideForArena);
+            }
 
             if (combatPanel != null)
                 combatPanel.SetActive(inCombat || aftermath || runEnded);
 
             bool showBattlefield = inCombat || aftermath;
-            SetBuildPanelAlpha(1f);
             SetCombatPresentationLayout(showBattlefield);
-            if (buildPanel != null)
-                ShopBackgroundBootstrap.SetVisible(buildPanel.transform, inBuild);
 
             if (inBuild && RunManager.Instance?.Orchestrator != null)
             {
@@ -254,8 +256,42 @@ namespace DeadManZone.Presentation.Run
             }
 
             var shopRect = shopArea.GetComponent<RectTransform>();
+            var centerRect = buildPanel.transform.Find("MainRow/CenterColumn") as RectTransform;
             if (shopRect != null)
-                mainRowLayout.Configure(boardArea, shopRect, boardView);
+                mainRowLayout.Configure(boardArea, centerRect, shopRect, boardView);
+        }
+
+        private void EnsureBuildScreenHudController()
+        {
+            if (buildPanel == null)
+                return;
+
+            var controller = buildPanel.GetComponent<BuildScreenHudController>();
+            if (controller == null)
+                controller = buildPanel.gameObject.AddComponent<BuildScreenHudController>();
+            controller.Configure(
+                buildPanel.transform,
+                boardView,
+                buildPanel.GetComponentInChildren<UnitCardPanelView>(true),
+                buildPanel.GetComponentInChildren<BuildMessagesView>(true),
+                buildPanel.GetComponentInChildren<BuffIconStripView>(true));
+        }
+
+        private void EnsureCenterColumnLayout()
+        {
+            if (buildPanel == null || mainRowLayout == null)
+                return;
+
+            var messages = buildPanel.GetComponentInChildren<BuildMessagesView>(true);
+            var buffStrip = buildPanel.transform.Find("BottomBar/BuffStripRegion") as RectTransform;
+            if (buffStrip == null)
+                buffStrip = buildPanel.GetComponentInChildren<BuffIconStripView>(true)?.GetComponent<RectTransform>();
+
+            CenterColumnLayoutFitter.EnsureOnBuildPanel(
+                buildPanel.transform,
+                messages != null ? messages.GetComponent<RectTransform>() : null,
+                buffStrip,
+                mainRowLayout);
         }
 
         private void CaptureBuildLayout()
@@ -288,6 +324,19 @@ namespace DeadManZone.Presentation.Run
 
             if (_runHudPanel != null)
                 _runHudPanel.SetActive(!combatActive);
+
+            if (combatActive)
+            {
+                SetBuildPanelAlpha(0f);
+                if (CombatPresentationMode.ArenaActive && buildPanel != null)
+                    buildPanel.SetActive(false);
+            }
+            else
+            {
+                SetBuildPanelAlpha(1f);
+                if (buildPanel != null)
+                    buildPanel.SetActive(true);
+            }
 
             if (boardArea == null)
                 return;

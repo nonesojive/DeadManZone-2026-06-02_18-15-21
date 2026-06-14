@@ -15,6 +15,7 @@ namespace DeadManZone.Presentation.Run
         private const int MaxBuildBoardColumns = 12;
 
         [SerializeField] private RectTransform boardArea;
+        [SerializeField] private RectTransform centerArea;
         [SerializeField] private RectTransform shopArea;
         [SerializeField] private BoardView boardView;
         [SerializeField] private float shopGapPixels = 4f;
@@ -32,14 +33,26 @@ namespace DeadManZone.Presentation.Run
 
         public float BoardGridMaxX { get; private set; } = 0.5f;
 
-        public void Configure(RectTransform board, RectTransform shop, BoardView view)
+        public float CenterColumnMinX { get; private set; }
+
+        public float CenterColumnMaxX { get; private set; }
+
+        public float ShopColumnMinX { get; private set; }
+
+        public void Configure(RectTransform board, RectTransform center, RectTransform shop, BoardView view)
         {
             boardArea = board;
+            centerArea = center;
             shopArea = shop;
             boardView = view;
             _cellFitter = null;
             _applyPass = 0;
             ApplyLayout();
+        }
+
+        public void Configure(RectTransform board, RectTransform shop, BoardView view)
+        {
+            Configure(board, null, shop, view);
         }
 
         private void OnEnable()
@@ -103,19 +116,35 @@ namespace DeadManZone.Presentation.Run
 
             float boardWidthPx = contentWidth / gridSpan + boardOuterPaddingPixels;
             float split = (boardWidthPx + shopGapPixels) / mainRow.rect.width;
+            float centerFrac = BuildLayoutMetrics.CenterColumnFraction;
+            float shopMinFrac = BuildLayoutMetrics.ShopColumnMinFraction;
             split = Mathf.Clamp(split, MinSplit, MaxSplit);
+            split = Mathf.Min(split, 1f - centerFrac - shopMinFrac);
+
+            float centerEnd = split + centerFrac;
 
             boardArea.anchorMin = new Vector2(0f, boardArea.anchorMin.y);
             boardArea.anchorMax = new Vector2(split, boardArea.anchorMax.y);
             boardArea.offsetMin = Vector2.zero;
             boardArea.offsetMax = Vector2.zero;
 
-            shopArea.anchorMin = new Vector2(split, shopArea.anchorMin.y);
+            if (centerArea != null)
+            {
+                centerArea.anchorMin = new Vector2(split, centerArea.anchorMin.y);
+                centerArea.anchorMax = new Vector2(centerEnd, centerArea.anchorMax.y);
+                centerArea.offsetMin = Vector2.zero;
+                centerArea.offsetMax = Vector2.zero;
+            }
+
+            shopArea.anchorMin = new Vector2(centerEnd, shopArea.anchorMin.y);
             shopArea.anchorMax = new Vector2(1f, shopArea.anchorMax.y);
             shopArea.offsetMin = Vector2.zero;
             shopArea.offsetMax = Vector2.zero;
 
             BoardAnchorMax = boardArea.anchorMax;
+            CenterColumnMinX = split;
+            CenterColumnMaxX = centerEnd;
+            ShopColumnMinX = centerEnd;
 
             float gridMin = gridRect.anchorMin.x;
             float gridMax = gridRect.anchorMax.x;
@@ -135,7 +164,7 @@ namespace DeadManZone.Presentation.Run
             if (columns <= MaxBuildBoardColumns)
                 boardView?.SyncLayoutFromBoard();
 
-            ShopLaneLayoutFitter.EnsureOnShopArea(shopArea);
+            transform.parent?.GetComponent<CenterColumnLayoutFitter>()?.ApplyLayout();
             transform.parent?.GetComponent<RunHudLayoutFitter>()?.ApplyLayout();
             transform.parent?.GetComponent<ReservesLayoutFitter>()?.ApplyLayout();
         }

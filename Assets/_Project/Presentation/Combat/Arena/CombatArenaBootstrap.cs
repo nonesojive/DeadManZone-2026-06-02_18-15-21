@@ -1,16 +1,28 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Data;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace DeadManZone.Presentation.Combat.Arena
 {
     public sealed class CombatArenaBootstrap : MonoBehaviour
     {
+        private const float PlaneMeshSize = 10f;
+        private const float PerimeterPropOffset = 1.8f;
+        private const int PerimeterPropCount = 8;
+        private const string DefaultPerimeterPrefabPath =
+            "Assets/Synty/PolygonWar/Prefabs/Buildings/SM_Bld_Bunker_Wall_01.prefab";
+
         [SerializeField] private Camera arenaCamera;
         [SerializeField] private Transform unitsRoot;
         [SerializeField] private Transform buildingsRoot;
         [SerializeField] private Transform groundRoot;
         [SerializeField] private CombatArenaConfigSO config;
+
+        private Transform _propsRoot;
+        private bool _usingSyntyGround;
+        private bool _usingFlatGround;
 
         public Camera ArenaCamera => arenaCamera;
         public Transform UnitsRoot => unitsRoot;
@@ -27,6 +39,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             EnsureGround();
             ConfigureCamera();
+            ApplyEnvironment();
         }
 
         public void FrameBattlefield(BattlefieldLayout layout)
@@ -41,6 +54,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 CombatArenaCameraFramer.Frame(arenaCamera, layout, config);
 
             FitGroundToLayout(layout);
+            SpawnPerimeterProps(layout);
         }
 
         private void FitGroundToLayout(BattlefieldLayout layout)
@@ -48,10 +62,18 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (groundRoot == null || config == null)
                 return;
 
-            const float planeMeshSize = 10f;
-            float boardWidth = layout.TotalWidth * config.cellWidth;
-            float boardDepth = layout.Height * config.cellDepth;
-            groundRoot.localScale = new Vector3(boardWidth / planeMeshSize, 1f, boardDepth / planeMeshSize);
+            float padding = config.groundPadding > 0f ? config.groundPadding : 1f;
+            float boardWidth = layout.TotalWidth * config.cellWidth * padding;
+            float boardDepth = layout.Height * config.cellDepth * padding;
+
+            groundRoot.localScale = Vector3.one;
+            if (CombatArenaVisualPlacement.TryMeasureMeshFootprint(groundRoot, out float meshWidth, out float meshDepth))
+            {
+                groundRoot.localScale = new Vector3(boardWidth / meshWidth, 1f, boardDepth / meshDepth);
+                return;
+            }
+
+            groundRoot.localScale = new Vector3(boardWidth / PlaneMeshSize, 1f, boardDepth / PlaneMeshSize);
         }
 
         private void OnDestroy()
@@ -60,8 +82,105 @@ namespace DeadManZone.Presentation.Combat.Arena
                 Instance = null;
         }
 
+        private void ApplyEnvironment()
+        {
+            if (config != null
+                && config.useSyntySkybox
+                && !string.IsNullOrEmpty(config.syntySkyboxMaterialPath))
+            {
+                var skybox = SyntyRuntimeAssetLoader.LoadMaterial(config.syntySkyboxMaterialPath);
+                if (skybox != null)
+                {
+                    RenderSettings.skybox = skybox;
+                    if (arenaCamera != null)
+                        arenaCamera.clearFlags = CameraClearFlags.Skybox;
+                    return;
+                }
+            }
+
+            RenderSettings.skybox = null;
+            CombatArenaEnvironment.Apply(config, transform, arenaCamera);
+        }
+
         private void EnsureGround()
         {
+            if (config != null && config.useSyntyTerrain && TryEnsureSyntyGround())
+                return;
+
+            EnsurePrimitiveGround();
+        }
+
+        private bool TryEnsureSyntyGround()
+        {
+            if (config.useFlatTexturedGround && TryEnsureFlatTexturedGround())
+                return true;
+
+            var prefab = config.syntyGroundPrefab != null
+                ? config.syntyGroundPrefab
+                : SyntyRuntimeAssetLoader.LoadPrefab(config.syntyGroundPrefabPath);
+            if (prefab == null)
+                return false;
+
+            if (groundRoot != null && (_usingFlatGround || !_usingSyntyGround))
+            {
+                DestroyGroundObject(groundRoot.gameObject);
+                groundRoot = null;
+            }
+
+            if (groundRoot == null)
+            {
+                var instance = Instantiate(prefab, transform, false);
+                instance.name = "ArenaGround";
+                groundRoot = instance.transform;
+                _usingSyntyGround = true;
+                _usingFlatGround = false;
+                CombatArenaFxCull.RemoveTransparentFxRenderers(instance);
+            }
+
+            return true;
+        }
+
+        private bool TryEnsureFlatTexturedGround()
+        {
+            var material = config.syntyGroundMaterial != null
+                ? config.syntyGroundMaterial
+                : SyntyRuntimeAssetLoader.LoadMaterial(config.syntyGroundMaterialPath);
+            if (material == null)
+                return false;
+
+            if (groundRoot != null && !_usingFlatGround)
+            {
+                DestroyGroundObject(groundRoot.gameObject);
+                groundRoot = null;
+            }
+
+            if (groundRoot == null)
+            {
+                var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                ground.name = "ArenaGround";
+                ground.transform.SetParent(transform, false);
+
+                var collider = ground.GetComponent<Collider>();
+                if (collider != null)
+                    Destroy(collider);
+
+                groundRoot = ground.transform;
+                _usingSyntyGround = true;
+                _usingFlatGround = true;
+            }
+
+            var groundRenderer = groundRoot.GetComponent<Renderer>();
+            if (groundRenderer != null)
+                groundRenderer.sharedMaterial = material;
+
+            return true;
+        }
+
+        private void EnsurePrimitiveGround()
+        {
+            _usingSyntyGround = false;
+            _usingFlatGround = false;
+
             if (groundRoot == null)
             {
                 var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
@@ -73,11 +192,81 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             var groundRenderer = groundRoot.GetComponent<Renderer>();
             if (groundRenderer != null)
+                CombatArenaMaterialUtility.ApplyFallbackGroundMaterial(groundRenderer);
+        }
+
+        private void SpawnPerimeterProps(BattlefieldLayout layout)
+        {
+            if (config == null || !config.spawnPerimeterProps)
+                return;
+
+            var prefab = SyntyRuntimeAssetLoader.LoadPrefab(DefaultPerimeterPrefabPath);
+            if (prefab == null)
+                return;
+
+            EnsurePropsRoot();
+            ClearPropsRoot();
+
+            float halfWidth = layout.TotalWidth * config.cellWidth * 0.5f;
+            float halfDepth = layout.Height * config.cellDepth * 0.5f;
+            float offset = PerimeterPropOffset;
+
+            var positions = new[]
             {
-                var groundMat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
-                groundMat.color = new Color(0.28f, 0.24f, 0.18f);
-                groundRenderer.sharedMaterial = groundMat;
+                new Vector3(-halfWidth - offset, 0f, halfDepth + offset),
+                new Vector3(0f, 0f, halfDepth + offset),
+                new Vector3(halfWidth + offset, 0f, halfDepth + offset),
+                new Vector3(halfWidth + offset, 0f, 0f),
+                new Vector3(halfWidth + offset, 0f, -halfDepth - offset),
+                new Vector3(0f, 0f, -halfDepth - offset),
+                new Vector3(-halfWidth - offset, 0f, -halfDepth - offset),
+                new Vector3(-halfWidth - offset, 0f, 0f)
+            };
+
+            for (int i = 0; i < PerimeterPropCount; i++)
+            {
+                var instance = Instantiate(prefab, _propsRoot, false);
+                instance.name = $"PerimeterProp_{i + 1}";
+                instance.transform.localPosition = positions[i];
+                instance.transform.localRotation = Quaternion.Euler(0f, i * 45f, 0f);
             }
+        }
+
+        private void EnsurePropsRoot()
+        {
+            if (_propsRoot != null)
+                return;
+
+            var existing = transform.Find("ArenaProps");
+            if (existing != null)
+            {
+                _propsRoot = existing;
+                return;
+            }
+
+            var propsGo = new GameObject("ArenaProps");
+            propsGo.transform.SetParent(transform, false);
+            _propsRoot = propsGo.transform;
+        }
+
+        private void ClearPropsRoot()
+        {
+            if (_propsRoot == null)
+                return;
+
+            for (int i = _propsRoot.childCount - 1; i >= 0; i--)
+                DestroyGroundObject(_propsRoot.GetChild(i).gameObject);
+        }
+
+        private static void DestroyGroundObject(GameObject target)
+        {
+            if (target == null)
+                return;
+
+            if (Application.isPlaying)
+                Destroy(target);
+            else
+                DestroyImmediate(target);
         }
 
         private void ConfigureCamera()
@@ -89,10 +278,17 @@ namespace DeadManZone.Presentation.Combat.Arena
                 arenaCamera = camGo.AddComponent<Camera>();
             }
 
-            arenaCamera.tag = "MainCamera";
+            arenaCamera.tag = "Untagged";
             arenaCamera.depth = 10f;
-            arenaCamera.clearFlags = CameraClearFlags.SolidColor;
-            arenaCamera.backgroundColor = new Color(0.12f, 0.11f, 0.10f);
+            arenaCamera.rect = new Rect(0f, 0f, 1f, 1f);
+            arenaCamera.allowHDR = false;
+            EnsureUrpCameraData(arenaCamera);
+
+            if (RenderSettings.skybox == null)
+            {
+                arenaCamera.clearFlags = CameraClearFlags.SolidColor;
+                arenaCamera.backgroundColor = new Color(0.12f, 0.11f, 0.10f);
+            }
 
             if (unitsRoot == null)
             {
@@ -109,20 +305,25 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
 
             EnsureLighting();
+            CombatArenaEnvironment.Apply(config, transform, arenaCamera);
         }
 
         private void EnsureLighting()
         {
-            if (transform.Find("ArenaLight") != null)
+            CombatArenaEnvironment.Apply(config, transform, arenaCamera);
+        }
+
+        private static void EnsureUrpCameraData(Camera camera)
+        {
+            if (camera == null || !CombatArenaMaterialUtility.IsUrpActive())
                 return;
 
-            var lightGo = new GameObject("ArenaLight");
-            lightGo.transform.SetParent(transform, false);
-            lightGo.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
-            var light = lightGo.AddComponent<Light>();
-            light.type = LightType.Directional;
-            light.intensity = 1.1f;
-            light.color = new Color(1f, 0.96f, 0.88f);
+            var urpData = camera.GetComponent<UniversalAdditionalCameraData>();
+            if (urpData == null)
+                urpData = camera.gameObject.AddComponent<UniversalAdditionalCameraData>();
+
+            urpData.renderPostProcessing = false;
+            urpData.antialiasing = AntialiasingMode.None;
         }
     }
 }

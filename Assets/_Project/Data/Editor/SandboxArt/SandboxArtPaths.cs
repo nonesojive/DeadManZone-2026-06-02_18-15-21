@@ -8,61 +8,26 @@ namespace DeadManZone.Data.Editor
         internal const string ResourcesFolder =
             "Assets/_Project/Data/Resources/DeadManZone";
 
-        internal const string SandboxIconsFolder =
-            "Assets/_Project/Art/Sandbox/Renders/Icons";
+        internal const string SandboxIconsFolder = SyntyArtPaths.Icons;
 
-        internal const string ToonRoot =
-            "Assets/Toon_Soldiers/ToonSoldiers_WW2/prefabs";
+        internal const string GermanInfantry = SyntyArtPaths.UnitRifle;
+        internal const string GermanMedic = SyntyArtPaths.UnitMedic;
+        internal const string GermanSupport = SyntyArtPaths.UnitSupport;
+        internal const string GermanSniper = SyntyArtPaths.UnitSniper;
+        internal const string GermanOfficer = SyntyArtPaths.UnitOfficer;
 
-        internal const string GermanInfantry = ToonRoot + "/TSww2_German_infantry.prefab";
-        internal const string GermanMedic = ToonRoot + "/TSww2_German_medic.prefab";
-        internal const string GermanSupport = ToonRoot + "/TSww2_German_support.prefab";
-        internal const string GermanSniper = ToonRoot + "/TSww2_German_sniper.prefab";
-        internal const string GermanOfficer = ToonRoot + "/TSww2_German_officer.prefab";
+        internal const string AtvColor0 = SyntyArtPaths.VehicleTruck;
+        internal const string FaColor0 = SyntyArtPaths.VehicleMech;
+        internal const string FaColor1 = SyntyArtPaths.VehicleTank;
+        internal const string MshColor0 = SyntyArtPaths.VehicleCar;
+        internal const string MshColor1 = SyntyArtPaths.VehicleHalftrack;
 
-        internal const string AtvColor0 =
-            "Assets/RTS_Modern_Combat_Vehicle_Pack_Free/ATV_N1/0_Prefabs/ATV_N1_Color_0_Prefab.prefab";
+        internal const string BuildingHq = SyntyArtPaths.BuildingHq;
+        internal const string BuildingFieldGun = SyntyArtPaths.BuildingFieldGun;
+        internal const string BuildingSupplyDepot = SyntyArtPaths.BuildingSupplyDepot;
 
-        internal const string FaColor0 =
-            "Assets/RTS_Modern_Combat_Vehicle_Pack_Free/FA_N26/0_Prefabs/FA_N26_Color_0_Prefab.prefab";
+        internal static string GrokIcon(string pieceId) => SyntyArtPaths.IconPath(pieceId);
 
-        internal const string FaColor1 =
-            "Assets/RTS_Modern_Combat_Vehicle_Pack_Free/FA_N26/0_Prefabs/FA_N26_Color_1_Prefab.prefab";
-
-        internal const string MshColor0 =
-            "Assets/RTS_Modern_Combat_Vehicle_Pack_Free/MSH_N2/0_Prefabs/MSH_N2_Color_0_Prefab.prefab";
-
-        internal const string MshColor1 =
-            "Assets/RTS_Modern_Combat_Vehicle_Pack_Free/MSH_N2/0_Prefabs/MSH_N2_Color_1_Prefab.prefab";
-
-        internal const string BuildingHq =
-            "Assets/_Project/Presentation/Combat/Arena/Prefabs/Buildings/ArenaBuilding_Hq.prefab";
-
-        internal const string BuildingFieldGun =
-            "Assets/_Project/Presentation/Combat/Arena/Prefabs/Buildings/ArenaBuilding_FieldGun.prefab";
-
-        internal const string BuildingSupplyDepot =
-            "Assets/_Project/Presentation/Combat/Arena/Prefabs/Buildings/ArenaBuilding_SupplyDepot.prefab";
-
-        internal const string IconBunkerMap =
-            "Assets/BunkerSurvivalUI/Sprites/Icons/icon_bunker_map.png";
-
-        internal const string IconEmergencyRadio =
-            "Assets/BunkerSurvivalUI/Sprites/Icons/icon_emergency_radio.png";
-
-        internal const string IconFuelCanister =
-            "Assets/BunkerSurvivalUI/Sprites/Icons/icon_fuel_canister.png";
-
-        internal const string IconGeneratorPart =
-            "Assets/BunkerSurvivalUI/Sprites/Icons/icon_generator_part.png";
-
-        internal const string IconToolbox =
-            "Assets/BunkerSurvivalUI/Sprites/Icons/icon_toolbox.png";
-
-        internal static string GrokIcon(string pieceId) =>
-            $"Assets/_Project/Art/Neutral/Renders/Icons/{pieceId}_icon.png";
-
-        internal static string SandboxSnapshotIcon(string pieceId) =>
-            $"{SandboxIconsFolder}/{pieceId}_icon.png";
+        internal static string SandboxSnapshotIcon(string pieceId) => SyntyArtPaths.IconPath(pieceId);
     }
 }

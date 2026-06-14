@@ -34,7 +34,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             BattlefieldState battlefield,
             CombatGridMapper mapper,
             Transform buildingsRoot,
-            Func<string, PieceDefinitionSO> resolvePiece)
+            Func<string, PieceDefinitionSO> resolvePiece,
+            CombatArenaConfigSO config)
         {
             Clear();
 
@@ -47,7 +48,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                     continue;
 
                 var source = resolvePiece?.Invoke(cell.Definition.Id);
-                var instance = SpawnBuilding(cell, mapper, buildingsRoot, source);
+                var instance = SpawnBuilding(cell, mapper, buildingsRoot, source, config);
                 if (instance == null)
                     continue;
 
@@ -76,14 +77,16 @@ namespace DeadManZone.Presentation.Combat.Arena
             BattlefieldCell cell,
             CombatGridMapper mapper,
             Transform buildingsRoot,
-            PieceDefinitionSO source)
+            PieceDefinitionSO source,
+            CombatArenaConfigSO config)
         {
             var footprint = ComputeFootprintBounds(cell.Position, cell.Definition.Shape, mapper, DefaultBuildingHeight);
             string objectName = $"Building_{cell.InstanceId}";
 
-            GameObject root = source?.combatArenaPrefab != null
-                ? SpawnPrefabBuilding(source, footprint, buildingsRoot, objectName)
-                : SpawnPlaceholderBuilding(cell.Definition.Id, footprint, buildingsRoot, objectName);
+            var prefab = CombatArenaPrefabResolver.ResolveBuildingPrefab(source, cell.Definition, config);
+            GameObject root = prefab != null
+                ? SpawnPrefabBuilding(source, prefab, footprint, objectName)
+                : SpawnPlaceholderBuilding(cell.Definition.Id, footprint, objectName);
 
             if (root == null)
                 return null;
@@ -94,37 +97,36 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private static GameObject SpawnPrefabBuilding(
             PieceDefinitionSO source,
+            GameObject prefab,
             FootprintBounds footprint,
-            Transform buildingsRoot,
             string objectName)
         {
-            var instance = UnityEngine.Object.Instantiate(source.combatArenaPrefab, buildingsRoot, false);
+            var instance = UnityEngine.Object.Instantiate(prefab);
             instance.name = objectName;
 
-            float scale = source.combatArenaModelScale > 0f ? source.combatArenaModelScale : 1f;
-            float height = source.combatArenaModelHeight > 0f
+            float scale = source != null && source.combatArenaModelScale > 0f ? source.combatArenaModelScale : 1f;
+            float height = source != null && source.combatArenaModelHeight > 0f
                 ? source.combatArenaModelHeight
                 : DefaultBuildingHeight;
 
-            FitInstanceToFootprint(instance.transform, footprint, height, scale);
+            CombatArenaVisualPlacement.PlaceOnGround(instance.transform, footprint.Center, height, scale);
+            CombatArenaFxCull.RemoveTransparentFxRenderers(instance);
             return instance;
         }
 
         private static GameObject SpawnPlaceholderBuilding(
             string pieceId,
             FootprintBounds footprint,
-            Transform buildingsRoot,
             string objectName)
         {
             var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.name = objectName;
-            cube.transform.SetParent(buildingsRoot, false);
 
             var renderer = cube.GetComponent<Renderer>();
             if (renderer != null)
             {
-                var material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
-                material.color = CombatArenaBuildingDefaults.ResolveColor(pieceId);
+                var material = new Material(CombatArenaMaterialUtility.ResolveGroundShader() ?? Shader.Find("Standard"));
+                CombatArenaMaterialUtility.ApplyColor(material, CombatArenaBuildingDefaults.ResolveColor(pieceId));
                 renderer.sharedMaterial = material;
             }
 
@@ -132,25 +134,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (collider != null)
                 UnityEngine.Object.Destroy(collider);
 
-            FitInstanceToFootprint(cube.transform, footprint, DefaultBuildingHeight, 1f);
+            CombatArenaVisualPlacement.PlaceOnGround(cube.transform, footprint.Center, DefaultBuildingHeight, 1f);
             return cube;
-        }
-
-        private static void FitInstanceToFootprint(
-            Transform instance,
-            FootprintBounds footprint,
-            float targetHeight,
-            float modelScale)
-        {
-            instance.localPosition = new Vector3(
-                footprint.Center.x,
-                targetHeight * 0.5f * modelScale,
-                footprint.Center.z);
-            instance.localRotation = Quaternion.identity;
-            instance.localScale = new Vector3(
-                footprint.Width * modelScale,
-                targetHeight * modelScale,
-                footprint.Depth * modelScale);
         }
 
         private static FootprintBounds ComputeFootprintBounds(

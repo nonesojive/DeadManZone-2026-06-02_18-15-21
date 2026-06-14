@@ -6,6 +6,11 @@ namespace DeadManZone.Presentation.Combat.Arena
 {
     public sealed class CombatArenaVfx : MonoBehaviour
     {
+        private const string DefaultImpactPrefabPath =
+            "Assets/Synty/PolygonParticleFX/Prefabs/FX_Gunshot_01.prefab";
+        private const string DefaultDeathPrefabPath =
+            "Assets/Synty/PolygonParticleFX/Prefabs/FX_Dust_Small_01.prefab";
+
         [SerializeField] private CombatArenaFreezeController freezeController;
         [SerializeField] private ParticleSystem impactPrefab;
         [SerializeField] private ParticleSystem deathPrefab;
@@ -18,6 +23,17 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             if (freezeController == null)
                 freezeController = GetComponent<CombatArenaFreezeController>();
+
+            EnsureDefaultPrefabs();
+        }
+
+        private void EnsureDefaultPrefabs()
+        {
+            if (impactPrefab == null)
+                impactPrefab = SyntyRuntimeAssetLoader.LoadParticleSystem(DefaultImpactPrefabPath);
+
+            if (deathPrefab == null)
+                deathPrefab = SyntyRuntimeAssetLoader.LoadParticleSystem(DefaultDeathPrefabPath);
         }
 
         public void Configure(CombatArenaFreezeController controller)

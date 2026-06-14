@@ -14,152 +14,152 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - pieceId: conscript_rifleman
-    iconAssetPath: Assets/_Project/Art/Neutral/Renders/Icons/conscript_rifleman_icon.png
-    combatArenaPrefabPath: Assets/Toon_Soldiers/ToonSoldiers_WW2/prefabs/TSww2_German_infantry.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/conscript_rifleman_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Rifle.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
-    snapshotIconFromPrefab: 0
+    snapshotIconFromPrefab: 1
   - pieceId: grenade_thrower
-    iconAssetPath: Assets/_Project/Art/Neutral/Renders/Icons/grenade_thrower_icon.png
-    combatArenaPrefabPath: Assets/Toon_Soldiers/ToonSoldiers_WW2/prefabs/TSww2_German_support.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/grenade_thrower_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Support.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
-    snapshotIconFromPrefab: 0
+    snapshotIconFromPrefab: 1
   - pieceId: field_medic
-    iconAssetPath: Assets/_Project/Art/Neutral/Renders/Icons/field_medic_icon.png
-    combatArenaPrefabPath: Assets/Toon_Soldiers/ToonSoldiers_WW2/prefabs/TSww2_German_medic.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/field_medic_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Medic.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
-    snapshotIconFromPrefab: 0
+    snapshotIconFromPrefab: 1
   - pieceId: armored_transport
-    iconAssetPath: Assets/_Project/Art/Neutral/Renders/Icons/armored_transport_icon.png
-    combatArenaPrefabPath: Assets/RTS_Modern_Combat_Vehicle_Pack_Free/ATV_N1/0_Prefabs/ATV_N1_Color_0_Prefab.prefab
-    combatArenaModelScale: 0.9
-    combatArenaModelHeight: 1.2
-    snapshotIconFromPrefab: 0
-  - pieceId: mobile_cannon
-    iconAssetPath: Assets/_Project/Art/Neutral/Renders/Icons/mobile_cannon_icon.png
-    combatArenaPrefabPath: Assets/RTS_Modern_Combat_Vehicle_Pack_Free/MSH_N2/0_Prefabs/MSH_N2_Color_0_Prefab.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/armored_transport_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Vehicles/ArenaVehicle_Truck.prefab
     combatArenaModelScale: 0.85
+    combatArenaModelHeight: 1.2
+    snapshotIconFromPrefab: 1
+  - pieceId: mobile_cannon
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/mobile_cannon_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Vehicles/ArenaVehicle_Car.prefab
+    combatArenaModelScale: 0.9
     combatArenaModelHeight: 1.4
-    snapshotIconFromPrefab: 0
+    snapshotIconFromPrefab: 1
   - pieceId: neutral_supply_depot
-    iconAssetPath: Assets/BunkerSurvivalUI/Sprites/Icons/icon_fuel_canister.png
-    combatArenaPrefabPath: Assets/_Project/Presentation/Combat/Arena/Prefabs/Buildings/ArenaBuilding_SupplyDepot.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/neutral_supply_depot_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_SupplyDepot.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 0
-    snapshotIconFromPrefab: 0
+    snapshotIconFromPrefab: 1
   - pieceId: neutral_field_gun
-    iconAssetPath: Assets/BunkerSurvivalUI/Sprites/Icons/icon_generator_part.png
-    combatArenaPrefabPath: Assets/_Project/Presentation/Combat/Arena/Prefabs/Buildings/ArenaBuilding_FieldGun.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/neutral_field_gun_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_FieldGun.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 0
-    snapshotIconFromPrefab: 0
+    snapshotIconFromPrefab: 1
   - pieceId: shock_trooper
-    iconAssetPath: Assets/_Project/Art/Sandbox/Renders/Icons/shock_trooper_icon.png
-    combatArenaPrefabPath: Assets/Toon_Soldiers/ToonSoldiers_WW2/prefabs/TSww2_German_officer.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/shock_trooper_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Officer.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
     snapshotIconFromPrefab: 1
   - pieceId: neutral_mortar_team
-    iconAssetPath: Assets/_Project/Art/Sandbox/Renders/Icons/neutral_mortar_team_icon.png
-    combatArenaPrefabPath: Assets/Toon_Soldiers/ToonSoldiers_WW2/prefabs/TSww2_German_support.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/neutral_mortar_team_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Support.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
     snapshotIconFromPrefab: 1
   - pieceId: marksman_squad
-    iconAssetPath: Assets/_Project/Art/Sandbox/Renders/Icons/marksman_squad_icon.png
-    combatArenaPrefabPath: Assets/Toon_Soldiers/ToonSoldiers_WW2/prefabs/TSww2_German_sniper.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/marksman_squad_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Sniper.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
     snapshotIconFromPrefab: 1
   - pieceId: ironmarch_hq
-    iconAssetPath: Assets/BunkerSurvivalUI/Sprites/Icons/icon_bunker_map.png
-    combatArenaPrefabPath: Assets/_Project/Presentation/Combat/Arena/Prefabs/Buildings/ArenaBuilding_Hq.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/ironmarch_hq_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_Hq.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 0
-    snapshotIconFromPrefab: 0
+    snapshotIconFromPrefab: 1
   - pieceId: rifle_squad
-    iconAssetPath: Assets/_Project/Art/Sandbox/Renders/Icons/rifle_squad_icon.png
-    combatArenaPrefabPath: Assets/Toon_Soldiers/ToonSoldiers_WW2/prefabs/TSww2_German_infantry.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/rifle_squad_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Rifle.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
     snapshotIconFromPrefab: 1
   - pieceId: diesel_walker
-    iconAssetPath: Assets/_Project/Art/Sandbox/Renders/Icons/diesel_walker_icon.png
-    combatArenaPrefabPath: Assets/RTS_Modern_Combat_Vehicle_Pack_Free/FA_N26/0_Prefabs/FA_N26_Color_0_Prefab.prefab
-    combatArenaModelScale: 0.9
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/diesel_walker_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Vehicles/ArenaVehicle_Mech.prefab
+    combatArenaModelScale: 0.75
     combatArenaModelHeight: 1.4
     snapshotIconFromPrefab: 1
   - pieceId: radio_array
-    iconAssetPath: Assets/BunkerSurvivalUI/Sprites/Icons/icon_emergency_radio.png
-    combatArenaPrefabPath: 
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/radio_array_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_SupplyDepot.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 0
-    snapshotIconFromPrefab: 0
+    snapshotIconFromPrefab: 1
   - pieceId: mg_team
-    iconAssetPath: Assets/_Project/Art/Sandbox/Renders/Icons/mg_team_icon.png
-    combatArenaPrefabPath: Assets/Toon_Soldiers/ToonSoldiers_WW2/prefabs/TSww2_German_support.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/mg_team_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Support.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
     snapshotIconFromPrefab: 1
   - pieceId: field_gun_nest
-    iconAssetPath: Assets/BunkerSurvivalUI/Sprites/Icons/icon_generator_part.png
-    combatArenaPrefabPath: Assets/_Project/Presentation/Combat/Arena/Prefabs/Buildings/ArenaBuilding_FieldGun.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/field_gun_nest_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_FieldGun.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 0
-    snapshotIconFromPrefab: 0
+    snapshotIconFromPrefab: 1
   - pieceId: supply_depot
-    iconAssetPath: Assets/BunkerSurvivalUI/Sprites/Icons/icon_fuel_canister.png
-    combatArenaPrefabPath: Assets/_Project/Presentation/Combat/Arena/Prefabs/Buildings/ArenaBuilding_SupplyDepot.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/supply_depot_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_SupplyDepot.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 0
-    snapshotIconFromPrefab: 0
+    snapshotIconFromPrefab: 1
   - pieceId: field_workshop
-    iconAssetPath: Assets/BunkerSurvivalUI/Sprites/Icons/icon_toolbox.png
-    combatArenaPrefabPath: Assets/_Project/Presentation/Combat/Arena/Prefabs/Buildings/ArenaBuilding_SupplyDepot.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/field_workshop_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_SupplyDepot.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 0
-    snapshotIconFromPrefab: 0
+    snapshotIconFromPrefab: 1
   - pieceId: mobile_artillery
-    iconAssetPath: Assets/_Project/Art/Sandbox/Renders/Icons/mobile_artillery_icon.png
-    combatArenaPrefabPath: Assets/RTS_Modern_Combat_Vehicle_Pack_Free/MSH_N2/0_Prefabs/MSH_N2_Color_1_Prefab.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/mobile_artillery_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Vehicles/ArenaVehicle_Halftrack.prefab
     combatArenaModelScale: 0.85
     combatArenaModelHeight: 1.4
     snapshotIconFromPrefab: 1
   - pieceId: ironmarch_heavy_tank
-    iconAssetPath: Assets/_Project/Art/Sandbox/Renders/Icons/ironmarch_heavy_tank_icon.png
-    combatArenaPrefabPath: Assets/RTS_Modern_Combat_Vehicle_Pack_Free/FA_N26/0_Prefabs/FA_N26_Color_1_Prefab.prefab
-    combatArenaModelScale: 0.95
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/ironmarch_heavy_tank_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Vehicles/ArenaVehicle_Tank.prefab
+    combatArenaModelScale: 0.9
     combatArenaModelHeight: 1.5
     snapshotIconFromPrefab: 1
   - pieceId: ironmarch_mortar
-    iconAssetPath: Assets/_Project/Art/Sandbox/Renders/Icons/ironmarch_mortar_icon.png
-    combatArenaPrefabPath: Assets/Toon_Soldiers/ToonSoldiers_WW2/prefabs/TSww2_German_support.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/ironmarch_mortar_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Support.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
     snapshotIconFromPrefab: 1
   - pieceId: ironmarch_engineer
-    iconAssetPath: Assets/_Project/Art/Sandbox/Renders/Icons/ironmarch_engineer_icon.png
-    combatArenaPrefabPath: Assets/Toon_Soldiers/ToonSoldiers_WW2/prefabs/TSww2_German_medic.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/ironmarch_engineer_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Medic.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
     snapshotIconFromPrefab: 1
   - pieceId: ironmarch_breacher
-    iconAssetPath: Assets/_Project/Art/Sandbox/Renders/Icons/ironmarch_breacher_icon.png
-    combatArenaPrefabPath: Assets/Toon_Soldiers/ToonSoldiers_WW2/prefabs/TSww2_German_officer.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/ironmarch_breacher_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Officer.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
     snapshotIconFromPrefab: 1
   - pieceId: ironmarch_sniper
-    iconAssetPath: Assets/_Project/Art/Sandbox/Renders/Icons/ironmarch_sniper_icon.png
-    combatArenaPrefabPath: Assets/Toon_Soldiers/ToonSoldiers_WW2/prefabs/TSww2_German_sniper.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/ironmarch_sniper_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Sniper.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
     snapshotIconFromPrefab: 1
   - pieceId: ironmarch_defender
-    iconAssetPath: Assets/_Project/Art/Sandbox/Renders/Icons/ironmarch_defender_icon.png
-    combatArenaPrefabPath: Assets/Toon_Soldiers/ToonSoldiers_WW2/prefabs/TSww2_German_infantry.prefab
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/ironmarch_defender_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Rifle.prefab
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
     snapshotIconFromPrefab: 1

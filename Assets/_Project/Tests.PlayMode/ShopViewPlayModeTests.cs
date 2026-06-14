@@ -24,17 +24,13 @@ namespace DeadManZone.PlayMode.Tests
         }
 
         [UnityTest]
-        public IEnumerator Render_CreatesOfferCardsAndTooltipText()
+        public IEnumerator Render_CreatesOfferCardsInUnifiedGrid()
         {
             _root = new GameObject("ShopRoot");
             var view = _root.AddComponent<ShopView>();
 
-            var laneRoot = new GameObject("GeneralRoot").transform;
-            laneRoot.SetParent(_root.transform, false);
-            var engineerRoot = new GameObject("EngineerRoot").transform;
-            engineerRoot.SetParent(_root.transform, false);
-            var reqRoot = new GameObject("ReqRoot").transform;
-            reqRoot.SetParent(_root.transform, false);
+            var gridRoot = new GameObject("OffersGrid", typeof(RectTransform)).transform;
+            gridRoot.SetParent(_root.transform, false);
 
             var tooltipGo = new GameObject("Tooltip");
             tooltipGo.transform.SetParent(_root.transform, false);
@@ -45,15 +41,15 @@ namespace DeadManZone.PlayMode.Tests
             prefab.AddComponent<RectTransform>();
             prefab.AddComponent<ShopOfferView>();
 
-            view.InitializeForTests(laneRoot, engineerRoot, reqRoot, prefab, tooltip);
+            view.InitializeForTests(gridRoot, prefab, tooltip);
 
             var state = new ShopState
             {
                 Offers = new List<ShopOffer>
                 {
-                    new() { OfferId = "a", Lane = ShopLane.Offensive, PieceId = "rifle_squad", GoldPrice = 3 },
-                    new() { OfferId = "b", Lane = ShopLane.Defensive, PieceId = "command_bunker", GoldPrice = 7 },
-                    new() { OfferId = "c", Lane = ShopLane.Specialty, PieceId = "mortar_crew", RequisitionPrice = 2 }
+                    new() { OfferId = "a", Lane = ShopLane.Offensive, SlotIndex = 0, PieceId = "rifle_squad", GoldPrice = 3 },
+                    new() { OfferId = "b", Lane = ShopLane.Defensive, SlotIndex = 3, PieceId = "command_bunker", GoldPrice = 7 },
+                    new() { OfferId = "c", Lane = ShopLane.Specialty, SlotIndex = 6, PieceId = "mortar_crew", RequisitionPrice = 2 }
                 },
                 Modifiers = new ShopModifiers
                 {
@@ -66,11 +62,9 @@ namespace DeadManZone.PlayMode.Tests
             view.Render(state, "Armored");
             yield return null;
 
-            Assert.AreEqual(1, laneRoot.childCount);
-            Assert.AreEqual(1, engineerRoot.childCount);
-            Assert.AreEqual(1, reqRoot.childCount);
+            Assert.AreEqual(3, gridRoot.childCount);
             StringAssert.Contains("10% gold discount", tooltip.text);
-            StringAssert.Contains("extra general slot", tooltip.text.ToLowerInvariant());
+            StringAssert.Contains("extra shop slot", tooltip.text.ToLowerInvariant());
             StringAssert.Contains("Armored", tooltip.text);
         }
     }

@@ -12,12 +12,16 @@ namespace DeadManZone.Presentation.Shop
 {
     public sealed class ShopView : MonoBehaviour
     {
-        [Header("Lane Roots")]
+        [Header("Shop Grid")]
+        [SerializeField] private Transform offersGridRoot;
+
+        [Header("Legacy Lane Roots (hidden when unified grid is active)")]
         [SerializeField] private Transform generalLaneRoot;
         [SerializeField] private Transform engineersLaneRoot;
         [SerializeField] private Transform requisitionLaneRoot;
 
-        [Header("Lane Controls")]
+        [Header("Controls")]
+        [SerializeField] private Button rerollButton;
         [SerializeField] private Button rerollGeneralButton;
         [SerializeField] private Button rerollEngineersButton;
         [SerializeField] private Button rerollRequisitionButton;
@@ -33,16 +37,17 @@ namespace DeadManZone.Presentation.Shop
 
         private void Awake()
         {
-            if (rerollGeneralButton != null)
-                rerollGeneralButton.onClick.AddListener(() => OnRerollClicked(ShopLane.Offensive));
-            if (rerollEngineersButton != null)
-                rerollEngineersButton.onClick.AddListener(() => OnRerollClicked(ShopLane.Defensive));
-            if (rerollRequisitionButton != null)
-                rerollRequisitionButton.onClick.AddListener(() => OnRerollClicked(ShopLane.Specialty));
+            if (rerollButton != null)
+                rerollButton.onClick.AddListener(OnRerollClicked);
+            else if (rerollGeneralButton != null)
+                rerollGeneralButton.onClick.AddListener(OnRerollClicked);
 
-            ConfigureOffersLane(generalLaneRoot);
-            ConfigureOffersLane(engineersLaneRoot);
-            ConfigureOffersLane(requisitionLaneRoot);
+            if (rerollEngineersButton != null)
+                rerollEngineersButton.onClick.RemoveAllListeners();
+            if (rerollRequisitionButton != null)
+                rerollRequisitionButton.onClick.RemoveAllListeners();
+
+            HideLegacyLaneRows();
         }
 
         private void OnEnable()
@@ -94,25 +99,44 @@ namespace DeadManZone.Presentation.Shop
 
             Canvas.ForceUpdateCanvases();
             var (cellSize, spacing) = ResolveBoardMetrics();
+            var gridRoot = ResolveOffersGridRoot();
+            if (gridRoot == null || offerCardPrefab == null)
+                return;
 
-            RebuildLane(generalLaneRoot, state, ShopLane.Offensive, cellSize, spacing);
-            RebuildLane(engineersLaneRoot, state, ShopLane.Defensive, cellSize, spacing);
-            RebuildLane(requisitionLaneRoot, state, ShopLane.Specialty, cellSize, spacing);
+            int offerCount = state.Offers?.Count ?? 0;
+            var (gridWidth, gridHeight) = gridRoot is RectTransform gridRect
+                ? ShopLayoutMetrics.ResolveOffersMetrics(gridRect)
+                : (400f, 300f);
+
+            ConfigureOffersGrid(gridRoot, offerCount, cellSize, spacing, gridWidth, gridHeight);
+
+            ClearChildren(gridRoot);
+            var offers = state.Offers.OrderBy(o => o.SlotIndex);
+            foreach (var offer in offers)
+            {
+                var cardObject = Instantiate(offerCardPrefab, gridRoot);
+                cardObject.SetActive(true);
+                var card = cardObject.GetComponent<ShopOfferView>() ?? cardObject.AddComponent<ShopOfferView>();
+                bool isLocked = RunManager.Instance is { HasActiveRun: true } manager &&
+                    manager.Orchestrator.IsOfferLocked(offer);
+                card.Bind(offer, isLocked, cellSize, spacing, gridWidth, gridHeight, offerCount);
+                card.LockToggled += OnLockToggled;
+            }
+
+            if (gridRoot is RectTransform offersRect)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(offersRect);
+
             UpdateModifierTooltip(state.Modifiers, nextEnemyTag);
         }
 
         public void InitializeForTests(
-            Transform generalRoot,
-            Transform engineersRoot,
-            Transform requisitionRoot,
+            Transform gridRoot,
             GameObject offerPrefab,
             TMP_Text tooltipText,
             BoardView board = null)
         {
-            generalLaneRoot = generalRoot;
-            engineersLaneRoot = engineersRoot;
-            requisitionLaneRoot = requisitionRoot;
-            this.offerCardPrefab = offerPrefab;
+            offersGridRoot = gridRoot;
+            offerCardPrefab = offerPrefab;
             modifiersTooltipText = tooltipText;
             boardView = board;
         }
@@ -139,60 +163,81 @@ namespace DeadManZone.Presentation.Shop
             return ShopLayoutMetrics.Resolve(boardView.CellSize.x, boardView.CellSpacing);
         }
 
-        private void RebuildLane(
-            Transform laneRoot,
-            ShopState state,
-            ShopLane lane,
-            float cellSize,
-            float spacing)
+        private Transform ResolveOffersGridRoot()
         {
-            if (laneRoot == null || offerCardPrefab == null)
-                return;
+            if (offersGridRoot != null)
+                return offersGridRoot;
 
-            ConfigureOffersLane(laneRoot);
-
-            var (laneWidth, laneHeight) = laneRoot is RectTransform laneRect
-                ? ShopLayoutMetrics.ResolveOffersMetrics(laneRect)
-                : (400f, 100f);
-
-            ClearChildren(laneRoot);
-            var offers = state.Offers.Where(o => o.Lane == lane).OrderBy(o => o.SlotIndex);
-            foreach (var offer in offers)
+            var named = transform.Find("OffersGrid");
+            if (named != null)
             {
-                var cardObject = Instantiate(offerCardPrefab, laneRoot);
-                cardObject.SetActive(true);
-                var card = cardObject.GetComponent<ShopOfferView>() ?? cardObject.AddComponent<ShopOfferView>();
-                bool isLocked = RunManager.Instance is { HasActiveRun: true } manager &&
-                    manager.Orchestrator.IsOfferLocked(offer);
-                card.Bind(offer, isLocked, cellSize, spacing, laneWidth, laneHeight);
-                card.LockToggled += OnLockToggled;
+                offersGridRoot = named;
+                return offersGridRoot;
             }
 
-            if (laneRoot is RectTransform offersRect)
-                LayoutRebuilder.ForceRebuildLayoutImmediate(offersRect);
+            if (generalLaneRoot != null)
+            {
+                var offers = generalLaneRoot.Find("Offers");
+                if (offers != null)
+                {
+                    offersGridRoot = offers;
+                    return offersGridRoot;
+                }
+
+                offersGridRoot = generalLaneRoot;
+                return offersGridRoot;
+            }
+
+            return null;
         }
 
-        private static void ConfigureOffersLane(Transform laneRoot)
+        private static void ConfigureOffersGrid(
+            Transform gridRoot,
+            int offerCount,
+            float cellSize,
+            float spacing,
+            float gridWidth,
+            float gridHeight)
         {
-            if (laneRoot is not RectTransform offers)
+            if (gridRoot is not RectTransform grid)
                 return;
 
-            offers.anchorMin = new Vector2(0.04f, 0.14f);
-            offers.anchorMax = new Vector2(0.90f, 0.86f);
-            offers.offsetMin = Vector2.zero;
-            offers.offsetMax = Vector2.zero;
+            grid.anchorMin = new Vector2(0.04f, 0.08f);
+            grid.anchorMax = new Vector2(0.96f, 0.92f);
+            grid.offsetMin = Vector2.zero;
+            grid.offsetMax = Vector2.zero;
 
-            var layoutGroup = offers.GetComponent<HorizontalLayoutGroup>();
-            if (layoutGroup == null)
-                layoutGroup = offers.gameObject.AddComponent<HorizontalLayoutGroup>();
+            var horizontal = grid.GetComponent<HorizontalLayoutGroup>();
+            if (horizontal != null)
+                Destroy(horizontal);
 
-            layoutGroup.spacing = ShopLayoutMetrics.LaneSpacing;
-            layoutGroup.childAlignment = TextAnchor.UpperCenter;
-            layoutGroup.childControlWidth = false;
-            layoutGroup.childControlHeight = false;
-            layoutGroup.childForceExpandWidth = false;
-            layoutGroup.childForceExpandHeight = false;
-            layoutGroup.padding = new RectOffset(4, 4, 2, 2);
+            var gridLayout = grid.GetComponent<GridLayoutGroup>();
+            if (gridLayout == null)
+                gridLayout = grid.gameObject.AddComponent<GridLayoutGroup>();
+
+            int count = Mathf.Max(offerCount, 1);
+            var (columns, rows) = ShopLayoutMetrics.GetGridShape(count);
+            var cardSize = ShopLayoutMetrics.OfferCardSize(
+                cellSize, spacing, gridWidth, gridHeight, count);
+
+            gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            gridLayout.constraintCount = columns;
+            gridLayout.startCorner = GridLayoutGroup.Corner.UpperLeft;
+            gridLayout.startAxis = GridLayoutGroup.Axis.Horizontal;
+            gridLayout.childAlignment = TextAnchor.UpperCenter;
+            gridLayout.spacing = new Vector2(ShopLayoutMetrics.GridSpacing, ShopLayoutMetrics.GridSpacing);
+            gridLayout.padding = new RectOffset(4, 4, 4, 4);
+            gridLayout.cellSize = cardSize;
+        }
+
+        private void HideLegacyLaneRows()
+        {
+            foreach (var rowName in new[] { "OffensiveRow", "DefensiveRow", "SpecialtyRow" })
+            {
+                var row = transform.Find(rowName);
+                if (row != null)
+                    row.gameObject.SetActive(false);
+            }
         }
 
         private void OnLockToggled(ShopOffer offer, bool shouldLock)
@@ -204,12 +249,12 @@ namespace DeadManZone.Presentation.Shop
             RefreshFromRunManager();
         }
 
-        private void OnRerollClicked(ShopLane lane)
+        private void OnRerollClicked()
         {
             if (RunManager.Instance == null)
                 return;
 
-            RunManager.Instance.TryRerollLane(lane);
+            RunManager.Instance.TryRerollShop();
             RefreshFromRunManager();
         }
 
@@ -225,7 +270,7 @@ namespace DeadManZone.Presentation.Shop
             if (modifiers.GoldDiscountPercent > 0)
                 sb.AppendLine($"{modifiers.GoldDiscountPercent}% gold discount");
             if (modifiers.ExtraGeneralSlots > 0)
-                sb.AppendLine($"+{modifiers.ExtraGeneralSlots} extra general slot");
+                sb.AppendLine($"+{modifiers.ExtraGeneralSlots} extra shop slot");
             if (modifiers.GuaranteeEngineerOffer)
                 sb.AppendLine("Guaranteed engineer offer");
             if (modifiers.EnemyTagPreview)

@@ -75,13 +75,16 @@ namespace DeadManZone.Presentation.Shop
                 previewRoot.gameObject.SetActive(visible);
         }
 
-        public void ConfigureLayout(float cellSize, float spacing, float laneInnerWidth, float laneInnerHeight)
+        public void ConfigureLayout(float cellSize, float spacing, float laneInnerWidth, float laneInnerHeight, int offerCount = 6)
         {
             var (cell, gap) = ShopLayoutMetrics.Resolve(cellSize, new Vector2(spacing, spacing));
-            var cardSize = ShopLayoutMetrics.OfferCardSize(cell, gap, laneInnerWidth, laneInnerHeight);
+            var cardSize = ShopLayoutMetrics.OfferCardSize(cell, gap, laneInnerWidth, laneInnerHeight, offerCount);
             float square = cardSize.y - ShopLayoutMetrics.NameStripHeight - ShopLayoutMetrics.CardPadding;
 
             ApplyLayoutElement(gameObject, cardSize.x, cardSize.y);
+
+            if (transform is RectTransform cardRect)
+                cardRect.sizeDelta = cardSize;
 
             if (squareRoot != null)
             {
@@ -104,7 +107,7 @@ namespace DeadManZone.Presentation.Shop
             }
         }
 
-        public void Bind(ShopOffer offer, bool isLocked, float cellSize, float spacing, float laneInnerWidth, float laneInnerHeight)
+        public void Bind(ShopOffer offer, bool isLocked, float cellSize, float spacing, float laneInnerWidth, float laneInnerHeight, int offerCount = 6)
         {
             _offer = offer;
             _isLocked = isLocked;
@@ -113,7 +116,7 @@ namespace DeadManZone.Presentation.Shop
             _laneInnerWidth = laneInnerWidth;
             _laneInnerHeight = laneInnerHeight;
 
-            ConfigureLayout(cellSize, spacing, laneInnerWidth, laneInnerHeight);
+            ConfigureLayout(cellSize, spacing, laneInnerWidth, laneInnerHeight, offerCount);
 
             EnsurePiecePreview();
 
@@ -128,7 +131,7 @@ namespace DeadManZone.Presentation.Shop
                 UiThemeApplicator.ApplyCard(cardBackground);
 
             var (cell, gap) = ShopLayoutMetrics.Resolve(cellSize, new Vector2(spacing, spacing));
-            var cardSize = ShopLayoutMetrics.OfferCardSize(cell, gap, laneInnerWidth, laneInnerHeight);
+            var cardSize = ShopLayoutMetrics.OfferCardSize(cell, gap, laneInnerWidth, laneInnerHeight, offerCount);
             float viewport = cardSize.y - ShopLayoutMetrics.NameStripHeight - ShopLayoutMetrics.CardPadding;
 
             if (piecePreview != null && definition != null)

@@ -1,26 +1,25 @@
 using DeadManZone.Core.Run;
 using DeadManZone.Game;
-using TMPro;
+using DeadManZone.Presentation.Run;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace DeadManZone.Presentation.Shop
 {
     /// <summary>
-    /// Shows reroll supply cost in the shared top-bar tooltip while hovering a lane reroll button.
+    /// Shows unified shop reroll cost in the build messages panel while hovering the reroll button.
     /// </summary>
     public sealed class ShopRerollTooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         private static int _hoverCount;
 
-        [SerializeField] private TMP_Text tooltipText;
+        [SerializeField] private BuildMessagesView messagesView;
 
-        private string _savedTooltip;
         private bool _hovering;
 
         public static bool AnyHovered => _hoverCount > 0;
 
-        public void Configure(TMP_Text tooltip) => tooltipText = tooltip ?? ResolveSharedTooltip();
+        public void Configure(BuildMessagesView messages) => messagesView = messages;
 
         private void OnEnable()
         {
@@ -36,17 +35,12 @@ namespace DeadManZone.Presentation.Shop
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (tooltipText == null)
-                tooltipText = ResolveSharedTooltip();
-
-            if (tooltipText == null)
+            ResolveMessagesView();
+            if (messagesView == null)
                 return;
 
             if (!_hovering)
-            {
                 _hoverCount++;
-                _savedTooltip = tooltipText.text;
-            }
 
             _hovering = true;
             RefreshCostText();
@@ -54,12 +48,12 @@ namespace DeadManZone.Presentation.Shop
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            if (tooltipText == null || !_hovering)
+            if (! _hovering)
                 return;
 
             _hovering = false;
             _hoverCount = Mathf.Max(0, _hoverCount - 1);
-            tooltipText.text = _savedTooltip ?? string.Empty;
+            messagesView?.ClearRerollHover();
         }
 
         private void OnRunStateChanged(RunState state)
@@ -70,26 +64,30 @@ namespace DeadManZone.Presentation.Shop
 
         private void RefreshCostText()
         {
-            if (tooltipText == null || !_hovering)
+            if (messagesView == null || !_hovering)
                 return;
 
-            int cost = RunOrchestrator.BaseRerollCost;
+            int supplyCost = RunOrchestrator.BaseRerollCost;
             if (RunManager.Instance is { HasActiveRun: true })
-                cost += RunManager.Instance.State.RerollCountThisRound;
+                supplyCost += RunManager.Instance.State.RerollCountThisRound;
 
-            tooltipText.text = $"Reroll lane: {cost} supplies";
+            int lockCost = 0;
+            if (RunManager.Instance is { HasActiveRun: true, Orchestrator: not null })
+                lockCost = RunManager.Instance.Orchestrator.ComputeRerollLockAuthorityCost();
+
+            string text = lockCost > 0
+                ? $"Reroll: {supplyCost} supplies + {lockCost} authority (locks)"
+                : $"Reroll: {supplyCost} supplies";
+
+            messagesView.SetRerollHoverMessage(text);
         }
 
-        private static TMP_Text ResolveSharedTooltip()
+        private void ResolveMessagesView()
         {
-            foreach (var marker in FindObjectsByType<ShopSharedTooltip>(FindObjectsSortMode.None))
-            {
-                var label = marker.GetComponent<TMP_Text>();
-                if (label != null)
-                    return label;
-            }
+            if (messagesView != null)
+                return;
 
-            return null;
+            messagesView = FindFirstObjectByType<BuildMessagesView>();
         }
     }
 }

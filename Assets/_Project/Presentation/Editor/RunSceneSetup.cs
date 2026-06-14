@@ -1,8 +1,8 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Game;
 using DeadManZone.Presentation.Board;
-using DeadManZone.Presentation.Reserves;
 using DeadManZone.Presentation.Combat;
+using DeadManZone.Presentation.Reserves;
 using DeadManZone.Presentation.Combat.Arena;
 using DeadManZone.Presentation.DragDrop;
 using DeadManZone.Presentation.Run;
@@ -33,7 +33,7 @@ namespace DeadManZone.Presentation.Editor
                 canvasBg = canvas.AddComponent<Image>();
             canvasBg.color = theme.backgroundColor;
             canvasBg.raycastTarget = false;
-            UiThemeSceneStyling.AddDecorBackground(canvas.transform, theme, menuScene: false);
+            // DecorBackground omitted — full-screen plate blocks the combat arena camera.
 
             var controllerRoot = CreateRegion(canvas.transform, "RunScene", Vector2.zero, Vector2.one);
             var controller = controllerRoot.AddComponent<RunSceneController>();
@@ -51,12 +51,16 @@ namespace DeadManZone.Presentation.Editor
             hud.ApplyTheme(theme);
 
             var tooltipGo = MenuSceneSetup.CreateLabelPublic(
-                topBar.transform, "", 16, FontStyles.Italic,
-                new Vector2(0.62f, 0.5f), new Vector2(360f, 56f));
-            tooltipGo.gameObject.name = "ShopTooltip";
-            tooltipGo.gameObject.AddComponent<ShopSharedTooltip>();
-            var tooltip = tooltipGo;
-            UiThemeSceneStyling.StyleLabel(tooltip, theme, secondary: true);
+                topBar.transform, "", 16, FontStyles.Normal,
+                new Vector2(0.5f, 0.5f), new Vector2(360f, 56f));
+            tooltipGo.gameObject.name = "MessagesText";
+            var messagesView = tooltipGo.gameObject.AddComponent<BuildMessagesView>();
+            UiThemeSceneStyling.StyleLabel(tooltipGo, theme, secondary: true);
+            tooltipGo.alignment = TextAlignmentOptions.Center;
+
+            var messagesSerialized = new SerializedObject(messagesView);
+            messagesSerialized.FindProperty("messageText").objectReferenceValue = tooltipGo;
+            messagesSerialized.ApplyModifiedPropertiesWithoutUndo();
 
             var menuBtn = MenuSceneSetup.CreateSmallButtonPublic(
                 topBar.transform, "MENU", new Vector2(0.94f, 0.5f), new Vector2(100f, 40f));
@@ -69,30 +73,37 @@ namespace DeadManZone.Presentation.Editor
             var bottomBar = CreateRegion(buildPanel.transform, "BottomBar", Vector2.zero, new Vector2(1f, 0.16f));
             UiThemeSceneStyling.AddSidebarBackground(bottomBar.transform, theme);
 
-            var beginFight = MenuSceneSetup.CreateSmallButtonPublic(
-                bottomBar.transform, "Begin Fight",
-                new Vector2(BuildLayoutMetrics.BeginFightAnchorX, BuildLayoutMetrics.BottomBarCenterY),
-                new Vector2(160f, 48f));
-            var beginFightRect = beginFight.GetComponent<RectTransform>();
-            beginFightRect.anchoredPosition = new Vector2(0f, BuildLayoutMetrics.BottomBarVerticalOffsetPixels);
-            UiThemeSceneStyling.StyleButton(beginFight, theme, accent: true);
-
             var boardAreaGo = CreateRegion(mainRow.transform, "BoardArea", new Vector2(0f, 0f), new Vector2(BoardAreaAnchorMaxX, 1f));
+            var centerAreaGo = CreateRegion(mainRow.transform, "CenterColumn", new Vector2(0.42f, 0f), new Vector2(0.66f, 1f));
             var shopAreaGo = CreateRegion(mainRow.transform, "ShopArea", new Vector2(ShopAreaAnchorMinX, 0f), Vector2.one);
             var boardAreaRect = boardAreaGo.GetComponent<RectTransform>();
+            var centerAreaRect = centerAreaGo.GetComponent<RectTransform>();
             var shopAreaRect = shopAreaGo.GetComponent<RectTransform>();
 
             var boardView = CreateBoardSection(boardAreaGo.transform, theme);
-            var shopView = CreateShopSection(shopAreaGo.transform, tooltip, theme, boardView);
+            var unitCardPanel = CreateCenterColumnSection(centerAreaGo.transform, theme);
+            var shopView = CreateShopSection(shopAreaGo.transform, theme, boardView);
 
             var rowLayout = mainRow.AddComponent<BuildRowLayoutFitter>();
             var rowLayoutSerialized = new SerializedObject(rowLayout);
             rowLayoutSerialized.FindProperty("boardArea").objectReferenceValue = boardAreaRect;
+            rowLayoutSerialized.FindProperty("centerArea").objectReferenceValue = centerAreaRect;
             rowLayoutSerialized.FindProperty("shopArea").objectReferenceValue = shopAreaRect;
             rowLayoutSerialized.FindProperty("boardView").objectReferenceValue = boardView;
             rowLayoutSerialized.ApplyModifiedPropertiesWithoutUndo();
+
+            var buffStripRegion = CreateBuffStripRegion(bottomBar.transform, theme);
+            var rerollButton = CreateBottomBarRerollButton(bottomBar.transform, theme, boardView, messagesView);
+            var beginFight = MenuSceneSetup.CreateSmallButtonPublic(
+                bottomBar.transform, "COMBAT",
+                new Vector2(BuildLayoutMetrics.BeginFightAnchorX, BuildLayoutMetrics.BottomBarCenterY),
+                new Vector2(140f, 48f));
+            var beginFightRect = beginFight.GetComponent<RectTransform>();
+            beginFightRect.anchoredPosition = new Vector2(0f, BuildLayoutMetrics.BottomBarVerticalOffsetPixels);
+            UiThemeSceneStyling.StyleButton(beginFight, theme, accent: true);
+
             var reservesView = CreateReservesSection(bottomBar.transform, theme);
-            var sellZone = CreateSellZone(bottomBar.transform, theme, boardView);
+            var sellZone = CreateSellZone(bottomBar.transform, theme, boardView, messagesView);
             var pauseMenu = CreatePauseMenu(buildPanel.transform, theme);
             var endOverlay = CreateRunEndOverlay(buildPanel.transform, theme);
 
@@ -118,8 +129,26 @@ namespace DeadManZone.Presentation.Editor
                 boardView, shopView, reservesView, combatDirector, tacticPanel, hud, endOverlay, pauseMenu,
                 beginFight, menuBtn, rowLayout);
 
+            var hudController = buildPanel.AddComponent<BuildScreenHudController>();
+            var hudControllerSerialized = new SerializedObject(hudController);
+            hudControllerSerialized.FindProperty("buildPanel").objectReferenceValue = buildPanel.transform;
+            hudControllerSerialized.FindProperty("boardView").objectReferenceValue = boardView;
+            hudControllerSerialized.FindProperty("unitCardPanel").objectReferenceValue = unitCardPanel;
+            hudControllerSerialized.FindProperty("messagesView").objectReferenceValue = messagesView;
+            hudControllerSerialized.FindProperty("buffIconStrip").objectReferenceValue =
+                buffStripRegion.GetComponent<BuffIconStripView>();
+            hudControllerSerialized.ApplyModifiedPropertiesWithoutUndo();
+
+            var shopViewSerialized = new SerializedObject(shopView);
+            shopViewSerialized.FindProperty("rerollButton").objectReferenceValue = rerollButton;
+            shopViewSerialized.ApplyModifiedPropertiesWithoutUndo();
+
+            CenterColumnLayoutFitter.EnsureOnBuildPanel(
+                buildPanel.transform,
+                messagesView.GetComponent<RectTransform>(),
+                buffStripRegion,
+                rowLayout);
             ShopBackgroundBootstrap.ApplyToBuildPanel(buildPanel.transform, theme);
-            RunBuildUiBootstrap.EnsureOnBuildPanel(buildPanel.transform, boardView, rowLayout);
             BuildUiChromeBootstrap.Apply(buildPanel.transform);
             RunHudLayoutFitter.EnsureOnBuildPanel(buildPanel.transform, builtHud.Root, rowLayout);
             ReservesLayoutFitter.EnsureOnBuildPanel(
@@ -287,16 +316,100 @@ namespace DeadManZone.Presentation.Editor
             return tile;
         }
 
-        private static ShopView CreateShopSection(Transform parent, TMP_Text sharedTooltip, UiThemeSO theme, BoardView boardView)
+        private static UnitCardPanelView CreateCenterColumnSection(Transform parent, UiThemeSO theme)
         {
-            var (generalRoot, rerollGeneral, offensiveRow) = CreateLaneRow(parent, "Offensive", 2, theme, boardView, sharedTooltip);
-            var (engineerRoot, rerollEngineers, defensiveRow) = CreateLaneRow(parent, "Defensive", 1, theme, boardView, sharedTooltip);
-            var (reqRoot, rerollReq, specialtyRow) = CreateLaneRow(parent, "Specialty", 0, theme, boardView, sharedTooltip);
+            var panelGo = CreateRegion(parent, "UnitCardPanel", new Vector2(0.06f, 0.10f), new Vector2(0.94f, 0.90f));
+            var panelBg = panelGo.AddComponent<Image>();
+            UiThemeApplicator.ApplyCard(panelBg, theme);
+            panelBg.raycastTarget = false;
+            panelGo.SetActive(false);
 
-            var laneLayout = parent.gameObject.AddComponent<ShopLaneLayoutFitter>();
-            laneLayout.Configure(offensiveRow, defensiveRow, specialtyRow);
+            var cardGo = new GameObject("UnitCard", typeof(RectTransform), typeof(PieceHoverCard));
+            cardGo.transform.SetParent(panelGo.transform, false);
+            Stretch(cardGo.GetComponent<RectTransform>());
 
-            ShopUiBootstrap.EnsureOnShopArea(parent, boardView, sharedTooltip);
+            var panelView = panelGo.AddComponent<UnitCardPanelView>();
+            var panelSerialized = new SerializedObject(panelView);
+            panelSerialized.FindProperty("panelRoot").objectReferenceValue = panelGo.GetComponent<RectTransform>();
+            panelSerialized.FindProperty("unitCard").objectReferenceValue = cardGo.GetComponent<PieceHoverCard>();
+            panelSerialized.ApplyModifiedPropertiesWithoutUndo();
+            return panelView;
+        }
+
+        private static RectTransform CreateBuffStripRegion(Transform bottomBar, UiThemeSO theme)
+        {
+            var region = CreateRegion(bottomBar, "BuffStripRegion", new Vector2(0.42f, 0f), new Vector2(0.66f, 1f));
+
+            var iconContainerGo = new GameObject("IconContainer", typeof(RectTransform));
+            iconContainerGo.transform.SetParent(region.transform, false);
+            var iconContainer = iconContainerGo.GetComponent<RectTransform>();
+            iconContainer.anchorMin = new Vector2(0.04f, 0.30f);
+            iconContainer.anchorMax = new Vector2(0.96f, 0.72f);
+            iconContainer.offsetMin = Vector2.zero;
+            iconContainer.offsetMax = Vector2.zero;
+            var layout = iconContainerGo.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 6f;
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.childControlWidth = false;
+            layout.childControlHeight = false;
+
+            var iconTemplateGo = new GameObject("BuffIconTemplate", typeof(RectTransform), typeof(Image));
+            iconTemplateGo.transform.SetParent(iconContainerGo.transform, false);
+            iconTemplateGo.SetActive(false);
+            var iconTemplateRect = iconTemplateGo.GetComponent<RectTransform>();
+            iconTemplateRect.sizeDelta = new Vector2(36f, 36f);
+            var iconTemplateImage = iconTemplateGo.GetComponent<Image>();
+            iconTemplateImage.raycastTarget = true;
+            UiThemeApplicator.ApplyCard(iconTemplateImage, theme);
+
+            var detail = MenuSceneSetup.CreateLabelPublic(
+                region.transform, "", 11f, FontStyles.Normal,
+                new Vector2(0.5f, 0.12f), new Vector2(280f, 28f));
+            detail.alignment = TextAlignmentOptions.Center;
+            UiThemeSceneStyling.StyleLabel(detail, theme, secondary: true);
+            detail.gameObject.SetActive(false);
+
+            var strip = region.AddComponent<BuffIconStripView>();
+            var stripSerialized = new SerializedObject(strip);
+            stripSerialized.FindProperty("iconContainer").objectReferenceValue = iconContainer;
+            stripSerialized.FindProperty("iconTemplate").objectReferenceValue = iconTemplateGo.GetComponent<Image>();
+            stripSerialized.FindProperty("hoverDetailText").objectReferenceValue = detail;
+            stripSerialized.FindProperty("theme").objectReferenceValue = theme;
+            stripSerialized.ApplyModifiedPropertiesWithoutUndo();
+
+            return region.GetComponent<RectTransform>();
+        }
+
+        private static Button CreateBottomBarRerollButton(
+            Transform bottomBar,
+            UiThemeSO theme,
+            BoardView boardView,
+            BuildMessagesView messagesView)
+        {
+            var button = MenuSceneSetup.CreateSmallButtonPublic(
+                bottomBar, "REROLL",
+                new Vector2(BuildLayoutMetrics.RerollAnchorX, BuildLayoutMetrics.BottomBarCenterY),
+                new Vector2(100f, 48f));
+            var rect = button.GetComponent<RectTransform>();
+            rect.anchoredPosition = new Vector2(0f, BuildLayoutMetrics.BottomBarVerticalOffsetPixels);
+            UiThemeSceneStyling.StyleButton(button, theme);
+
+            var scaled = button.gameObject.AddComponent<BoardScaledRect>();
+            scaled.Configure(boardView, 1, 1);
+
+            var tooltip = button.gameObject.AddComponent<ShopRerollTooltip>();
+            tooltip.Configure(messagesView);
+
+            return button;
+        }
+
+        private static ShopView CreateShopSection(Transform parent, UiThemeSO theme, BoardView boardView)
+        {
+            var shopPanel = CreateRegion(parent, "ShopPanel", new Vector2(0.04f, 0.06f), new Vector2(0.96f, 0.94f));
+
+            var offersGrid = CreateRegion(shopPanel.transform, "OffersGrid", new Vector2(0.04f, 0.08f), new Vector2(0.96f, 0.92f));
+
+            ShopUiBootstrap.EnsureOnShopArea(parent, boardView, null);
 
             var offerPrefab = CreateOfferCardPrefab(theme);
             offerPrefab.transform.SetParent(parent, false);
@@ -304,117 +417,11 @@ namespace DeadManZone.Presentation.Editor
 
             var shopView = parent.gameObject.AddComponent<ShopView>();
             var serialized = new SerializedObject(shopView);
-            serialized.FindProperty("generalLaneRoot").objectReferenceValue = generalRoot;
-            serialized.FindProperty("engineersLaneRoot").objectReferenceValue = engineerRoot;
-            serialized.FindProperty("requisitionLaneRoot").objectReferenceValue = reqRoot;
+            serialized.FindProperty("offersGridRoot").objectReferenceValue = offersGrid.transform;
             serialized.FindProperty("offerCardPrefab").objectReferenceValue = offerPrefab;
-            serialized.FindProperty("modifiersTooltipText").objectReferenceValue = sharedTooltip;
-            serialized.FindProperty("rerollGeneralButton").objectReferenceValue = rerollGeneral;
-            serialized.FindProperty("rerollEngineersButton").objectReferenceValue = rerollEngineers;
-            serialized.FindProperty("rerollRequisitionButton").objectReferenceValue = rerollReq;
             serialized.FindProperty("boardView").objectReferenceValue = boardView;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return shopView;
-        }
-
-        private static (Transform offersRoot, Button reroll, RectTransform rowRect) CreateLaneRow(
-            Transform parent,
-            string title,
-            int laneIndexFromBottom,
-            UiThemeSO theme,
-            BoardView boardView,
-            TMP_Text sharedTooltip)
-        {
-            var (minY, maxY) = BuildLayoutMetrics.GetShopLaneAnchors(laneIndexFromBottom);
-            var row = CreateRegion(
-                parent,
-                title + "Row",
-                new Vector2(0f, minY),
-                new Vector2(BuildLayoutMetrics.ShopRightInset, maxY));
-            var laneBg = row.AddComponent<Image>();
-            UiThemeApplicator.ApplyInventoryPanel(laneBg, theme);
-            var laneTint = title switch
-            {
-                "Offensive" => theme.generalLaneTint,
-                "Defensive" => theme.engineersLaneTint,
-                _ => theme.requisitionLaneTint
-            };
-            if (theme.shopBackgroundSprite != null)
-            {
-                laneBg.color = Color.clear;
-                var tintOverlay = MenuSceneSetup.CreateStretchChild(row.transform, "LaneTint");
-                tintOverlay.transform.SetAsFirstSibling();
-                var tintImage = tintOverlay.AddComponent<Image>();
-                laneTint.a = Mathf.Clamp(theme.shopLaneTintScaleWithBackground * 0.35f, 0.04f, 0.18f);
-                tintImage.color = laneTint;
-                tintImage.raycastTarget = false;
-            }
-            else if (theme.inventoryPanelSprite != null)
-            {
-                var tintOverlay = MenuSceneSetup.CreateStretchChild(row.transform, "LaneTint");
-                tintOverlay.transform.SetAsFirstSibling();
-                var tintImage = tintOverlay.AddComponent<Image>();
-                tintImage.color = laneTint;
-                tintImage.raycastTarget = false;
-            }
-            else
-            {
-                laneBg.color = laneTint;
-            }
-            laneBg.raycastTarget = false;
-
-            var offers = CreateRegion(row.transform, "Offers", new Vector2(0.04f, 0.14f), new Vector2(0.90f, 0.86f));
-            var layout = offers.AddComponent<HorizontalLayoutGroup>();
-            layout.spacing = ShopLayoutMetrics.LaneSpacing;
-            layout.childAlignment = TextAnchor.UpperCenter;
-            layout.childControlWidth = false;
-            layout.childControlHeight = false;
-            layout.childForceExpandWidth = false;
-            layout.childForceExpandHeight = false;
-            layout.padding = new RectOffset(4, 4, 4, 4);
-
-            var reroll = CreateRerollButton(row.transform, theme, boardView, sharedTooltip);
-            return (offers.transform, reroll, row.GetComponent<RectTransform>());
-        }
-
-        private static Button CreateRerollButton(
-            Transform row,
-            UiThemeSO theme,
-            BoardView boardView,
-            TMP_Text sharedTooltip)
-        {
-            var go = new GameObject("RerollButton", typeof(RectTransform));
-            go.transform.SetParent(row, false);
-            var rect = go.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.965f, 0.5f);
-            rect.anchorMax = new Vector2(0.965f, 0.5f);
-            rect.pivot = new Vector2(1f, 0.5f);
-            rect.anchoredPosition = Vector2.zero;
-
-            var image = go.AddComponent<Image>();
-            UiThemeApplicator.ApplyCard(image, theme);
-            image.raycastTarget = true;
-
-            var button = go.AddComponent<Button>();
-            UiThemeSceneStyling.StyleButton(button, theme);
-
-            var label = MenuSceneSetup.CreateLabelPublic(
-                go.transform, "\u21BB", 22, FontStyles.Bold,
-                new Vector2(0.5f, 0.5f), new Vector2(48f, 48f));
-            label.alignment = TextAlignmentOptions.Center;
-            label.raycastTarget = false;
-            UiThemeSceneStyling.StyleLabel(label, theme);
-
-            var scaled = go.AddComponent<BoardScaledRect>();
-            scaled.Configure(boardView, 1, 1);
-
-            if (sharedTooltip != null)
-            {
-                var tooltip = go.AddComponent<ShopRerollTooltip>();
-                tooltip.Configure(sharedTooltip);
-            }
-
-            return button;
         }
 
         private static GameObject CreateOfferCardPrefab(UiThemeSO theme)
@@ -776,7 +783,11 @@ namespace DeadManZone.Presentation.Editor
             return presenter;
         }
 
-        private static SellDropZone CreateSellZone(Transform bottomBar, UiThemeSO theme, BoardView boardView)
+        private static SellDropZone CreateSellZone(
+            Transform bottomBar,
+            UiThemeSO theme,
+            BoardView boardView,
+            BuildMessagesView messagesView)
         {
             var sell = CreateRegion(
                 bottomBar,
@@ -804,6 +815,9 @@ namespace DeadManZone.Presentation.Editor
             labelRect.offsetMin = new Vector2(4f, 4f);
             labelRect.offsetMax = new Vector2(-4f, -4f);
             UiThemeSceneStyling.StyleLabel(label, theme);
+
+            var bridge = sell.AddComponent<SellZoneMessagesBridge>();
+            bridge.Configure(messagesView);
 
             return sell.AddComponent<SellDropZone>();
         }

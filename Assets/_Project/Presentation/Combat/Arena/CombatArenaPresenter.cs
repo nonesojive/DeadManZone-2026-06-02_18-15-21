@@ -99,7 +99,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             ResetArenaActors(poolRoot);
 
             Transform buildingsRoot = bootstrap.BuildingsRoot != null ? bootstrap.BuildingsRoot : poolRoot;
-            _buildingSpawner.SpawnAll(battlefield, _mapper, buildingsRoot, GetPiece);
+            _buildingSpawner.SpawnAll(battlefield, _mapper, buildingsRoot, GetPiece, config);
 
             foreach (var cell in battlefield.Cells)
             {
@@ -114,9 +114,9 @@ namespace DeadManZone.Presentation.Combat.Arena
                 actor.Initialize(
                     cell.InstanceId,
                     source != null ? source.icon : null,
-                    source != null ? source.combatArenaPrefab : null,
-                    source != null ? source.combatArenaModelScale : 1f,
-                    source != null ? source.combatArenaModelHeight : 0f,
+                    CombatArenaPrefabResolver.ResolveUnitPrefab(source, config),
+                    CombatArenaPrefabResolver.ResolveUnitScale(source, config),
+                    CombatArenaPrefabResolver.ResolveUnitHeight(source, config),
                     _arenaCameraTransform,
                     _mapper,
                     cell.Position,
@@ -211,9 +211,9 @@ namespace DeadManZone.Presentation.Combat.Arena
                 actor.Initialize(
                     cell.InstanceId,
                     source != null ? source.icon : null,
-                    source != null ? source.combatArenaPrefab : null,
-                    source != null ? source.combatArenaModelScale : 1f,
-                    source != null ? source.combatArenaModelHeight : 0f,
+                    CombatArenaPrefabResolver.ResolveUnitPrefab(source, config),
+                    CombatArenaPrefabResolver.ResolveUnitScale(source, config),
+                    CombatArenaPrefabResolver.ResolveUnitHeight(source, config),
                     _arenaCameraTransform,
                     _mapper,
                     _anchors[cell.InstanceId],

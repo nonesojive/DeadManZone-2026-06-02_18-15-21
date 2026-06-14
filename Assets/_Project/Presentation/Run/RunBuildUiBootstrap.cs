@@ -42,7 +42,55 @@ namespace DeadManZone.Presentation.Run
             ApplyRunHudPanel();
             ApplyReservesLayout();
             ApplySellZoneSize();
+            ApplyCenterColumnLayout();
+            ApplyCombatButtonLabel();
+            EnsureBuildScreenHudController();
             BuildUiChromeBootstrap.Apply(buildPanel);
+        }
+
+        private void ApplyCenterColumnLayout()
+        {
+            var messages = buildPanel.GetComponentInChildren<BuildMessagesView>(true);
+            var buffStrip = buildPanel.transform.Find("BottomBar/BuffStripRegion") as RectTransform;
+            if (buffStrip == null)
+                buffStrip = buildPanel.GetComponentInChildren<BuffIconStripView>(true)?.GetComponent<RectTransform>();
+
+            if (messages != null || buffStrip != null)
+                CenterColumnLayoutFitter.EnsureOnBuildPanel(
+                    buildPanel,
+                    messages != null ? messages.GetComponent<RectTransform>() : null,
+                    buffStrip,
+                    mainRowLayout);
+        }
+
+        private void ApplyCombatButtonLabel()
+        {
+            var bottomBar = buildPanel.Find("BottomBar");
+            if (bottomBar == null)
+                return;
+
+            foreach (var button in bottomBar.GetComponentsInChildren<Button>(true))
+            {
+                var label = button.GetComponentInChildren<TMP_Text>();
+                if (label == null || !label.text.Contains("Begin Fight"))
+                    continue;
+
+                label.text = "COMBAT";
+                break;
+            }
+        }
+
+        private void EnsureBuildScreenHudController()
+        {
+            var controller = buildPanel.GetComponent<BuildScreenHudController>();
+            if (controller == null)
+                controller = buildPanel.gameObject.AddComponent<BuildScreenHudController>();
+            controller.Configure(
+                buildPanel,
+                boardView,
+                buildPanel.GetComponentInChildren<UnitCardPanelView>(true),
+                buildPanel.GetComponentInChildren<BuildMessagesView>(true),
+                buildPanel.GetComponentInChildren<BuffIconStripView>(true));
         }
 
         private const float LastLogAnchorX = 0.895f;

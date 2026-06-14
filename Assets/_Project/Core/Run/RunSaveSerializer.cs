@@ -6,7 +6,7 @@ namespace DeadManZone.Core.Run
 {
     public static class RunSaveSerializer
     {
-        private const int CurrentSchemaVersion = 6;
+        private const int CurrentSchemaVersion = 7;
         private const int LegacyMigrationTargetVersion = 2;
         private const int LegacyDefaultManpower = 100;
         private const int LegacyDefaultMorale = 100;
@@ -35,6 +35,7 @@ namespace DeadManZone.Core.Run
             else
             {
                 MigrateShopLaneNames(root);
+                MigrateLockedOffers(root);
                 MigrateCombatSave(root);
                 json = root.ToString();
             }
@@ -76,6 +77,17 @@ namespace DeadManZone.Core.Run
             MigrateShopLaneNames(root);
             root["SaveSchemaVersion"] = LegacyMigrationTargetVersion;
             return root;
+        }
+
+        private static void MigrateLockedOffers(JObject root)
+        {
+            if (root["LockedOffers"] is JArray)
+                return;
+
+            if (root["LockedOffer"] is not JObject locked || locked.Type == JTokenType.Null)
+                return;
+
+            root["LockedOffers"] = new JArray { locked };
         }
 
         private static void MigrateShopLaneNames(JObject root)

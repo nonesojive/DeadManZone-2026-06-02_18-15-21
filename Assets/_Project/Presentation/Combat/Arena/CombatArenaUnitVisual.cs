@@ -4,30 +4,14 @@ using UnityEngine;
 namespace DeadManZone.Presentation.Combat.Arena
 {
     /// <summary>
-    /// Instantiates a 3D combat-arena model and drives POLYGON WW2 German soldier animators.
+    /// Instantiates a 3D combat-arena model and drives Synty locomotion or static mesh presentation.
     /// Board/shop pieces keep using 2D sprites; this is combat-arena only.
     /// </summary>
     public sealed class CombatArenaUnitVisual : MonoBehaviour
     {
-        private static readonly int StatusWalk = Animator.StringToHash("Status_walk");
-        private static readonly int StatusK98 = Animator.StringToHash("status_k98");
-        private static readonly int StatusStg44 = Animator.StringToHash("Status_stg44");
-        private static readonly int StatusMp40 = Animator.StringToHash("status_MP40");
-        private static readonly int StatusLuger = Animator.StringToHash("Status_LugerP08");
-        private static readonly int StatusPanzerschreck = Animator.StringToHash("Status_panzerschreck");
-        private static readonly int StatusPanzerfaust = Animator.StringToHash("Status_panzerfaust");
-        private static readonly int StatusMg42 = Animator.StringToHash("Status_MG42");
-        private static readonly int StatusFlammenwerfer = Animator.StringToHash("Flammenwerfer_status");
-
-        private static readonly string[] HiddenWeaponObjectNames =
-        {
-            "STG44", "MG42", "MP40", "LugerP08", "Panzerschreck", "Panzerfaust", "Flammenwerfer"
-        };
-
         private Transform _modelRoot;
-        private Animator _animator;
+        private ICombatUnitVisualDriver _driver;
         private Coroutine _attackRoutine;
-        private bool _walking;
 
         public bool HasModel => _modelRoot != null;
 
@@ -38,7 +22,6 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (prefab == null)
                 return;
 
-            // Legacy store prefabs must reference the root GameObject fileID, not the Prefab wrapper.
             var instance = Object.Instantiate(prefab, transform, false);
             if (instance == null)
             {
@@ -52,24 +35,22 @@ namespace DeadManZone.Presentation.Combat.Arena
             _modelRoot.localRotation = Quaternion.identity;
             _modelRoot.localScale = Vector3.one;
 
+            CombatArenaFxCull.RemoveTransparentFxRenderers(instance);
+
             FitHeight(targetHeight);
 
             float scale = modelScale > 0f ? modelScale : 1f;
             if (Mathf.Abs(scale - 1f) > 0.001f)
                 _modelRoot.localScale *= scale;
-            _animator = instance.GetComponentInChildren<Animator>();
-            HideUnusedWeapons(instance.transform);
-            SetIdleWithK98();
+
+            var animator = instance.GetComponentInChildren<Animator>();
+            _driver = animator != null && animator.runtimeAnimatorController != null
+                ? new SyntyLocomotionVisualDriver()
+                : new StaticMeshVisualDriver();
+            _driver.Bind(animator);
         }
 
-        public void SetWalking(bool walking)
-        {
-            if (_walking == walking || _animator == null)
-                return;
-
-            _walking = walking;
-            _animator.SetInteger(StatusWalk, walking ? 1 : 0);
-        }
+        public void SetWalking(bool walking) => _driver?.SetWalking(walking);
 
         public void FaceWorldDirection(Vector3 worldDirection)
         {
@@ -85,7 +66,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public void PlayAttackToward(Vector3 targetWorld)
         {
-            if (_animator == null || _modelRoot == null)
+            if (_modelRoot == null)
                 return;
 
             Vector3 flatTarget = new Vector3(targetWorld.x, _modelRoot.position.y, targetWorld.z);
@@ -104,8 +85,8 @@ namespace DeadManZone.Presentation.Combat.Arena
                 _attackRoutine = null;
             }
 
-            _walking = false;
-            _animator = null;
+            _driver?.Clear();
+            _driver = null;
 
             if (_modelRoot != null)
             {
@@ -134,61 +115,13 @@ namespace DeadManZone.Presentation.Combat.Arena
             _modelRoot.localScale *= targetHeight / currentHeight;
         }
 
-        private static void HideUnusedWeapons(Transform root)
-        {
-            foreach (var renderer in root.GetComponentsInChildren<Renderer>(true))
-            {
-                if (renderer == null)
-                    continue;
-
-                string objectName = renderer.gameObject.name;
-                for (int i = 0; i < HiddenWeaponObjectNames.Length; i++)
-                {
-                    if (objectName != HiddenWeaponObjectNames[i])
-                        continue;
-
-                    renderer.gameObject.SetActive(false);
-                    break;
-                }
-            }
-        }
-
-        private void SetIdleWithK98()
-        {
-            if (_animator == null)
-                return;
-
-            ZeroWeaponLayers();
-            _animator.SetInteger(StatusK98, 1);
-            _animator.SetInteger(StatusWalk, 0);
-        }
-
-        private void ZeroWeaponLayers()
-        {
-            if (_animator == null)
-                return;
-
-            _animator.SetInteger(StatusStg44, 0);
-            _animator.SetInteger(StatusMp40, 0);
-            _animator.SetInteger(StatusLuger, 0);
-            _animator.SetInteger(StatusPanzerschreck, 0);
-            _animator.SetInteger(StatusPanzerfaust, 0);
-            _animator.SetInteger(StatusMg42, 0);
-            _animator.SetInteger(StatusFlammenwerfer, 0);
-        }
-
         private IEnumerator AttackRoutine()
         {
-            SetWalking(false);
-            _animator.SetInteger(StatusK98, 2);
+            _driver?.PlayAttack();
 
             yield return new WaitForSeconds(0.12f);
-
-            _animator.SetInteger(StatusK98, 4);
-
             yield return new WaitForSeconds(0.45f);
 
-            _animator.SetInteger(StatusK98, 1);
             _attackRoutine = null;
         }
     }

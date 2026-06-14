@@ -307,18 +307,23 @@ namespace DeadManZone.Game
             return Math.Max(0, upkeep - State.Manpower);
         }
 
-        public bool TryRerollLane(ShopLane lane)
+        public bool TryRerollShop()
         {
-            int cost = BaseRerollCost + State.RerollCountThisRound;
-            if (State.Supplies < cost)
+            if (!CanRerollShop())
                 return false;
 
-            State.Supplies -= cost;
+            int goldCost = BaseRerollCost + State.RerollCountThisRound;
+            int authorityCost = ComputeRerollLockAuthorityCost();
+
+            State.Supplies -= goldCost;
+            State.Authority -= authorityCost;
             State.RerollCountThisRound++;
-            RerollLaneOffers(lane);
+            RerollShopOffers();
             Persist();
             return true;
         }
+
+        public bool TryRerollLane(ShopLane lane) => TryRerollShop();
 
         public bool TrySellPlacedPiece(string instanceId)
         {

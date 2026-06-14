@@ -14,18 +14,36 @@ MonoBehaviour:
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatArenaConfigSO
   cellWidth: 1.8
   cellDepth: 1.8
-  cameraElevationDegrees: 100
-  cameraAzimuthDegrees: 90
-  cameraDistance: 50
-  fieldOfView: 30
-  autoFrameWidth: 0
-  horizontalViewportPadding: 1
-  autoFrameVerticalPosition: 0
-  boardVerticalViewportCenter: 0.3
-  lookAtDepthOffset: 0.63060164
-  useManualCameraPose: 1
-  lookAtWorld: {x: 0.12542187, y: 0.00008812826, z: 0.63060164}
+  cameraElevationDegrees: 50
+  cameraAzimuthDegrees: 270
+  cameraDistance: 28
+  fieldOfView: 38
+  autoFrameWidth: 1
+  horizontalViewportPadding: 0
+  autoFrameVerticalPosition: 1
+  boardVerticalViewportCenter: 0.44
+  lookAtDepthOffset: 0
+  useManualCameraPose: 0
+  manualCameraWorldPosition: {x: 0, y: 0, z: 0}
+  lookAtWorld: {x: 0, y: 0, z: 0}
   moveLerpSeconds: 0.4
   attackLungeSeconds: 0.15
   attackLungeDistance: 0.35
   unitSpawnFadeSeconds: 0.35
+  unitModelScaleMultiplier: 1.25
+  defaultUnitModelHeight: 1.85
+  useSyntyTerrain: 1
+  spawnPerimeterProps: 0
+  useSyntySkybox: 0
+  groundPadding: 1.35
+  enableArenaFog: 1
+  fogDensity: 0.022
+  syntyGroundPrefabPath: Assets/Synty/PolygonGeneric/Prefabs/Environment/SM_Gen_Env_Ground_Dirt_Large_01.prefab
+  useFlatTexturedGround: 1
+  syntyGroundMaterial: {fileID: 2100000, guid: a98a889207a454f48ab79b85673a9804, type: 2}
+  syntyGroundPrefab: {fileID: 7108630899420453476, guid: 1e0c08bf09b1111458c92d464f747140, type: 3}
+  syntyGroundMaterialPath: Assets/Synty/PolygonGeneric/Materials/Generic_Dirt.mat
+  syntySkyboxMaterialPath: Assets/Synty/PolygonApocalypse/Materials/Misc/Skydome_Day_01.mat
+  fallbackUnitPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Rifle.prefab
+  fallbackBuildingPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_SupplyDepot.prefab
+  fallbackHqPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_Hq.prefab

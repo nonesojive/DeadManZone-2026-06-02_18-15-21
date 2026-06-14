@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Tags;
+using DeadManZone.Presentation.Run;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,8 @@ namespace DeadManZone.Presentation.Board
         private static PieceHoverCard _sharedHoverCard;
 
         [SerializeField] private PieceHoverCard hoverCard;
+        [SerializeField] private UnitCardPanelView fixedUnitCardPanel;
+        [SerializeField] private BuildMessagesView messagesView;
         [SerializeField] private Canvas targetCanvas;
         [SerializeField] private Vector2 screenOffset = new(24f, -24f);
 
@@ -37,6 +40,13 @@ namespace DeadManZone.Presentation.Board
             if (definition == null)
                 return;
 
+            if (fixedUnitCardPanel != null)
+            {
+                fixedUnitCardPanel.Show(definition, context);
+                ResolveMessagesView()?.SetFlavorFromPiece(definition);
+                return;
+            }
+
             var card = ResolveHoverCard();
             var canvas = ResolveCanvas();
             if (card == null)
@@ -51,9 +61,18 @@ namespace DeadManZone.Presentation.Board
 
         public void Hide()
         {
+            if (fixedUnitCardPanel != null)
+                fixedUnitCardPanel.Hide();
+
+            ResolveMessagesView()?.ClearFlavor();
+
             if (hoverCard != null)
                 hoverCard.Hide();
         }
+
+        public void SetFixedUnitCardPanel(UnitCardPanelView panel) => fixedUnitCardPanel = panel;
+
+        public void SetMessagesView(BuildMessagesView messages) => messagesView = messages;
 
         private PieceHoverCard ResolveHoverCard()
         {
@@ -167,6 +186,15 @@ namespace DeadManZone.Presentation.Board
             }
 
             return _hiddenTagNames.Count == 0 ? string.Empty : string.Join(", ", _hiddenTagNames);
+        }
+
+        private BuildMessagesView ResolveMessagesView()
+        {
+            if (messagesView != null)
+                return messagesView;
+
+            messagesView = FindFirstObjectByType<BuildMessagesView>();
+            return messagesView;
         }
     }
 }

@@ -19,23 +19,48 @@ namespace DeadManZone.Game
             if (State.Supplies < offer.GoldPrice)
                 return false;
 
-            if (offer.Lane == ShopLane.Specialty && offer.RequisitionPrice > 0)
-                return State.Authority >= offer.RequisitionPrice;
+            if (offer.RequisitionPrice > 0 && State.Authority < offer.RequisitionPrice)
+                return false;
 
             return true;
         }
 
+        public int ComputeRerollLockAuthorityCost()
+        {
+            int lockCount = GetLockedOffers().Count;
+            return Math.Max(0, lockCount - 1);
+        }
+
+        public bool CanRerollShop()
+        {
+            int goldCost = BaseRerollCost + State.RerollCountThisRound;
+            if (State.Supplies < goldCost)
+                return false;
+
+            int authorityCost = ComputeRerollLockAuthorityCost();
+            return State.Authority >= authorityCost;
+        }
+
         public bool IsOfferLocked(ShopOffer offer) =>
             offer != null &&
-            State != null &&
-            State.LockedOffer != null &&
-            State.LockedOffer.Lane == offer.Lane &&
-            State.LockedOffer.SlotIndex == offer.SlotIndex &&
-            State.LockedOffer.PieceId == offer.PieceId;
+            GetLockedOffers().Any(locked => locked.SlotIndex == offer.SlotIndex);
 
         public void SetLockedOffer(ShopOffer offer, bool locked)
         {
-            State.LockedOffer = locked && offer != null ? ShopOfferRecord.FromOffer(offer) : null;
+            if (State.LockedOffers == null)
+                State.LockedOffers = new List<ShopOfferRecord>();
+
+            if (!locked || offer == null)
+            {
+                State.LockedOffers.RemoveAll(l => l.SlotIndex == offer?.SlotIndex);
+            }
+            else
+            {
+                State.LockedOffers.RemoveAll(l => l.SlotIndex == offer.SlotIndex);
+                State.LockedOffers.Add(ShopOfferRecord.FromOffer(offer));
+            }
+
+            State.LockedOffer = null;
             State.FrozenOfferId = null;
             Persist();
         }
@@ -204,17 +229,28 @@ namespace DeadManZone.Game
         private ShopOffer FindOffer(string offerId) =>
             State.Shop?.Offers?.FirstOrDefault(o => o.OfferId == offerId);
 
+        private List<ShopOfferRecord> GetLockedOffers()
+        {
+            if (State.LockedOffers != null && State.LockedOffers.Count > 0)
+                return State.LockedOffers;
+
+            if (State.LockedOffer != null)
+                return new List<ShopOfferRecord> { State.LockedOffer };
+
+            return new List<ShopOfferRecord>();
+        }
+
         private void PayOffer(ShopOffer offer)
         {
             State.Supplies -= offer.GoldPrice;
-            if (offer.Lane == ShopLane.Specialty && offer.RequisitionPrice > 0)
+            if (offer.RequisitionPrice > 0)
                 State.Authority -= offer.RequisitionPrice;
         }
 
         private void RefundOffer(ShopOffer offer)
         {
             State.Supplies += offer.GoldPrice;
-            if (offer.Lane == ShopLane.Specialty && offer.RequisitionPrice > 0)
+            if (offer.RequisitionPrice > 0)
                 State.Authority += offer.RequisitionPrice;
         }
 
@@ -225,20 +261,22 @@ namespace DeadManZone.Game
 
             var offer = State.Shop.Offers.FirstOrDefault(o => o.OfferId == offerId);
             if (offer != null && IsOfferLocked(offer))
-                State.LockedOffer = null;
+                State.LockedOffers?.RemoveAll(l => l.SlotIndex == offer.SlotIndex);
 
             State.Shop.Offers.RemoveAll(o => o.OfferId == offerId);
         }
 
-        private void ApplyLockedSlot(ShopState shop)
+        private void ApplyLockedSlots(ShopState shop)
         {
-            if (shop?.Offers == null || State.LockedOffer == null)
+            if (shop?.Offers == null)
                 return;
 
-            var locked = State.LockedOffer.ToOffer();
-            shop.Offers.RemoveAll(o =>
-                o.Lane == locked.Lane && o.SlotIndex == locked.SlotIndex);
-            shop.Offers.Add(locked);
+            foreach (var lockedRecord in GetLockedOffers())
+            {
+                var locked = lockedRecord.ToOffer();
+                shop.Offers.RemoveAll(o => o.SlotIndex == locked.SlotIndex);
+                shop.Offers.Add(locked);
+            }
         }
 
         private void RefreshShop()
@@ -252,7 +290,7 @@ namespace DeadManZone.Game
                 shopSeed,
                 State.LastEnemyFactionId,
                 State.SalvageChancePercent);
-            ApplyLockedSlot(shop);
+            ApplyLockedSlots(shop);
             State.Shop = shop;
         }
 
@@ -264,47 +302,33 @@ namespace DeadManZone.Game
             State.LastMusterGained = gained;
         }
 
-        private void RerollLaneOffers(ShopLane lane)
+        private void RerollShopOffers()
         {
             if (State.Shop?.Offers == null)
                 return;
 
             var board = GetPlayerBoard();
             var modifiers = State.Shop.Modifiers ?? ShopGenerator.ComputeModifiers(board);
-            int slotCount = GetLaneSlotCount(lane, modifiers);
+            var fixedSlots = new Dictionary<int, ShopOffer>();
 
-            Dictionary<int, ShopOffer> fixedSlots = null;
-            if (State.LockedOffer != null && State.LockedOffer.Lane == lane)
+            foreach (var lockedRecord in GetLockedOffers())
             {
-                fixedSlots = new Dictionary<int, ShopOffer>
-                {
-                    [State.LockedOffer.SlotIndex] = State.LockedOffer.ToOffer()
-                };
+                var locked = lockedRecord.ToOffer();
+                fixedSlots[locked.SlotIndex] = locked;
             }
 
             int shopSeed = State.RunSeed + State.FightIndex * 100 + State.RerollCountThisRound;
-            var rerolled = _shopGenerator.RollLaneOffers(
-                lane,
-                slotCount,
+            var rerolled = _shopGenerator.RollShopOffers(
+                board,
+                State.FactionId,
                 modifiers,
                 shopSeed,
                 State.FightIndex,
-                State.FactionId,
                 fixedSlots,
-                board,
                 State.LastEnemyFactionId,
                 State.SalvageChancePercent);
 
-            State.Shop.Offers.RemoveAll(o => o.Lane == lane);
-            State.Shop.Offers.AddRange(rerolled);
-        }
-
-        private static int GetLaneSlotCount(ShopLane lane, ShopModifiers modifiers)
-        {
-            if (lane == ShopLane.Offensive)
-                return ShopGenerator.OffersPerLane + modifiers.ExtraGeneralSlots;
-
-            return ShopGenerator.OffersPerLane;
+            State.Shop.Offers = rerolled;
         }
     }
 }

@@ -236,13 +236,17 @@ namespace DeadManZone.Core.Tests
                             }
                         }
                     };
-                    state.LockedOffer = new ShopOfferRecord
+                    state.LockedOffers = new List<ShopOfferRecord>
                     {
-                        OfferId = "general_test_0",
-                        Lane = Core.Shop.ShopLane.Offensive,
-                        PieceId = "rifle_squad",
-                        GoldPrice = 5,
-                        RequisitionPrice = 0
+                        new ShopOfferRecord
+                        {
+                            OfferId = "general_test_0",
+                            Lane = Core.Shop.ShopLane.Offensive,
+                            PieceId = "rifle_squad",
+                            GoldPrice = 5,
+                            RequisitionPrice = 0,
+                            SlotIndex = 0
+                        }
                     };
                     break;
 
@@ -321,8 +325,9 @@ namespace DeadManZone.Core.Tests
                 case RunPhase.Build:
                     Assert.NotNull(actual.Shop);
                     Assert.AreEqual(expected.Shop.Offers.Count, actual.Shop.Offers.Count);
-                    Assert.NotNull(actual.LockedOffer);
-                    Assert.AreEqual(expected.LockedOffer.PieceId, actual.LockedOffer.PieceId);
+                    Assert.NotNull(actual.LockedOffers);
+                    Assert.AreEqual(1, actual.LockedOffers.Count);
+                    Assert.AreEqual(expected.LockedOffers[0].PieceId, actual.LockedOffers[0].PieceId);
                     break;
 
                 case RunPhase.Combat:

@@ -58,6 +58,31 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log("DeadManZone: cinematic MainMenu scene refreshed.");
         }
 
+        [MenuItem("DeadManZone/Add Main Menu Warehouse Backdrop")]
+        public static void AddMainMenuWarehouseBackdrop()
+        {
+            if (!MainMenuBackdropBuilder.IsKitAvailable())
+            {
+                Debug.LogWarning(
+                    $"Military Warehouse kit not found at {MainMenuBackdropBuilder.KitRoot}. Import the Synty pack first.");
+                return;
+            }
+
+            var existing = GameObject.Find(MainMenuBackdropBuilder.RootName);
+            if (existing != null)
+            {
+                Debug.Log($"{MainMenuBackdropBuilder.RootName} already exists in the open scene.");
+                return;
+            }
+
+            var backdrop = MainMenuBackdropBuilder.TryBuild();
+            if (backdrop == null)
+                return;
+
+            Undo.RegisterCreatedObjectUndo(backdrop, "Add Main Menu Warehouse Backdrop");
+            Debug.Log($"DeadManZone: {MainMenuBackdropBuilder.RootName} added to the open scene.");
+        }
+
         [MenuItem("DeadManZone/Refresh Run Scene")]
         public static void RefreshRunScene()
         {

@@ -109,14 +109,16 @@ namespace DeadManZone.Game
             return purchased;
         }
 
-        public bool TryRerollLane(ShopLane lane)
+        public bool TryRerollShop()
         {
             EnsureOrchestrator();
-            bool rerolled = _orchestrator.TryRerollLane(lane);
+            bool rerolled = _orchestrator.TryRerollShop();
             if (rerolled)
                 NotifyStateChanged();
             return rerolled;
         }
+
+        public bool TryRerollLane(ShopLane lane) => TryRerollShop();
 
         public void SetFrozenOffer(string offerId)
         {

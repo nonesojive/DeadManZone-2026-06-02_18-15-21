@@ -67,7 +67,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 }
             }
 
-            if (!_useModelVisual)
+            if (!_useModelVisual && icon != null)
             {
                 _billboard = GetComponent<CombatBillboard>();
                 if (_billboard == null)

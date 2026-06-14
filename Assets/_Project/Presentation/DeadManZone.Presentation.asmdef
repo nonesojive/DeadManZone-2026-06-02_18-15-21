@@ -6,7 +6,9 @@
     "DeadManZone.Game",
     "DeadManZone.Data",
     "Unity.TextMeshPro",
-    "Unity.UGUI"
+    "Unity.UGUI",
+    "Unity.RenderPipelines.Core.Runtime",
+    "Unity.RenderPipelines.Universal.Runtime"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

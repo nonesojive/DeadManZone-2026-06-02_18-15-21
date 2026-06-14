@@ -6,6 +6,7 @@ namespace DeadManZone.Core.Run
     {
         public string OfferId { get; set; }
         public ShopLane Lane { get; set; }
+        public ShopSlotKind SlotKind { get; set; }
         public int SlotIndex { get; set; }
         public string PieceId { get; set; }
         public int GoldPrice { get; set; }
@@ -19,6 +20,7 @@ namespace DeadManZone.Core.Run
                 {
                     OfferId = offer.OfferId,
                     Lane = offer.Lane,
+                    SlotKind = offer.SlotKind,
                     SlotIndex = offer.SlotIndex,
                     PieceId = offer.PieceId,
                     GoldPrice = offer.GoldPrice,
@@ -31,6 +33,7 @@ namespace DeadManZone.Core.Run
             {
                 OfferId = OfferId,
                 Lane = Lane,
+                SlotKind = SlotKind,
                 SlotIndex = SlotIndex,
                 PieceId = PieceId,
                 GoldPrice = GoldPrice,

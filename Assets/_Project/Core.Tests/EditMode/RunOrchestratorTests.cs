@@ -44,7 +44,7 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(RunPhase.Build, _orchestrator.State.Phase);
             Assert.AreEqual(1, _orchestrator.State.FightIndex);
             Assert.Greater(_orchestrator.State.Shop.Offers.Count, 0);
-            Assert.AreEqual(6, _orchestrator.State.SaveSchemaVersion);
+            Assert.AreEqual(7, _orchestrator.State.SaveSchemaVersion);
             Assert.AreEqual(ReservesState.Width, _orchestrator.State.Reserves.Width);
             Assert.AreEqual(ReservesState.Height, _orchestrator.State.Reserves.Height);
             Assert.IsEmpty(_orchestrator.State.Reserves.Pieces);
@@ -95,16 +95,29 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
-        public void RerollLane_IncreasesCostByOneEachUse()
+        public void RerollShop_IncreasesCostByOneEachUse()
         {
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 101);
             int startingSupplies = _orchestrator.State.Supplies;
 
-            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.Offensive));
-            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.Defensive));
+            Assert.IsTrue(_orchestrator.TryRerollShop());
+            Assert.IsTrue(_orchestrator.TryRerollShop());
 
             Assert.AreEqual(startingSupplies - 3, _orchestrator.State.Supplies);
             Assert.AreEqual(2, _orchestrator.State.RerollCountThisRound);
+        }
+
+        [Test]
+        public void RerollShop_WithTwoLocks_CostsOneAuthority()
+        {
+            _orchestrator.StartNewRun("iron_vanguard", runSeed: 404);
+            _orchestrator.State.Authority = 5;
+            var offers = _orchestrator.State.Shop.Offers;
+            _orchestrator.SetLockedOffer(offers[0], locked: true);
+            _orchestrator.SetLockedOffer(offers[1], locked: true);
+
+            Assert.IsTrue(_orchestrator.TryRerollShop());
+            Assert.AreEqual(4, _orchestrator.State.Authority);
         }
 
         [Test]
@@ -115,21 +128,19 @@ namespace DeadManZone.Core.Tests
             _orchestrator.SetLockedOffer(toLock, locked: true);
             string lockedPieceId = toLock.PieceId;
             int lockedSlotIndex = toLock.SlotIndex;
-            Assert.AreEqual(lockedSlotIndex, _orchestrator.State.LockedOffer.SlotIndex);
+            Assert.AreEqual(lockedSlotIndex, _orchestrator.State.LockedOffers[0].SlotIndex);
 
-            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.Offensive));
+            Assert.IsTrue(_orchestrator.TryRerollShop());
             Assert.IsTrue(_orchestrator.State.Shop.Offers.Any(o =>
-                o.Lane == Core.Shop.ShopLane.Offensive &&
                 o.PieceId == lockedPieceId &&
                 o.SlotIndex == lockedSlotIndex));
-            Assert.AreEqual(lockedSlotIndex, _orchestrator.State.LockedOffer.SlotIndex);
+            Assert.AreEqual(lockedSlotIndex, _orchestrator.State.LockedOffers[0].SlotIndex);
 
-            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.Offensive));
+            Assert.IsTrue(_orchestrator.TryRerollShop());
             Assert.IsTrue(_orchestrator.State.Shop.Offers.Any(o =>
-                o.Lane == Core.Shop.ShopLane.Offensive &&
                 o.PieceId == lockedPieceId &&
                 o.SlotIndex == lockedSlotIndex));
-            Assert.AreEqual(lockedSlotIndex, _orchestrator.State.LockedOffer.SlotIndex);
+            Assert.AreEqual(lockedSlotIndex, _orchestrator.State.LockedOffers[0].SlotIndex);
         }
 
         [Test]
@@ -249,23 +260,19 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
-        public void RerollLane_ChangesOnlySelectedLaneOffers()
+        public void RerollShop_ChangesOnlyUnlockedSlots()
         {
             _orchestrator.StartNewRun("iron_vanguard", runSeed: 303);
             var before = _orchestrator.State.Shop.Offers.ToList();
+            var locked = before.First(o => o.SlotIndex == 0);
+            _orchestrator.SetLockedOffer(locked, locked: true);
 
-            Assert.IsTrue(_orchestrator.TryRerollLane(Core.Shop.ShopLane.Offensive));
+            Assert.IsTrue(_orchestrator.TryRerollShop());
             var after = _orchestrator.State.Shop.Offers;
 
-            var beforeDefensive = before.Where(o => o.Lane == Core.Shop.ShopLane.Defensive)
-                .Select(o => o.OfferId)
-                .OrderBy(id => id)
-                .ToArray();
-            var afterDefensive = after.Where(o => o.Lane == Core.Shop.ShopLane.Defensive)
-                .Select(o => o.OfferId)
-                .OrderBy(id => id)
-                .ToArray();
-            CollectionAssert.AreEquivalent(beforeDefensive, afterDefensive);
+            var lockedAfter = after.First(o => o.SlotIndex == locked.SlotIndex);
+            Assert.AreEqual(locked.PieceId, lockedAfter.PieceId);
+            Assert.Greater(after.Count, 0);
         }
 
         [Test]

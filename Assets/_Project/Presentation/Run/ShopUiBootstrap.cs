@@ -8,7 +8,7 @@ using UnityEngine.UI;
 namespace DeadManZone.Presentation.Run
 {
     /// <summary>
-    /// Migrates older Run scenes to current shop chrome (labels, reroll sizing, margins).
+    /// Migrates Run scenes to unified shop grid and hides legacy lane rows when present.
     /// </summary>
     public sealed class ShopUiBootstrap : MonoBehaviour
     {
@@ -36,132 +36,41 @@ namespace DeadManZone.Presentation.Run
             if (boardView == null)
                 boardView = FindFirstObjectByType<BoardView>();
 
-            if (sharedTooltip == null)
-                sharedTooltip = FindSharedTooltip();
-
-            EnsureSharedTooltipMarker();
             var buildPanel = shopArea.parent?.parent;
             if (buildPanel != null)
                 ShopBackgroundBootstrap.ApplyToBuildPanel(buildPanel, UiThemeProvider.Current);
-            ApplyLaneRows();
-            ApplyRerollButtons();
+
+            HideLegacyLaneRows();
+            ConfigureUnifiedOffersGrid();
         }
 
-        private TMP_Text FindSharedTooltip()
-        {
-            var buildPanel = shopArea.parent?.parent;
-            var topBar = buildPanel != null ? buildPanel.Find("TopBar") : null;
-            if (topBar == null)
-                return null;
-
-            var marker = topBar.GetComponentInChildren<ShopSharedTooltip>(true);
-            if (marker != null)
-                return marker.GetComponent<TMP_Text>();
-
-            var named = topBar.Find("ShopTooltip");
-            return named != null ? named.GetComponent<TMP_Text>() : null;
-        }
-
-        private static void EnsureSharedTooltipMarker()
-        {
-            foreach (var marker in FindObjectsByType<ShopSharedTooltip>(FindObjectsSortMode.None))
-                return;
-
-            foreach (var label in FindObjectsByType<TMP_Text>(FindObjectsSortMode.None))
-            {
-                if (label.transform.parent == null || label.transform.parent.name != "TopBar")
-                    continue;
-
-                if (label.fontStyle.HasFlag(FontStyles.Italic))
-                {
-                    label.gameObject.name = "ShopTooltip";
-                    label.gameObject.AddComponent<ShopSharedTooltip>();
-                    return;
-                }
-            }
-        }
-
-        private void ApplyLaneRows()
-        {
-            foreach (var rowName in new[] { "OffensiveRow", "DefensiveRow", "SpecialtyRow" })
-            {
-                var row = shopArea.Find(rowName) as RectTransform;
-                if (row == null)
-                    continue;
-
-                row.anchorMax = new Vector2(ShopRightInset, row.anchorMax.y);
-
-                HideLaneLabel(row);
-
-                var offers = row.Find("Offers") as RectTransform;
-                if (offers != null)
-                {
-                    offers.anchorMin = new Vector2(0.04f, 0.14f);
-                    offers.anchorMax = new Vector2(0.90f, 0.86f);
-                    offers.offsetMin = Vector2.zero;
-                    offers.offsetMax = Vector2.zero;
-                }
-            }
-        }
-
-        private static void HideLaneLabel(RectTransform row)
-        {
-            foreach (var label in row.GetComponentsInChildren<TMP_Text>(true))
-            {
-                if (label.name is "Offensive" or "Defensive" or "Specialty")
-                    label.gameObject.SetActive(false);
-            }
-        }
-
-        private void ApplyRerollButtons()
+        private void HideLegacyLaneRows()
         {
             foreach (var rowName in new[] { "OffensiveRow", "DefensiveRow", "SpecialtyRow" })
             {
                 var row = shopArea.Find(rowName);
-                if (row == null)
-                    continue;
-
-                var reroll = row.Find("RerollButton") ?? row.Find("Reroll");
-                if (reroll == null)
-                    continue;
-
-                var rect = reroll.GetComponent<RectTransform>();
-                if (rect != null)
-                {
-                    rect.anchorMin = new Vector2(0.965f, 0.5f);
-                    rect.anchorMax = new Vector2(0.965f, 0.5f);
-                    rect.pivot = new Vector2(1f, 0.5f);
-                    rect.anchoredPosition = Vector2.zero;
-                }
-
-                var scaled = reroll.GetComponent<BoardScaledRect>();
-                if (scaled == null)
-                    scaled = reroll.gameObject.AddComponent<BoardScaledRect>();
-                scaled.Configure(boardView, 1, 1);
-
-                var label = reroll.GetComponentInChildren<TMP_Text>();
-                if (label != null)
-                {
-                    label.text = "\u21BB";
-                    label.fontSize = 22;
-                    label.alignment = TextAlignmentOptions.Center;
-                }
-
-                if (sharedTooltip != null)
-                {
-                    var tooltip = reroll.GetComponent<ShopRerollTooltip>();
-                    if (tooltip == null)
-                        tooltip = reroll.gameObject.AddComponent<ShopRerollTooltip>();
-                    tooltip.Configure(sharedTooltip);
-                }
-                else
-                {
-                    var tooltip = reroll.GetComponent<ShopRerollTooltip>();
-                    if (tooltip == null)
-                        tooltip = reroll.gameObject.AddComponent<ShopRerollTooltip>();
-                    tooltip.Configure(null);
-                }
+                if (row != null)
+                    row.gameObject.SetActive(false);
             }
+        }
+
+        private void ConfigureUnifiedOffersGrid()
+        {
+            var offersGrid = shopArea.Find("OffersGrid") as RectTransform;
+            if (offersGrid == null)
+            {
+                var shopPanel = shopArea.Find("ShopPanel");
+                if (shopPanel != null)
+                    offersGrid = shopPanel.Find("OffersGrid") as RectTransform;
+            }
+
+            if (offersGrid == null)
+                return;
+
+            offersGrid.anchorMin = new Vector2(0.04f, 0.08f);
+            offersGrid.anchorMax = new Vector2(0.96f, 0.92f);
+            offersGrid.offsetMin = Vector2.zero;
+            offersGrid.offsetMax = Vector2.zero;
         }
 
         public static void EnsureOnShopArea(Transform shop, BoardView board, TMP_Text tooltip = null)

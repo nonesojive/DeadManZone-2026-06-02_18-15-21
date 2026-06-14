@@ -48,6 +48,28 @@ namespace DeadManZone.Core.Tests.EditMode
                 Assert.IsTrue(catalog.TryGetEntry(pieceId, out _), $"Catalog missing entry for '{pieceId}'");
         }
 
+        [Test]
+        public void SandboxArtCatalog_NoLegacyThirdPartyPaths()
+        {
+            var catalog = SandboxArtCatalogSO.LoadFromResources();
+            Assert.NotNull(catalog);
+
+            var forbidden = new[] { "Toon_Soldiers", "RTS_Modern", "BunkerSurvivalUI/Sprites/Icons" };
+            foreach (var entry in catalog.entries)
+            {
+                foreach (var bad in forbidden)
+                {
+                    if (!string.IsNullOrEmpty(entry.combatArenaPrefabPath))
+                        Assert.IsFalse(entry.combatArenaPrefabPath.Contains(bad),
+                            $"Entry '{entry.pieceId}' combat prefab still references {bad}");
+
+                    if (!string.IsNullOrEmpty(entry.iconAssetPath))
+                        Assert.IsFalse(entry.iconAssetPath.Contains(bad),
+                            $"Entry '{entry.pieceId}' icon still references {bad}");
+                }
+            }
+        }
+
         private static PieceDefinitionSO FindPiece(ContentDatabase db, string id) =>
             db.Pieces.FirstOrDefault(p => p != null && p.id == id);
     }

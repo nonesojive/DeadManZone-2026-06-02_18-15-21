@@ -52,6 +52,6 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: d661d5df4030475e885590dc8446c318, type: 3}
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
   cellSprites: []
-  combatArenaPrefab: {fileID: 5226655080229162701, guid: d8b762e102429004ba6884d406594a11, type: 3}
-  combatArenaModelScale: 0.9
+  combatArenaPrefab: {fileID: 2908494867554980106, guid: af1fcc6dd77a3874cb9c9bcee52a6b14, type: 3}
+  combatArenaModelScale: 0.75
   combatArenaModelHeight: 1.4

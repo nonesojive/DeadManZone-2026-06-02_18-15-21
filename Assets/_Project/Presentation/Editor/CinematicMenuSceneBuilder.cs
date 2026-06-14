@@ -25,6 +25,7 @@ namespace DeadManZone.Presentation.Editor
             EnsureEventSystem();
 
             var menuEnvironment = CinematicMenuEnvironmentBuilder.Build();
+            MainMenuBackdropBuilder.TryBuild();
             CreateVisualProfileApplier(menuEnvironment.transform);
             var menuCamera = CreateMenuCamera(out var animator);
             var ui = CinematicMenuUiBuilder.BuildAndWire(menuCamera, theme, menuTheme);

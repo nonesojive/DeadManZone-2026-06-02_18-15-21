@@ -72,7 +72,7 @@ namespace DeadManZone.Data.Editor
             var renderer = cube.GetComponent<Renderer>();
             if (renderer != null)
             {
-                var material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+                var material = new Material(Shader.Find("Standard"));
                 material.color = color;
                 renderer.sharedMaterial = material;
             }

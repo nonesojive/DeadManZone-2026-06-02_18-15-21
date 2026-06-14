@@ -40,9 +40,7 @@ namespace DeadManZone.Presentation.Editor
             EnsureFolder("Assets/_Project/Data/Visual/Lighting");
             EnsureFolder("Assets/_Project/Data/Resources/DeadManZone");
 
-            var uiTheme = AssetDatabase.IsValidFolder(BunkerSurvivalUiKitSetup.KitRoot)
-                ? BunkerSurvivalUiKitSetup.EnsureBunkerSurvivalTheme()
-                : UiThemeEditor.EnsureThemeAsset();
+            var uiTheme = ResolvePreferredUiTheme();
             var mainMenuAtmosphere = EnsureMainMenuAtmosphere();
             var runAtmosphere = EnsureRunAtmosphere();
             var mainMenuLighting = EnsureMainMenuLighting();
@@ -54,7 +52,7 @@ namespace DeadManZone.Presentation.Editor
                 return created;
             });
 
-            profile.displayName = uiTheme.UsesButtonSprites ? "Bunker Survival" : "IronMarch Union";
+            profile.displayName = ResolveProfileDisplayName(uiTheme);
             profile.uiTheme = uiTheme;
             profile.mainMenuAtmosphere = mainMenuAtmosphere;
             profile.mainMenuLighting = mainMenuLighting;
@@ -343,6 +341,28 @@ namespace DeadManZone.Presentation.Editor
             created.name = System.IO.Path.GetFileNameWithoutExtension(path);
             AssetDatabase.CreateAsset(created, path);
             return created;
+        }
+
+        private static UiThemeSO ResolvePreferredUiTheme()
+        {
+            if (AssetDatabase.IsValidFolder(SyntyUiKitSetup.KitRoot))
+                return SyntyUiKitSetup.EnsureSyntyTrenchTheme();
+
+            if (AssetDatabase.IsValidFolder(BunkerSurvivalUiKitSetup.KitRoot))
+                return BunkerSurvivalUiKitSetup.EnsureBunkerSurvivalTheme();
+
+            return UiThemeEditor.EnsureThemeAsset();
+        }
+
+        private static string ResolveProfileDisplayName(UiThemeSO uiTheme)
+        {
+            if (AssetDatabase.IsValidFolder(SyntyUiKitSetup.KitRoot) && uiTheme.UsesButtonSprites)
+                return "Synty Trench";
+
+            if (AssetDatabase.IsValidFolder(BunkerSurvivalUiKitSetup.KitRoot) && uiTheme.UsesButtonSprites)
+                return "Bunker Survival";
+
+            return "IronMarch Union";
         }
 
         private static void EnsureFolder(string path)

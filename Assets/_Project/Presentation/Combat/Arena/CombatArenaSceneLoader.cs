@@ -36,8 +36,13 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (runSceneController == null)
                 runSceneController = FindFirstObjectByType<RunSceneController>();
 
-            CombatArenaUiController.EnterArenaMode(runSceneController?.BuildPanelTransform);
             runSceneController?.RefreshCombatPresentation();
+
+            var arenaCamera = CombatArenaBootstrap.Instance != null
+                ? CombatArenaBootstrap.Instance.ArenaCamera
+                : null;
+
+            CombatArenaUiController.EnterArenaMode(runSceneController?.BuildPanelTransform, arenaCamera);
         }
 
         public IEnumerator UnloadAsync()

@@ -30,18 +30,26 @@ namespace DeadManZone.Core.Shop
         {
             var rng = new Rng(seed);
             var modifiers = ComputeModifiers(board);
-            var offers = new List<ShopOffer>();
-            bool specialtyOpen = specialtyUnlocked ?? SpecialtyLaneUnlock.IsUnlocked(board, factionId, _registry);
+            var slotLayout = ShopSlotLayoutResolver.Resolve(
+                board,
+                factionId,
+                _registry,
+                modifiers,
+                specialtyUnlocked);
 
-            int offensiveSlots = OffersPerLane + modifiers.ExtraGeneralSlots;
-            RollLane(ShopLane.Offensive, offensiveSlots, modifiers, rng, offers, round, factionId, lastEnemyFactionId, salvageChancePercent);
-            RollLane(ShopLane.Defensive, OffersPerLane, modifiers, rng, offers, round, factionId, lastEnemyFactionId, salvageChancePercent);
+            var offers = RollSlots(
+                slotLayout,
+                modifiers,
+                rng,
+                round,
+                factionId,
+                lastEnemyFactionId,
+                salvageChancePercent,
+                fixedSlots: null,
+                board);
 
             if (modifiers.GuaranteeEngineerOffer && !offers.Any(o => o.Lane == ShopLane.Defensive))
-                InjectDefensiveOffer(offers, modifiers, rng, round);
-
-            if (specialtyOpen)
-                RollLane(ShopLane.Specialty, OffersPerLane, modifiers, rng, offers, round, factionId, lastEnemyFactionId, salvageChancePercent, board);
+                InjectDefensiveOffer(offers, modifiers, rng, round, slotLayout);
 
             return new ShopState
             {
@@ -49,6 +57,62 @@ namespace DeadManZone.Core.Shop
                 Modifiers = modifiers,
                 Seed = seed
             };
+        }
+
+        public List<ShopOffer> RollShopOffers(
+            BoardState board,
+            string factionId,
+            ShopModifiers modifiers,
+            int seed,
+            int round,
+            IReadOnlyDictionary<int, ShopOffer> fixedSlots,
+            string lastEnemyFactionId = null,
+            int salvageChancePercent = 0,
+            bool? specialtyUnlocked = null)
+        {
+            var slotLayout = ShopSlotLayoutResolver.Resolve(
+                board,
+                factionId,
+                _registry,
+                modifiers,
+                specialtyUnlocked);
+            var rng = new Rng(seed);
+            return RollSlots(
+                slotLayout,
+                modifiers,
+                rng,
+                round,
+                factionId,
+                lastEnemyFactionId,
+                salvageChancePercent,
+                fixedSlots,
+                board);
+        }
+
+        public List<ShopOffer> RollLaneOffers(
+            ShopLane lane,
+            int slotCount,
+            ShopModifiers modifiers,
+            int seed,
+            int round,
+            string factionId,
+            IReadOnlyDictionary<int, ShopOffer> fixedSlots = null,
+            BoardState board = null,
+            string lastEnemyFactionId = null,
+            int salvageChancePercent = 0)
+        {
+            var rng = new Rng(seed);
+            return RollLane(
+                lane,
+                slotCount,
+                modifiers,
+                rng,
+                round,
+                factionId,
+                lastEnemyFactionId,
+                salvageChancePercent,
+                fixedSlots,
+                board);
         }
 
         public static ShopModifiers ComputeModifiers(BoardState board)
@@ -82,56 +146,101 @@ namespace DeadManZone.Core.Shop
             };
         }
 
-        public List<ShopOffer> RollLaneOffers(
-            ShopLane lane,
-            int slotCount,
-            ShopModifiers modifiers,
-            int seed,
-            int round,
-            string factionId,
-            IReadOnlyDictionary<int, ShopOffer> fixedSlots = null,
-            BoardState board = null,
-            string lastEnemyFactionId = null,
-            int salvageChancePercent = 0)
-        {
-            var rng = new Rng(seed);
-            return RollLane(
-                lane,
-                slotCount,
-                modifiers,
-                rng,
-                round,
-                factionId,
-                lastEnemyFactionId,
-                salvageChancePercent,
-                fixedSlots,
-                board);
-        }
-
-        private void RollLane(
-            ShopLane lane,
-            int slotCount,
+        private List<ShopOffer> RollSlots(
+            IReadOnlyList<ShopSlotDefinition> slotLayout,
             ShopModifiers modifiers,
             Rng rng,
-            List<ShopOffer> offers,
             int round,
             string factionId,
             string lastEnemyFactionId,
             int salvageChancePercent,
-            BoardState board = null)
+            IReadOnlyDictionary<int, ShopOffer> fixedSlots,
+            BoardState board)
         {
-            foreach (var rolled in RollLane(
-                         lane,
-                         slotCount,
-                         modifiers,
-                         rng,
-                         round,
-                         factionId,
-                         lastEnemyFactionId,
-                         salvageChancePercent,
-                         fixedSlots: null,
-                         board))
-                offers.Add(rolled);
+            fixedSlots ??= new Dictionary<int, ShopOffer>();
+            var offers = new List<ShopOffer>();
+            var consumedPieceIds = new HashSet<string>();
+
+            foreach (var fixedOffer in fixedSlots.Values)
+                consumedPieceIds.Add(fixedOffer.PieceId);
+
+            foreach (var slot in slotLayout)
+            {
+                if (fixedSlots.TryGetValue(slot.SlotIndex, out var fixedOffer))
+                {
+                    offers.Add(CopyFixedOffer(fixedOffer, slot.SlotIndex, slot.Kind));
+                    continue;
+                }
+
+                var rolled = RollSingleSlot(
+                    slot,
+                    modifiers,
+                    rng,
+                    round,
+                    factionId,
+                    lastEnemyFactionId,
+                    salvageChancePercent,
+                    consumedPieceIds,
+                    board);
+
+                if (rolled != null)
+                {
+                    offers.Add(rolled);
+                    if (!rolled.IsSalvaged)
+                        consumedPieceIds.Add(rolled.PieceId);
+                }
+            }
+
+            return offers;
+        }
+
+        private ShopOffer RollSingleSlot(
+            ShopSlotDefinition slot,
+            ShopModifiers modifiers,
+            Rng rng,
+            int round,
+            string factionId,
+            string lastEnemyFactionId,
+            int salvageChancePercent,
+            HashSet<string> consumedPieceIds,
+            BoardState board)
+        {
+            var lane = slot.PoolLane;
+            var pool = _registry.GetPool(lane);
+            if (pool.Count == 0)
+                return null;
+
+            IEnumerable<PieceDefinition> eligible = pool;
+            if (lane == ShopLane.Specialty && board != null)
+            {
+                var context = SpecialtyLaneRuleCatalog.Resolve(board, _registry);
+                eligible = SpecialtyLaneRuleCatalog.FilterPool(pool, context);
+            }
+
+            var available = eligible.Where(p => !consumedPieceIds.Contains(p.Id)).ToList();
+
+            if (available.Count == 0)
+                return null;
+
+            bool trySalvage = !string.IsNullOrEmpty(lastEnemyFactionId)
+                && salvageChancePercent > 0
+                && rng.NextInt(0, 100) < salvageChancePercent;
+
+            if (trySalvage)
+            {
+                var salvagePool = SalvageShopPool.GetPool(_registry, lane, lastEnemyFactionId, factionId, round)
+                    .Where(p => !consumedPieceIds.Contains(p.Id))
+                    .ToList();
+                if (salvagePool.Count > 0)
+                {
+                    var piece = salvagePool[rng.NextInt(0, salvagePool.Count)];
+                    return CreateOffer(lane, slot.Kind, piece, modifiers, rng, round, slot.SlotIndex, isSalvaged: true);
+                }
+            }
+
+            int index = rng.NextInt(0, available.Count);
+            var picked = ShopPoolFilter.PickWeighted(available, round, rng, playerFactionId: factionId) ?? available[index];
+            return CreateOffer(lane, slot.Kind, picked, modifiers, rng, round, slot.SlotIndex);
         }
 
         private List<ShopOffer> RollLane(
@@ -166,7 +275,7 @@ namespace DeadManZone.Core.Shop
             {
                 if (fixedSlots.TryGetValue(i, out var fixedOffer))
                 {
-                    results.Add(CopyFixedOffer(fixedOffer, i));
+                    results.Add(CopyFixedOffer(fixedOffer, i, MapLaneToSlotKind(lane, i)));
                     continue;
                 }
 
@@ -184,7 +293,7 @@ namespace DeadManZone.Core.Shop
                     {
                         var piece = salvagePool[rng.NextInt(0, salvagePool.Count)];
                         available.RemoveAll(p => p.Id == piece.Id);
-                        results.Add(CreateOffer(lane, piece, modifiers, rng, round, i, isSalvaged: true));
+                        results.Add(CreateOffer(lane, MapLaneToSlotKind(lane, i), piece, modifiers, rng, round, i, isSalvaged: true));
                         continue;
                     }
                 }
@@ -192,18 +301,30 @@ namespace DeadManZone.Core.Shop
                 int index = rng.NextInt(0, available.Count);
                 var picked = ShopPoolFilter.PickWeighted(available, round, rng, playerFactionId: factionId) ?? available[index];
                 available.RemoveAll(p => p.Id == picked.Id);
-                results.Add(CreateOffer(lane, picked, modifiers, rng, round, i));
+                results.Add(CreateOffer(lane, MapLaneToSlotKind(lane, i), picked, modifiers, rng, round, i));
             }
 
             return results;
         }
 
-        private static ShopOffer CopyFixedOffer(ShopOffer source, int slotIndex) =>
+        private static ShopSlotKind MapLaneToSlotKind(ShopLane lane, int slotIndex)
+        {
+            if (lane == ShopLane.Defensive)
+                return ShopSlotKind.BaselineDefensive;
+            if (lane == ShopLane.Specialty)
+                return ShopSlotKind.ExtraSpecialty;
+            return slotIndex < ShopSlotLayoutResolver.BaselineSlotCount / 2
+                ? ShopSlotKind.BaselineOffensive
+                : ShopSlotKind.ExtraOffensive;
+        }
+
+        private static ShopOffer CopyFixedOffer(ShopOffer source, int slotIndex, ShopSlotKind kind) =>
             new ShopOffer
             {
                 OfferId = source.OfferId,
                 Lane = source.Lane,
                 SlotIndex = slotIndex,
+                SlotKind = kind,
                 PieceId = source.PieceId,
                 GoldPrice = source.GoldPrice,
                 RequisitionPrice = source.RequisitionPrice,
@@ -214,18 +335,21 @@ namespace DeadManZone.Core.Shop
             List<ShopOffer> offers,
             ShopModifiers modifiers,
             Rng rng,
-            int round)
+            int round,
+            IReadOnlyList<ShopSlotDefinition> slotLayout)
         {
             var buildings = _registry.GetBuildings();
             if (buildings.Count == 0)
                 return;
 
             var piece = buildings[rng.NextInt(0, buildings.Count)];
-            offers.Add(CreateOffer(ShopLane.Defensive, piece, modifiers, rng, round, slotIndex: 0));
+            int slotIndex = slotLayout.FirstOrDefault(s => s.Kind == ShopSlotKind.BaselineDefensive)?.SlotIndex ?? 3;
+            offers.Add(CreateOffer(ShopLane.Defensive, ShopSlotKind.BaselineDefensive, piece, modifiers, rng, round, slotIndex));
         }
 
         private ShopOffer CreateOffer(
             ShopLane lane,
+            ShopSlotKind kind,
             PieceDefinition piece,
             ShopModifiers modifiers,
             Rng rng,
@@ -236,14 +360,20 @@ namespace DeadManZone.Core.Shop
             int gold = ApplyGoldDiscount(piece.GoldCost, modifiers.GoldDiscountPercent);
             int requisition = piece.RequisitionCost;
 
-            // Slight price scaling by round for MVP variety.
+            // Specialty-lane pieces keep authority pricing; any slot may carry requisition cost from data.
+            if (lane == ShopLane.Specialty)
+                requisition = piece.RequisitionCost;
+            else if (kind != ShopSlotKind.ExtraSpecialty)
+                requisition = 0;
+
             gold += Math.Max(0, round - 1);
 
             return new ShopOffer
             {
-                OfferId = $"{lane}_{piece.Id}_{slotIndex}",
+                OfferId = $"slot{slotIndex}_{piece.Id}",
                 Lane = lane,
                 SlotIndex = slotIndex,
+                SlotKind = kind,
                 PieceId = piece.Id,
                 GoldPrice = gold,
                 RequisitionPrice = requisition,
