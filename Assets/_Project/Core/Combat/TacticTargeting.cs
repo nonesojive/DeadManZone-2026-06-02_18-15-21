@@ -19,7 +19,7 @@ namespace DeadManZone.Core.Combat
                 return null;
 
             var inRange = alive
-                .Where(e => CombatRange.IsInRange(attacker.Position, e.Position, attacker.Definition.AttackRange))
+                .Where(e => CombatRange.IsInRange(attacker.AnchorPosition, e.AnchorPosition, attacker.Definition.AttackRange))
                 .ToList();
             if (inRange.Count == 0)
                 return null;

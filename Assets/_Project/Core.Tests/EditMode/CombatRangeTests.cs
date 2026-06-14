@@ -17,21 +17,21 @@ namespace DeadManZone.Core.Tests.EditMode
                 Definition = TestPieces.With(
                     TestPieces.RifleSquad(),
                     attackRange: AttackRangeTier.Short),
-                Position = new GridCoord(0, 0),
+                AnchorPosition = new GridCoord(0, 0),
                 CurrentHp = 10
             };
             var near = new CombatantState
             {
                 InstanceId = "e1",
                 Definition = TestPieces.RifleSquad(),
-                Position = new GridCoord(1, 0),
+                AnchorPosition = new GridCoord(1, 0),
                 CurrentHp = 10
             };
             var far = new CombatantState
             {
                 InstanceId = "e2",
                 Definition = TestPieces.RifleSquad(),
-                Position = new GridCoord(5, 0),
+                AnchorPosition = new GridCoord(5, 0),
                 CurrentHp = 3
             };
 

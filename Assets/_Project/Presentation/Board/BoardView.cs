@@ -303,77 +303,6 @@ private PieceDefinition _selectedPiece;
             }
         }
 
-        public void RemovePieceVisual(string instanceId)
-        {
-            if (string.IsNullOrEmpty(instanceId))
-                return;
-
-            ClearFootprintTiles(instanceId);
-            if (_shapeVisualsByInstance.TryGetValue(instanceId, out var visual))
-            {
-                Destroy(visual.gameObject);
-                _shapeVisualsByInstance.Remove(instanceId);
-            }
-        }
-
-        public void RepositionPieceVisual(
-            string instanceId,
-            PieceDefinition definition,
-            GridCoord newAnchor,
-            PieceRotation rotation)
-        {
-            if (string.IsNullOrEmpty(instanceId) || definition == null || _layout == null)
-                return;
-
-            ClearFootprintTiles(instanceId);
-            if (_shapeVisualsByInstance.TryGetValue(instanceId, out var visual))
-            {
-                Destroy(visual.gameObject);
-                _shapeVisualsByInstance.Remove(instanceId);
-            }
-
-            if (_piecesOverlay == null || gridLayout == null)
-                EnsurePiecesOverlay();
-
-            MarkFootprint(instanceId, definition, newAnchor, rotation);
-            CreateShapeVisual(instanceId, definition, newAnchor, rotation);
-        }
-
-        public void SyncCombatPiecePositions(
-            IReadOnlyDictionary<string, GridCoord> anchors,
-            IReadOnlyDictionary<string, PieceDefinition> definitions,
-            IReadOnlyDictionary<string, PieceRotation> rotations)
-        {
-            if (anchors == null || definitions == null)
-                return;
-
-            foreach (var instanceId in _shapeVisualsByInstance.Keys.ToList())
-            {
-                if (!anchors.ContainsKey(instanceId))
-                    RemovePieceVisual(instanceId);
-            }
-
-            foreach (var pair in anchors)
-            {
-                if (!definitions.TryGetValue(pair.Key, out var definition))
-                    continue;
-
-                var rotation = rotations != null && rotations.TryGetValue(pair.Key, out var stored)
-                    ? stored
-                    : PieceRotation.R0;
-                RepositionPieceVisual(pair.Key, definition, pair.Value, rotation);
-            }
-        }
-
-        private void ClearFootprintTiles(string instanceId)
-        {
-            foreach (var tile in _tiles.Values)
-            {
-                if (tile.OccupyingInstanceId == instanceId)
-                    tile.SetOccupied(null, false);
-            }
-        }
-
         private void MarkFootprint(
             string instanceId,
             PieceDefinition definition,
@@ -546,14 +475,17 @@ private PieceDefinition _selectedPiece;
             if (searchRoot == null)
                 return;
 
-            foreach (var panel in searchRoot.GetComponentsInChildren<SynergySidePanel>(true))
+            foreach (Transform child in searchRoot.GetComponentsInChildren<Transform>(true))
             {
+                if (child.name != "SynergySidePanel")
+                    continue;
+
 #if UNITY_EDITOR
                 if (!Application.isPlaying)
-                    UnityEngine.Object.DestroyImmediate(panel.gameObject);
+                    UnityEngine.Object.DestroyImmediate(child.gameObject);
                 else
 #endif
-                    UnityEngine.Object.Destroy(panel.gameObject);
+                    UnityEngine.Object.Destroy(child.gameObject);
             }
         }
 

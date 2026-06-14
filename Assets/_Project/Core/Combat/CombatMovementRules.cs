@@ -21,7 +21,7 @@ namespace DeadManZone.Core.Combat
                 if (!enemy.IsAlive)
                     continue;
 
-                if (CombatRange.IsInRange(mover.Position, enemy.Position, mover.Definition.AttackRange))
+                if (CombatRange.IsInRange(mover.AnchorPosition, enemy.AnchorPosition, mover.Definition.AttackRange))
                     return true;
             }
 
@@ -31,9 +31,9 @@ namespace DeadManZone.Core.Combat
         public static GridCoord SelectNearestEnemyPosition(GridCoord from, IReadOnlyList<CombatantState> enemies) =>
             enemies
                 .Where(e => e.IsAlive)
-                .OrderBy(e => CombatRange.Manhattan(from, e.Position))
+                .OrderBy(e => CombatRange.Manhattan(from, e.AnchorPosition))
                 .ThenBy(e => e.InstanceId)
                 .First()
-                .Position;
+                .AnchorPosition;
     }
 }

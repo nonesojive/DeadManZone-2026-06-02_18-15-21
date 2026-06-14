@@ -38,11 +38,11 @@ namespace DeadManZone.Core.Combat
                 if (!combatant.IsAlive)
                     continue;
 
-                int localX = combatant.Position.X;
+                int localX = combatant.AnchorPosition.X;
                 if (localX < 0 || localX >= boardLayout.Width)
                     continue;
 
-                if (boardLayout.GetZone(new GridCoord(localX, combatant.Position.Y)) == ZoneType.Rear)
+                if (boardLayout.GetZone(new GridCoord(localX, combatant.AnchorPosition.Y)) == ZoneType.Rear)
                     combatant.ArmorBuffSteps += ProtectSupportRearArmorSteps;
             }
         }

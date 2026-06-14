@@ -13,5 +13,12 @@
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
-  "autoReferenced": true
+  "autoReferenced": true,
+  "versionDefines": [
+    {
+      "name": "com.unity.render-pipelines.universal",
+      "expression": "",
+      "define": "UNITY_URP_PRESENT"
+    }
+  ]
 }

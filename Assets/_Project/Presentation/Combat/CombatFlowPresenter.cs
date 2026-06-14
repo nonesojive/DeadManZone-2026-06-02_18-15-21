@@ -18,9 +18,7 @@ namespace DeadManZone.Presentation.Combat
     {
         [SerializeField] private CombatDirector combatDirector;
         [SerializeField] private TacticPausePanel tacticPausePanel;
-        [SerializeField] private PhaseCommandPanel phaseCommandPanel;
         [SerializeField] private BattleReportPresenter battleReportPresenter;
-        [SerializeField] private CombatLogPresenter combatLogPresenter;
         [SerializeField] private GameObject loadingOverlay;
         [SerializeField] private TMP_Text loadingText;
         [SerializeField] private float loadingDurationSeconds = 1f;
@@ -84,9 +82,6 @@ namespace DeadManZone.Presentation.Combat
         {
             tacticPausePanel?.Hide();
             battleReportPresenter?.Hide();
-            combatLogPresenter?.Hide();
-            if (phaseCommandPanel != null)
-                phaseCommandPanel.Hide();
 
             ShowLoadingOverlay();
             _loadingRoutine = StartCoroutine(LoadingThenPresent());
@@ -131,10 +126,6 @@ namespace DeadManZone.Presentation.Combat
         private void ShowBattleReport()
         {
             tacticPausePanel?.Hide();
-            combatLogPresenter?.Hide();
-            if (phaseCommandPanel != null)
-                phaseCommandPanel.Hide();
-
             battleReportPresenter?.ShowFromRunState();
         }
 
@@ -149,16 +140,7 @@ namespace DeadManZone.Presentation.Combat
             if (tacticPausePanel != null)
             {
                 tacticPausePanel.ShowPause(context);
-                return;
             }
-
-            if (phaseCommandPanel == null)
-                return;
-
-            var available = RunManager.Instance.Orchestrator.GetAvailableCommands();
-            int budget = RunManager.Instance.Orchestrator.GetPrimaryActionBudget();
-            int pauseIndex = context?.CheckpointIndex ?? 0;
-            phaseCommandPanel.ShowCommands(available, pauseIndex, budget, budget);
         }
 
         private void ShowLoadingOverlay()
@@ -251,7 +233,7 @@ namespace DeadManZone.Presentation.Combat
             var enemyBoard = BoardSnapshotMapper.ToBoard(state.Combat.EnemyBoard, _contentRegistry);
             var battlefield = BattlefieldState.FromBoards(playerBoard, enemyBoard);
             var excludeSegment = state.Combat.AwaitingCommand ? state.Combat.LastSegmentIndex : (int?)null;
-            var savedEvents = new List<CombatEvent>(ConvertSavedEvents(state.Combat.EventLog));
+            var savedEvents = new List<CombatEvent>(CombatEventMapper.FromRecords(state.Combat.EventLog));
 
             healthBarPresenter?.InitializeFromBattlefield(battlefield);
             foreach (var savedEvent in savedEvents)
@@ -264,25 +246,6 @@ namespace DeadManZone.Presentation.Combat
 
             healthBarPresenter?.SnapBars();
             arenaPresenter.RestoreState(battlefield, savedEvents, excludeSegment);
-        }
-
-        private static IEnumerable<CombatEvent> ConvertSavedEvents(IReadOnlyList<CombatEventRecord> records)
-        {
-            if (records == null)
-                yield break;
-
-            foreach (var record in records)
-            {
-                yield return new CombatEvent
-                {
-                    Segment = record.Segment,
-                    Tick = record.Tick,
-                    ActorId = record.ActorId,
-                    ActionType = record.ActionType,
-                    TargetId = record.TargetId,
-                    Value = record.Value
-                };
-            }
         }
     }
 }

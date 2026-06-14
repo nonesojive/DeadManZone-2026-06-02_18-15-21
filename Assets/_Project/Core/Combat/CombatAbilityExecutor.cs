@@ -93,7 +93,7 @@ namespace DeadManZone.Core.Combat
             int logSegment,
             int logTick)
         {
-            foreach (var ally in allies.Where(a => a.IsAlive && IsAdjacent(source.Position, a.Position)))
+            foreach (var ally in allies.Where(a => a.IsAlive && IsAdjacent(source.AnchorPosition, a.AnchorPosition)))
             {
                 if (!HasInfantryTag(ally.Definition))
                     continue;
@@ -118,7 +118,7 @@ namespace DeadManZone.Core.Combat
                 return CommandResult.Fail("No valid cannon target");
 
             ApplyDamage(source, primary, CannonBlastPrimaryDamage, AttackType.Explosive, log, logSegment, logTick, "cannon_blast");
-            foreach (var splash in enemies.Where(e => e.IsAlive && e.InstanceId != primary.InstanceId && IsAdjacent(primary.Position, e.Position)))
+            foreach (var splash in enemies.Where(e => e.IsAlive && e.InstanceId != primary.InstanceId && IsAdjacent(primary.AnchorPosition, e.AnchorPosition)))
                 ApplyDamage(source, splash, CannonBlastSplashDamage, AttackType.Explosive, log, logSegment, logTick, "cannon_blast_splash");
 
             return CommandResult.Ok();
@@ -130,7 +130,7 @@ namespace DeadManZone.Core.Combat
                 enemies.Any(e => e.IsAlive && OccupiesCell(e, targetCell.Value)))
                 return targetCell;
 
-            return enemies.Where(e => e.IsAlive).OrderBy(e => e.Position.X).ThenBy(e => e.InstanceId).FirstOrDefault()?.Position;
+            return enemies.Where(e => e.IsAlive).OrderBy(e => e.AnchorPosition.X).ThenBy(e => e.InstanceId).FirstOrDefault()?.AnchorPosition;
         }
 
         private static CombatantState ResolvePrimaryTarget(IList<CombatantState> enemies, GridCoord? targetCell)
@@ -157,7 +157,7 @@ namespace DeadManZone.Core.Combat
             int logTick,
             string actionType)
         {
-            foreach (var target in targets.Where(t => t.IsAlive && Manhattan(center, t.Position) <= radius))
+            foreach (var target in targets.Where(t => t.IsAlive && Manhattan(center, t.AnchorPosition) <= radius))
             {
                 var tempAttacker = new PieceDefinition
                 {
@@ -206,7 +206,7 @@ namespace DeadManZone.Core.Combat
         private static bool IsAdjacent(GridCoord a, GridCoord b) => Manhattan(a, b) == 1;
 
         private static bool OccupiesCell(CombatantState combatant, GridCoord cell) =>
-            combatant.Position.Equals(cell);
+            combatant.AnchorPosition.Equals(cell);
 
         private static int Manhattan(GridCoord a, GridCoord b) =>
             System.Math.Abs(a.X - b.X) + System.Math.Abs(a.Y - b.Y);

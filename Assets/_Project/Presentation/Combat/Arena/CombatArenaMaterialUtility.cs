@@ -33,6 +33,17 @@ namespace DeadManZone.Presentation.Combat.Arena
             return _urpActive.Value;
         }
 
+        public static bool IsMaterialRenderable(Material material)
+        {
+            if (material == null)
+                return false;
+
+            var shader = material.shader;
+            return shader != null
+                   && shader.isSupported
+                   && shader.name != "Hidden/InternalErrorShader";
+        }
+
         public static void ResetPipelineCache()
         {
             _urpActive = null;

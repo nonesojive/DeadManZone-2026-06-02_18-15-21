@@ -1,10 +1,8 @@
 using System.Collections.Generic;
-using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Content;
-using DeadManZone.Core.Run;
 using DeadManZone.Core.Tags;
 using DeadManZone.Data;
 using DeadManZone.Game;
@@ -19,7 +17,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         [SerializeField] private CombatArenaVfx vfx;
 
         private readonly Dictionary<string, CombatUnitActor> _actors = new();
-        private readonly Dictionary<string, GridCoord> _anchors = new();
+        private readonly CombatReplayState _replayState = new();
         private readonly Dictionary<string, PieceDefinitionSO> _piecesById = new();
 
         private CombatUnitActorPool _pool;
@@ -58,7 +56,15 @@ namespace DeadManZone.Presentation.Combat.Arena
         public void Configure(CombatDirector director, CombatArenaVfx arenaVfx)
         {
             if (director != null)
+            {
+                if (isActiveAndEnabled && combatDirector != null)
+                    combatDirector.EventReplayed -= OnEventReplayed;
+
                 combatDirector = director;
+
+                if (isActiveAndEnabled)
+                    combatDirector.EventReplayed += OnEventReplayed;
+            }
 
             if (arenaVfx != null)
                 vfx = arenaVfx;
@@ -68,7 +74,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         public void OnArenaUnloaded()
         {
             _actors.Clear();
-            _anchors.Clear();
+            _replayState.ResetFromBattlefield(null);
             _pool?.Clear();
             _pool = null;
             _mapper = null;
@@ -97,6 +103,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             Transform poolRoot = bootstrap.UnitsRoot != null ? bootstrap.UnitsRoot : transform;
             ResetArenaActors(poolRoot);
+            _replayState.ResetFromBattlefield(battlefield);
 
             Transform buildingsRoot = bootstrap.BuildingsRoot != null ? bootstrap.BuildingsRoot : poolRoot;
             _buildingSpawner.SpawnAll(battlefield, _mapper, buildingsRoot, GetPiece, config);
@@ -125,7 +132,6 @@ namespace DeadManZone.Presentation.Combat.Arena
                     config.attackLungeDistance);
 
                 _actors[cell.InstanceId] = actor;
-                _anchors[cell.InstanceId] = cell.Position;
             }
         }
 
@@ -144,28 +150,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             IEnumerable<CombatEvent> events,
             int? excludeSegment)
         {
-            _anchors.Clear();
-            if (battlefield != null)
-            {
-                foreach (var cell in battlefield.Cells)
-                {
-                    if (cell?.Definition == null)
-                        continue;
-
-                    _anchors[cell.InstanceId] = cell.Position;
-                }
-            }
-
-            if (events == null)
-                return;
-
-            foreach (var combatEvent in OrderEvents(events))
-            {
-                if (excludeSegment.HasValue && combatEvent.Segment == excludeSegment.Value)
-                    continue;
-
-                ApplyEventStateOnly(combatEvent);
-            }
+            _replayState.RestoreFromBattlefieldAndEvents(battlefield, events, excludeSegment);
         }
 
         private void SyncActorsToAnchors(BattlefieldState battlefield)
@@ -184,7 +169,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             var removedIds = new List<string>();
             foreach (var pair in _actors)
             {
-                if (!_anchors.ContainsKey(pair.Key))
+                if (!_replayState.TryGetAnchor(pair.Key, out _))
                     removedIds.Add(pair.Key);
             }
 
@@ -203,7 +188,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 if (!PieceTagQueries.HasTag(cell.Definition, GameTagIds.Combatant))
                     continue;
 
-                if (!_anchors.ContainsKey(cell.InstanceId) || _actors.ContainsKey(cell.InstanceId))
+                if (!_replayState.TryGetAnchor(cell.InstanceId, out var anchor) || _actors.ContainsKey(cell.InstanceId))
                     continue;
 
                 var actor = _pool.Rent();
@@ -216,7 +201,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                     CombatArenaPrefabResolver.ResolveUnitHeight(source, config),
                     _arenaCameraTransform,
                     _mapper,
-                    _anchors[cell.InstanceId],
+                    anchor,
                     config.moveLerpSeconds,
                     config.attackLungeSeconds,
                     config.attackLungeDistance);
@@ -224,7 +209,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 _actors[cell.InstanceId] = actor;
             }
 
-            foreach (var pair in _anchors)
+            foreach (var pair in _replayState.Anchors)
             {
                 if (_actors.TryGetValue(pair.Key, out var actor))
                     actor.SnapToAnchor(pair.Value);
@@ -247,31 +232,11 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void OnEventReplayed(CombatEvent combatEvent)
         {
-            if (!CombatPresentationMode.ArenaActive || combatEvent == null)
+            if (!CombatArenaSession.IsActive || combatEvent == null)
                 return;
 
-            ApplyEventStateOnly(combatEvent);
+            _replayState.ApplyEvent(combatEvent);
             ApplyEventVisual(combatEvent);
-        }
-
-        private void ApplyEventStateOnly(CombatEvent combatEvent)
-        {
-            if (combatEvent == null)
-                return;
-
-            switch (combatEvent.ActionType)
-            {
-                case "move":
-                    if (!_anchors.ContainsKey(combatEvent.ActorId))
-                        return;
-
-                    if (TryParseCoord(combatEvent.TargetId, out var destination))
-                        _anchors[combatEvent.ActorId] = destination;
-                    break;
-                case "destroyed":
-                    _anchors.Remove(combatEvent.ActorId);
-                    break;
-            }
         }
 
         private void ApplyEventVisual(CombatEvent combatEvent)
@@ -280,7 +245,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             {
                 case "move":
                     if (_actors.TryGetValue(combatEvent.ActorId, out var mover) &&
-                        _anchors.TryGetValue(combatEvent.ActorId, out var destination))
+                        _replayState.TryGetAnchor(combatEvent.ActorId, out var destination))
                     {
                         mover.MoveTo(destination);
                     }
@@ -330,7 +295,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return true;
             }
 
-            if (_anchors.TryGetValue(combatEvent.TargetId, out var targetAnchor))
+            if (_replayState.TryGetAnchor(combatEvent.TargetId, out var targetAnchor))
             {
                 worldPosition = _mapper.ToWorld(targetAnchor);
                 return true;
@@ -372,27 +337,27 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
         }
 
-        private static IEnumerable<CombatEvent> ConvertSavedEvents(IReadOnlyList<CombatEventRecord> records)
+        private void ResetArenaActors(Transform poolRoot)
         {
-            if (records == null)
-                yield break;
-
-            foreach (var record in records)
+            foreach (var actor in _actors.Values)
             {
-                yield return new CombatEvent
-                {
-                    Segment = record.Segment,
-                    Tick = record.Tick,
-                    ActorId = record.ActorId,
-                    ActionType = record.ActionType,
-                    TargetId = record.TargetId,
-                    Value = record.Value
-                };
+                if (actor != null)
+                    Destroy(actor.gameObject);
             }
-        }
 
-        private static IEnumerable<CombatEvent> OrderEvents(IEnumerable<CombatEvent> events) =>
-            events.OrderBy(e => e.Segment).ThenBy(e => e.Tick).ThenBy(e => e.ActorId);
+            _actors.Clear();
+            _replayState.ResetFromBattlefield(null);
+            _pool?.Clear();
+            _buildingSpawner.Clear();
+
+            if (poolRoot != null)
+            {
+                for (int i = poolRoot.childCount - 1; i >= 0; i--)
+                    Destroy(poolRoot.GetChild(i).gameObject);
+            }
+
+            _pool = new CombatUnitActorPool(poolRoot);
+        }
 
         private static bool TryParseCoord(string value, out GridCoord coord)
         {
@@ -408,28 +373,6 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             coord = new GridCoord(x, y);
             return true;
-        }
-
-        private void ResetArenaActors(Transform poolRoot)
-        {
-            foreach (var actor in _actors.Values)
-            {
-                if (actor != null)
-                    Destroy(actor.gameObject);
-            }
-
-            _actors.Clear();
-            _anchors.Clear();
-            _pool?.Clear();
-            _buildingSpawner.Clear();
-
-            if (poolRoot != null)
-            {
-                for (int i = poolRoot.childCount - 1; i >= 0; i--)
-                    Destroy(poolRoot.GetChild(i).gameObject);
-            }
-
-            _pool = new CombatUnitActorPool(poolRoot);
         }
 
         private void EnsureReferences()

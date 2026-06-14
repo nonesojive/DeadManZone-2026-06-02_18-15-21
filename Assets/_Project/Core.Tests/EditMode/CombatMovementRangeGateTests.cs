@@ -38,7 +38,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 Side = mover.Side,
                 Definition = TestPieces.With(mover.Definition, movementSpeed: MovementSpeedTier.None),
                 CurrentHp = mover.CurrentHp,
-                Position = mover.Position
+                AnchorPosition = mover.AnchorPosition
             };
 
             Assert.IsFalse(CombatMovementRules.ShouldAttemptMove(mover, new List<CombatantState>()));
@@ -57,7 +57,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 Side = CombatSide.Player,
                 Definition = definition,
                 CurrentHp = definition.MaxHp,
-                Position = position
+                AnchorPosition = position
             };
         }
     }

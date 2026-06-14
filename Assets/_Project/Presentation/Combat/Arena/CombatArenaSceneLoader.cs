@@ -16,7 +16,11 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             if (runSceneController == null)
                 runSceneController = FindFirstObjectByType<RunSceneController>();
+
+            CombatArenaSession.Bind(this);
         }
+
+        private void OnDestroy() => CombatArenaSession.Unbind(this);
 
         public IEnumerator LoadAsync()
         {
@@ -31,7 +35,6 @@ namespace DeadManZone.Presentation.Combat.Arena
                 yield return null;
 
             IsLoaded = true;
-            CombatPresentationMode.ArenaActive = true;
 
             if (runSceneController == null)
                 runSceneController = FindFirstObjectByType<RunSceneController>();
@@ -51,7 +54,6 @@ namespace DeadManZone.Presentation.Combat.Arena
                 yield break;
 
             IsLoaded = false;
-            CombatPresentationMode.ArenaActive = false;
             CombatArenaUiController.ExitArenaMode(runSceneController?.BuildPanelTransform);
             GetComponent<CombatArenaPresenter>()?.OnArenaUnloaded();
 

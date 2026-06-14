@@ -2,7 +2,9 @@ using DeadManZone.Core.Board;
 using DeadManZone.Data;
 using UnityEngine;
 using UnityEngine.Rendering;
+#if UNITY_URP_PRESENT
 using UnityEngine.Rendering.Universal;
+#endif
 
 namespace DeadManZone.Presentation.Combat.Arena
 {
@@ -89,7 +91,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 && !string.IsNullOrEmpty(config.syntySkyboxMaterialPath))
             {
                 var skybox = SyntyRuntimeAssetLoader.LoadMaterial(config.syntySkyboxMaterialPath);
-                if (skybox != null)
+                if (CombatArenaMaterialUtility.IsMaterialRenderable(skybox))
                 {
                     RenderSettings.skybox = skybox;
                     if (arenaCamera != null)
@@ -145,7 +147,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             var material = config.syntyGroundMaterial != null
                 ? config.syntyGroundMaterial
                 : SyntyRuntimeAssetLoader.LoadMaterial(config.syntyGroundMaterialPath);
-            if (material == null)
+            if (!CombatArenaMaterialUtility.IsMaterialRenderable(material))
                 return false;
 
             if (groundRoot != null && !_usingFlatGround)
@@ -315,6 +317,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private static void EnsureUrpCameraData(Camera camera)
         {
+#if UNITY_URP_PRESENT
             if (camera == null || !CombatArenaMaterialUtility.IsUrpActive())
                 return;
 
@@ -324,6 +327,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             urpData.renderPostProcessing = false;
             urpData.antialiasing = AntialiasingMode.None;
+#endif
         }
     }
 }

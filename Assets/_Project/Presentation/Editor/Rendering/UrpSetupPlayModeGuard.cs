@@ -11,6 +11,7 @@ namespace DeadManZone.Presentation.Editor
         static UrpSetupPlayModeGuard()
         {
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+            EditorApplication.delayCall += EnsurePipelineAssigned;
         }
 
         private static void OnPlayModeStateChanged(PlayModeStateChange state)
@@ -18,12 +19,20 @@ namespace DeadManZone.Presentation.Editor
             if (state != PlayModeStateChange.ExitingEditMode)
                 return;
 
+            EnsurePipelineAssigned();
+        }
+
+        private static void EnsurePipelineAssigned()
+        {
             if (GraphicsSettings.defaultRenderPipeline != null)
+                return;
+
+            if (DeadManZoneUrpSetup.TryAssignPipelineIfMissing())
                 return;
 
             Debug.LogWarning(
                 "DeadManZone: URP package is installed but no Render Pipeline Asset is assigned. " +
-                "Combat Synty materials will look broken until you run " +
+                "Combat Synty materials will render magenta until you run " +
                 "DeadManZone → Rendering → Setup URP For Project.");
         }
     }

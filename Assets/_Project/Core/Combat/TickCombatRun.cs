@@ -257,7 +257,7 @@ namespace DeadManZone.Core.Combat
                     continue;
 
                 int damage = GasDamageSystem.GetDamage(
-                    combatant.Position,
+                    combatant.AnchorPosition,
                     GlobalTick - CombatPacingConfig.GasStartTick,
                     _layout);
                 combatant.CurrentHp -= damage;

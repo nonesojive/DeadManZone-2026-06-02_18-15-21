@@ -31,7 +31,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 Side = CombatSide.Player,
                 Definition = definition,
                 CurrentHp = definition.MaxHp,
-                Position = new GridCoord(0, 0)
+                AnchorPosition = new GridCoord(0, 0)
             };
 
             Assert.IsTrue(combatant.HasTag(GameTagIds.Combatant));

@@ -20,7 +20,7 @@ namespace DeadManZone.PlayMode.Tests
         public void SetUp()
         {
             PlayModeTestHelpers.CleanupPersistentManagers();
-            CombatPresentationMode.ArenaActive = false;
+            CombatArenaSession.ResetForTests();
         }
 
         [TearDown]
@@ -33,7 +33,7 @@ namespace DeadManZone.PlayMode.Tests
             if (arenaScene.isLoaded)
                 SceneManager.UnloadSceneAsync(arenaScene);
 
-            CombatPresentationMode.ArenaActive = false;
+            CombatArenaSession.ResetForTests();
             PlayModeTestHelpers.CleanupPersistentManagers();
         }
 
@@ -46,13 +46,13 @@ namespace DeadManZone.PlayMode.Tests
             yield return loader.LoadAsync();
 
             Assert.IsTrue(loader.IsLoaded, "Arena loader should report loaded after LoadAsync.");
-            Assert.IsTrue(CombatPresentationMode.ArenaActive, "Arena mode should be active after LoadAsync.");
+            Assert.IsTrue(CombatArenaSession.IsActive, "Arena mode should be active after LoadAsync.");
             Assert.IsTrue(
                 SceneManager.GetSceneByName(GameScenes.CombatArena).isLoaded,
                 "CombatArena scene should be loaded additively.");
 
             yield return loader.UnloadAsync();
-            Assert.IsFalse(CombatPresentationMode.ArenaActive, "Arena mode should be inactive after UnloadAsync.");
+            Assert.IsFalse(CombatArenaSession.IsActive, "Arena mode should be inactive after UnloadAsync.");
         }
 
         [UnityTest]

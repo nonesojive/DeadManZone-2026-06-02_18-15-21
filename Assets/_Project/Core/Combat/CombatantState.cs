@@ -30,13 +30,6 @@ namespace DeadManZone.Core.Combat
         public IReadOnlyList<GridCoord> ShapeOffsets { get; init; }
         public IReadOnlyList<GridCoord> OccupiedCells { get; private set; }
 
-        [Obsolete("Use AnchorPosition")]
-        public GridCoord Position
-        {
-            get => AnchorPosition;
-            set => AnchorPosition = value;
-        }
-
         public bool IsAlive => CurrentHp > 0;
 
         public bool HasTag(string tag) => PieceTagQueries.HasTag(Definition, tag);

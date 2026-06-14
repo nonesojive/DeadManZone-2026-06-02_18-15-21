@@ -116,15 +116,13 @@ namespace DeadManZone.Presentation.Editor
             combatOverlay.raycastTarget = false;
 
             var combatDirector = combatPanel.AddComponent<CombatDirector>();
-            var combatBoard = combatPanel.AddComponent<CombatBoardPresenter>();
             var loadingOverlay = CreateCombatLoadingOverlay(combatPanel.transform, theme, out var loadingText);
-            var tacticPanel = CreateTacticPausePanel(combatPanel.transform, theme, out var bannerText, out var bannerGroup);
+            var tacticPanel = CreateTacticPausePanel(combatPanel.transform, theme);
             var battleReport = CreateBattleReportPanel(combatPanel.transform, theme);
             var flowPresenter = combatPanel.AddComponent<CombatFlowPresenter>();
             var healthBarPresenter = CreateArmyHealthBars(combatPanel.transform, theme);
 
             WireFlowPresenter(flowPresenter, combatDirector, tacticPanel, battleReport, loadingOverlay, loadingText, healthBarPresenter);
-            WireCombatBoardPresenter(combatBoard, combatDirector, boardView, bannerText, bannerGroup);
             WireController(controller, buildPanel, buildCanvasGroup, combatPanel, boardAreaGo, shopAreaGo, bottomBar,
                 boardView, shopView, reservesView, combatDirector, tacticPanel, hud, endOverlay, pauseMenu,
                 beginFight, menuBtn, rowLayout);
@@ -882,23 +880,11 @@ namespace DeadManZone.Presentation.Editor
 
         private static TacticPausePanel CreateTacticPausePanel(
             Transform parent,
-            UiThemeSO theme,
-            out TMP_Text bannerText,
-            out CanvasGroup bannerGroup)
+            UiThemeSO theme)
         {
             var sheet = CreateRegion(parent, "TacticPauseSheet", Vector2.zero, new Vector2(1f, 0.42f));
             var sheetBg = sheet.AddComponent<Image>();
             UiThemeApplicator.ApplySecurityTerminalFrame(sheetBg, theme);
-
-            var bannerRoot = CreateRegion(parent, "PhaseBanner", new Vector2(0.25f, 0.72f), new Vector2(0.75f, 0.88f));
-            bannerRoot.SetActive(false);
-            var bannerBg = bannerRoot.AddComponent<Image>();
-            UiThemeApplicator.ApplyBanner(bannerBg, theme);
-            bannerText = MenuSceneSetup.CreateLabelPublic(
-                bannerRoot.transform, "Deployment", 36, FontStyles.Bold,
-                new Vector2(0.5f, 0.5f), new Vector2(500f, 50f));
-            UiThemeSceneStyling.StyleLabel(bannerText, theme);
-            bannerGroup = bannerRoot.AddComponent<CanvasGroup>();
 
             var panel = sheet.AddComponent<TacticPausePanel>();
             var title = MenuSceneSetup.CreateLabelPublic(
@@ -931,65 +917,6 @@ namespace DeadManZone.Presentation.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
             sheet.SetActive(false);
             return panel;
-        }
-
-        private static PhaseCommandPanel CreatePhaseCommandPanel(
-            Transform parent,
-            UiThemeSO theme,
-            out TMP_Text bannerText,
-            out CanvasGroup bannerGroup)
-        {
-            var sheet = CreateRegion(parent, "CommandSheet", Vector2.zero, new Vector2(1f, 0.38f));
-            var sheetBg = sheet.AddComponent<Image>();
-            UiThemeApplicator.ApplyPanel(sheetBg, theme);
-
-            var bannerRoot = CreateRegion(parent, "PhaseBanner", new Vector2(0.25f, 0.72f), new Vector2(0.75f, 0.88f));
-            bannerRoot.SetActive(false);
-            var bannerBg = bannerRoot.AddComponent<Image>();
-            bannerBg.color = theme.combatBannerColor;
-            bannerText = MenuSceneSetup.CreateLabelPublic(
-                bannerRoot.transform, "Deployment", 36, FontStyles.Bold,
-                new Vector2(0.5f, 0.5f), new Vector2(500f, 50f));
-            UiThemeSceneStyling.StyleLabel(bannerText, theme);
-            bannerGroup = bannerRoot.AddComponent<CanvasGroup>();
-
-            var panel = sheet.AddComponent<PhaseCommandPanel>();
-            var text = MenuSceneSetup.CreateLabelPublic(
-                sheet.transform, "", 20, FontStyles.Normal,
-                new Vector2(0.5f, 0.62f), new Vector2(900f, 320f));
-            text.alignment = TextAlignmentOptions.TopLeft;
-            UiThemeSceneStyling.StyleLabel(text, theme);
-
-            var submit = MenuSceneSetup.CreateSmallButtonPublic(
-                sheet.transform, "Submit", new Vector2(0.42f, 0.12f), new Vector2(160f, 44f));
-            var skip = MenuSceneSetup.CreateSmallButtonPublic(
-                sheet.transform, "Skip", new Vector2(0.58f, 0.12f), new Vector2(160f, 44f));
-            UiThemeSceneStyling.StyleButton(submit, theme, accent: true);
-            UiThemeSceneStyling.StyleButton(skip, theme);
-
-            var serialized = new SerializedObject(panel);
-            serialized.FindProperty("commandsText").objectReferenceValue = text;
-            serialized.FindProperty("submitButton").objectReferenceValue = submit;
-            serialized.FindProperty("skipButton").objectReferenceValue = skip;
-            serialized.FindProperty("panelBackground").objectReferenceValue = sheetBg;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
-            sheet.SetActive(false);
-            return panel;
-        }
-
-        private static void WireCombatBoardPresenter(
-            CombatBoardPresenter presenter,
-            CombatDirector director,
-            BoardView boardView,
-            TMP_Text bannerText,
-            CanvasGroup bannerGroup)
-        {
-            var serialized = new SerializedObject(presenter);
-            serialized.FindProperty("boardView").objectReferenceValue = boardView;
-            serialized.FindProperty("combatDirector").objectReferenceValue = director;
-            serialized.FindProperty("phaseBannerText").objectReferenceValue = bannerText;
-            serialized.FindProperty("phaseBannerGroup").objectReferenceValue = bannerGroup;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static BattleReportPresenter CreateBattleReportPanel(Transform parent, UiThemeSO theme)

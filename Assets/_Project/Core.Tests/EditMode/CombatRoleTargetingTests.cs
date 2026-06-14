@@ -66,7 +66,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 Side = CombatSide.Player,
                 Definition = definition,
                 CurrentHp = definition.MaxHp,
-                Position = position
+                AnchorPosition = position
             };
         }
 
@@ -109,7 +109,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 Side = combatant.Side,
                 Definition = definition,
                 CurrentHp = combatant.CurrentHp,
-                Position = combatant.Position
+                AnchorPosition = combatant.AnchorPosition
             };
         }
 
@@ -155,7 +155,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 Side = CombatSide.Enemy,
                 Definition = definition,
                 CurrentHp = hp,
-                Position = position
+                AnchorPosition = position
             };
         }
     }

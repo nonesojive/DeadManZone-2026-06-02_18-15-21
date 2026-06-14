@@ -16,14 +16,14 @@ namespace DeadManZone.Core.Tests.EditMode
             {
                 InstanceId = "grenade_1",
                 Definition = TestPieces.With(TestPieces.RifleSquad(), grantedAbility: GrantedAbility.GrenadeLob),
-                Position = new GridCoord(0, 0),
+                AnchorPosition = new GridCoord(0, 0),
                 CurrentHp = 100
             };
             var enemy = new CombatantState
             {
                 InstanceId = "enemy_1",
                 Definition = TestPieces.RifleSquad(),
-                Position = new GridCoord(1, 0),
+                AnchorPosition = new GridCoord(1, 0),
                 CurrentHp = 100
             };
             var log = new CombatEventLog();
@@ -38,7 +38,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 log,
                 logSegment: 0,
                 logTick: 0,
-                targetCell: enemy.Position);
+                targetCell: enemy.AnchorPosition);
 
             Assert.IsTrue(result.Success);
             Assert.IsTrue(log.Events.Exists(e => e.ActionType == "grenade_lob"));

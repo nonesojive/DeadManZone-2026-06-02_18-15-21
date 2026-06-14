@@ -29,8 +29,8 @@ namespace DeadManZone.Core.Combat
             {
                 CombatRoleTargetingBias.NoAttack => null,
                 CombatRoleTargetingBias.HighestHp => SelectHighestCurrentHp(PreferLineTroops(aliveEnemies)),
-                CombatRoleTargetingBias.Furthest => SelectFurthest(attacker.Position, aliveEnemies),
-                CombatRoleTargetingBias.NearestFront => SelectNearestFront(attacker.Position, aliveEnemies),
+                CombatRoleTargetingBias.Furthest => SelectFurthest(attacker.AnchorPosition, aliveEnemies),
+                CombatRoleTargetingBias.NearestFront => SelectNearestFront(attacker.AnchorPosition, aliveEnemies),
                 CombatRoleTargetingBias.LowestMaxHpRearPreferred => SelectLowestMaxHpRearPreferred(aliveEnemies),
                 _ => SelectFirstByInstanceId(aliveEnemies)
             };
@@ -100,7 +100,7 @@ namespace DeadManZone.Core.Combat
             for (int i = 0; i < candidates.Count; i++)
             {
                 var candidate = candidates[i];
-                int distance = CombatRange.Manhattan(attackerPosition, candidate.Position);
+                int distance = CombatRange.Manhattan(attackerPosition, candidate.AnchorPosition);
                 if (best == null
                     || distance > bestDistance
                     || (distance == bestDistance && CompareByInstanceId(candidate, best) < 0))
@@ -120,7 +120,7 @@ namespace DeadManZone.Core.Combat
             for (int i = 0; i < candidates.Count; i++)
             {
                 var candidate = candidates[i];
-                if (candidate.Position.X == frontColumn)
+                if (candidate.AnchorPosition.X == frontColumn)
                 {
                     frontCandidates.Add(candidate);
                 }
@@ -139,7 +139,7 @@ namespace DeadManZone.Core.Combat
             for (int i = 0; i < candidates.Count; i++)
             {
                 var candidate = candidates[i];
-                int distance = CombatRange.Manhattan(attackerPosition, candidate.Position);
+                int distance = CombatRange.Manhattan(attackerPosition, candidate.AnchorPosition);
                 if (best == null
                     || distance < bestDistance
                     || (distance == bestDistance && CompareByInstanceId(candidate, best) < 0))
@@ -166,7 +166,7 @@ namespace DeadManZone.Core.Combat
                     bestOverall = candidate;
                 }
 
-                if (candidate.Position.X == rearColumn && IsBetterLowMaxHp(candidate, bestRear))
+                if (candidate.AnchorPosition.X == rearColumn && IsBetterLowMaxHp(candidate, bestRear))
                 {
                     bestRear = candidate;
                 }
@@ -197,7 +197,7 @@ namespace DeadManZone.Core.Combat
             int frontColumn = side == CombatSide.Player ? int.MinValue : int.MaxValue;
             for (int i = 0; i < candidates.Count; i++)
             {
-                int x = candidates[i].Position.X;
+                int x = candidates[i].AnchorPosition.X;
                 if (side == CombatSide.Player)
                 {
                     if (x > frontColumn)
@@ -219,7 +219,7 @@ namespace DeadManZone.Core.Combat
             int rearColumn = side == CombatSide.Player ? int.MaxValue : int.MinValue;
             for (int i = 0; i < candidates.Count; i++)
             {
-                int x = candidates[i].Position.X;
+                int x = candidates[i].AnchorPosition.X;
                 if (side == CombatSide.Player)
                 {
                     if (x < rearColumn)

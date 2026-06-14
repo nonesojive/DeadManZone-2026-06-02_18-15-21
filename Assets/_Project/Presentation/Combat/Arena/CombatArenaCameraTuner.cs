@@ -24,7 +24,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void Update()
         {
-            if (!CombatPresentationMode.ArenaActive)
+            if (!CombatArenaSession.IsActive)
             {
                 _active = false;
                 return;
@@ -54,7 +54,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void OnGUI()
         {
-            if (!_active || !CombatPresentationMode.ArenaActive)
+            if (!_active || !CombatArenaSession.IsActive)
                 return;
 
             const int width = 430;

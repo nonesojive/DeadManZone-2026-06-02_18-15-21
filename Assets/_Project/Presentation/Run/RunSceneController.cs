@@ -32,7 +32,6 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private ReservesView reservesView;
         [SerializeField] private CombatDirector combatDirector;
         [SerializeField] private TacticPausePanel tacticPausePanel;
-        [SerializeField] private PhaseCommandPanel phaseCommandPanel;
         [SerializeField] private RunHudView runHudView;
         [SerializeField] private RunEndOverlayView runEndOverlay;
         [SerializeField] private PauseMenuView pauseMenuView;
@@ -130,7 +129,7 @@ namespace DeadManZone.Presentation.Run
 
             if (buildPanel != null)
             {
-                bool hideForArena = (inCombat || aftermath) && CombatPresentationMode.ArenaActive;
+                bool hideForArena = (inCombat || aftermath) && CombatArenaSession.IsActive;
                 buildPanel.SetActive(!hideForArena);
             }
 
@@ -157,8 +156,6 @@ namespace DeadManZone.Presentation.Run
             if (runEnded)
             {
                 tacticPausePanel?.Hide();
-                if (phaseCommandPanel != null)
-                    phaseCommandPanel.Hide();
                 pauseMenuView?.Hide();
                 runEndOverlay?.Show(state.Phase, state);
                 return;
@@ -176,14 +173,10 @@ namespace DeadManZone.Presentation.Run
                 reservesView?.Refresh();
                 shopView?.RefreshFromRunManager();
                 tacticPausePanel?.Hide();
-                if (phaseCommandPanel != null)
-                    phaseCommandPanel.Hide();
             }
             else if (inCombat || aftermath)
             {
                 tacticPausePanel?.Hide();
-                if (phaseCommandPanel != null)
-                    phaseCommandPanel.Hide();
             }
         }
 
@@ -328,7 +321,7 @@ namespace DeadManZone.Presentation.Run
             if (combatActive)
             {
                 SetBuildPanelAlpha(0f);
-                if (CombatPresentationMode.ArenaActive && buildPanel != null)
+                if (CombatArenaSession.IsActive && buildPanel != null)
                     buildPanel.SetActive(false);
             }
             else

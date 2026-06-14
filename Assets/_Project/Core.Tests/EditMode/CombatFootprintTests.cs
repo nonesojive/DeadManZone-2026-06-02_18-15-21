@@ -105,19 +105,19 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
-        public void CombatantState_Position_AliasesAnchorPosition()
+        public void CombatantState_AnchorPosition_UpdatesOccupiedFootprint()
         {
             var combatant = new CombatantState
             {
                 InstanceId = "rifle_1",
                 Definition = TestPieces.RifleSquad(),
-                Position = new GridCoord(2, 5)
+                AnchorPosition = new GridCoord(2, 5)
             };
 
             Assert.AreEqual(new GridCoord(2, 5), combatant.AnchorPosition);
 
             combatant.AnchorPosition = new GridCoord(4, 6);
-            Assert.AreEqual(new GridCoord(4, 6), combatant.Position);
+            Assert.AreEqual(new GridCoord(4, 6), combatant.AnchorPosition);
         }
     }
 }
