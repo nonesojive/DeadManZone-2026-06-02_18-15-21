@@ -120,6 +120,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 var source = GetPiece(cell.Definition.Id);
                 actor.Initialize(
                     cell.InstanceId,
+                    cell.Definition.Id,
                     source != null ? source.icon : null,
                     CombatArenaPrefabResolver.ResolveUnitPrefab(source, config),
                     CombatArenaPrefabResolver.ResolveUnitScale(source, config),
@@ -129,7 +130,8 @@ namespace DeadManZone.Presentation.Combat.Arena
                     cell.Position,
                     config.moveLerpSeconds,
                     config.attackLungeSeconds,
-                    config.attackLungeDistance);
+                    config.attackLungeDistance,
+                    CombatAttackProfileResolver.Resolve(source));
 
                 _actors[cell.InstanceId] = actor;
             }
@@ -195,6 +197,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 var source = GetPiece(cell.Definition.Id);
                 actor.Initialize(
                     cell.InstanceId,
+                    cell.Definition.Id,
                     source != null ? source.icon : null,
                     CombatArenaPrefabResolver.ResolveUnitPrefab(source, config),
                     CombatArenaPrefabResolver.ResolveUnitScale(source, config),
@@ -204,7 +207,8 @@ namespace DeadManZone.Presentation.Combat.Arena
                     anchor,
                     config.moveLerpSeconds,
                     config.attackLungeSeconds,
-                    config.attackLungeDistance);
+                    config.attackLungeDistance,
+                    CombatAttackProfileResolver.Resolve(source));
 
                 _actors[cell.InstanceId] = actor;
             }
@@ -263,13 +267,68 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void PlayDamageEvent(CombatEvent combatEvent)
         {
-            if (TryGetDamageTargetPosition(combatEvent, out var targetWorld))
-            {
-                if (_actors.TryGetValue(combatEvent.ActorId, out var attacker))
-                    attacker.PlayAttackToward(targetWorld);
+            if (!TryGetDamageTargetPosition(combatEvent, out var targetWorld))
+                return;
 
+            if (!_actors.TryGetValue(combatEvent.ActorId, out var attacker))
+            {
                 vfx?.PlayDamage(targetWorld, combatEvent.Value);
+                return;
             }
+
+            var piece = ResolvePieceForActor(attacker);
+            var profile = CombatAttackProfileResolver.Resolve(piece);
+
+            attacker.PlayAttackToward(
+                targetWorld,
+                profile,
+                muzzleWorld => PlayAttackMuzzleVfx(profile, muzzleWorld, targetWorld),
+                () => PlayAttackImpactVfx(profile, targetWorld, combatEvent.Value));
+        }
+
+        private void PlayAttackMuzzleVfx(
+            CombatAttackPresentationProfile profile,
+            Vector3 muzzleWorld,
+            Vector3 targetWorld)
+        {
+            switch (profile.Kind)
+            {
+                case CombatAttackPresentationKind.InfantryGrenade:
+                    break;
+                case CombatAttackPresentationKind.VehicleCannon:
+                case CombatAttackPresentationKind.BuildingArtillery:
+                    vfx?.PlayCannonMuzzleAndTracer(muzzleWorld, targetWorld);
+                    break;
+                default:
+                    vfx?.PlayRifleMuzzleAndTracer(muzzleWorld, targetWorld);
+                    break;
+            }
+        }
+
+        private void PlayAttackImpactVfx(
+            CombatAttackPresentationProfile profile,
+            Vector3 targetWorld,
+            int damageAmount)
+        {
+            switch (profile.Kind)
+            {
+                case CombatAttackPresentationKind.InfantryGrenade:
+                case CombatAttackPresentationKind.VehicleCannon:
+                case CombatAttackPresentationKind.BuildingArtillery:
+                    vfx?.PlayExplosion(targetWorld, damageAmount);
+                    break;
+                default:
+                    vfx?.PlayImpact(targetWorld, damageAmount);
+                    break;
+            }
+        }
+
+        private PieceDefinitionSO ResolvePieceForActor(CombatUnitActor actor)
+        {
+            if (actor == null || string.IsNullOrEmpty(actor.PieceId))
+                return null;
+
+            return GetPiece(actor.PieceId);
         }
 
         private void PlayDestroyedEvent(CombatEvent combatEvent)

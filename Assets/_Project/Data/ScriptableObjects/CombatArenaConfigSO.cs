@@ -48,6 +48,7 @@ namespace DeadManZone.Data
         [Tooltip("Applied on top of each piece's combatArenaModelScale.")]
         public float unitModelScaleMultiplier = 1.25f;
         public float defaultUnitModelHeight = 1.85f;
+        public float defaultVehicleModelHeight = 1.8f;
 
         [Header("Environment — Synty")]
         [Tooltip("When enabled, uses the Synty ground prefab instead of a primitive plane.")]

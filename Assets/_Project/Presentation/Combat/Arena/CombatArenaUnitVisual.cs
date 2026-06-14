@@ -1,17 +1,17 @@
-using System.Collections;
+using System;
+using DeadManZone.Data;
 using UnityEngine;
 
 namespace DeadManZone.Presentation.Combat.Arena
 {
     /// <summary>
-    /// Instantiates a 3D combat-arena model and drives Synty locomotion or static mesh presentation.
+    /// Instantiates a 3D combat-arena model and drives humanoid or vehicle combat presentation.
     /// Board/shop pieces keep using 2D sprites; this is combat-arena only.
     /// </summary>
     public sealed class CombatArenaUnitVisual : MonoBehaviour
     {
         private Transform _modelRoot;
         private ICombatUnitVisualDriver _driver;
-        private Coroutine _attackRoutine;
 
         public bool HasModel => _modelRoot != null;
 
@@ -22,7 +22,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (prefab == null)
                 return;
 
-            var instance = Object.Instantiate(prefab, transform, false);
+            var instance = UnityEngine.Object.Instantiate(prefab, transform, false);
             if (instance == null)
             {
                 Debug.LogError($"Failed to instantiate combat arena prefab '{prefab.name}'.");
@@ -43,11 +43,22 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (Mathf.Abs(scale - 1f) > 0.001f)
                 _modelRoot.localScale *= scale;
 
+            var animationSet = Resources.Load<CombatArenaAnimationSetSO>("DeadManZone/CombatArenaAnimationSet");
             var animator = instance.GetComponentInChildren<Animator>();
-            _driver = animator != null && animator.runtimeAnimatorController != null
-                ? new SyntyLocomotionVisualDriver()
-                : new StaticMeshVisualDriver();
-            _driver.Bind(animator);
+            if (animator != null && animator.runtimeAnimatorController != null)
+            {
+                var humanoidDriver = new HumanoidCombatVisualDriver();
+                humanoidDriver.Configure(this, _modelRoot);
+                _driver = humanoidDriver;
+                _driver.Bind(animator, animationSet);
+            }
+            else
+            {
+                var vehicleDriver = new VehicleCombatVisualDriver();
+                vehicleDriver.Configure(this, _modelRoot);
+                _driver = vehicleDriver;
+                _driver.Bind(null, animationSet);
+            }
         }
 
         public void SetWalking(bool walking) => _driver?.SetWalking(walking);
@@ -64,7 +75,11 @@ namespace DeadManZone.Presentation.Combat.Arena
             _modelRoot.rotation = Quaternion.LookRotation(worldDirection.normalized, Vector3.up);
         }
 
-        public void PlayAttackToward(Vector3 targetWorld)
+        public void PlayAttackToward(
+            Vector3 targetWorld,
+            CombatAttackPresentationProfile profile,
+            Action<Vector3> onMuzzle,
+            Action onImpact)
         {
             if (_modelRoot == null)
                 return;
@@ -72,19 +87,16 @@ namespace DeadManZone.Presentation.Combat.Arena
             Vector3 flatTarget = new Vector3(targetWorld.x, _modelRoot.position.y, targetWorld.z);
             FaceWorldDirection(flatTarget - _modelRoot.position);
 
-            if (_attackRoutine != null)
-                StopCoroutine(_attackRoutine);
-            _attackRoutine = StartCoroutine(AttackRoutine());
+            _driver?.PlayAttack(
+                profile,
+                () => onMuzzle?.Invoke(_driver.GetMuzzleWorldPosition()),
+                onImpact);
         }
+
+        public void PlayDeath(Action onComplete) => _driver?.PlayDeath(onComplete);
 
         public void Clear()
         {
-            if (_attackRoutine != null)
-            {
-                StopCoroutine(_attackRoutine);
-                _attackRoutine = null;
-            }
-
             _driver?.Clear();
             _driver = null;
 
@@ -113,16 +125,6 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
 
             _modelRoot.localScale *= targetHeight / currentHeight;
-        }
-
-        private IEnumerator AttackRoutine()
-        {
-            _driver?.PlayAttack();
-
-            yield return new WaitForSeconds(0.12f);
-            yield return new WaitForSeconds(0.45f);
-
-            _attackRoutine = null;
         }
     }
 }

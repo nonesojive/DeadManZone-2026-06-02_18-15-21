@@ -48,9 +48,14 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (piece != null && piece.combatArenaModelHeight > 0f)
                 return piece.combatArenaModelHeight;
 
+            if (CombatAttackProfileResolver.IsVehicle(piece))
+                return config != null && config.defaultVehicleModelHeight > 0f
+                    ? config.defaultVehicleModelHeight
+                    : 1.8f;
+
             return config != null && config.defaultUnitModelHeight > 0f
                 ? config.defaultUnitModelHeight
-                : 1.85f;
+                : 2.1f;
         }
     }
 }

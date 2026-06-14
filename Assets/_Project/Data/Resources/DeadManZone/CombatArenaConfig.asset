@@ -17,11 +17,11 @@ MonoBehaviour:
   cameraElevationDegrees: 50
   cameraAzimuthDegrees: 270
   cameraDistance: 28
-  fieldOfView: 38
+  fieldOfView: 42
   autoFrameWidth: 1
   horizontalViewportPadding: 0
   autoFrameVerticalPosition: 1
-  boardVerticalViewportCenter: 0.44
+  boardVerticalViewportCenter: 0.48
   lookAtDepthOffset: 0
   useManualCameraPose: 0
   manualCameraWorldPosition: {x: 0, y: 0, z: 0}
@@ -30,8 +30,9 @@ MonoBehaviour:
   attackLungeSeconds: 0.15
   attackLungeDistance: 0.35
   unitSpawnFadeSeconds: 0.35
-  unitModelScaleMultiplier: 1.25
-  defaultUnitModelHeight: 1.85
+  unitModelScaleMultiplier: 1.6
+  defaultUnitModelHeight: 2.1
+  defaultVehicleModelHeight: 1.8
   useSyntyTerrain: 1
   spawnPerimeterProps: 0
   useSyntySkybox: 0

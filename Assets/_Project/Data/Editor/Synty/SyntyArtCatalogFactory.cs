@@ -44,7 +44,22 @@ namespace DeadManZone.Data.Editor
                 Entry("ironmarch_engineer", SyntyArtPaths.UnitMedic, 1f, 1.6f),
                 Entry("ironmarch_breacher", SyntyArtPaths.UnitOfficer, 1f, 1.6f),
                 Entry("ironmarch_sniper", SyntyArtPaths.UnitSniper, 1f, 1.6f),
-                Entry("ironmarch_defender", SyntyArtPaths.UnitRifle, 1f, 1.6f)
+                Entry("ironmarch_defender", SyntyArtPaths.UnitRifle, 1f, 1.6f),
+                Entry("ironmarch_rifle", SyntyArtPaths.UnitRifle, 1f, 1.6f),
+                Entry("wraith_stalker", SyntyArtPaths.UnitSniper, 0.95f, 1.55f),
+                Entry("wraith_phantom", SyntyArtPaths.UnitOfficer, 0.92f, 1.52f),
+                Entry("wraith_bombard", SyntyArtPaths.VehicleHalftrack, 0.85f, 1.4f),
+                Entry("phantom_agent", SyntyArtPaths.UnitSniper, 0.9f, 1.5f),
+                Entry("resonance_cannon", SyntyArtPaths.VehicleCar, 0.9f, 1.4f),
+                Entry("toxin_launcher", SyntyArtPaths.UnitSupport, 0.95f, 1.55f),
+                Entry("scrap_rig", SyntyArtPaths.VehicleTank, 0.82f, 1.3f),
+                Entry("crimson_elite", SyntyArtPaths.UnitOfficer, 1.05f, 1.65f),
+                Entry("crimson_tank", SyntyArtPaths.VehicleTank, 0.9f, 1.5f),
+                Entry("crimson_artillery", SyntyArtPaths.BuildingFieldGun, 1f, 0f),
+                Entry("sand_raider", SyntyArtPaths.UnitRifle, 0.93f, 1.53f),
+                Entry("dust_hq", SyntyArtPaths.BuildingHq, 1f, 0f),
+                Entry("echo_hq", SyntyArtPaths.BuildingHq, 1f, 0f),
+                Entry("signal_relay", SyntyArtPaths.BuildingSupplyDepot, 1f, 0f)
             };
 
             EditorUtility.SetDirty(catalog);

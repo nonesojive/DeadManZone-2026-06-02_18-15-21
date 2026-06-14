@@ -1,4 +1,5 @@
 using System.Collections;
+using DeadManZone.Data;
 using TMPro;
 using UnityEngine;
 
@@ -6,14 +7,8 @@ namespace DeadManZone.Presentation.Combat.Arena
 {
     public sealed class CombatArenaVfx : MonoBehaviour
     {
-        private const string DefaultImpactPrefabPath =
-            "Assets/Synty/PolygonParticleFX/Prefabs/FX_Gunshot_01.prefab";
-        private const string DefaultDeathPrefabPath =
-            "Assets/Synty/PolygonParticleFX/Prefabs/FX_Dust_Small_01.prefab";
-
         [SerializeField] private CombatArenaFreezeController freezeController;
-        [SerializeField] private ParticleSystem impactPrefab;
-        [SerializeField] private ParticleSystem deathPrefab;
+        [SerializeField] private CombatArenaVfxSetSO vfxSet;
         [SerializeField] private Color damageTextColor = new(1f, 0.35f, 0.35f, 1f);
         [SerializeField] private float damageTextScale = 0.35f;
         [SerializeField] private float damageTextRise = 0.85f;
@@ -24,16 +19,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (freezeController == null)
                 freezeController = GetComponent<CombatArenaFreezeController>();
 
-            EnsureDefaultPrefabs();
-        }
-
-        private void EnsureDefaultPrefabs()
-        {
-            if (impactPrefab == null)
-                impactPrefab = SyntyRuntimeAssetLoader.LoadParticleSystem(DefaultImpactPrefabPath);
-
-            if (deathPrefab == null)
-                deathPrefab = SyntyRuntimeAssetLoader.LoadParticleSystem(DefaultDeathPrefabPath);
+            if (vfxSet == null)
+                vfxSet = Resources.Load<CombatArenaVfxSetSO>("DeadManZone/CombatArenaVfxSet");
         }
 
         public void Configure(CombatArenaFreezeController controller)
@@ -42,15 +29,49 @@ namespace DeadManZone.Presentation.Combat.Arena
                 freezeController = controller;
         }
 
-        public void PlayDamage(Vector3 worldPosition, int amount)
+        public void PlayRifleMuzzleAndTracer(Vector3 muzzleWorld, Vector3 targetWorld)
         {
-            SpawnBurst(impactPrefab, worldPosition);
-
-            string label = amount > 0 ? $"-{amount}" : amount.ToString();
-            SpawnFloatingText(worldPosition + Vector3.up * 1.1f, label);
+            SpawnBurst(vfxSet?.rifleMuzzle, muzzleWorld);
+            SpawnBurst(vfxSet?.rifleMuzzleSmoke, muzzleWorld);
+            SpawnTracer(muzzleWorld, targetWorld);
         }
 
-        public void PlayDeath(Vector3 worldPosition) => SpawnBurst(deathPrefab, worldPosition);
+        public void PlayImpact(Vector3 targetWorld, int damageAmount)
+        {
+            SpawnBurst(vfxSet?.rifleImpact, targetWorld);
+            SpawnFloatingText(
+                targetWorld + Vector3.up * 1.1f,
+                damageAmount > 0 ? $"-{damageAmount}" : damageAmount.ToString());
+        }
+
+        public void PlayExplosion(Vector3 targetWorld, int damageAmount)
+        {
+            SpawnBurst(vfxSet?.explosionSmall, targetWorld);
+            SpawnFloatingText(
+                targetWorld + Vector3.up * 1.1f,
+                damageAmount > 0 ? $"-{damageAmount}" : damageAmount.ToString());
+        }
+
+        public void PlayCannonMuzzleAndTracer(Vector3 muzzleWorld, Vector3 targetWorld)
+        {
+            SpawnBurst(vfxSet?.cannonShot, muzzleWorld);
+            SpawnTracer(muzzleWorld, targetWorld);
+        }
+
+        public void PlayDeath(Vector3 worldPosition)
+        {
+            SpawnBurst(vfxSet?.deathBurst, worldPosition);
+            SpawnBurst(vfxSet?.deathSmoke, worldPosition);
+        }
+
+        /// <summary>
+        /// Legacy single-call damage VFX. Prefer timed PlayRifleMuzzleAndTracer + PlayImpact.
+        /// </summary>
+        public void PlayDamage(Vector3 worldPosition, int amount)
+        {
+            PlayRifleMuzzleAndTracer(worldPosition, worldPosition);
+            PlayImpact(worldPosition, amount);
+        }
 
         private void SpawnBurst(ParticleSystem prefab, Vector3 worldPosition)
         {
@@ -58,6 +79,25 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
 
             var particle = Instantiate(prefab, worldPosition, Quaternion.identity, transform);
+            particle.Play();
+            freezeController?.TrackParticle(particle);
+
+            float lifetime = particle.main.duration + particle.main.startLifetime.constantMax + 0.1f;
+            Destroy(particle.gameObject, Mathf.Max(lifetime, 0.5f));
+        }
+
+        private void SpawnTracer(Vector3 from, Vector3 to)
+        {
+            if (vfxSet?.bulletTracer == null)
+                return;
+
+            Vector3 direction = to - from;
+            if (direction.sqrMagnitude < 0.001f)
+                return;
+
+            var rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+            var particle = Instantiate(vfxSet.bulletTracer, from, rotation, transform);
+            particle.transform.localScale = Vector3.one * direction.magnitude;
             particle.Play();
             freezeController?.TrackParticle(particle);
 

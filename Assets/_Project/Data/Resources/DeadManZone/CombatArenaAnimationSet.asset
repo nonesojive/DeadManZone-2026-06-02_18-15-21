@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a05812efaabfb841abf7bf75a8f34ba, type: 3}
+  m_Name: CombatArenaAnimationSet
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatArenaAnimationSetSO
+  rifleShoot: {fileID: -7620934768546458441, guid: 4779cd213d4f3d14c806ea5b630817f1, type: 3}
+  grenadeThrow: {fileID: -8873566483372711579, guid: f1b02d07d22cb8546b4a706ee6df48e0, type: 3}
+  death01: {fileID: -6298473264308222846, guid: 467a90ea10589e644a7cd6578adc8fb7, type: 3}
+  death02: {fileID: 2380356937864621665, guid: 0cb83b431585ddc44a255ff05953bd56, type: 3}
+  death03: {fileID: -1568351655152431163, guid: b570f64014a3c4c4cb76eb9b291370ce, type: 3}
+  sidekickDeathForward: {fileID: -6609256363486960360, guid: 128b448170c2adb4b829106d7678bbb7, type: 3}

@@ -163,3 +163,93 @@ MonoBehaviour:
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
     snapshotIconFromPrefab: 1
+  - pieceId: ironmarch_rifle
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/ironmarch_rifle_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Rifle.prefab
+    combatArenaModelScale: 1
+    combatArenaModelHeight: 1.6
+    snapshotIconFromPrefab: 1
+  - pieceId: wraith_stalker
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/wraith_stalker_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Sniper.prefab
+    combatArenaModelScale: 0.95
+    combatArenaModelHeight: 1.55
+    snapshotIconFromPrefab: 1
+  - pieceId: wraith_phantom
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/wraith_phantom_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Officer.prefab
+    combatArenaModelScale: 0.92
+    combatArenaModelHeight: 1.52
+    snapshotIconFromPrefab: 1
+  - pieceId: wraith_bombard
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/wraith_bombard_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Vehicles/ArenaVehicle_Halftrack.prefab
+    combatArenaModelScale: 0.85
+    combatArenaModelHeight: 1.4
+    snapshotIconFromPrefab: 1
+  - pieceId: phantom_agent
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/phantom_agent_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Sniper.prefab
+    combatArenaModelScale: 0.9
+    combatArenaModelHeight: 1.5
+    snapshotIconFromPrefab: 1
+  - pieceId: resonance_cannon
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/resonance_cannon_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Vehicles/ArenaVehicle_Car.prefab
+    combatArenaModelScale: 0.9
+    combatArenaModelHeight: 1.4
+    snapshotIconFromPrefab: 1
+  - pieceId: toxin_launcher
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/toxin_launcher_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Support.prefab
+    combatArenaModelScale: 0.95
+    combatArenaModelHeight: 1.55
+    snapshotIconFromPrefab: 1
+  - pieceId: scrap_rig
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/scrap_rig_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Vehicles/ArenaVehicle_Tank.prefab
+    combatArenaModelScale: 0.82
+    combatArenaModelHeight: 1.3
+    snapshotIconFromPrefab: 1
+  - pieceId: crimson_elite
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/crimson_elite_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Officer.prefab
+    combatArenaModelScale: 1.05
+    combatArenaModelHeight: 1.65
+    snapshotIconFromPrefab: 1
+  - pieceId: crimson_tank
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/crimson_tank_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Vehicles/ArenaVehicle_Tank.prefab
+    combatArenaModelScale: 0.9
+    combatArenaModelHeight: 1.5
+    snapshotIconFromPrefab: 1
+  - pieceId: crimson_artillery
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/crimson_artillery_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_FieldGun.prefab
+    combatArenaModelScale: 1
+    combatArenaModelHeight: 0
+    snapshotIconFromPrefab: 1
+  - pieceId: sand_raider
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/sand_raider_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Rifle.prefab
+    combatArenaModelScale: 0.93
+    combatArenaModelHeight: 1.53
+    snapshotIconFromPrefab: 1
+  - pieceId: dust_hq
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/dust_hq_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_Hq.prefab
+    combatArenaModelScale: 1
+    combatArenaModelHeight: 0
+    snapshotIconFromPrefab: 1
+  - pieceId: echo_hq
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/echo_hq_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_Hq.prefab
+    combatArenaModelScale: 1
+    combatArenaModelHeight: 0
+    snapshotIconFromPrefab: 1
+  - pieceId: signal_relay
+    iconAssetPath: Assets/_Project/Art/Synty/Icons/signal_relay_icon.png
+    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_SupplyDepot.prefab
+    combatArenaModelScale: 1
+    combatArenaModelHeight: 0
+    snapshotIconFromPrefab: 1

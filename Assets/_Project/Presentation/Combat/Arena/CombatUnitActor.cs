@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using DeadManZone.Core.Common;
 using UnityEngine;
@@ -14,18 +15,23 @@ namespace DeadManZone.Presentation.Combat.Arena
         private GridCoord _anchor;
         private Coroutine _moveRoutine;
         private Coroutine _lungeRoutine;
+        private Coroutine _attackTimingRoutine;
         private float _moveLerpSeconds = 0.4f;
         private float _lungeSeconds = 0.15f;
         private float _lungeDistance = 0.35f;
         private bool _frozen;
         private bool _useModelVisual;
+        private CombatAttackPresentationProfile _attackProfile;
 
         public string InstanceId { get; private set; }
+        public string PieceId { get; private set; }
         public GridCoord Anchor => _anchor;
         public bool IsAlive { get; private set; } = true;
+        public CombatAttackPresentationProfile AttackProfile => _attackProfile;
 
         public void Initialize(
             string instanceId,
+            string pieceId,
             Sprite icon,
             GameObject arenaPrefab,
             float arenaModelScale,
@@ -35,9 +41,12 @@ namespace DeadManZone.Presentation.Combat.Arena
             GridCoord anchor,
             float moveLerpSeconds,
             float lungeSeconds,
-            float lungeDistance)
+            float lungeDistance,
+            CombatAttackPresentationProfile attackProfile)
         {
             InstanceId = instanceId;
+            PieceId = pieceId;
+            _attackProfile = attackProfile;
             _mapper = mapper;
             _anchor = anchor;
             _moveLerpSeconds = moveLerpSeconds;
@@ -101,30 +110,58 @@ namespace DeadManZone.Presentation.Combat.Arena
             _moveRoutine = StartCoroutine(MoveRoutine(_mapper.ToWorld(anchor)));
         }
 
-        public void PlayAttackToward(Vector3 targetWorld)
+        public void PlayAttackToward(
+            Vector3 targetWorld,
+            CombatAttackPresentationProfile profile,
+            Action<Vector3> onMuzzle = null,
+            Action onImpact = null)
         {
             if (_frozen || !IsAlive)
                 return;
 
+            if (profile.UseForwardStep)
+            {
+                if (_lungeRoutine != null)
+                    StopCoroutine(_lungeRoutine);
+                _lungeRoutine = StartCoroutine(LungeRoutine(targetWorld));
+            }
+
             if (_useModelVisual && _unitVisual != null && _unitVisual.HasModel)
             {
-                _unitVisual.PlayAttackToward(targetWorld);
+                _unitVisual.PlayAttackToward(targetWorld, profile, onMuzzle, onImpact);
                 return;
             }
 
-            if (_lungeRoutine != null)
-                StopCoroutine(_lungeRoutine);
-            _lungeRoutine = StartCoroutine(LungeRoutine(targetWorld));
+            if (onMuzzle == null && onImpact == null)
+                return;
+
+            if (_attackTimingRoutine != null)
+                StopCoroutine(_attackTimingRoutine);
+            _attackTimingRoutine = StartCoroutine(
+                BillboardAttackTimingRoutine(profile, onMuzzle, onImpact));
         }
 
-        public void PlayDeath(System.Action onComplete)
+        public void PlayDeath(Action onComplete)
         {
             IsAlive = false;
             if (_moveRoutine != null)
                 StopCoroutine(_moveRoutine);
             if (_lungeRoutine != null)
                 StopCoroutine(_lungeRoutine);
+            if (_attackTimingRoutine != null)
+                StopCoroutine(_attackTimingRoutine);
             _unitVisual?.SetWalking(false);
+
+            if (_useModelVisual && _unitVisual != null && _unitVisual.HasModel)
+            {
+                _unitVisual.PlayDeath(() =>
+                {
+                    onComplete?.Invoke();
+                    gameObject.SetActive(false);
+                });
+                return;
+            }
+
             StartCoroutine(DeathRoutine(onComplete));
         }
 
@@ -181,7 +218,25 @@ namespace DeadManZone.Presentation.Combat.Arena
             _lungeRoutine = null;
         }
 
-        private IEnumerator DeathRoutine(System.Action onComplete)
+        private IEnumerator BillboardAttackTimingRoutine(
+            CombatAttackPresentationProfile profile,
+            Action<Vector3> onMuzzle,
+            Action onImpact)
+        {
+            if (profile.MuzzleDelaySeconds > 0f)
+                yield return new WaitForSeconds(profile.MuzzleDelaySeconds);
+
+            onMuzzle?.Invoke(transform.position + transform.forward * 0.35f + Vector3.up * 1.1f);
+
+            float impactWait = profile.ImpactDelaySeconds - profile.MuzzleDelaySeconds;
+            if (impactWait > 0f)
+                yield return new WaitForSeconds(impactWait);
+
+            onImpact?.Invoke();
+            _attackTimingRoutine = null;
+        }
+
+        private IEnumerator DeathRoutine(Action onComplete)
         {
             float duration = 0.35f;
             Vector3 startScale = transform.localScale;
@@ -199,16 +254,21 @@ namespace DeadManZone.Presentation.Combat.Arena
         public void ResetForPool()
         {
             InstanceId = null;
+            PieceId = null;
             IsAlive = true;
             transform.localScale = Vector3.one;
             if (_moveRoutine != null)
                 StopCoroutine(_moveRoutine);
             if (_lungeRoutine != null)
                 StopCoroutine(_lungeRoutine);
+            if (_attackTimingRoutine != null)
+                StopCoroutine(_attackTimingRoutine);
             _moveRoutine = null;
             _lungeRoutine = null;
+            _attackTimingRoutine = null;
             _frozen = false;
             _useModelVisual = false;
+            _attackProfile = CombatAttackPresentationProfile.InfantryRifle;
             ClearPresentation();
         }
 
