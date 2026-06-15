@@ -15,10 +15,11 @@ This system gives you (and Cursor's AI) a structured, high-quality way to build 
 
 ## Skill Architecture
 
-There is **one main orchestrator** and **seven focused specialist skills**:
+There is **one planning lead**, **one main orchestrator**, and **seven focused specialist skills**:
 
 ```
-unity-game-director          ← Main entry point (always start here for big work)
+senior-game-dev-lead         ← Planning, scope, milestones, risk (start here for design/planning)
+unity-game-director          ← Main entry point (always start here for big implementation work)
 ├── unity-gameplay-systems   ← Core mechanics & roguelike systems
 ├── unity-graphics-pipeline  ← Rendering, URP, Shader Graph, VFX
 ├── unity-ui-ux              ← UI Toolkit / HUDs / Menus / Accessibility
@@ -28,12 +29,13 @@ unity-game-director          ← Main entry point (always start here for big wor
 └── unity-qa-build           ← Testing, builds, verification gates
 ```
 
-The **director** routes work intelligently and pulls in the right specialists when needed. You can also invoke any specialist skill directly with `@skill-name` in Cursor chat.
+The **lead** scopes work and defines milestones before the **director** routes implementation to specialists. You can invoke any skill directly with `@skill-name` in Cursor chat.
 
 **DeadManZone also has:**
 
 | Skill | Role |
 |-------|------|
+| `@senior-game-dev-lead` | GDD, feature scoping, milestone planning, architecture review, risk assessment, solo dev project management |
 | `@tdd-iteration` | Write tests first, iterate until green (project skill) |
 | `@game-developer` | General Unity C# (personal skill) |
 | `@unity-3d-pipeline` | Imported model materials/LODs (personal skill) |
@@ -44,7 +46,8 @@ The **director** routes work intelligently and pulls in the right specialists wh
 
 | Skill | Short Description | Best Used When... |
 |-------|-------------------|-------------------|
-| **unity-game-director** | Central orchestrator. Plans architecture, enforces workflow (playable first → iterate → verify), routes to specialists, and ensures quality gates. | Starting a new game, major feature, vertical slice, or polish pass. Almost always the right starting point. |
+| **senior-game-dev-lead** | Senior dev + project lead guidance. GDD creation, feature scoping, milestone planning, architecture review, risk assessment, and solo dev sustainability. | Planning sessions, GDD work, milestone definition, scope/risk reviews, or before starting major new systems. |
+| **unity-game-director** | Central orchestrator. Plans architecture, enforces workflow (playable first → iterate → verify), routes to specialists, and ensures quality gates. | Starting a new game, major feature, vertical slice, or polish pass. Almost always the right starting point for implementation. |
 | **unity-gameplay-systems** | Deep gameplay architecture: player controllers, grid/turn-based systems, procedural generation, combat, progression, save/load, roguelike design patterns. | Implementing core mechanics, combat, procedural systems, or refactoring gameplay code. |
 | **unity-graphics-pipeline** | URP/HDRP setup, lighting, Shader Graph, VFX Graph, materials, post-processing, rendering optimization, and visual polish. | Visuals look flat, performance issues in rendering, or moving from prototype to premium look. |
 | **unity-ui-ux** | UI Toolkit vs Canvas, HUDs, menus, inventories, responsive layouts, input handling, accessibility, theming. | Building or overhauling any interface, HUD, inventory, or menu system. |
@@ -62,7 +65,8 @@ The **director** routes work intelligently and pulls in the right specialists wh
 1. **unity-game-director** is active via Cursor user rules (and/or project `.cursorrules`).
 2. Keep the Unity Editor open alongside Cursor.
 3. Start prompts with:
-   - `@unity-game-director` or `"Use unity-game-director to ..."`
+   - `@senior-game-dev-lead` for planning, GDD, milestones, or risk review
+   - `@unity-game-director` or `"Use unity-game-director to ..."` for implementation work
    - Or invoke a specialist: `@unity-gameplay-systems`, `@unity-qa-build`, `@tdd-iteration`, etc.
 
 Project skill copies include **DeadManZone conventions** (paths, seeds, editor menus, test commands).
@@ -72,6 +76,7 @@ Project skill copies include **DeadManZone conventions** (paths, seeds, editor m
 ```
 .cursor/skills/
 ├── unity-game-skills-overview.md   ← this file
+├── senior-game-dev-lead/SKILL.md
 ├── tdd-iteration/SKILL.md
 ├── unity-gameplay-systems/SKILL.md
 ├── unity-graphics-pipeline/SKILL.md
@@ -82,7 +87,7 @@ Project skill copies include **DeadManZone conventions** (paths, seeds, editor m
 └── unity-qa-build/SKILL.md
 ```
 
-Personal copies also live in `~/.cursor/skills/` for use outside this repo.
+Personal copies also live in `~/.cursor/skills/` for use outside this repo (including `senior-game-dev-lead/`).
 
 ---
 
@@ -99,6 +104,10 @@ Personal copies also live in `~/.cursor/skills/` for use outside this repo.
 ---
 
 ## Example Invocation Patterns (DeadManZone)
+
+**Milestone planning:**
+
+> @senior-game-dev-lead — define alpha exit criteria, scope boundaries, and playtest focus for the salvage shop meta layer.
 
 **New mechanic with tests:**
 
