@@ -62,7 +62,7 @@ The **lead** scopes work and defines milestones before the **director** routes i
 
 ### 1. In Cursor (Recommended Daily Workflow)
 
-1. **unity-game-director** is active via Cursor user rules (and/or project `.cursorrules`).
+1. Invoke `@unity-game-director` for implementation work, and/or keep the **unity-game-director** rule active via Cursor user rules (and/or project `.cursorrules`).
 2. Keep the Unity Editor open alongside Cursor.
 3. Start prompts with:
    - `@senior-game-dev-lead` for planning, GDD, milestones, or risk review
@@ -77,6 +77,7 @@ Project skill copies include **DeadManZone conventions** (paths, seeds, editor m
 .cursor/skills/
 ├── unity-game-skills-overview.md   ← this file
 ├── senior-game-dev-lead/SKILL.md
+├── unity-game-director/SKILL.md
 ├── tdd-iteration/SKILL.md
 ├── unity-gameplay-systems/SKILL.md
 ├── unity-graphics-pipeline/SKILL.md
@@ -87,7 +88,7 @@ Project skill copies include **DeadManZone conventions** (paths, seeds, editor m
 └── unity-qa-build/SKILL.md
 ```
 
-Personal copies also live in `~/.cursor/skills/` for use outside this repo (including `senior-game-dev-lead/`).
+Personal copies also live in `~/.cursor/skills/` for use outside this repo (including `senior-game-dev-lead/` and `unity-game-director/`).
 
 ---
 
