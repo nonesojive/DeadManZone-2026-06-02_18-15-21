@@ -108,3 +108,90 @@ InitTestScene*.unity*
 
 # Synty raw package imports (local only — arena wrappers live under _Project/Art/Synty)
 /[Aa]ssets/Synty/
+/[Aa]ssets/Synty.meta
+/[Aa]ssets/Plugins/Synty/
+/[Aa]ssets/Plugins/Synty.meta
+
+# Repo-root agent / CI scratch
+/TestResults*.xml
+/TestResults/
+/_unity_*.txt
+/_*_log*.txt
+/_compile_*.log
+/_compile_check.log
+/_editmode_tests*.log
+/_sandbox_art*.log
+/_playmode_*.log
+/_tar_log.txt
+/_salvage_*.txt
+/unity-test*.log
+/UnityTest*.log
+/UnityCompile*.log
+/UnityPlayMode*.log
+/TagRegistry*.log
+/uam/
+/.worktrees/
+
+# Accidental nested clone/submodule scratch at repo root
+/DeadManZone/
+
+# Local asset store imports (committed wrappers live under Assets/_Project/)
+/[Aa]ssets/AI Toolkit/
+/[Aa]ssets/AI Toolkit.meta
+/[Aa]ssets/Announcer/
+/[Aa]ssets/Announcer.meta
+/[Aa]ssets/Battle Music Pack DEMO/
+/[Aa]ssets/Battle Music Pack DEMO.meta
+/[Aa]ssets/DownloadCache.meta
+/[Aa]ssets/Editor/
+/[Aa]ssets/Editor.meta
+/[Aa]ssets/FOVMapping/
+/[Aa]ssets/FOVMapping.meta
+/[Aa]ssets/FPS Menu Music Themes Vol. 1/
+/[Aa]ssets/FPS Menu Music Themes Vol. 1.meta
+/[Aa]ssets/Gold Diamond - Midnight Assault/
+/[Aa]ssets/Gold Diamond - Midnight Assault.meta
+/[Aa]ssets/Kevin Iglesias/
+/[Aa]ssets/Kevin Iglesias.meta
+/[Aa]ssets/LowPolySoldiers_demo/
+/[Aa]ssets/LowPolySoldiers_demo.meta
+/[Aa]ssets/Military WW2 Music Pack/
+/[Aa]ssets/Military WW2 Music Pack.meta
+/[Aa]ssets/PostApocalypseGunsDemo/
+/[Aa]ssets/PostApocalypseGunsDemo.meta
+/[Aa]ssets/ProceduralToolkit/
+/[Aa]ssets/ProceduralToolkit.meta
+/[Aa]ssets/RTS_Modern_Combat_Vehicle_Pack_Free/
+/[Aa]ssets/RTS_Modern_Combat_Vehicle_Pack_Free.meta
+/[Aa]ssets/Sci-Fi Texture Pack 1/
+/[Aa]ssets/Sci-Fi Texture Pack 1.meta
+/[Aa]ssets/Sci_Fi_Character_08/
+/[Aa]ssets/Sci_Fi_Character_08.meta
+/[Aa]ssets/SimpleApocalypse/
+/[Aa]ssets/SimpleApocalypse.meta
+/[Aa]ssets/SimpleApocalypseInteriors/
+/[Aa]ssets/SimpleApocalypseInteriors.meta
+/[Aa]ssets/SimpleBuildings/
+/[Aa]ssets/SimpleBuildings.meta
+/[Aa]ssets/SimpleFX/
+/[Aa]ssets/SimpleFX.meta
+/[Aa]ssets/SimpleIcons/
+/[Aa]ssets/SimpleIcons.meta
+/[Aa]ssets/SimpleItems/
+/[Aa]ssets/SimpleItems.meta
+/[Aa]ssets/SimpleMilitary/
+/[Aa]ssets/SimpleMilitary.meta
+/[Aa]ssets/SimpleProps/
+/[Aa]ssets/SimpleProps.meta
+/[Aa]ssets/Toon_RTS_demo/
+/[Aa]ssets/Toon_RTS_demo.meta
+/[Aa]ssets/Toon_Soldiers/
+/[Aa]ssets/Toon_Soldiers.meta
+/[Aa]ssets/UltimateIsometricToolkit/
+/[Aa]ssets/UltimateIsometricToolkit.meta
+/[Aa]ssets/WW2_German_soilders/
+/[Aa]ssets/WW2_German_soilders.meta
+/[Aa]ssets/_Creepy_Cat/
+/[Aa]ssets/_Creepy_Cat.meta
+/[Aa]ssets/room/
+/[Aa]ssets/room.meta
