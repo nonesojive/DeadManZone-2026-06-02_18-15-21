@@ -40,6 +40,7 @@ namespace DeadManZone.Presentation.Editor
             var buildPanel = CreateRegion(controllerRoot.transform, "BuildPanel", Vector2.zero, Vector2.one);
             var buildCanvasGroup = buildPanel.AddComponent<CanvasGroup>();
             UiThemeSceneStyling.AddPanelBackground(buildPanel.transform, theme);
+            RunUiAuthoringLock.EnsureOn(buildPanel.transform);
             RunBuildUiBootstrap.EnsureOnBuildPanel(buildPanel.transform, null);
 
             var topBar = CreateRegion(buildPanel.transform, "TopBar", new Vector2(0f, 0.92f), Vector2.one);
@@ -147,7 +148,6 @@ namespace DeadManZone.Presentation.Editor
                 buffStripRegion,
                 rowLayout);
             ShopBackgroundBootstrap.ApplyToBuildPanel(buildPanel.transform, theme);
-            BuildUiChromeBootstrap.Apply(buildPanel.transform);
             RunHudLayoutFitter.EnsureOnBuildPanel(buildPanel.transform, builtHud.Root, rowLayout);
             ReservesLayoutFitter.EnsureOnBuildPanel(
                 buildPanel.transform,

@@ -134,6 +134,18 @@ namespace DeadManZone.Presentation.Editor
                 return;
             }
 
+            if (name == RunHudResourcePanelStyling.ResourcePanelBackgroundName)
+            {
+                image.color = theme.resourcePanelBackgroundColor;
+                return;
+            }
+
+            if (name == RunHudResourcePanelStyling.HudPanelFrameName)
+            {
+                RunHudPanelBuilder.ApplyFrameStyle(image, theme);
+                return;
+            }
+
             if (name == ReservesLabelStripFactory.StripName)
             {
                 UiThemeApplicator.ApplyStorageSlotEmpty(image, theme);

@@ -15,6 +15,7 @@ MonoBehaviour:
   backgroundColor: {r: 0.08, g: 0.09, b: 0.11, a: 1}
   panelColor: {r: 0.12, g: 0.13, b: 0.16, a: 0.96}
   cardColor: {r: 0.16, g: 0.17, b: 0.21, a: 0.98}
+  resourcePanelBackgroundColor: {r: 0.24, g: 0.16, b: 0.09, a: 1}
   accentColor: {r: 0.72, g: 0.58, b: 0.28, a: 1}
   accentMutedColor: {r: 0.45, g: 0.36, b: 0.18, a: 1}
   dangerColor: {r: 0.75, g: 0.22, b: 0.18, a: 1}

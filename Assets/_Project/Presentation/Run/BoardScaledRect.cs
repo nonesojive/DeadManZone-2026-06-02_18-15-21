@@ -16,6 +16,9 @@ namespace DeadManZone.Presentation.Run
         private RectTransform _rect;
         private int _applyPass;
 
+        private bool _sizeCaptured;
+        private Vector2 _authoredSizeDelta;
+
         public void Configure(BoardView view, int columns, int rows, float scale = 1f)
         {
             boardView = view;
@@ -31,12 +34,32 @@ namespace DeadManZone.Presentation.Run
             _rect = GetComponent<RectTransform>();
             if (boardView == null)
                 boardView = FindFirstObjectByType<BoardView>();
+
+            CaptureAuthoredSize();
         }
 
         private void OnEnable()
         {
+            CaptureAuthoredSize();
             _applyPass = 0;
             ApplySize();
+        }
+
+        private void CaptureAuthoredSize()
+        {
+            if (_sizeCaptured || _rect == null)
+                return;
+
+            _authoredSizeDelta = _rect.sizeDelta;
+            _sizeCaptured = true;
+        }
+
+        internal void SetLayoutForTests(BoardView view, int columns, int rows, float scale)
+        {
+            boardView = view;
+            cellColumns = Mathf.Max(1, columns);
+            cellRows = Mathf.Max(1, rows);
+            sizeScale = Mathf.Max(0.5f, scale);
         }
 
         private void LateUpdate()
@@ -50,10 +73,22 @@ namespace DeadManZone.Presentation.Run
 
         public void ApplySize()
         {
+            ApplySizeForTests(Application.isPlaying);
+        }
+
+        internal void ApplySizeForTests(bool simulatePlayMode)
+        {
             if (_rect == null)
                 _rect = GetComponent<RectTransform>();
             if (_rect == null)
                 return;
+
+            if (RunUiAuthoringLock.ShouldSkipVisualMigrationForDescendant(transform, simulatePlayMode))
+            {
+                if (_sizeCaptured)
+                    _rect.sizeDelta = _authoredSizeDelta;
+                return;
+            }
 
             if (boardView == null)
                 boardView = FindFirstObjectByType<BoardView>();

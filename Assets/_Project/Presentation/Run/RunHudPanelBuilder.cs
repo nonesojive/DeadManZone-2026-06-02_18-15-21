@@ -50,7 +50,11 @@ namespace DeadManZone.Presentation.Run
             var version = panelGo.AddComponent<RunHudPanelVersion>();
             version.SetVersion(PanelVersion);
 
-            ApplyFrameStyle(panelGo.AddComponent<Image>(), theme);
+            RunHudResourcePanelStyling.EnsureBackingPlate(panelGo.transform, theme);
+            var frameGo = new GameObject(RunHudResourcePanelStyling.HudPanelFrameName, typeof(RectTransform), typeof(Image));
+            frameGo.transform.SetParent(panelGo.transform, false);
+            Stretch(frameGo.GetComponent<RectTransform>());
+            ApplyFrameStyle(frameGo.GetComponent<Image>(), theme);
 
             var header = CreateRegion(panelGo.transform, "HeaderRow", new Vector2(0f, 0.50f), Vector2.one);
             var grid = CreateRegion(panelGo.transform, "ResourceGrid", Vector2.zero, new Vector2(1f, 0.50f));

@@ -26,6 +26,44 @@ namespace DeadManZone.Presentation.Visual
 
         public static void Apply(Button button) => Apply(button != null ? button.transform : null);
 
+        public static void Remove(Transform target)
+        {
+            if (target == null)
+                return;
+
+            var chrome = target.Find(ChromeRootName);
+            if (chrome == null)
+                return;
+
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+                Object.DestroyImmediate(chrome.gameObject);
+            else
+#endif
+                Object.Destroy(chrome.gameObject);
+        }
+
+        public static void RemoveFromSubtree(Transform root)
+        {
+            if (root == null)
+                return;
+
+            var all = root.GetComponentsInChildren<Transform>(true);
+            for (int i = all.Length - 1; i >= 0; i--)
+            {
+                var chrome = all[i];
+                if (chrome.name != ChromeRootName)
+                    continue;
+
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                    Object.DestroyImmediate(chrome.gameObject);
+                else
+#endif
+                    Object.Destroy(chrome.gameObject);
+            }
+        }
+
         private static RectTransform EnsureChromeRoot(Transform target)
         {
             var existing = target.Find(ChromeRootName);

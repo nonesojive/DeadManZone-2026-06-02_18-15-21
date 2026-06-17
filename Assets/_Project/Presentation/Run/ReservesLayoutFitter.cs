@@ -41,6 +41,9 @@ namespace DeadManZone.Presentation.Run
 
         public void ApplyLayout()
         {
+            if (buildPanel != null && RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel))
+                return;
+
             if (bottomBar == null || reservesRegion == null)
                 return;
 

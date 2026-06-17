@@ -18,6 +18,9 @@ namespace DeadManZone.Presentation.Run
             if (sellZone == null)
                 return;
 
+            if (RunUiAuthoringLock.ShouldSkipVisualMigrationForDescendant(sellZone, Application.isPlaying))
+                return;
+
             theme ??= UiThemeProvider.Current;
 
             var background = sellZone.GetComponent<Image>();

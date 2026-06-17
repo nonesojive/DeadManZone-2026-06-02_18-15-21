@@ -48,6 +48,8 @@ namespace DeadManZone.Presentation.Run
         {
             EnsureLayoutReferences();
             EnsureMainRowLayoutFitter();
+            if (buildPanel != null)
+                RunUiAuthoringLock.EnsureOn(buildPanel.transform);
             CaptureBuildLayout();
 
             if (beginFightButton != null)
@@ -292,7 +294,14 @@ namespace DeadManZone.Presentation.Run
             if (_buildLayoutCaptured || boardArea == null)
                 return;
 
-            mainRowLayout?.ApplyLayout();
+            if (mainRowLayout != null)
+            {
+                if (buildPanel != null && RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel.transform))
+                    mainRowLayout.CacheAuthoringMetricsFromScene();
+                else
+                    mainRowLayout.ApplyLayout();
+            }
+
             _buildBoardAnchorMax = mainRowLayout != null
                 ? mainRowLayout.BoardAnchorMax
                 : boardArea.anchorMax;
@@ -352,6 +361,13 @@ namespace DeadManZone.Presentation.Run
         private void RefreshBuildUiLayout()
         {
             Canvas.ForceUpdateCanvases();
+
+            if (buildPanel != null && RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel.transform))
+            {
+                mainRowLayout?.CacheAuthoringMetricsFromScene();
+                return;
+            }
+
             mainRowLayout?.InvalidateAndApply();
         }
 

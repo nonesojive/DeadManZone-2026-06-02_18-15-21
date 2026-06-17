@@ -12,9 +12,12 @@ namespace DeadManZone.Presentation.Run
         private const string SceneBackdropName = "ShopSceneBackdrop";
         private const string LegacyShopBackgroundName = "ShopBackground";
 
-        public static void ApplyToBuildPanel(Transform buildPanel, UiThemeSO theme = null)
+        public static void ApplyToBuildPanel(Transform buildPanel, UiThemeSO theme = null, bool simulatePlayMode = false)
         {
             if (buildPanel == null)
+                return;
+
+            if (RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel, simulatePlayMode || Application.isPlaying))
                 return;
 
             theme ??= UiThemeProvider.Current;

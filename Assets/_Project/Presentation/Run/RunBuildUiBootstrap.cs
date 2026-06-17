@@ -37,6 +37,13 @@ namespace DeadManZone.Presentation.Run
             if (mainRowLayout == null)
                 mainRowLayout = buildPanel.Find("MainRow")?.GetComponent<BuildRowLayoutFitter>();
 
+            EnsureBuildScreenHudController();
+            BuildUiChromeBootstrap.RemoveFromBuildPanel(buildPanel);
+
+            if (RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel))
+                return;
+
+            RunHudResourcePanelStyling.EnsureBackground(buildPanel, UiThemeProvider.Current);
             ShopBackgroundBootstrap.ApplyToBuildPanel(buildPanel, UiThemeProvider.Current);
             MoveLastLogToTopBar();
             ApplyRunHudPanel();
@@ -44,8 +51,6 @@ namespace DeadManZone.Presentation.Run
             ApplySellZoneSize();
             ApplyCenterColumnLayout();
             ApplyCombatButtonLabel();
-            EnsureBuildScreenHudController();
-            BuildUiChromeBootstrap.Apply(buildPanel);
         }
 
         private void ApplyCenterColumnLayout()
@@ -178,10 +183,7 @@ namespace DeadManZone.Presentation.Run
                 panel = built.Root;
             }
             else if (panel != null)
-            {
-                var frame = panel.GetComponent<Image>();
-                RunHudPanelBuilder.ApplyFrameStyle(frame, UiThemeProvider.Current);
-            }
+                RunHudResourcePanelStyling.EnsureLayers(panel, UiThemeProvider.Current);
 
             if (panel is RectTransform panelRect)
                 RunHudLayoutFitter.EnsureOnBuildPanel(buildPanel, panelRect, mainRowLayout);

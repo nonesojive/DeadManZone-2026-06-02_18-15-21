@@ -11,6 +11,7 @@ namespace DeadManZone.Presentation.Visual
         public Color backgroundColor = new(0.08f, 0.09f, 0.11f, 1f);
         public Color panelColor = new(0.12f, 0.13f, 0.16f, 0.96f);
         public Color cardColor = new(0.16f, 0.17f, 0.21f, 0.98f);
+        public Color resourcePanelBackgroundColor = new(0.24f, 0.16f, 0.09f, 1f);
 
         [Header("Accents")]
         public Color accentColor = new(0.72f, 0.58f, 0.28f, 1f);

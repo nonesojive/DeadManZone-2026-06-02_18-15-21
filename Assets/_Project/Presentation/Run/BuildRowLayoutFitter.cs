@@ -82,8 +82,41 @@ namespace DeadManZone.Presentation.Run
             ApplyLayout();
         }
 
+        public void CacheAuthoringMetricsFromScene()
+        {
+            if (boardArea != null)
+                BoardAnchorMax = boardArea.anchorMax;
+
+            if (centerArea != null)
+            {
+                CenterColumnMinX = centerArea.anchorMin.x;
+                CenterColumnMaxX = centerArea.anchorMax.x;
+            }
+            else if (shopArea != null)
+            {
+                CenterColumnMinX = boardArea != null ? boardArea.anchorMax.x : 0f;
+                CenterColumnMaxX = shopArea.anchorMin.x;
+            }
+
+            if (shopArea != null)
+                ShopColumnMinX = shopArea.anchorMin.x;
+
+            if (boardArea != null)
+            {
+                BoardGridMinX = boardArea.anchorMin.x;
+                BoardGridMaxX = boardArea.anchorMax.x;
+            }
+        }
+
         public void ApplyLayout()
         {
+            if (RunUiAuthoringLock.ShouldSkipVisualMigration(GetBuildPanel()))
+            {
+                CacheAuthoringMetricsFromScene();
+                SyncBoardGameplayLayout();
+                return;
+            }
+
             if (boardArea == null || shopArea == null || boardView == null)
                 return;
 
@@ -168,6 +201,30 @@ namespace DeadManZone.Presentation.Run
             transform.parent?.GetComponent<RunHudLayoutFitter>()?.ApplyLayout();
             transform.parent?.GetComponent<ReservesLayoutFitter>()?.ApplyLayout();
         }
+
+        private void SyncBoardGameplayLayout()
+        {
+            if (boardView == null)
+                return;
+
+            var grid = boardView.GridLayout;
+            if (grid == null)
+                return;
+
+            if (_cellFitter == null)
+                _cellFitter = grid.GetComponent<GridLayoutCellFitter>();
+
+            int columns = grid.constraintCount;
+            if (columns <= 0 && _cellFitter != null)
+                columns = _cellFitter.ColumnCount;
+
+            boardView.GetComponent<BoardZoneStripLayout>()?.ApplyLayout();
+
+            if (columns > 0 && columns <= MaxBuildBoardColumns)
+                boardView.SyncLayoutFromBoard();
+        }
+
+        private Transform GetBuildPanel() => transform.parent;
 
         private static float ResolveContentWidthPx(RectTransform gridRect, GridLayoutGroup grid, int columns)
         {
