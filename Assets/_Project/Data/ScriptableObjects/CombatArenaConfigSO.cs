@@ -13,13 +13,19 @@ namespace DeadManZone.Data
         [Tooltip("Zone-tinted cube cells, cliffs, and sandbags like the TopTroopsCombat prototype.")]
         public bool useTopTroopsProceduralBattlefield = true;
         [Tooltip("Capsule soldiers when no combatArenaPrefab is assigned.")]
-        public bool useProceduralUnitVisuals = true;
+        public bool useProceduralUnitVisuals = false;
+        [Tooltip("Units march in world space toward engagement goals instead of waiting on sparse grid-step events.")]
+        public bool useTopTroopsFreeChaseMovement = true;
+        [Tooltip("Multiplier over sim grid-step pace for free chase (1.2 = 20% faster than anchor advance).")]
+        public float topTroopsChaseSpeedMultiplier = 1.2f;
+        [Tooltip("How many grid cells presentation may run ahead of sim anchor while marching.")]
+        public float topTroopsChaseMaxLeadCells = 2f;
         [Tooltip("Bright sky-blue background instead of grim trench fog.")]
-        public bool useTopTroopsBrightSky = true;
-        public Color topTroopsPlayerZoneColor = new(0.42f, 0.58f, 0.36f);
-        public Color topTroopsNeutralZoneColor = new(0.38f, 0.52f, 0.32f);
-        public Color topTroopsEnemyZoneColor = new(0.36f, 0.48f, 0.30f);
-        public Color topTroopsSkyColor = new(0.53f, 0.81f, 0.92f);
+        public bool useTopTroopsBrightSky = false;
+        public Color topTroopsPlayerZoneColor = new(0.54f, 0.44f, 0.30f);
+        public Color topTroopsNeutralZoneColor = new(0.46f, 0.42f, 0.36f);
+        public Color topTroopsEnemyZoneColor = new(0.42f, 0.34f, 0.30f);
+        public Color topTroopsSkyColor = new(0.24f, 0.21f, 0.18f);
 
         [Header("Camera — Top Troops style")]
         [Tooltip("Downward pitch. Top Troops uses a steep oblique angle (~48–52°).")]

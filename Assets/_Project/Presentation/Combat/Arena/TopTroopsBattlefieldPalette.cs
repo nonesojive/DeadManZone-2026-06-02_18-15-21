@@ -17,9 +17,9 @@ namespace DeadManZone.Presentation.Combat.Arena
         }
 
         public static TopTroopsBattlefieldPalette Default => new(
-            new Color(0.42f, 0.58f, 0.36f),
-            new Color(0.38f, 0.52f, 0.32f),
-            new Color(0.36f, 0.48f, 0.30f));
+            new Color(0.54f, 0.44f, 0.30f),
+            new Color(0.46f, 0.42f, 0.36f),
+            new Color(0.42f, 0.34f, 0.30f));
 
         public static TopTroopsBattlefieldPalette FromConfig(CombatArenaConfigSO config)
         {

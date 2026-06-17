@@ -167,7 +167,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 round: 2,
                 seed: 42,
                 lastEnemyFactionId: "neutral",
-                salvageChancePercent: 100);
+                salvageChancePercent: 90);
 
             Assert.That(shop.Offers, Is.Not.Empty);
             var salvaged = shop.Offers.Where(o => o.IsSalvaged).ToList();

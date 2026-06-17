@@ -289,7 +289,8 @@ namespace DeadManZone.Game
                 State.FightIndex,
                 shopSeed,
                 State.LastEnemyFactionId,
-                State.SalvageChancePercent);
+                State.SalvageChancePercent,
+                _content.GetShopOverride(State.FactionId));
             ApplyLockedSlots(shop);
             State.Shop = shop;
         }
@@ -326,7 +327,8 @@ namespace DeadManZone.Game
                 State.FightIndex,
                 fixedSlots,
                 State.LastEnemyFactionId,
-                State.SalvageChancePercent);
+                State.SalvageChancePercent,
+                _content.GetShopOverride(State.FactionId));
 
             State.Shop.Offers = rerolled;
         }

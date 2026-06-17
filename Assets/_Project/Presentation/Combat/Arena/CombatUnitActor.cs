@@ -28,6 +28,9 @@ namespace DeadManZone.Presentation.Combat.Arena
         private bool _frozen;
         private bool _useModelVisual;
         private bool _useProceduralVisual;
+        private bool _freeChaseEnabled;
+        private float _chaseMaxLeadCells = 4f;
+        private Vector3? _chaseTargetWorld;
         private CombatAttackPresentationProfile _attackProfile;
 
         public string InstanceId { get; private set; }
@@ -54,7 +57,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             CombatAttackPresentationProfile attackProfile,
             PieceDefinitionSO pieceDefinition = null,
             CombatSide combatSide = CombatSide.Player,
-            bool useProceduralUnitVisuals = false)
+            bool useProceduralUnitVisuals = false,
+            bool useFreeChaseMovement = false,
+            float chaseMaxLeadCells = 4f)
         {
             InstanceId = instanceId;
             PieceId = pieceId;
@@ -69,6 +74,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             _lastMoveCommandTime = Time.time;
             _lungeSeconds = lungeSeconds;
             _lungeDistance = lungeDistance;
+            _freeChaseEnabled = useFreeChaseMovement;
+            _chaseMaxLeadCells = chaseMaxLeadCells > 0f ? chaseMaxLeadCells : 4f;
+            _chaseTargetWorld = null;
             IsAlive = true;
             _bobTime = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
             gameObject.SetActive(true);
@@ -132,13 +140,27 @@ namespace DeadManZone.Presentation.Combat.Arena
             _anchor = anchor;
         }
 
+        public void SetChaseTargetWorld(Vector3 worldTarget) =>
+            _chaseTargetWorld = worldTarget;
+
+        public void ClearChaseTarget() =>
+            _chaseTargetWorld = null;
+
         private void Update()
         {
             if (!IsAlive || _frozen || _mapper == null)
                 return;
 
-            Vector3 target = _mapper.ToWorld(_anchor);
             Vector3 current = transform.position;
+            Vector3 simWorld = _mapper.ToWorld(_anchor);
+
+            if (_freeChaseEnabled && _chaseTargetWorld.HasValue)
+            {
+                ApplyFreeChaseMovement(current, simWorld);
+                return;
+            }
+
+            Vector3 target = simWorld;
             var flatTarget = new Vector3(target.x, current.y, target.z);
             var flatCurrent = new Vector3(current.x, 0f, current.z);
             float dist = Vector3.Distance(flatCurrent, new Vector3(flatTarget.x, 0f, flatTarget.z));
@@ -158,15 +180,56 @@ namespace DeadManZone.Presentation.Combat.Arena
             _unitVisual?.SetWalking(true);
             Vector3 delta = flatTarget - current;
             delta.y = 0f;
-            if (_useModelVisual && _unitVisual != null && _unitVisual.HasModel && delta.sqrMagnitude > 0.0001f)
-                _unitVisual.FaceWorldDirection(delta);
-            else if (_useProceduralVisual && delta.sqrMagnitude > 0.0001f)
-                _presentationRoot.rotation = Quaternion.LookRotation(delta.normalized, Vector3.up);
+            FaceMovementDirection(delta);
 
             float step = _moveWorldSpeed * Time.deltaTime;
             transform.position = Vector3.MoveTowards(current, flatTarget, step);
 
             UpdateIdleBob();
+        }
+
+        private void ApplyFreeChaseMovement(Vector3 current, Vector3 simWorld)
+        {
+            Vector3 chaseWorld = _chaseTargetWorld.Value;
+
+            if (!CombatArenaFreeChaseMovement.ShouldKeepMarching(current, chaseWorld))
+            {
+                _unitVisual?.SetWalking(false);
+                UpdateIdleBob();
+                return;
+            }
+
+            Vector3 next = CombatArenaFreeChaseMovement.ComputeStep(
+                current,
+                simWorld,
+                chaseWorld,
+                _moveWorldSpeed,
+                Time.deltaTime,
+                _mapper.CellWidth,
+                _chaseMaxLeadCells);
+
+            next = CombatArenaFreeChaseMovement.ClampToSimLead(
+                next,
+                simWorld,
+                _mapper.CellWidth,
+                _chaseMaxLeadCells);
+
+            Vector3 moveDelta = next - current;
+            moveDelta.y = 0f;
+            if (moveDelta.sqrMagnitude > 0.0001f)
+                FaceMovementDirection(moveDelta);
+
+            _unitVisual?.SetWalking(true);
+            transform.position = new Vector3(next.x, current.y, next.z);
+            UpdateIdleBob();
+        }
+
+        private void FaceMovementDirection(Vector3 delta)
+        {
+            if (_useModelVisual && _unitVisual != null && _unitVisual.HasModel && delta.sqrMagnitude > 0.0001f)
+                _unitVisual.FaceWorldDirection(delta);
+            else if (_useProceduralVisual && delta.sqrMagnitude > 0.0001f)
+                _presentationRoot.rotation = Quaternion.LookRotation(delta.normalized, Vector3.up);
         }
 
         private void UpdateIdleBob()
@@ -350,6 +413,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             _frozen = false;
             _useModelVisual = false;
             _useProceduralVisual = false;
+            _freeChaseEnabled = false;
+            _chaseTargetWorld = null;
             _presentationRoot = null;
             _moveWorldSpeed = 1f;
             _moveLerpFallbackSeconds = 0.4f;

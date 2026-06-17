@@ -15,8 +15,39 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (config == null)
                 return 2f;
 
-            var tier = piece != null ? piece.movementSpeed : MovementSpeedTier.Medium;
+            if (config.useTopTroopsFreeChaseMovement)
+            {
+                var tier = piece != null ? piece.movementSpeed : MovementSpeedTier.Medium;
+                return ResolveFreeChaseSpeed(tier, config);
+            }
+
+            var movementTier = piece != null ? piece.movementSpeed : MovementSpeedTier.Medium;
+            return ResolveWorldSpeed(movementTier, config.cellWidth, config.moveSpeedPresentationScale);
+        }
+
+        public static float ResolveWorldSpeed(MovementSpeedTier tier, CombatArenaConfigSO config)
+        {
+            if (config == null)
+                return ResolveWorldSpeed(tier, 1.8f, 1f);
+
+            if (config.useTopTroopsFreeChaseMovement)
+                return ResolveFreeChaseSpeed(tier, config);
+
             return ResolveWorldSpeed(tier, config.cellWidth, config.moveSpeedPresentationScale);
+        }
+
+        private static float ResolveFreeChaseSpeed(MovementSpeedTier tier, CombatArenaConfigSO config)
+        {
+            float cellWidth = config.cellWidth > 0f ? config.cellWidth : 1.8f;
+            float presentationScale = config.moveSpeedPresentationScale > 0f
+                ? config.moveSpeedPresentationScale
+                : 1f;
+            float boost = config.topTroopsChaseSpeedMultiplier > 0f
+                ? config.topTroopsChaseSpeedMultiplier
+                : 1.2f;
+
+            float simMatchedSpeed = ResolveWorldSpeed(tier, cellWidth, presentationScale);
+            return simMatchedSpeed * boost;
         }
 
         public static float ResolveWorldSpeed(

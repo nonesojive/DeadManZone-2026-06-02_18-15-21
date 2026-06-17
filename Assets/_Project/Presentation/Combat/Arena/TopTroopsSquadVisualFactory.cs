@@ -54,13 +54,13 @@ namespace DeadManZone.Presentation.Combat.Arena
             {
                 primary = piece.categoryTint != Color.white
                     ? piece.categoryTint
-                    : new Color(0.2f, 0.35f, 0.55f);
-                accent = new Color(0.35f, 0.45f, 0.3f);
+                    : new Color(0.38f, 0.32f, 0.26f);
+                accent = new Color(0.30f, 0.26f, 0.20f);
                 return;
             }
 
-            primary = new Color(0.35f, 0.32f, 0.28f);
-            accent = new Color(0.5f, 0.45f, 0.35f);
+            primary = new Color(0.30f, 0.26f, 0.22f);
+            accent = new Color(0.42f, 0.36f, 0.28f);
         }
 
         private static void CreateSoldier(

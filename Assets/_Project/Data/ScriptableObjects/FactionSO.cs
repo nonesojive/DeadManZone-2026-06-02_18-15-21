@@ -33,6 +33,9 @@ namespace DeadManZone.Data
         [Range(0, 50)]
         public int baseSalvageChancePercent = 10;
 
+        [Header("Shop")]
+        public FactionShopOverrideSO shopOverride;
+
         [Header("Visuals")]
         [Tooltip("Semi-transparent fill behind unit tokens on board, shop, and drag ghost.")]
         public Color tokenBackgroundColor = new Color(0f, 0f, 0f, 0f);

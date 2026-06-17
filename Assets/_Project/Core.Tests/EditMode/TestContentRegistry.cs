@@ -18,7 +18,7 @@ namespace DeadManZone.Core.Tests
             registry.Register(TestPieces.HqPiece(), ShopLane.Defensive, includeInShopPool: false);
             registry.Register(TestPieces.SupplyDepot(), ShopLane.Defensive);
             registry.Register(TestPieces.FieldWorkshop(), ShopLane.Defensive);
-            registry.Register(TestPieces.GasDrone(), ShopLane.Specialty);
+            registry.Register(TestPieces.GasDrone(), ShopLane.Offensive);
             return registry;
         }
     }

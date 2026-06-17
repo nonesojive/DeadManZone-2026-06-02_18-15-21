@@ -4,8 +4,9 @@ namespace DeadManZone.Core.Shop
     {
         BaselineOffensive,
         BaselineDefensive,
-        ExtraOffensive,
-        ExtraSpecialty,
-        SpecialRule
+        Bonus,
+        SpecialRule,
+        ExtraOffensive = Bonus,
+        ExtraSpecialty = Bonus
     }
 }

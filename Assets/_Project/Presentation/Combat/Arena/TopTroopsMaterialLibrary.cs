@@ -7,29 +7,29 @@ namespace DeadManZone.Presentation.Combat.Arena
     {
         public static Material CreateGroundMaterial()
         {
-            var mat = CreateLit(new Color(0.36f, 0.5f, 0.3f));
-            mat.SetFloat("_Smoothness", 0.15f);
+            var mat = CreateLit(new Color(0.40f, 0.34f, 0.26f));
+            mat.SetFloat("_Smoothness", 0.14f);
             return mat;
         }
 
         public static Material CreateCellMaterial(Color tint)
         {
             var mat = CreateLit(tint);
-            mat.SetFloat("_Smoothness", 0.2f);
+            mat.SetFloat("_Smoothness", 0.26f);
             return mat;
         }
 
         public static Material CreateCliffMaterial()
         {
-            var mat = CreateLit(new Color(0.42f, 0.4f, 0.36f));
-            mat.SetFloat("_Smoothness", 0.05f);
+            var mat = CreateLit(new Color(0.36f, 0.32f, 0.28f));
+            mat.SetFloat("_Smoothness", 0.06f);
             return mat;
         }
 
         public static Material CreatePropMaterial()
         {
-            var mat = CreateLit(new Color(0.48f, 0.42f, 0.3f));
-            mat.SetFloat("_Smoothness", 0.1f);
+            var mat = CreateLit(new Color(0.46f, 0.40f, 0.32f));
+            mat.SetFloat("_Smoothness", 0.10f);
             return mat;
         }
 

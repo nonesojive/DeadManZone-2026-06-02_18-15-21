@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a975d6dafa2da7c4599e470509db58a7, type: 3}
+  m_Name: ShopConfig
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.ShopConfigSO
+  baselineProfiles:
+  - {fileID: 11400000, guid: 5722b0e321e285e4bbd6eb278cdb402b, type: 2}
+  - {fileID: 11400000, guid: 7a0befe320019eb4ea984132d9f6d552, type: 2}
+  - {fileID: 11400000, guid: 7fa4863040290154e90d263323bf8893, type: 2}
+  - {fileID: 11400000, guid: 5b23060abde286f418ad0030d7178729, type: 2}
+  - {fileID: 11400000, guid: d78ddc7b2581d6e4cb80ebae2129b60f, type: 2}
+  - {fileID: 11400000, guid: b37a79503186802428d8876968fb3e40, type: 2}
+  - {fileID: 11400000, guid: 922d1f77b7ffe2442801871bed5537f3, type: 2}
+  - {fileID: 11400000, guid: 1fe731933b230e1429853c4d818d93b2, type: 2}
+  bonusProfiles:
+  - {fileID: 11400000, guid: f8c44b6a5c13cfe4ead1c24e61719dde, type: 2}
+  - {fileID: 11400000, guid: 2e2fc1e88a493dc478857ac9d020530a, type: 2}
+  - {fileID: 11400000, guid: 676950d179c83e840aab2a89b14916eb, type: 2}
+  - {fileID: 11400000, guid: 29cc2bdd4e7c19b4193f479409964789, type: 2}

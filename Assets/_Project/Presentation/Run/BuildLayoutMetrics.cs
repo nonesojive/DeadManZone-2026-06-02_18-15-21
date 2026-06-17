@@ -14,7 +14,7 @@ namespace DeadManZone.Presentation.Run
 
         public const float CenterColumnFraction = 0.24f;
         public const float ShopColumnMinFraction = 0.30f;
-        public const int BaselineShopSlots = 6;
+        public const int BaselineShopSlots = 8;
         public const int MaxShopSlots = 12;
 
         public const float ShopRightInset = 0.98f;

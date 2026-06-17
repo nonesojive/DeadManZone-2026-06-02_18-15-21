@@ -99,7 +99,7 @@ namespace DeadManZone.Presentation.Shop
             float laneInnerWidth,
             float laneInnerHeight)
         {
-            return OfferCardSize(cellSize, spacing, laneInnerWidth, laneInnerHeight, 6);
+            return OfferCardSize(cellSize, spacing, laneInnerWidth, laneInnerHeight, 8);
         }
 
         public static (float cellSize, float spacing) Resolve(float cellSize, Vector2 spacing)

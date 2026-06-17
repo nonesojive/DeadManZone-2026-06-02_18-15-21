@@ -35,7 +35,7 @@ namespace DeadManZone.Game
         {
             _content = content ?? throw new ArgumentNullException(nameof(content));
             _registry = ContentRegistryProvider.Build(content);
-            _shopGenerator = new ShopGenerator(_registry);
+            _shopGenerator = new ShopGenerator(_registry, content.BuildShopConfig());
         }
 
         public bool TryLoadSavedRun()

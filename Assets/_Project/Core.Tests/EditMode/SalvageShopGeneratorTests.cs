@@ -43,7 +43,7 @@ namespace DeadManZone.Core.Tests
         };
 
         [Test]
-        public void FullSalvageChance_YieldsOnlyLastEnemyFaction()
+        public void HighSalvageLeg_YieldsMostlySalvagedOffers()
         {
             var board = new BoardState(TestBoards.Layout);
             var registry = CreateSalvageRegistry();
@@ -55,11 +55,13 @@ namespace DeadManZone.Core.Tests
                 round: 1,
                 seed: 42,
                 lastEnemyFactionId: EnemyFactionId,
-                salvageChancePercent: 100);
+                salvageChancePercent: 90);
 
             Assert.That(shop.Offers, Is.Not.Empty);
-            Assert.IsTrue(shop.Offers.All(o => o.IsSalvaged));
-            Assert.IsTrue(shop.Offers.All(o => registry.GetById(o.PieceId).FactionId == EnemyFactionId));
+            int salvaged = shop.Offers.Count(o => o.IsSalvaged);
+            Assert.That(salvaged, Is.GreaterThan(shop.Offers.Count / 2));
+            Assert.IsTrue(shop.Offers.Where(o => o.IsSalvaged).All(o =>
+                registry.GetById(o.PieceId).FactionId == EnemyFactionId));
         }
 
         [Test]

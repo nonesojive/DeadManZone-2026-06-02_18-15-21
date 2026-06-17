@@ -15,12 +15,15 @@ MonoBehaviour:
   cellWidth: 1.8
   cellDepth: 1.8
   useTopTroopsProceduralBattlefield: 1
-  useProceduralUnitVisuals: 1
-  useTopTroopsBrightSky: 1
-  topTroopsPlayerZoneColor: {r: 0.42, g: 0.58, b: 0.36, a: 1}
-  topTroopsNeutralZoneColor: {r: 0.38, g: 0.52, b: 0.32, a: 1}
-  topTroopsEnemyZoneColor: {r: 0.36, g: 0.48, b: 0.3, a: 1}
-  topTroopsSkyColor: {r: 0.53, g: 0.81, b: 0.92, a: 1}
+  useProceduralUnitVisuals: 0
+  useTopTroopsFreeChaseMovement: 1
+  topTroopsChaseSpeedMultiplier: 1.2
+  topTroopsChaseMaxLeadCells: 2
+  useTopTroopsBrightSky: 0
+  topTroopsPlayerZoneColor: {r: 0.54, g: 0.44, b: 0.3, a: 1}
+  topTroopsNeutralZoneColor: {r: 0.46, g: 0.42, b: 0.36, a: 1}
+  topTroopsEnemyZoneColor: {r: 0.42, g: 0.34, b: 0.3, a: 1}
+  topTroopsSkyColor: {r: 0.24, g: 0.21, b: 0.18, a: 1}
   cameraElevationDegrees: 52
   cameraAzimuthDegrees: 270
   cameraDistance: 28
@@ -52,12 +55,12 @@ MonoBehaviour:
   defaultUnitModelHeight: 2.1
   defaultVehicleModelHeight: 1.8
   useSyntyTerrain: 1
-  atmosphereProfile: {fileID: 11400000, guid: b7c6d5e4f3a2918071625344a5b6c7d8, type: 2}
+  atmosphereProfile: {fileID: 0}
   spawnPerimeterProps: 0
   useSyntySkybox: 0
   groundPadding: 1.4
   enableArenaFog: 1
-  fogDensity: 0.038
+  fogDensity: 0.018
   syntyGroundPrefabPath: Assets/Synty/PolygonGeneric/Prefabs/Environment/SM_Gen_Env_Ground_Dirt_Large_01.prefab
   useFlatTexturedGround: 1
   syntyGroundMaterial: {fileID: 2100000, guid: a98a889207a454f48ab79b85673a9804, type: 2}

@@ -56,10 +56,12 @@ namespace DeadManZone.Data
         [SerializeField] private PieceDefinitionSO[] pieces = System.Array.Empty<PieceDefinitionSO>();
         [SerializeField] private FactionSO[] factions = System.Array.Empty<FactionSO>();
         [SerializeField] private EnemyTemplateSO[] enemyTemplates = System.Array.Empty<EnemyTemplateSO>();
+        [SerializeField] private ShopConfigSO shopConfig;
 
         public IReadOnlyList<PieceDefinitionSO> Pieces => pieces;
         public IReadOnlyList<FactionSO> Factions => factions;
         public IReadOnlyList<EnemyTemplateSO> EnemyTemplates => enemyTemplates;
+        public ShopConfigSO ShopConfigAsset => shopConfig;
 
         public ContentRegistry BuildRegistry()
         {
@@ -67,10 +69,27 @@ namespace DeadManZone.Data
             foreach (var piece in pieces.Where(p => p != null))
             {
                 var lane = ShopLaneResolver.ResolveLane(piece.combatRole);
+                if (lane == ShopLane.Specialty)
+                    lane = ShopLane.Offensive;
                 registry.Register(piece.ToCore(), lane, includeInShopPool: piece.includeInShopPool);
             }
 
             return registry;
+        }
+
+        public ShopConfig BuildShopConfig()
+        {
+            if (shopConfig != null)
+                return shopConfig.ToCore();
+
+            var loaded = ShopConfigSO.LoadOrDefault();
+            return loaded != null ? loaded.ToCore() : ShopConfig.CreateDefault();
+        }
+
+        public FactionShopOverride GetShopOverride(string factionId)
+        {
+            var faction = GetFaction(factionId);
+            return faction?.shopOverride != null ? faction.shopOverride.ToCore() : null;
         }
 
         public FactionSO GetFaction(string factionId) =>

@@ -46,15 +46,18 @@ namespace DeadManZone.Presentation.Combat.Arena
             return view;
         }
 
-        public static Color ResolveCellColor(BattlefieldLayout layout, int x, TopTroopsBattlefieldPalette palette)
+        public static Color ResolveCellColor(BattlefieldLayout layout, int x, int y, TopTroopsBattlefieldPalette palette)
         {
+            Color zone;
             if (layout.IsPlayerHalf(x))
-                return palette.PlayerZoneColor;
+                zone = palette.PlayerZoneColor;
+            else if (layout.IsNeutralColumn(x))
+                zone = palette.NeutralZoneColor;
+            else
+                zone = palette.EnemyZoneColor;
 
-            if (layout.IsNeutralColumn(x))
-                return palette.NeutralZoneColor;
-
-            return palette.EnemyZoneColor;
+            float checkerShade = (x + y) % 2 == 0 ? 1f : 0.86f;
+            return zone * checkerShade;
         }
 
         private static void BuildCells(
@@ -79,7 +82,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
                     var renderer = cell.GetComponent<Renderer>();
                     renderer.sharedMaterial = TopTroopsMaterialLibrary.CreateCellMaterial(
-                        ResolveCellColor(layout, x, palette));
+                        ResolveCellColor(layout, x, y, palette));
 
                     DestroyCollider(cell);
                 }
@@ -118,8 +121,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             lineGo.transform.SetParent(root, false);
             var line = lineGo.AddComponent<LineRenderer>();
             line.material = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default"));
-            line.startColor = Color.white;
-            line.endColor = Color.white;
+            line.startColor = new Color(0.95f, 0.88f, 0.65f, 0.9f);
+            line.endColor = new Color(0.95f, 0.88f, 0.65f, 0.9f);
             line.positionCount = 2;
             line.SetPosition(0, new Vector3(dividerX, 0.15f, zTop));
             line.SetPosition(1, new Vector3(dividerX, 0.15f, zBottom));

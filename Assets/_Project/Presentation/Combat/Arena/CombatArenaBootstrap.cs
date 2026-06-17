@@ -71,7 +71,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private void ApplyTopTroopsBattlefield(BattlefieldLayout layout)
         {
             HideGroundForProceduralBattlefield();
-            ApplyTopTroopsSky();
+            TopTroopsAtmosphere.Apply(config, transform, arenaCamera);
 
             TopTroopsBattlefieldBuilder.Build(
                 transform,
@@ -89,17 +89,6 @@ namespace DeadManZone.Presentation.Combat.Arena
             var renderer = groundRoot.GetComponent<Renderer>();
             if (renderer != null)
                 renderer.enabled = false;
-        }
-
-        private void ApplyTopTroopsSky()
-        {
-            if (config == null || !config.useTopTroopsBrightSky || arenaCamera == null)
-                return;
-
-            RenderSettings.skybox = null;
-            RenderSettings.fog = false;
-            arenaCamera.clearFlags = CameraClearFlags.SolidColor;
-            arenaCamera.backgroundColor = config.topTroopsSkyColor;
         }
 
         private void FitGroundToLayout(BattlefieldLayout layout)
@@ -131,6 +120,12 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void ApplyEnvironment()
         {
+            if (config != null && config.useTopTroopsProceduralBattlefield)
+            {
+                TopTroopsAtmosphere.Apply(config, transform, arenaCamera);
+                return;
+            }
+
             if (config != null
                 && config.useSyntySkybox
                 && (config.atmosphereProfile == null || !config.atmosphereProfile.enableFog)
@@ -403,6 +398,12 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             try
             {
+                if (config != null && config.useTopTroopsProceduralBattlefield)
+                {
+                    TopTroopsAtmosphere.Apply(config, transform, arenaCamera);
+                    return;
+                }
+
                 if (config?.atmosphereProfile != null)
                     CombatArenaAtmosphereController.Ensure(transform)
                         .Apply(config.atmosphereProfile, config, arenaCamera);

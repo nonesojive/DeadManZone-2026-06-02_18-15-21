@@ -20,6 +20,18 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
+        public void DefaultBoard_GeneratesEightOffers()
+        {
+            var board = new BoardState(DefaultLayout());
+            var registry = CreateRoleTestRegistry();
+            var generator = new ShopGenerator(registry);
+
+            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 42);
+
+            Assert.AreEqual(8, shop.Offers.Count);
+        }
+
+        [Test]
         public void SupplyDepot_AppliesGoldDiscount()
         {
             var board = BuildBoardWithSupplyDepot();
@@ -34,7 +46,7 @@ namespace DeadManZone.Core.Tests
         public void SameSeed_ProducesSameOffers()
         {
             var board = new BoardState(DefaultLayout());
-            var registry = TestContentRegistry.Create();
+            var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
 
             var shopA = generator.Generate(board, "iron_vanguard", round: 1, seed: 42);
@@ -44,20 +56,21 @@ namespace DeadManZone.Core.Tests
             for (int i = 0; i < shopA.Offers.Count; i++)
             {
                 Assert.AreEqual(shopA.Offers[i].PieceId, shopB.Offers[i].PieceId);
-                Assert.AreEqual(shopA.Offers[i].Lane, shopB.Offers[i].Lane);
+                Assert.AreEqual(shopA.Offers[i].SlotIndex, shopB.Offers[i].SlotIndex);
             }
         }
 
         [Test]
-        public void CommandBunker_AddsExtraGeneralSlot()
+        public void CommandBunker_DoesNotAddExtraShopSlots()
         {
             var board = new BoardState(DefaultLayout());
             board.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0));
 
-            var registry = TestContentRegistry.Create();
+            var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
             var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 100);
 
+            Assert.AreEqual(8, shop.Offers.Count);
             Assert.That(shop.Modifiers.ExtraGeneralSlots, Is.EqualTo(1));
         }
 
@@ -66,15 +79,14 @@ namespace DeadManZone.Core.Tests
         {
             var boardWithout = new BoardState(DefaultLayout());
             var boardWith = BuildBoardWithSupplyDepot();
-            var registry = TestContentRegistry.Create();
+            var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
 
             var shopWithout = generator.Generate(boardWithout, "iron_vanguard", round: 1, seed: 50);
             var shopWith = generator.Generate(boardWith, "iron_vanguard", round: 1, seed: 50);
 
-            var generalWithout = shopWithout.Offers.First(o => o.Lane == ShopLane.Offensive && o.GoldPrice > 0);
-            var matchingWith = shopWith.Offers.First(o =>
-                o.Lane == ShopLane.Offensive && o.PieceId == generalWithout.PieceId);
+            var generalWithout = shopWithout.Offers.First(o => o.GoldPrice > 0);
+            var matchingWith = shopWith.Offers.First(o => o.PieceId == generalWithout.PieceId);
 
             Assert.That(matchingWith.GoldPrice, Is.LessThan(generalWithout.GoldPrice));
         }
@@ -87,7 +99,7 @@ namespace DeadManZone.Core.Tests
 
             var registry = new ContentRegistry();
             registry.Register(TestPieces.RifleSquad(), ShopLane.Offensive);
-            registry.Register(TestPieces.CommandBunker(), ShopLane.Offensive);
+            registry.Register(TestPieces.CommandBunker(), ShopLane.Defensive);
 
             var generator = new ShopGenerator(registry);
             var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 7);
@@ -97,7 +109,7 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
-        public void SpecialtyLocked_ReturnsNoSpecialtyOffers()
+        public void Generate_NeverUsesSpecialtyLane()
         {
             var board = new BoardState(DefaultLayout());
             var registry = TestContentRegistry.Create();
@@ -105,35 +117,57 @@ namespace DeadManZone.Core.Tests
 
             var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 42);
 
-            Assert.That(shop.Offers.Any(o => o.Lane == ShopLane.Specialty), Is.False);
+            Assert.IsFalse(shop.Offers.Any(o => o.Lane == ShopLane.Specialty));
         }
 
         [Test]
-        public void SpecialtyUnlocked_RollsSpecialtyOffers()
+        public void OffensiveSlots_BiasTowardAssaultRoles()
         {
             var board = new BoardState(DefaultLayout());
-            var registry = TestContentRegistry.Create();
+            var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
+            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 7);
 
-            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 42, specialtyUnlocked: true);
-
-            Assert.That(shop.Offers.Any(o => o.Lane == ShopLane.Specialty), Is.True);
+            var offensiveOffers = shop.Offers.Where(o => o.SlotIndex < 4).ToList();
+            Assert.That(offensiveOffers, Is.Not.Empty);
+            Assert.IsTrue(offensiveOffers.All(o =>
+                registry.GetById(o.PieceId).CombatRole == GameTagIds.Assault));
         }
 
         [Test]
-        public void SpecialtyLane_EmptyBoard_BiasesTowardAssaultOrTankPool()
+        public void DefensiveSlots_BiasTowardSupportRoles()
         {
             var board = new BoardState(DefaultLayout());
+            var registry = CreateRoleTestRegistry();
+            var generator = new ShopGenerator(registry);
+            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 7);
+
+            var defensiveOffers = shop.Offers.Where(o => o.SlotIndex >= 4).ToList();
+            Assert.That(defensiveOffers, Is.Not.Empty);
+            Assert.IsTrue(defensiveOffers.All(o =>
+                registry.GetById(o.PieceId).CombatRole == GameTagIds.Support));
+        }
+
+        private static ContentRegistry CreateRoleTestRegistry()
+        {
             var registry = new ContentRegistry();
-            registry.Register(TestPieces.CreateUnit("assault_special", combatRole: GameTagIds.Assault), ShopLane.Specialty);
-            registry.Register(TestPieces.CreateUnit("support_special", combatRole: GameTagIds.Support), ShopLane.Specialty);
-
-            var generator = new ShopGenerator(registry);
-            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 7, specialtyUnlocked: true);
-            var specialtyOffers = shop.Offers.Where(o => o.Lane == ShopLane.Specialty).ToList();
-
-            Assert.That(specialtyOffers, Is.Not.Empty);
-            Assert.IsTrue(specialtyOffers.All(o => o.PieceId == "assault_special"));
+            registry.Register(CreateFactionUnit("offensive_assault", GameTagIds.Assault), ShopLane.Offensive);
+            registry.Register(CreateFactionUnit("offensive_support", GameTagIds.Support), ShopLane.Offensive);
+            registry.Register(CreateFactionUnit("defensive_assault", GameTagIds.Assault), ShopLane.Defensive);
+            registry.Register(CreateFactionUnit("defensive_support", GameTagIds.Support), ShopLane.Defensive);
+            return registry;
         }
+
+        private static PieceDefinition CreateFactionUnit(string id, string combatRole) => new()
+        {
+            Id = id,
+            DisplayName = id,
+            Category = PieceCategory.Unit,
+            Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
+            CombatRole = combatRole,
+            FactionId = "iron_vanguard",
+            GoldCost = 5,
+            MaxHp = 10
+        };
     }
 }

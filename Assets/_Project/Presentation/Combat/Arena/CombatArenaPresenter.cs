@@ -23,6 +23,8 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private CombatUnitActorPool _pool;
         private CombatGridMapper _mapper;
+        private BattlefieldState _battlefield;
+        private CombatArenaChaseController _chaseController;
         private ContentRegistry _registry;
         private Transform _arenaCameraTransform;
         private CombatArenaBuildingSpawner _buildingSpawner = new();
@@ -83,6 +85,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             _actors.Clear();
             _replayState.ResetFromBattlefield(null);
+            _battlefield = null;
+            _chaseController?.Clear();
             _pool?.Clear();
             _pool = null;
             _mapper = null;
@@ -106,8 +110,12 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
 
             _mapper = new CombatGridMapper(battlefield.Layout, config.cellWidth, config.cellDepth);
+            _battlefield = battlefield;
             bootstrap.FrameBattlefield(battlefield.Layout);
             _arenaCameraTransform = bootstrap.ArenaCamera != null ? bootstrap.ArenaCamera.transform : null;
+
+            EnsureChaseController();
+            _chaseController.Configure(this, _replayState, _mapper, _battlefield, config);
 
             Transform poolRoot = bootstrap.UnitsRoot != null ? bootstrap.UnitsRoot : transform;
             ResetArenaActors(poolRoot);
@@ -145,7 +153,9 @@ namespace DeadManZone.Presentation.Combat.Arena
                     CombatAttackProfileResolver.Resolve(source),
                     source,
                     cell.Side,
-                    config.useProceduralUnitVisuals);
+                    config.useProceduralUnitVisuals,
+                    config.useTopTroopsFreeChaseMovement,
+                    config.topTroopsChaseMaxLeadCells);
 
                 _actors[cell.InstanceId] = actor;
                 actor.SetFrozen(IsPresentationFrozen);
@@ -229,7 +239,9 @@ namespace DeadManZone.Presentation.Combat.Arena
                     CombatAttackProfileResolver.Resolve(source),
                     source,
                     cell.Side,
-                    config.useProceduralUnitVisuals);
+                    config.useProceduralUnitVisuals,
+                    config.useTopTroopsFreeChaseMovement,
+                    config.topTroopsChaseMaxLeadCells);
 
                 _actors[cell.InstanceId] = actor;
                 actor.SetFrozen(IsPresentationFrozen);
@@ -471,6 +483,16 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             if (audio == null)
                 audio = GetComponent<CombatArenaAudioPresenter>();
+        }
+
+        private void EnsureChaseController()
+        {
+            if (_chaseController != null)
+                return;
+
+            _chaseController = GetComponent<CombatArenaChaseController>();
+            if (_chaseController == null)
+                _chaseController = gameObject.AddComponent<CombatArenaChaseController>();
         }
     }
 }
