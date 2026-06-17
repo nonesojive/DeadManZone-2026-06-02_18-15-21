@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 989ab6c14df49e64aaf98338c52e3bd6, type: 3}
   m_Name: BoardTerrainArt
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.BoardTerrainArtSO
-  battlefieldBackdrop: {fileID: 21300000, guid: 7f4e2a9c1b8d3e6f5a0c4d2e8b1f9a37, type: 3}
+  battlefieldBackdrop: {fileID: 0}
+  cellSprite: {fileID: 21300000, guid: 657bab830b9cad846a37e6189b94c89f, type: 3}
   rearTiles:
   - {fileID: 21300000, guid: 2625c54758009504393aebcb5020a15c, type: 3}
   - {fileID: 21300000, guid: 9ea69126b18b0ad42a81c19f57aa44f0, type: 3}

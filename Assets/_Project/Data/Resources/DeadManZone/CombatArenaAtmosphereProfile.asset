@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3e8c2a14b5d6e7f8091a2b3c4d5e6f7, type: 3}
+  m_Name: CombatArenaAtmosphereProfile
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatArenaAtmosphereProfileSO
+  enableFog: 1
+  fogColor: {r: 0.08, g: 0.075, b: 0.07, a: 1}
+  fogDensity: 0.018
+  ambientSkyColor: {r: 0.28, g: 0.3, b: 0.33, a: 1}
+  ambientEquatorColor: {r: 0.2, g: 0.19, b: 0.18, a: 1}
+  ambientGroundColor: {r: 0.1, g: 0.09, b: 0.08, a: 1}
+  ambientIntensity: 0.95
+  keyLightEuler: {x: 13, y: -42, z: 0}
+  keyLightIntensity: 1.05
+  keyLightColor: {r: 1, g: 0.88, b: 0.72, a: 1}
+  keyLightShadows: 2
+  keyLightShadowStrength: 0.78
+  fillLightEuler: {x: 28, y: 48, z: 0}
+  fillLightIntensity: 0.22
+  fillLightColor: {r: 0.62, g: 0.68, b: 0.78, a: 1}
+  rimLightEuler: {x: 8, y: 168, z: 0}
+  rimLightIntensity: 0.12
+  rimLightColor: {r: 0.82, g: 0.72, b: 0.58, a: 1}
+  enablePostProcessing: 0
+  postVolumeProfile: {fileID: 0}
+  postVolumeProfilePath: Assets/_Project/Data/Resources/DeadManZone/CombatArenaVolumeProfile.asset
+  postVolumePriority: 8
+  enableBackdrop: 1
+  backdropSeed: 424242
+  enableAtmosphereFx: 0
+  maxAtmosphereFxCount: 0

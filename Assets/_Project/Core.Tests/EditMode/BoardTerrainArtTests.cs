@@ -31,6 +31,22 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
+        public void PickTile_ReturnsCellSpriteForAllZonesWhenSet()
+        {
+            var art = ScriptableObject.CreateInstance<BoardTerrainArtSO>();
+            art.cellSprite = CreateStubSprite("support-b1");
+            art.rearTiles = new[] { CreateStubSprite("rear") };
+            art.frontTiles = new[] { CreateStubSprite("front") };
+
+            var coord = new GridCoord(2, 4);
+            Assert.AreSame(art.cellSprite, art.PickTile(ZoneType.Rear, coord));
+            Assert.AreSame(art.cellSprite, art.PickTile(ZoneType.Support, coord));
+            Assert.AreSame(art.cellSprite, art.PickTile(ZoneType.Front, coord));
+            Assert.IsTrue(art.HasTerrainTiles);
+            Object.DestroyImmediate(art);
+        }
+
+        [Test]
         public void HasTerrainTiles_IsFalseWhenBattlefieldBackdropSet()
         {
             var art = ScriptableObject.CreateInstance<BoardTerrainArtSO>();

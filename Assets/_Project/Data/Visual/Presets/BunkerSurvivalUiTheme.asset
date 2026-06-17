@@ -63,6 +63,8 @@ MonoBehaviour:
   secondaryButtonSprite: {fileID: 21300000, guid: 18904c1911ce433e9ad77633170e4344, type: 3}
   dangerButtonSprite: {fileID: 21300000, guid: 5591f5698ed14ca19a623762f0f7358b, type: 3}
   warningButtonSprite: {fileID: 21300000, guid: c39fdbec26da4037b8af971199191c80, type: 3}
+  sellZoneSprite: {fileID: 21300000, guid: 7fceb0f4ebb3dde4ba46141586003b18, type: 3}
+  sellZoneIconSprite: {fileID: 21300000, guid: 757af5ce0e0dec74e9d3ef425eea5157, type: 3}
   slotEmptySprite: {fileID: 21300000, guid: 5406699c47174d5abfc2dc07070387a4, type: 3}
   slotSelectedSprite: {fileID: 21300000, guid: 98865779e5fe47a8878cd20a4e9c2acd, type: 3}
   storageSlotEmptySprite: {fileID: 21300000, guid: 91abd64b6c3f409bb9c51df940b199f1, type: 3}

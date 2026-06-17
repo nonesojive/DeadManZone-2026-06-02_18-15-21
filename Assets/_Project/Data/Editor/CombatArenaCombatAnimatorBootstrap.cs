@@ -20,6 +20,12 @@ namespace DeadManZone.Data.Editor
         [MenuItem("DeadManZone/Combat Arena/Create Combat Infantry Animator")]
         public static void CreateCombatInfantryAnimator()
         {
+            RebuildCombatInfantryAnimator();
+        }
+
+        [MenuItem("DeadManZone/Combat Arena/Rebuild Combat Infantry Animator")]
+        public static void RebuildCombatInfantryAnimator()
+        {
             var animationSet = AssetDatabase.LoadAssetAtPath<CombatArenaAnimationSetSO>(AnimationSetPath);
             if (animationSet == null || animationSet.rifleShoot == null)
             {

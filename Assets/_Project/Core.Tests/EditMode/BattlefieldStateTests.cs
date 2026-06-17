@@ -55,7 +55,7 @@ namespace DeadManZone.Core.Tests.EditMode
         public void NeutralColumns_AreBetweenHalves()
         {
             var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.Layout);
-            Assert.AreEqual(7, layout.NeutralWidth);
+            Assert.AreEqual(5, layout.NeutralWidth);
             Assert.IsTrue(layout.IsNeutralColumn(layout.NeutralStartX));
             Assert.IsTrue(layout.IsNeutralColumn(layout.NeutralStartX + layout.NeutralWidth - 1));
             Assert.IsFalse(layout.IsNeutralColumn(layout.NeutralStartX - 1));

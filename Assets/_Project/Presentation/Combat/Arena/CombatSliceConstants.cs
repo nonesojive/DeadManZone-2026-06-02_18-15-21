@@ -1,0 +1,15 @@
+namespace DeadManZone.Presentation.Combat.Arena
+{
+    public static class CombatSliceConstants
+    {
+        public const int IronVanguardSkirmishSeed = 424242;
+
+        public const string PlayerHq = "ironmarch_hq";
+        public const string PlayerRifle = "ironmarch_rifle";
+        public const string PlayerTank = "ironmarch_heavy_tank";
+        public const string PlayerFieldGun = "field_gun_nest";
+
+        public const string EnemyHq = "ironmarch_hq";
+        public const string EnemyRifle = "ironmarch_rifle";
+    }
+}

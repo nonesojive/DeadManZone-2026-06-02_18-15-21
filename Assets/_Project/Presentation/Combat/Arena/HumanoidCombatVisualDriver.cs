@@ -14,6 +14,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         private static readonly int ShootTrigger = Animator.StringToHash("Shoot");
         private static readonly int GrenadeThrowTrigger = Animator.StringToHash("GrenadeThrow");
         private static readonly int DeathTrigger = Animator.StringToHash("Death");
+        private static readonly int MovementInputHeld = Animator.StringToHash("MovementInputHeld");
+        private static readonly int IsStopped = Animator.StringToHash("IsStopped");
 
         private const float WalkSpeed = 1.5f;
         private const int WalkGait = 1;
@@ -44,6 +46,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             _animator.SetFloat(MoveSpeed, 0f);
             _animator.SetBool(IsWalking, false);
             _animator.SetInteger(CurrentGait, 0);
+            _animator.SetBool(MovementInputHeld, false);
+            _animator.SetBool(IsStopped, true);
         }
 
         public void SetWalking(bool walking)
@@ -54,6 +58,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             _animator.SetBool(IsWalking, walking);
             _animator.SetFloat(MoveSpeed, walking ? WalkSpeed : 0f);
             _animator.SetInteger(CurrentGait, walking ? WalkGait : 0);
+            _animator.SetBool(MovementInputHeld, walking);
+            _animator.SetBool(IsStopped, !walking);
         }
 
         public void PlayAttack(

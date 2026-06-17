@@ -167,8 +167,16 @@ namespace DeadManZone.Presentation.Combat
                     healthBarPresenter = barsRoot.GetComponent<ArmyHealthBarPresenter>();
             }
 
-            if (healthBarPresenter == null || !healthBarPresenter.IsWired)
+            if (healthBarPresenter != null
+                && healthBarPresenter.IsWired
+                && !CombatHealthBarUiFactory.UsesSyntyBars(healthBarPresenter))
+            {
                 healthBarPresenter = CombatHealthBarUiFactory.CreateUnder(transform);
+            }
+            else if (healthBarPresenter == null || !healthBarPresenter.IsWired)
+            {
+                healthBarPresenter = CombatHealthBarUiFactory.CreateUnder(transform);
+            }
 
             var orphan = GetComponent<ArmyHealthBarPresenter>();
             if (orphan != null && orphan != healthBarPresenter && !orphan.IsWired)
@@ -195,9 +203,13 @@ namespace DeadManZone.Presentation.Combat
             if (arenaVfx == null)
                 arenaVfx = gameObject.AddComponent<CombatArenaVfx>();
 
+            var arenaAudio = GetComponent<CombatArenaAudioPresenter>();
+            if (arenaAudio == null)
+                arenaAudio = gameObject.AddComponent<CombatArenaAudioPresenter>();
+
             EnsureHealthBarPresenter();
 
-            arenaPresenter?.Configure(combatDirector, arenaVfx);
+            arenaPresenter?.Configure(combatDirector, arenaVfx, arenaAudio);
             freezeController?.Configure(combatDirector, arenaPresenter);
             arenaVfx?.Configure(freezeController);
         }

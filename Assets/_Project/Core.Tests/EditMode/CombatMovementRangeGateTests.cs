@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
@@ -11,21 +10,33 @@ namespace DeadManZone.Core.Tests.EditMode
     public sealed class CombatMovementRangeGateTests
     {
         [Test]
-        public void ShouldAttemptMove_IsFalseWhenEnemyInRange()
+        public void ShouldAttemptMove_IsTrueWhenInRangeButNotAtEngagementGoal()
         {
             var mover = Combatant("mover", new GridCoord(5, 5), AttackRangeTier.Medium);
             var enemy = Combatant("enemy", new GridCoord(7, 5), AttackRangeTier.Medium);
+            var goal = new GridCoord(7, 5);
 
-            Assert.IsFalse(CombatMovementRules.ShouldAttemptMove(mover, new[] { enemy }));
+            Assert.IsTrue(CombatMovementRules.ShouldAttemptMove(mover, new[] { enemy }, goal));
         }
 
         [Test]
-        public void ShouldAttemptMove_IsTrueWhenEnemyOutOfRange()
+        public void ShouldAttemptMove_IsFalseWhenAlreadyAtEngagementGoal()
+        {
+            var goal = new GridCoord(7, 5);
+            var mover = Combatant("mover", goal, AttackRangeTier.Medium);
+            var enemy = Combatant("enemy", new GridCoord(8, 5), AttackRangeTier.Medium);
+
+            Assert.IsFalse(CombatMovementRules.ShouldAttemptMove(mover, new[] { enemy }, goal));
+        }
+
+        [Test]
+        public void ShouldAttemptMove_IsTrueWhenEnemyOutOfRangeAndNotAtGoal()
         {
             var mover = Combatant("mover", new GridCoord(4, 5), AttackRangeTier.Short);
             var enemy = Combatant("enemy", new GridCoord(20, 5), AttackRangeTier.Short);
+            var goal = new GridCoord(19, 5);
 
-            Assert.IsTrue(CombatMovementRules.ShouldAttemptMove(mover, new[] { enemy }));
+            Assert.IsTrue(CombatMovementRules.ShouldAttemptMove(mover, new[] { enemy }, goal));
         }
 
         [Test]
@@ -41,7 +52,10 @@ namespace DeadManZone.Core.Tests.EditMode
                 AnchorPosition = mover.AnchorPosition
             };
 
-            Assert.IsFalse(CombatMovementRules.ShouldAttemptMove(mover, new List<CombatantState>()));
+            Assert.IsFalse(CombatMovementRules.ShouldAttemptMove(
+                mover,
+                new List<CombatantState>(),
+                new GridCoord(5, 4)));
         }
 
         private static CombatantState Combatant(string id, GridCoord position, AttackRangeTier range)

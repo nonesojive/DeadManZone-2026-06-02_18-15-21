@@ -99,6 +99,15 @@ namespace DeadManZone.Presentation.Visual
                 return;
 
             theme ??= UiThemeProvider.Current;
+            if (theme.sellZoneSprite != null)
+            {
+                image.sprite = theme.sellZoneSprite;
+                image.type = Image.Type.Simple;
+                image.preserveAspect = true;
+                image.color = Color.white;
+                return;
+            }
+
             if (theme.warningButtonSprite != null)
             {
                 ApplyThemedSurface(image, theme.warningButtonSprite, theme.sellZoneColor);

@@ -9,10 +9,13 @@ namespace DeadManZone.Presentation.Combat.Arena
     {
         [SerializeField] private CombatArenaFreezeController freezeController;
         [SerializeField] private CombatArenaVfxSetSO vfxSet;
-        [SerializeField] private Color damageTextColor = new(1f, 0.35f, 0.35f, 1f);
-        [SerializeField] private float damageTextScale = 0.35f;
-        [SerializeField] private float damageTextRise = 0.85f;
-        [SerializeField] private float damageTextLifetime = 0.8f;
+        [SerializeField] private Color damageTextColor = new(1f, 0.42f, 0.28f, 1f);
+        [SerializeField] private Color damageTextOutlineColor = new(0.08f, 0.04f, 0.02f, 0.95f);
+        [SerializeField] private float damageTextOutlineWidth = 0.22f;
+        [SerializeField] private float damageTextScale = 0.42f;
+        [SerializeField] private float damageTextRise = 1.05f;
+        [SerializeField] private float damageTextLifetime = 0.95f;
+        [SerializeField] private float damageTextPopScale = 1.18f;
 
         private void Awake()
         {
@@ -114,9 +117,12 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             var tmp = go.AddComponent<TextMeshPro>();
             tmp.text = text;
-            tmp.fontSize = 4f;
+            tmp.fontSize = 4.8f;
+            tmp.fontStyle = FontStyles.Bold;
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.color = damageTextColor;
+            tmp.outlineColor = damageTextOutlineColor;
+            tmp.outlineWidth = damageTextOutlineWidth;
             tmp.transform.localScale = Vector3.one * damageTextScale;
 
             StartCoroutine(AnimateFloatingText(tmp, worldPosition, cameraTransform));
@@ -130,18 +136,23 @@ namespace DeadManZone.Presentation.Combat.Arena
             float elapsed = 0f;
             Color startColor = text.color;
             Transform textTransform = text.transform;
+            float baseScale = damageTextScale;
+            float popDuration = Mathf.Min(0.18f, damageTextLifetime * 0.25f);
 
             while (elapsed < damageTextLifetime)
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / damageTextLifetime);
+                float popT = popDuration > 0f ? Mathf.Clamp01(elapsed / popDuration) : 1f;
+                float scalePulse = Mathf.Lerp(damageTextPopScale, 1f, popT);
 
                 textTransform.position = startPosition + Vector3.up * (damageTextRise * t);
+                textTransform.localScale = Vector3.one * (baseScale * scalePulse);
                 if (cameraTransform != null)
                     textTransform.rotation = cameraTransform.rotation;
 
                 var color = startColor;
-                color.a = 1f - t;
+                color.a = 1f - Mathf.SmoothStep(0.35f, 1f, t);
                 text.color = color;
                 yield return null;
             }

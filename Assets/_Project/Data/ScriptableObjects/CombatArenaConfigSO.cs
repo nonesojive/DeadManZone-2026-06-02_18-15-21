@@ -9,15 +9,27 @@ namespace DeadManZone.Data
         public float cellWidth = 1.8f;
         public float cellDepth = 1.8f;
 
+        [Header("Top Troops prototype (combat rework v3)")]
+        [Tooltip("Zone-tinted cube cells, cliffs, and sandbags like the TopTroopsCombat prototype.")]
+        public bool useTopTroopsProceduralBattlefield = true;
+        [Tooltip("Capsule soldiers when no combatArenaPrefab is assigned.")]
+        public bool useProceduralUnitVisuals = true;
+        [Tooltip("Bright sky-blue background instead of grim trench fog.")]
+        public bool useTopTroopsBrightSky = true;
+        public Color topTroopsPlayerZoneColor = new(0.42f, 0.58f, 0.36f);
+        public Color topTroopsNeutralZoneColor = new(0.38f, 0.52f, 0.32f);
+        public Color topTroopsEnemyZoneColor = new(0.36f, 0.48f, 0.30f);
+        public Color topTroopsSkyColor = new(0.53f, 0.81f, 0.92f);
+
         [Header("Camera — Top Troops style")]
         [Tooltip("Downward pitch. Top Troops uses a steep oblique angle (~48–52°).")]
-        public float cameraElevationDegrees = 50f;
+        public float cameraElevationDegrees = 52f;
         [Tooltip("Orbit around the field. 270 = player front line toward the bottom of the screen.")]
         public float cameraAzimuthDegrees = 270f;
         [Tooltip("Used when Auto Frame Width is disabled.")]
         public float cameraDistance = 28f;
         [Tooltip("Narrow FOV keeps grid lines nearly parallel like Top Troops.")]
-        public float fieldOfView = 38f;
+        public float fieldOfView = 42f;
         [Tooltip("When enabled, distance is solved so board left/right edges touch the screen.")]
         public bool autoFrameWidth = true;
         [Range(0f, 0.15f)]
@@ -25,8 +37,16 @@ namespace DeadManZone.Data
         [Tooltip("When enabled, shifts the look target so the board sits in the middle vertical band.")]
         public bool autoFrameVerticalPosition = true;
         [Range(0.25f, 0.75f)]
-        [Tooltip("Target vertical center of the board in viewport space (0.44 ≈ Top Troops).")]
-        public float boardVerticalViewportCenter = 0.44f;
+        [Tooltip("Target vertical center of the board in viewport space (0.50+ shifts field upward).")]
+        public float boardVerticalViewportCenter = 0.50f;
+        [Tooltip("When enabled, zooms in until the board fills more vertical screen space.")]
+        public bool autoFrameVerticalFill = true;
+        [Range(0.45f, 0.85f)]
+        [Tooltip("Target vertical span of the board in viewport space.")]
+        public float verticalViewportFill = 0.58f;
+        [Range(0.7f, 1.2f)]
+        [Tooltip("Multiplier applied after auto framing — lower zooms in (larger board).")]
+        public float cameraDistanceScale = 0.88f;
         [Tooltip("Manual look-at shift along field depth when vertical auto-frame is off.")]
         public float lookAtDepthOffset = 0f;
         [Tooltip("When enabled, uses the saved manual camera transform below instead of auto framing.")]
@@ -36,8 +56,26 @@ namespace DeadManZone.Data
         [Tooltip("Look-at point used with manual camera pose.")]
         public Vector3 lookAtWorld = Vector3.zero;
 
+        [Header("Battlefield grid — Top Troops checkerboard")]
+        [Tooltip("Visible brown dirt tiles aligned to sim cells.")]
+        public bool showCheckerboardGrid = true;
+        public Color gridLightCellColor = new(0.72f, 0.56f, 0.38f);
+        public Color gridDarkCellColor = new(0.50f, 0.37f, 0.26f);
+        public Color gridBackdropColor = new(0.16f, 0.12f, 0.09f);
+        [Range(0f, 0.12f)]
+        [Tooltip("Gap between cells — exposes backdrop as grid lines.")]
+        public float gridCellInset = 0.045f;
+        [Tooltip("Slight lift above ground plane to avoid z-fighting.")]
+        public float gridYOffset = 0.04f;
+
         [Header("Motion")]
+        [Tooltip("Legacy fallback when sim speed resolves to zero.")]
         public float moveLerpSeconds = 0.4f;
+        [Tooltip("Scales sim-synced walk speed. Below 1 keeps units moving between sim steps.")]
+        [Range(0.5f, 1.5f)]
+        public float moveSpeedPresentationScale = 1.1f;
+        [Tooltip("Keeps walk animation alive briefly after reaching a cell.")]
+        public float moveMarchGraceSeconds = 2.4f;
         public float attackLungeSeconds = 0.15f;
         public float attackLungeDistance = 0.35f;
 
@@ -53,7 +91,9 @@ namespace DeadManZone.Data
         [Header("Environment — Synty")]
         [Tooltip("When enabled, uses the Synty ground prefab instead of a primitive plane.")]
         public bool useSyntyTerrain = true;
-        [Tooltip("Spawns bunker wall props around the board edge. Off by default — walls block the oblique camera.")]
+        [Tooltip("Grim trench atmosphere profile. When set, overrides legacy environment defaults.")]
+        public CombatArenaAtmosphereProfileSO atmosphereProfile;
+        [Tooltip("Spawns bunker wall props around the board edge. Superseded by CombatArenaBackdrop when atmosphere profile enables backdrop.")]
         public bool spawnPerimeterProps = false;
         [Tooltip("When enabled, applies the Synty skybox material. Off by default — bright skydomes wash out Built-in RP combat.")]
         public bool useSyntySkybox = false;

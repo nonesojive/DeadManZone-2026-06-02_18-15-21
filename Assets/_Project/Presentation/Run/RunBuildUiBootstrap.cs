@@ -262,6 +262,8 @@ namespace DeadManZone.Presentation.Run
                 labelRect.offsetMax = new Vector2(-4f, -4f);
             }
 
+            SellZoneVisualBootstrap.Apply(sell, UiThemeProvider.Current);
+
             var beginFight = bottomBar.GetComponentsInChildren<Button>(true);
             foreach (var button in beginFight)
             {

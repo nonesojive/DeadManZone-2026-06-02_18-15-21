@@ -18,7 +18,10 @@ namespace DeadManZone.Presentation.Combat.Arena
             EnsureReferences();
 
             if (combatDirector != null)
+            {
                 combatDirector.PausedForCommands += OnPausedForCommands;
+                combatDirector.SegmentPlaybackStarting += OnSegmentPlaybackStarting;
+            }
 
             if (RunManager.Instance != null)
                 RunManager.Instance.CombatAdvanced += OnCombatAdvanced;
@@ -27,7 +30,10 @@ namespace DeadManZone.Presentation.Combat.Arena
         private void OnDisable()
         {
             if (combatDirector != null)
+            {
                 combatDirector.PausedForCommands -= OnPausedForCommands;
+                combatDirector.SegmentPlaybackStarting -= OnSegmentPlaybackStarting;
+            }
 
             if (RunManager.Instance != null)
                 RunManager.Instance.CombatAdvanced -= OnCombatAdvanced;
@@ -59,11 +65,14 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void OnPausedForCommands(PauseTriggerContext _) => SetFrozen(true);
 
+        private void OnSegmentPlaybackStarting() => Resume();
+
         private void OnCombatAdvanced(CombatAdvanceResult _) => Resume();
 
         private void SetFrozen(bool frozen)
         {
             _frozen = frozen;
+            arenaPresenter?.SetPresentationFrozen(frozen);
             SetActorFreeze(frozen);
             SetParticlesPaused(frozen);
         }

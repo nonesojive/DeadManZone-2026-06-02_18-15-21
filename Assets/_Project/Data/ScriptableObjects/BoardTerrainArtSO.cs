@@ -11,6 +11,10 @@ namespace DeadManZone.Data
         [Tooltip("Single full-board image; when set, per-cell terrain tiles are ignored.")]
         public Sprite battlefieldBackdrop;
 
+        [Header("Uniform cell texture")]
+        [Tooltip("When set, every board cell uses this sprite instead of zone tile pools.")]
+        public Sprite cellSprite;
+
         [Header("Zone tile pools (legacy per-cell sprites)")]
         public Sprite[] rearTiles = System.Array.Empty<Sprite>();
         public Sprite[] supportTiles = System.Array.Empty<Sprite>();
@@ -19,6 +23,9 @@ namespace DeadManZone.Data
 
         public Sprite PickTile(ZoneType zone, GridCoord coord)
         {
+            if (cellSprite != null)
+                return cellSprite;
+
             var pool = GetPool(zone);
             if (pool == null || pool.Length == 0)
                 return null;
@@ -31,7 +38,8 @@ namespace DeadManZone.Data
 
         public bool HasTerrainTiles =>
             !HasBattlefieldBackdrop
-            && (rearTiles.Length > 0
+            && (cellSprite != null
+                || rearTiles.Length > 0
                 || supportTiles.Length > 0
                 || frontTiles.Length > 0
                 || neutralTiles.Length > 0);

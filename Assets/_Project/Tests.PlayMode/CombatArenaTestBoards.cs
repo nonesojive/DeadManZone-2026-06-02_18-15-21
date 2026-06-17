@@ -2,12 +2,16 @@ using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Data;
+using DeadManZone.Presentation.Combat.Arena;
 using NUnit.Framework;
 
 namespace DeadManZone.PlayMode.Tests
 {
     internal static class CombatArenaTestBoards
     {
+        public static BattlefieldState BuildIronVanguardSkirmish(ContentDatabase database) =>
+            CombatSliceLayouts.BuildIronVanguardSkirmish(database);
+
         public static BattlefieldState BuildFieldGunVsHq(ContentDatabase database)
         {
             var faction = database.GetFaction("iron_vanguard");

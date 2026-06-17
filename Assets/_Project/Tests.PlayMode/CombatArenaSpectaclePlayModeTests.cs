@@ -25,5 +25,22 @@ namespace DeadManZone.PlayMode.Tests
             Assert.NotNull(animationSet.rifleShoot, "rifleShoot");
             yield return null;
         }
+
+        [UnityTest]
+        public IEnumerator HudAssets_LoadsHealthBarPrefab()
+        {
+            var hudAssets = Resources.Load<CombatHudAssetsSO>("DeadManZone/CombatHudAssets");
+            Assert.NotNull(hudAssets, "CombatHudAssets.asset missing from Resources/DeadManZone/");
+            Assert.NotNull(hudAssets.armyHealthBarPrefab, "armyHealthBarPrefab (HUD_Apocalypse_HealthBar_02)");
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator AudioSet_LoadsFromResources()
+        {
+            var audioSet = Resources.Load<CombatArenaAudioSetSO>("DeadManZone/CombatArenaAudioSet");
+            Assert.NotNull(audioSet, "CombatArenaAudioSet.asset missing — run Pretty Combat Pass bootstrap menu");
+            yield return null;
+        }
     }
 }

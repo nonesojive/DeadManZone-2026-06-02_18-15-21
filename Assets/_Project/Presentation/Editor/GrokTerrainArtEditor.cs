@@ -42,6 +42,7 @@ namespace DeadManZone.Presentation.Editor
 
             var terrainArt = LoadOrCreateTerrainArt();
             terrainArt.battlefieldBackdrop = AssetDatabase.LoadAssetAtPath<Sprite>(BattlefieldBackdropPath);
+            terrainArt.cellSprite = LoadSprite("SupporttileB1.jpg");
             terrainArt.rearTiles = LoadSprites("ReartileA.jpg", "ReartileB.jpg");
             terrainArt.supportTiles = LoadSprites(
                 "SupporttileA1.jpg",

@@ -110,6 +110,20 @@ namespace DeadManZone.Presentation.Editor
             if (name == "SellZone" || parentName == "SellZone")
             {
                 UiThemeApplicator.ApplySellZone(image, theme);
+                if (name == "SellZone")
+                    SellZoneVisualBootstrap.Apply(image.transform, theme);
+                return;
+            }
+
+            if (name == SellZoneVisualBootstrap.IconChildName && parentName == "SellZone")
+            {
+                if (theme.sellZoneIconSprite != null)
+                {
+                    image.sprite = theme.sellZoneIconSprite;
+                    image.color = Color.white;
+                    image.preserveAspect = true;
+                }
+
                 return;
             }
 

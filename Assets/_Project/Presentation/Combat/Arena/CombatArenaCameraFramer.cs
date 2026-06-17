@@ -78,7 +78,44 @@ namespace DeadManZone.Presentation.Combat.Arena
                 distance = SolveDistance(camera, lookAt, config, samplePoints);
             }
 
+            float horizontalTargetSpan = 1f - (config.horizontalViewportPadding * 2f);
+            horizontalTargetSpan = Mathf.Clamp(horizontalTargetSpan, 0.5f, 1f);
+
+            float widthDistance = distance;
+            if (config.autoFrameVerticalFill)
+            {
+                float verticalDistance = SolveDistanceForVerticalFill(
+                    camera,
+                    lookAt,
+                    config,
+                    samplePoints,
+                    widthDistance);
+                ApplyOrbit(camera, lookAt, config.cameraElevationDegrees, config.cameraAzimuthDegrees, verticalDistance);
+                float horizontalSpan = MeasureHorizontalViewportSpan(camera, samplePoints);
+                if (horizontalSpan > 0f && horizontalSpan <= horizontalTargetSpan + 0.01f)
+                    distance = verticalDistance;
+                else
+                    distance = widthDistance;
+            }
+
+            distance *= Mathf.Clamp(config.cameraDistanceScale, 0.7f, 1.2f);
+            distance = EnsureHorizontalSpanFits(
+                camera,
+                lookAt,
+                config,
+                samplePoints,
+                distance,
+                horizontalTargetSpan);
+
             ApplyOrbit(camera, lookAt, config.cameraElevationDegrees, config.cameraAzimuthDegrees, distance);
+        }
+
+        public static float MeasureVerticalViewportSpan(Camera camera, Vector3[] worldPoints)
+        {
+            if (!TryMeasureViewportBounds(camera, worldPoints, out _, out _, out float minY, out float maxY))
+                return 0f;
+
+            return maxY - minY;
         }
 
         public static Vector3[] GetGroundSamplePoints(BattlefieldLayout layout, float cellWidth, float cellDepth)
@@ -162,6 +199,63 @@ namespace DeadManZone.Presentation.Combat.Arena
                 float centerY = MeasureVerticalViewportCenter(camera, samplePoints);
 
                 if (centerY > targetCenter)
+                    low = mid;
+                else
+                    high = mid;
+            }
+
+            return (low + high) * 0.5f;
+        }
+
+        internal static float SolveDistanceForVerticalFill(
+            Camera camera,
+            Vector3 lookAt,
+            CombatArenaConfigSO config,
+            Vector3[] samplePoints,
+            float widthDistance)
+        {
+            float targetSpan = Mathf.Clamp(config.verticalViewportFill, 0.45f, 0.85f);
+            float low = MinDistance;
+            float high = widthDistance;
+
+            for (int i = 0; i < SolveIterations; i++)
+            {
+                float mid = (low + high) * 0.5f;
+                ApplyOrbit(camera, lookAt, config.cameraElevationDegrees, config.cameraAzimuthDegrees, mid);
+                float span = MeasureVerticalViewportSpan(camera, samplePoints);
+
+                if (span < targetSpan)
+                    high = mid;
+                else
+                    low = mid;
+            }
+
+            return (low + high) * 0.5f;
+        }
+
+        internal static float EnsureHorizontalSpanFits(
+            Camera camera,
+            Vector3 lookAt,
+            CombatArenaConfigSO config,
+            Vector3[] samplePoints,
+            float distance,
+            float targetSpan)
+        {
+            ApplyOrbit(camera, lookAt, config.cameraElevationDegrees, config.cameraAzimuthDegrees, distance);
+            float currentSpan = MeasureHorizontalViewportSpan(camera, samplePoints);
+            if (currentSpan > 0f && currentSpan <= targetSpan + 0.01f)
+                return distance;
+
+            float low = distance;
+            float high = MaxDistance;
+
+            for (int i = 0; i < SolveIterations; i++)
+            {
+                float mid = (low + high) * 0.5f;
+                ApplyOrbit(camera, lookAt, config.cameraElevationDegrees, config.cameraAzimuthDegrees, mid);
+                float span = MeasureHorizontalViewportSpan(camera, samplePoints);
+
+                if (span > targetSpan)
                     low = mid;
                 else
                     high = mid;

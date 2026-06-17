@@ -10,6 +10,9 @@ namespace DeadManZone.Presentation.Combat.Arena
     {
         public static GameObject ResolveUnitPrefab(PieceDefinitionSO piece, CombatArenaConfigSO config)
         {
+            if (config != null && config.useProceduralUnitVisuals)
+                return null;
+
             if (piece?.combatArenaPrefab != null)
                 return piece.combatArenaPrefab;
 

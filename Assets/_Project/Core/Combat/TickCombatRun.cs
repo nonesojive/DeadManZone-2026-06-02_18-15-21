@@ -213,10 +213,10 @@ namespace DeadManZone.Core.Combat
 
                 mover.MoveCharge += moveChargePerTick;
 
-                if (!CombatMovementRules.ShouldAttemptMove(mover, aliveTargets))
+                var goal = RoleEngagement.ComputeGoal(mover, movers, aliveTargets, _layout);
+                if (!CombatMovementRules.ShouldAttemptMove(mover, aliveTargets, goal))
                     continue;
 
-                var goal = RoleEngagement.ComputeGoal(mover, movers, aliveTargets, _layout);
                 if (IsGoalBlockedByFriendly(goal, mover.InstanceId, movers))
                     continue;
 

@@ -84,6 +84,8 @@ namespace DeadManZone.Presentation.Visual
         public Sprite secondaryButtonSprite;
         public Sprite dangerButtonSprite;
         public Sprite warningButtonSprite;
+        public Sprite sellZoneSprite;
+        public Sprite sellZoneIconSprite;
         public Sprite slotEmptySprite;
         public Sprite slotSelectedSprite;
         public Sprite storageSlotEmptySprite;

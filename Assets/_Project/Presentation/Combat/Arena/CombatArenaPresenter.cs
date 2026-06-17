@@ -15,6 +15,7 @@ namespace DeadManZone.Presentation.Combat.Arena
     {
         [SerializeField] private CombatDirector combatDirector;
         [SerializeField] private CombatArenaVfx vfx;
+        [SerializeField] private CombatArenaAudioPresenter audio;
 
         private readonly Dictionary<string, CombatUnitActor> _actors = new();
         private readonly CombatReplayState _replayState = new();
@@ -27,6 +28,10 @@ namespace DeadManZone.Presentation.Combat.Arena
         private CombatArenaBuildingSpawner _buildingSpawner = new();
 
         public bool HasBuildingVisualForTests(string instanceId) => _buildingSpawner.HasVisual(instanceId);
+
+        public bool IsPresentationFrozen { get; private set; }
+
+        public void SetPresentationFrozen(bool frozen) => IsPresentationFrozen = frozen;
 
         private void Awake()
         {
@@ -53,7 +58,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public IEnumerable<CombatUnitActor> GetActiveActors() => _actors.Values;
 
-        public void Configure(CombatDirector director, CombatArenaVfx arenaVfx)
+        public void Configure(CombatDirector director, CombatArenaVfx arenaVfx, CombatArenaAudioPresenter arenaAudio = null)
         {
             if (director != null)
             {
@@ -68,6 +73,9 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             if (arenaVfx != null)
                 vfx = arenaVfx;
+
+            if (arenaAudio != null)
+                audio = arenaAudio;
         }
 
         /// <summary>Called when the additive arena scene unloads so pooled actors are not reused.</summary>
@@ -118,6 +126,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
                 var actor = _pool.Rent();
                 var source = GetPiece(cell.Definition.Id);
+                float moveSpeed = CombatArenaMoveSpeedResolver.ResolveWorldSpeed(source, config);
                 actor.Initialize(
                     cell.InstanceId,
                     cell.Definition.Id,
@@ -129,11 +138,17 @@ namespace DeadManZone.Presentation.Combat.Arena
                     _mapper,
                     cell.Position,
                     config.moveLerpSeconds,
+                    moveSpeed,
+                    config.moveMarchGraceSeconds,
                     config.attackLungeSeconds,
                     config.attackLungeDistance,
-                    CombatAttackProfileResolver.Resolve(source));
+                    CombatAttackProfileResolver.Resolve(source),
+                    source,
+                    cell.Side,
+                    config.useProceduralUnitVisuals);
 
                 _actors[cell.InstanceId] = actor;
+                actor.SetFrozen(IsPresentationFrozen);
             }
         }
 
@@ -195,6 +210,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
                 var actor = _pool.Rent();
                 var source = GetPiece(cell.Definition.Id);
+                float moveSpeed = CombatArenaMoveSpeedResolver.ResolveWorldSpeed(source, config);
                 actor.Initialize(
                     cell.InstanceId,
                     cell.Definition.Id,
@@ -206,11 +222,17 @@ namespace DeadManZone.Presentation.Combat.Arena
                     _mapper,
                     anchor,
                     config.moveLerpSeconds,
+                    moveSpeed,
+                    config.moveMarchGraceSeconds,
                     config.attackLungeSeconds,
                     config.attackLungeDistance,
-                    CombatAttackProfileResolver.Resolve(source));
+                    CombatAttackProfileResolver.Resolve(source),
+                    source,
+                    cell.Side,
+                    config.useProceduralUnitVisuals);
 
                 _actors[cell.InstanceId] = actor;
+                actor.SetFrozen(IsPresentationFrozen);
             }
 
             foreach (var pair in _replayState.Anchors)
@@ -297,9 +319,11 @@ namespace DeadManZone.Presentation.Combat.Arena
                     break;
                 case CombatAttackPresentationKind.VehicleCannon:
                 case CombatAttackPresentationKind.BuildingArtillery:
+                    audio?.PlayCannonShot(muzzleWorld);
                     vfx?.PlayCannonMuzzleAndTracer(muzzleWorld, targetWorld);
                     break;
                 default:
+                    audio?.PlayRifleShot(muzzleWorld);
                     vfx?.PlayRifleMuzzleAndTracer(muzzleWorld, targetWorld);
                     break;
             }
@@ -315,9 +339,11 @@ namespace DeadManZone.Presentation.Combat.Arena
                 case CombatAttackPresentationKind.InfantryGrenade:
                 case CombatAttackPresentationKind.VehicleCannon:
                 case CombatAttackPresentationKind.BuildingArtillery:
+                    audio?.PlayExplosion(targetWorld);
                     vfx?.PlayExplosion(targetWorld, damageAmount);
                     break;
                 default:
+                    audio?.PlayImpact(targetWorld);
                     vfx?.PlayImpact(targetWorld, damageAmount);
                     break;
             }
@@ -339,6 +365,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             Vector3 deathWorld = dead.transform.position;
             _actors.Remove(combatEvent.ActorId);
             dead.PlayDeath(() => _pool.Release(dead));
+            audio?.PlayDeath(deathWorld);
             vfx?.PlayDeath(deathWorld);
         }
 
@@ -441,6 +468,9 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             if (vfx == null)
                 vfx = GetComponent<CombatArenaVfx>();
+
+            if (audio == null)
+                audio = GetComponent<CombatArenaAudioPresenter>();
         }
     }
 }

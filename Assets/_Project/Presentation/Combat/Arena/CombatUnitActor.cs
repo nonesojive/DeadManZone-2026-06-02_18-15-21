@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
+using DeadManZone.Data;
 using UnityEngine;
 
 namespace DeadManZone.Presentation.Combat.Arena
@@ -12,15 +14,20 @@ namespace DeadManZone.Presentation.Combat.Arena
         private CombatBillboard _billboard;
         private CombatArenaUnitVisual _unitVisual;
         private CombatGridMapper _mapper;
+        private Transform _presentationRoot;
         private GridCoord _anchor;
-        private Coroutine _moveRoutine;
         private Coroutine _lungeRoutine;
         private Coroutine _attackTimingRoutine;
-        private float _moveLerpSeconds = 0.4f;
+        private float _moveWorldSpeed = 1f;
+        private float _moveLerpFallbackSeconds = 0.4f;
+        private float _marchGraceSeconds = 2.4f;
+        private float _lastMoveCommandTime = -999f;
         private float _lungeSeconds = 0.15f;
         private float _lungeDistance = 0.35f;
+        private float _bobTime;
         private bool _frozen;
         private bool _useModelVisual;
+        private bool _useProceduralVisual;
         private CombatAttackPresentationProfile _attackProfile;
 
         public string InstanceId { get; private set; }
@@ -40,29 +47,41 @@ namespace DeadManZone.Presentation.Combat.Arena
             CombatGridMapper mapper,
             GridCoord anchor,
             float moveLerpSeconds,
+            float moveWorldSpeed,
+            float marchGraceSeconds,
             float lungeSeconds,
             float lungeDistance,
-            CombatAttackPresentationProfile attackProfile)
+            CombatAttackPresentationProfile attackProfile,
+            PieceDefinitionSO pieceDefinition = null,
+            CombatSide combatSide = CombatSide.Player,
+            bool useProceduralUnitVisuals = false)
         {
             InstanceId = instanceId;
             PieceId = pieceId;
             _attackProfile = attackProfile;
             _mapper = mapper;
             _anchor = anchor;
-            _moveLerpSeconds = moveLerpSeconds;
+            _moveLerpFallbackSeconds = moveLerpSeconds;
+            _moveWorldSpeed = moveWorldSpeed > 0f
+                ? moveWorldSpeed
+                : ResolveFallbackMoveSpeed(moveLerpSeconds);
+            _marchGraceSeconds = marchGraceSeconds > 0f ? marchGraceSeconds : 2.4f;
+            _lastMoveCommandTime = Time.time;
             _lungeSeconds = lungeSeconds;
             _lungeDistance = lungeDistance;
             IsAlive = true;
+            _bobTime = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
             gameObject.SetActive(true);
 
             ClearPresentation();
+            EnsurePresentationRoot();
 
             _useModelVisual = arenaPrefab != null;
+            _useProceduralVisual = false;
+
             if (_useModelVisual)
             {
-                _unitVisual = GetComponent<CombatArenaUnitVisual>();
-                if (_unitVisual == null)
-                    _unitVisual = gameObject.AddComponent<CombatArenaUnitVisual>();
+                _unitVisual = _presentationRoot.gameObject.AddComponent<CombatArenaUnitVisual>();
 
                 float height = arenaModelHeight > 0f ? arenaModelHeight : DefaultModelHeight;
                 _unitVisual.Build(arenaPrefab, height, arenaModelScale);
@@ -76,18 +95,27 @@ namespace DeadManZone.Presentation.Combat.Arena
                 }
             }
 
-            if (!_useModelVisual && icon != null)
+            if (!_useModelVisual && useProceduralUnitVisuals && pieceDefinition != null)
             {
-                _billboard = GetComponent<CombatBillboard>();
-                if (_billboard == null)
-                    _billboard = gameObject.AddComponent<CombatBillboard>();
+                TopTroopsSquadVisualFactory.BuildSquad(_presentationRoot, pieceDefinition, combatSide);
+                _useProceduralVisual = _presentationRoot.childCount > 0;
+            }
+
+            if (!_useModelVisual && !_useProceduralVisual && icon != null)
+            {
+                _billboard = gameObject.AddComponent<CombatBillboard>();
                 _billboard.Configure(cameraTransform, icon);
             }
 
             SnapToAnchor(anchor);
         }
 
-        public void SetFrozen(bool frozen) => _frozen = frozen;
+        public void SetFrozen(bool frozen)
+        {
+            _frozen = frozen;
+            if (frozen)
+                _unitVisual?.SetWalking(false);
+        }
 
         public void SnapToAnchor(GridCoord anchor)
         {
@@ -98,16 +126,61 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public void MoveTo(GridCoord anchor)
         {
+            if (!anchor.Equals(_anchor))
+                _lastMoveCommandTime = Time.time;
+
             _anchor = anchor;
-            if (_frozen)
+        }
+
+        private void Update()
+        {
+            if (!IsAlive || _frozen || _mapper == null)
+                return;
+
+            Vector3 target = _mapper.ToWorld(_anchor);
+            Vector3 current = transform.position;
+            var flatTarget = new Vector3(target.x, current.y, target.z);
+            var flatCurrent = new Vector3(current.x, 0f, current.z);
+            float dist = Vector3.Distance(flatCurrent, new Vector3(flatTarget.x, 0f, flatTarget.z));
+            bool atDestination = dist <= 0.02f;
+            bool withinMarchGrace = Time.time - _lastMoveCommandTime < _marchGraceSeconds;
+
+            if (atDestination)
             {
-                SnapToAnchor(anchor);
+                if (current != flatTarget)
+                    transform.position = flatTarget;
+
+                _unitVisual?.SetWalking(withinMarchGrace);
+                UpdateIdleBob();
                 return;
             }
 
-            if (_moveRoutine != null)
-                StopCoroutine(_moveRoutine);
-            _moveRoutine = StartCoroutine(MoveRoutine(_mapper.ToWorld(anchor)));
+            _unitVisual?.SetWalking(true);
+            Vector3 delta = flatTarget - current;
+            delta.y = 0f;
+            if (_useModelVisual && _unitVisual != null && _unitVisual.HasModel && delta.sqrMagnitude > 0.0001f)
+                _unitVisual.FaceWorldDirection(delta);
+            else if (_useProceduralVisual && delta.sqrMagnitude > 0.0001f)
+                _presentationRoot.rotation = Quaternion.LookRotation(delta.normalized, Vector3.up);
+
+            float step = _moveWorldSpeed * Time.deltaTime;
+            transform.position = Vector3.MoveTowards(current, flatTarget, step);
+
+            UpdateIdleBob();
+        }
+
+        private void UpdateIdleBob()
+        {
+            if (_presentationRoot == null || !_useProceduralVisual && !_useModelVisual)
+                return;
+
+            _bobTime += Time.deltaTime * 6f;
+            float bob = Mathf.Sin(_bobTime) * 0.02f;
+            var local = _presentationRoot.localPosition;
+            _presentationRoot.localPosition = new Vector3(
+                Mathf.MoveTowards(local.x, 0f, Time.deltaTime),
+                bob,
+                Mathf.MoveTowards(local.z, 0f, Time.deltaTime * 3f));
         }
 
         public void PlayAttackToward(
@@ -121,14 +194,28 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             if (profile.UseForwardStep)
             {
-                if (_lungeRoutine != null)
-                    StopCoroutine(_lungeRoutine);
-                _lungeRoutine = StartCoroutine(LungeRoutine(targetWorld));
+                if (_useProceduralVisual)
+                    PlayProceduralAttackLunge();
+                else
+                {
+                    if (_lungeRoutine != null)
+                        StopCoroutine(_lungeRoutine);
+                    _lungeRoutine = StartCoroutine(LungeRoutine(targetWorld));
+                }
             }
 
             if (_useModelVisual && _unitVisual != null && _unitVisual.HasModel)
             {
                 _unitVisual.PlayAttackToward(targetWorld, profile, onMuzzle, onImpact);
+                return;
+            }
+
+            if (_useProceduralVisual && (onMuzzle != null || onImpact != null))
+            {
+                if (_attackTimingRoutine != null)
+                    StopCoroutine(_attackTimingRoutine);
+                _attackTimingRoutine = StartCoroutine(
+                    ProceduralAttackTimingRoutine(profile, onMuzzle, onImpact));
                 return;
             }
 
@@ -144,8 +231,6 @@ namespace DeadManZone.Presentation.Combat.Arena
         public void PlayDeath(Action onComplete)
         {
             IsAlive = false;
-            if (_moveRoutine != null)
-                StopCoroutine(_moveRoutine);
             if (_lungeRoutine != null)
                 StopCoroutine(_lungeRoutine);
             if (_attackTimingRoutine != null)
@@ -162,34 +247,116 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
             }
 
+            if (_useProceduralVisual)
+            {
+                StartCoroutine(ProceduralDeathRoutine(onComplete));
+                return;
+            }
+
             StartCoroutine(DeathRoutine(onComplete));
         }
 
-        private IEnumerator MoveRoutine(Vector3 target)
+        private void EnsurePresentationRoot()
         {
-            Vector3 start = transform.position;
-            _unitVisual?.SetWalking(true);
+            if (_presentationRoot != null)
+                return;
 
-            if (_useModelVisual && _unitVisual != null && _unitVisual.HasModel)
-                _unitVisual.FaceWorldDirection(target - start);
-
-            float elapsed = 0f;
-            while (elapsed < _moveLerpSeconds)
+            var existing = transform.Find("PresentationRoot");
+            if (existing != null)
             {
-                if (_frozen)
-                    yield return null;
-                else
-                {
-                    elapsed += Time.deltaTime;
-                    float t = Mathf.Clamp01(elapsed / _moveLerpSeconds);
-                    transform.position = Vector3.Lerp(start, target, t);
-                    yield return null;
-                }
+                _presentationRoot = existing;
+                return;
             }
 
-            transform.position = target;
-            _unitVisual?.SetWalking(false);
-            _moveRoutine = null;
+            var rootGo = new GameObject("PresentationRoot");
+            rootGo.transform.SetParent(transform, false);
+            _presentationRoot = rootGo.transform;
+        }
+
+        private void PlayProceduralAttackLunge()
+        {
+            if (_presentationRoot == null)
+                return;
+
+            var local = _presentationRoot.localPosition;
+            _presentationRoot.localPosition = new Vector3(local.x, local.y, 0.15f);
+            _presentationRoot.localScale = Vector3.one;
+        }
+
+        private IEnumerator ProceduralAttackTimingRoutine(
+            CombatAttackPresentationProfile profile,
+            Action<Vector3> onMuzzle,
+            Action onImpact)
+        {
+            if (profile.MuzzleDelaySeconds > 0f)
+                yield return new WaitForSeconds(profile.MuzzleDelaySeconds);
+
+            Vector3 muzzle = transform.position + (_presentationRoot != null ? _presentationRoot.forward : transform.forward) * 0.35f + Vector3.up * 0.8f;
+            onMuzzle?.Invoke(muzzle);
+
+            float impactWait = profile.ImpactDelaySeconds - profile.MuzzleDelaySeconds;
+            if (impactWait > 0f)
+                yield return new WaitForSeconds(impactWait);
+
+            PlayProceduralHitFlash();
+            onImpact?.Invoke();
+            _attackTimingRoutine = null;
+        }
+
+        private void PlayProceduralHitFlash()
+        {
+            if (_presentationRoot == null)
+                return;
+
+            _presentationRoot.localScale = Vector3.one * 0.92f;
+        }
+
+        private IEnumerator ProceduralDeathRoutine(Action onComplete)
+        {
+            float duration = 0.5f;
+            Transform target = _presentationRoot != null ? _presentationRoot : transform;
+            Vector3 startScale = target.localScale;
+            for (float t = 0f; t < duration; t += Time.deltaTime)
+            {
+                float p = t / duration;
+                target.localScale = Vector3.Lerp(startScale, Vector3.zero, p);
+                yield return null;
+            }
+
+            onComplete?.Invoke();
+            gameObject.SetActive(false);
+        }
+
+        private static float ResolveFallbackMoveSpeed(float moveLerpSeconds)
+        {
+            if (moveLerpSeconds <= 0f)
+                return 4f;
+
+            return 1.8f / moveLerpSeconds;
+        }
+
+        public void ResetForPool()
+        {
+            InstanceId = null;
+            PieceId = null;
+            IsAlive = true;
+            transform.localScale = Vector3.one;
+            if (_lungeRoutine != null)
+                StopCoroutine(_lungeRoutine);
+            if (_attackTimingRoutine != null)
+                StopCoroutine(_attackTimingRoutine);
+            _lungeRoutine = null;
+            _attackTimingRoutine = null;
+            _frozen = false;
+            _useModelVisual = false;
+            _useProceduralVisual = false;
+            _presentationRoot = null;
+            _moveWorldSpeed = 1f;
+            _moveLerpFallbackSeconds = 0.4f;
+            _marchGraceSeconds = 2.4f;
+            _lastMoveCommandTime = -999f;
+            _attackProfile = CombatAttackPresentationProfile.InfantryRifle;
+            ClearPresentation();
         }
 
         private IEnumerator LungeRoutine(Vector3 targetWorld)
@@ -251,27 +418,6 @@ namespace DeadManZone.Presentation.Combat.Arena
             gameObject.SetActive(false);
         }
 
-        public void ResetForPool()
-        {
-            InstanceId = null;
-            PieceId = null;
-            IsAlive = true;
-            transform.localScale = Vector3.one;
-            if (_moveRoutine != null)
-                StopCoroutine(_moveRoutine);
-            if (_lungeRoutine != null)
-                StopCoroutine(_lungeRoutine);
-            if (_attackTimingRoutine != null)
-                StopCoroutine(_attackTimingRoutine);
-            _moveRoutine = null;
-            _lungeRoutine = null;
-            _attackTimingRoutine = null;
-            _frozen = false;
-            _useModelVisual = false;
-            _attackProfile = CombatAttackPresentationProfile.InfantryRifle;
-            ClearPresentation();
-        }
-
         private void ClearPresentation()
         {
             if (_unitVisual != null)
@@ -285,6 +431,15 @@ namespace DeadManZone.Presentation.Combat.Arena
             {
                 Destroy(_billboard);
                 _billboard = null;
+            }
+
+            if (_presentationRoot != null)
+            {
+                for (int i = _presentationRoot.childCount - 1; i >= 0; i--)
+                    Destroy(_presentationRoot.GetChild(i).gameObject);
+
+                Destroy(_presentationRoot.gameObject);
+                _presentationRoot = null;
             }
 
             var quad = transform.Find("BillboardQuad");
