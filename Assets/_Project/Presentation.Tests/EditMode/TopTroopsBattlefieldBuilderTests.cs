@@ -39,13 +39,14 @@ namespace DeadManZone.Presentation.Tests.EditMode
             var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.Layout);
             var palette = TopTroopsBattlefieldPalette.FromConfig(null);
 
-            Color player = TopTroopsBattlefieldBuilder.ResolveCellColor(layout, 0, 0, palette);
-            Color neutral = TopTroopsBattlefieldBuilder.ResolveCellColor(layout, layout.NeutralStartX, 0, palette);
-            Color enemy = TopTroopsBattlefieldBuilder.ResolveCellColor(layout, layout.EnemyOriginX, 0, palette);
+            const int y = 0;
+            Color player = TopTroopsBattlefieldBuilder.ResolveCellColor(layout, 0, y, palette);
+            Color neutral = TopTroopsBattlefieldBuilder.ResolveCellColor(layout, layout.NeutralStartX, y, palette);
+            Color enemy = TopTroopsBattlefieldBuilder.ResolveCellColor(layout, layout.EnemyOriginX, y, palette);
 
-            Assert.That(player, Is.EqualTo(palette.PlayerZoneColor));
-            Assert.That(neutral, Is.EqualTo(palette.NeutralZoneColor));
-            Assert.That(enemy, Is.EqualTo(palette.EnemyZoneColor));
+            Assert.That(player, Is.EqualTo(TopTroopsBattlefieldBuilder.ApplyCheckerShade(palette.PlayerZoneColor, 0, y)));
+            Assert.That(neutral, Is.EqualTo(TopTroopsBattlefieldBuilder.ApplyCheckerShade(palette.NeutralZoneColor, layout.NeutralStartX, y)));
+            Assert.That(enemy, Is.EqualTo(TopTroopsBattlefieldBuilder.ApplyCheckerShade(palette.EnemyZoneColor, layout.EnemyOriginX, y)));
         }
 
         [Test]

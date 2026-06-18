@@ -47,6 +47,8 @@ namespace DeadManZone.Data
         public ArmorType armorType = ArmorType.Light;
         public AttackType attackType = AttackType.Ballistic;
         public GrantedAbility grantedAbility = GrantedAbility.None;
+        [Tooltip("Optional 0-100. Leave at 0 to use attack type / role defaults.")]
+        public int accuracyOverride;
         public string factionId = "neutral";
 
         [Header("Visuals")]
@@ -135,6 +137,7 @@ namespace DeadManZone.Data
                 ArmorType = armorType,
                 AttackType = attackType,
                 GrantedAbility = grantedAbility,
+                AccuracyOverride = accuracyOverride <= 0 ? null : accuracyOverride,
                 FactionId = factionId
             };
         }

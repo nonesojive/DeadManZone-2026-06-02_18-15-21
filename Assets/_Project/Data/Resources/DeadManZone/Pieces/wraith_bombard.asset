@@ -41,11 +41,12 @@ MonoBehaviour:
   includeInShopPool: 1
   salvageChanceBonus: 0
   attackSpeed: 1
-  attackRange: 2
+  attackRange: 3
   movementSpeed: 2
   armorType: 2
   attackType: 2
   grantedAbility: 0
+  accuracyOverride: 0
   factionId: ash_wraiths
   icon: {fileID: 0}
   categoryTint: {r: 0.32999998, g: 0.26999998, b: 0.42999998, a: 1}

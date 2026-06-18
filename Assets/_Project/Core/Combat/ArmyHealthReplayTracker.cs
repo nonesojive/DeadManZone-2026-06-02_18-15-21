@@ -33,6 +33,7 @@ namespace DeadManZone.Core.Combat
             {
                 // All HP-reducing actions target TargetId with Value damage.
                 case "damage":
+                case "graze":
                 case "gas_damage":
                 case "grenade_lob":
                 case "cannon_blast":

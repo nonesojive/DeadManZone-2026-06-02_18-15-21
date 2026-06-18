@@ -7,9 +7,11 @@ namespace DeadManZone.Core.Combat
     {
         public static int GetRangeCells(AttackRangeTier tier) => tier switch
         {
-            AttackRangeTier.Short => 1,
-            AttackRangeTier.Long => 6,
-            _ => 3
+            AttackRangeTier.Melee => 1,
+            AttackRangeTier.Short => 3,
+            AttackRangeTier.Medium => 5,
+            AttackRangeTier.Long => 8,
+            _ => 5
         };
 
         public static bool IsInRange(GridCoord from, GridCoord to, AttackRangeTier tier) =>

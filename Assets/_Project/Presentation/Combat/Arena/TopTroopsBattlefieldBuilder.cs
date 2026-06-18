@@ -56,9 +56,16 @@ namespace DeadManZone.Presentation.Combat.Arena
             else
                 zone = palette.EnemyZoneColor;
 
-            float checkerShade = (x + y) % 2 == 0 ? 1f : 0.86f;
-            return zone * checkerShade;
+            float checkerShade = GetCheckerShade(x, y);
+            return ApplyCheckerShade(zone, checkerShade);
         }
+
+        public static float GetCheckerShade(int x, int y) => (x + y) % 2 == 0 ? 1f : 0.86f;
+
+        public static Color ApplyCheckerShade(Color zone, int x, int y) =>
+            ApplyCheckerShade(zone, GetCheckerShade(x, y));
+
+        public static Color ApplyCheckerShade(Color zone, float shade) => zone * shade;
 
         private static void BuildCells(
             Transform gridRoot,

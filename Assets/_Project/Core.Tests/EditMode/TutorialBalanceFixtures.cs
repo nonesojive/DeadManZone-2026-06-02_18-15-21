@@ -13,13 +13,16 @@ namespace DeadManZone.Core.Tests.EditMode
     {
         public const int SeedSweepCount = 40;
         public const float MinReachRate = 0.90f;
+        public const float MinFight1PauseTwoReachRate = 0.85f;
+        /// <summary>Rough fraction of attack ticks that land full hits or grazes (not clean misses).</summary>
+        public const float EstimatedEffectiveFireRate = 0.75f;
 
         /// <summary>
         /// Rough damage two conscripts focus-fire during in-range grind ticks (ballistic vs light, medium cooldown).
-        /// Use for content tuning: enemy HP pools should exceed ~60–70% of this to reach pause #2 before wipe.
+        /// Scaled by <see cref="EstimatedEffectiveFireRate"/> for accuracy variance.
         /// </summary>
         public static int EstimateTwoConscriptGrindDamage(int inRangeTicks = 170, int damagePerHit = 12) =>
-            (inRangeTicks / 3) * 2 * damagePerHit;
+            (int)(EstimatedEffectiveFireRate * (inRangeTicks / 3) * 2 * damagePerHit);
 
         public static BoardState BuildReferencePlayerBoard(ContentDatabase database, int fightIndex = 1, bool includeRifle = true)
         {

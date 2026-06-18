@@ -38,6 +38,10 @@ namespace DeadManZone.Core.Combat
             {
                 "damage" =>
                     $"[{phase} t{tick}] {Label(combatEvent.ActorId)} → {Label(combatEvent.TargetId)}: {combatEvent.Value} dmg",
+                "graze" =>
+                    $"[{phase} t{tick}] {Label(combatEvent.ActorId)} → {Label(combatEvent.TargetId)}: {combatEvent.Value} graze",
+                "miss" =>
+                    $"[{phase} t{tick}] {Label(combatEvent.ActorId)} → {Label(combatEvent.TargetId)}: missed",
                 "gas_damage" =>
                     $"[{phase} t{tick}] Gas → {Label(combatEvent.TargetId)}: {combatEvent.Value} dmg",
                 "move" =>

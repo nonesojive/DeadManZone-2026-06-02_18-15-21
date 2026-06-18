@@ -151,10 +151,14 @@ namespace DeadManZone.Core.Tests
         private static ContentRegistry CreateRoleTestRegistry()
         {
             var registry = new ContentRegistry();
-            registry.Register(CreateFactionUnit("offensive_assault", GameTagIds.Assault), ShopLane.Offensive);
-            registry.Register(CreateFactionUnit("offensive_support", GameTagIds.Support), ShopLane.Offensive);
-            registry.Register(CreateFactionUnit("defensive_assault", GameTagIds.Assault), ShopLane.Defensive);
-            registry.Register(CreateFactionUnit("defensive_support", GameTagIds.Support), ShopLane.Defensive);
+            registry.Register(CreateFactionUnit("offensive_assault_a", GameTagIds.Assault), ShopLane.Offensive);
+            registry.Register(CreateFactionUnit("offensive_assault_b", GameTagIds.Assault), ShopLane.Offensive);
+            registry.Register(CreateFactionUnit("offensive_assault_c", GameTagIds.Assault), ShopLane.Offensive);
+            registry.Register(CreateFactionUnit("offensive_assault_d", GameTagIds.Assault), ShopLane.Offensive);
+            registry.Register(CreateFactionUnit("defensive_support_a", GameTagIds.Support), ShopLane.Defensive);
+            registry.Register(CreateFactionUnit("defensive_support_b", GameTagIds.Support), ShopLane.Defensive);
+            registry.Register(CreateFactionUnit("defensive_support_c", GameTagIds.Support), ShopLane.Defensive);
+            registry.Register(CreateFactionUnit("defensive_support_d", GameTagIds.Support), ShopLane.Defensive);
             return registry;
         }
 

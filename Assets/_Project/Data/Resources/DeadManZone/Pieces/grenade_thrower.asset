@@ -43,11 +43,12 @@ MonoBehaviour:
   includeInShopPool: 1
   salvageChanceBonus: 0
   attackSpeed: 1
-  attackRange: 1
+  attackRange: 3
   movementSpeed: 2
   armorType: 1
   attackType: 2
   grantedAbility: 1
+  accuracyOverride: 0
   factionId: neutral
   icon: {fileID: 21300000, guid: bc90fc8ca0cd64745b1e8cece6a9e79b, type: 3}
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}

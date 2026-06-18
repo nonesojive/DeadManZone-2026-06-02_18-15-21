@@ -290,8 +290,12 @@ namespace DeadManZone.Presentation.Combat.Arena
 
                     break;
                 case "damage":
+                case "graze":
                 case "gas_damage":
                     PlayDamageEvent(combatEvent);
+                    break;
+                case "miss":
+                    PlayMissEvent(combatEvent);
                     break;
                 case "destroyed":
                     PlayDestroyedEvent(combatEvent);
@@ -318,6 +322,24 @@ namespace DeadManZone.Presentation.Combat.Arena
                 profile,
                 muzzleWorld => PlayAttackMuzzleVfx(profile, muzzleWorld, targetWorld),
                 () => PlayAttackImpactVfx(profile, targetWorld, combatEvent.Value));
+        }
+
+        private void PlayMissEvent(CombatEvent combatEvent)
+        {
+            if (!TryGetDamageTargetPosition(combatEvent, out var targetWorld))
+                return;
+
+            if (!_actors.TryGetValue(combatEvent.ActorId, out var attacker))
+                return;
+
+            var piece = ResolvePieceForActor(attacker);
+            var profile = CombatAttackProfileResolver.Resolve(piece);
+
+            attacker.PlayAttackToward(
+                targetWorld,
+                profile,
+                muzzleWorld => PlayAttackMuzzleVfx(profile, muzzleWorld, targetWorld),
+                onImpact: null);
         }
 
         private void PlayAttackMuzzleVfx(

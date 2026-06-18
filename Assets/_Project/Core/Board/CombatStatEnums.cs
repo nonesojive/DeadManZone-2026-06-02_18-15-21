@@ -9,6 +9,7 @@ namespace DeadManZone.Core.Board
 
     public enum AttackRangeTier
     {
+        Melee,
         Short,
         Medium,
         Long

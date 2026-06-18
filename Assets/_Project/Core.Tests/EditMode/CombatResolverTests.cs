@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
+using DeadManZone.Core.Common;
 using NUnit.Framework;
 
 namespace DeadManZone.Core.Tests
@@ -30,12 +32,23 @@ namespace DeadManZone.Core.Tests
         {
             var resolver = new CombatResolver();
             var player = TestBoards.StrongPlayerVsWeakEnemy();
+            player.TryPlace(
+                TestPieces.With(
+                    TestPieces.RifleSquad(),
+                    baseDamage: 100,
+                    attackSpeed: AttackSpeedTier.Fast,
+                    cooldownTicks: 1,
+                    accuracyOverride: 100),
+                new GridCoord(7, 3),
+                instanceId: "player_rifle_3");
             var enemy = TestBoards.WeakEnemyOnly();
 
             var result = resolver.Resolve(player, enemy, seed: 99, commands: System.Array.Empty<PhaseCommand>());
 
-            Assert.IsTrue(result.PlayerWon);
-            Assert.IsTrue(result.EventLog.Events.Any(e => e.ActionType == "damage"));
+            Assert.IsTrue(result.PlayerWon, "Overwhelming force should still win despite accuracy variance.");
+            Assert.IsTrue(
+                result.EventLog.Events.Any(e => e.ActionType == "damage" || e.ActionType == "graze"),
+                "Expected at least one damaging hit or graze in the log.");
         }
 
         [Test]

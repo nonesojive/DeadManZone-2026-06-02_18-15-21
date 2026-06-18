@@ -57,6 +57,11 @@ namespace DeadManZone.Data.Editor
             draft.armorType = (ArmorType)EditorGUILayout.EnumPopup("Armor Type", draft.armorType);
             draft.attackType = (AttackType)EditorGUILayout.EnumPopup("Attack Type", draft.attackType);
             draft.grantedAbility = (GrantedAbility)EditorGUILayout.EnumPopup("Granted Ability", draft.grantedAbility);
+            draft.accuracyOverride = EditorGUILayout.IntSlider(
+                new GUIContent("Accuracy Override", "0 = use attack type / role defaults. Otherwise 1–100."),
+                draft.accuracyOverride,
+                0,
+                100);
             draft.shopModifiers = (ShopModifierFlags)EditorGUILayout.EnumFlagsField("Shop Modifiers", draft.shopModifiers);
             draft.commandActions = (CommandActionFlags)EditorGUILayout.EnumFlagsField("Command Actions", draft.commandActions);
         }

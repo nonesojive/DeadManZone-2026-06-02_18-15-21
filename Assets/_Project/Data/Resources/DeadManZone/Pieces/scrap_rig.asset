@@ -41,10 +41,11 @@ MonoBehaviour:
   includeInShopPool: 1
   salvageChanceBonus: 0
   attackSpeed: 1
-  attackRange: 1
+  attackRange: 2
   movementSpeed: 2
   armorType: 2
   attackType: 4
+  accuracyOverride: 70
   grantedAbility: 0
   factionId: dust_scourge
   icon: {fileID: 0}

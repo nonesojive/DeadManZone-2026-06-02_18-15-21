@@ -240,6 +240,7 @@ Sim: **10 ticks/second**. Tunable via `CombatPacingConfig` ScriptableObject.
 - Movement via **charge budget** (tier-based frequency).
 - Targeting by **active tactic** + **attack range** (Manhattan).
 - Attacks on cooldown modified by **attack speed** tier.
+- **Accuracy** resolves each shot as full hit, graze (33% damage), or clean miss (cooldown still spent).
 - Buildings: `MovementSpeed.None` unless data overrides.
 - **Rock-paper-scissors lite** on armor vs attack type.
 
@@ -248,10 +249,12 @@ Sim: **10 ticks/second**. Tunable via `CombatPacingConfig` ScriptableObject.
 | Field | Tiers | Effect |
 |-------|-------|--------|
 | AttackSpeed | Slow / Medium / Fast | Cooldown multiplier |
-| AttackRange | Short (1) / Medium (3) / Long (6) | Max Manhattan distance |
+| AttackRange | Melee (1) / Short (3) / Medium (5) / Long (8) | Max Manhattan distance |
 | MovementSpeed | None / Low / Medium / High | Move every N ticks |
 | ArmorType | None / Light / Medium / Heavy | DR + RPS |
-| AttackType | Ballistic / Explosive / Piercing | Type bonuses |
+| AttackType | Ballistic / Explosive / Piercing / Shredding / Melee / Gas | Type bonuses + accuracy default |
+
+**Accuracy (hybrid):** Base from attack type + combat role table; optional per-piece override (0–100). Distance falloff only in outer 40% of max range. Graze band widens at max range. Outcomes: **hit** (full damage), **graze** (33%), **miss** (0, cooldown spent). Tactic/ability accuracy modifiers planned.
 
 | Attack type | Bonus | Multiplier |
 |-------------|-------|------------|
@@ -686,7 +689,11 @@ Shop:         poolTags[], rarity, fightIndexMin
 
 **Attack speed:** Slow ×1.5, Medium ×1.0, Fast ×0.75  
 **Movement (ticks):** None ∞, Low 3, Medium 2, High 1  
-**Range (Manhattan):** Short 1, Medium 3, Long 6
+**Range (Manhattan):** Melee 1, Short 3, Medium 5, Long 8  
+
+**Accuracy defaults (before distance falloff):** Melee 92, Ballistic 78, Piercing 80, Explosive 72, Shredding 68, Sniper role 88, Artillery role 72+. Per-piece override optional.
+
+**Accuracy outcomes:** Hit (100% damage) · Graze (33%, min 1) · Miss (0, cooldown spent). Graze window widens at max range; inner 60% of range has no accuracy falloff.
 
 ---
 

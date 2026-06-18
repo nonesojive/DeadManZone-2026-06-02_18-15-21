@@ -31,6 +31,7 @@ namespace DeadManZone.Core.Board
         public ArmorType ArmorType { get; init; } = ArmorType.Light;
         public AttackType AttackType { get; init; } = AttackType.Ballistic;
         public GrantedAbility GrantedAbility { get; init; } = GrantedAbility.None;
+        public int? AccuracyOverride { get; init; }
         public string FactionId { get; init; } = "neutral";
     }
 

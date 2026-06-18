@@ -49,6 +49,7 @@ namespace DeadManZone.Data.UnitCreation
         public ArmorType armorType = ArmorType.Light;
         public AttackType attackType = AttackType.Ballistic;
         public GrantedAbility grantedAbility = GrantedAbility.None;
+        public int accuracyOverride;
 
         public Sprite icon;
         public Color categoryTint = Color.white;
@@ -102,6 +103,7 @@ namespace DeadManZone.Data.UnitCreation
                 armorType = piece.armorType,
                 attackType = piece.attackType,
                 grantedAbility = piece.grantedAbility,
+                accuracyOverride = piece.accuracyOverride,
                 icon = piece.icon,
                 categoryTint = piece.categoryTint,
                 cellSprites = piece.cellSprites != null
@@ -160,6 +162,7 @@ namespace DeadManZone.Data.UnitCreation
             piece.armorType = armorType;
             piece.attackType = attackType;
             piece.grantedAbility = grantedAbility;
+            piece.accuracyOverride = accuracyOverride;
             piece.icon = icon;
             piece.categoryTint = categoryTint;
             piece.cellSprites = cellSprites ?? Array.Empty<PieceCellSprite>();

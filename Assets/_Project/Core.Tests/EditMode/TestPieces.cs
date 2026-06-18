@@ -51,7 +51,9 @@ namespace DeadManZone.Core.Tests
             AttackRangeTier? attackRange = null,
             MovementSpeedTier? movementSpeed = null,
             AttackSpeedTier? attackSpeed = null,
-            GrantedAbility? grantedAbility = null) =>
+            GrantedAbility? grantedAbility = null,
+            int? accuracyOverride = null,
+            int? cooldownTicks = null) =>
             new()
             {
                 Id = source.Id,
@@ -67,7 +69,7 @@ namespace DeadManZone.Core.Tests
                 Tags = source.Tags,
                 MaxHp = source.MaxHp,
                 BaseDamage = baseDamage ?? source.BaseDamage,
-                CooldownTicks = source.CooldownTicks,
+                CooldownTicks = cooldownTicks ?? source.CooldownTicks,
                 GoldCost = source.GoldCost,
                 RequisitionCost = source.RequisitionCost,
                 ManpowerCost = source.ManpowerCost,
@@ -79,6 +81,7 @@ namespace DeadManZone.Core.Tests
                 ArmorType = armorType ?? source.ArmorType,
                 AttackType = attackType ?? source.AttackType,
                 GrantedAbility = grantedAbility ?? source.GrantedAbility,
+                AccuracyOverride = accuracyOverride ?? source.AccuracyOverride,
                 FactionId = source.FactionId
             };
 

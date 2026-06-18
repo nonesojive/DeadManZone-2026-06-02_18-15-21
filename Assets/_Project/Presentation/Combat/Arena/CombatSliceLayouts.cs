@@ -15,15 +15,15 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             var player = new BoardState(faction.CreateBoardLayout());
             Place(player, database, CombatSliceConstants.PlayerHq, new GridCoord(0, 4), "hq_player");
-            Place(player, database, CombatSliceConstants.PlayerRifle, new GridCoord(2, 3), "rifle_1");
-            Place(player, database, CombatSliceConstants.PlayerRifle, new GridCoord(2, 5), "rifle_2");
+            Place(player, database, CombatSliceConstants.PlayerRifle, new GridCoord(7, 3), "rifle_1");
+            Place(player, database, CombatSliceConstants.PlayerRifle, new GridCoord(7, 5), "rifle_2");
             Place(player, database, CombatSliceConstants.PlayerTank, new GridCoord(4, 4), "tank_1");
             Place(player, database, CombatSliceConstants.PlayerFieldGun, new GridCoord(3, 2), "field_gun_1");
 
             var enemy = new BoardState(faction.CreateBoardLayout());
             Place(enemy, database, CombatSliceConstants.EnemyHq, new GridCoord(0, 4), "enemy_hq");
-            Place(enemy, database, CombatSliceConstants.EnemyRifle, new GridCoord(2, 3), "enemy_rifle_1");
-            Place(enemy, database, CombatSliceConstants.EnemyRifle, new GridCoord(2, 5), "enemy_rifle_2");
+            Place(enemy, database, CombatSliceConstants.EnemyRifle, new GridCoord(7, 3), "enemy_rifle_1");
+            Place(enemy, database, CombatSliceConstants.EnemyRifle, new GridCoord(7, 5), "enemy_rifle_2");
 
             return BattlefieldState.FromBoards(player, enemy);
         }

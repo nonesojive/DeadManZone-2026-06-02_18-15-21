@@ -3,6 +3,7 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Content;
 using DeadManZone.Core.Shop;
+using DeadManZone.Core.Tags;
 using NUnit.Framework;
 
 namespace DeadManZone.Core.Tests
@@ -15,10 +16,22 @@ namespace DeadManZone.Core.Tests
         private static ContentRegistry CreateSalvageRegistry()
         {
             var registry = new ContentRegistry();
-            registry.Register(CreateUnit("iron_offensive", PlayerFactionId), ShopLane.Offensive);
-            registry.Register(CreateUnit("dust_offensive", EnemyFactionId), ShopLane.Offensive);
-            registry.Register(CreateBuilding("iron_defensive", PlayerFactionId), ShopLane.Defensive);
-            registry.Register(CreateBuilding("dust_defensive", EnemyFactionId), ShopLane.Defensive);
+            registry.Register(CreateUnit("iron_offensive_a", PlayerFactionId), ShopLane.Offensive);
+            registry.Register(CreateUnit("iron_offensive_b", PlayerFactionId), ShopLane.Offensive);
+            registry.Register(CreateUnit("iron_offensive_c", PlayerFactionId), ShopLane.Offensive);
+            registry.Register(CreateUnit("iron_offensive_d", PlayerFactionId), ShopLane.Offensive);
+            registry.Register(CreateUnit("dust_offensive_a", EnemyFactionId), ShopLane.Offensive);
+            registry.Register(CreateUnit("dust_offensive_b", EnemyFactionId), ShopLane.Offensive);
+            registry.Register(CreateUnit("dust_offensive_c", EnemyFactionId), ShopLane.Offensive);
+            registry.Register(CreateUnit("dust_offensive_d", EnemyFactionId), ShopLane.Offensive);
+            registry.Register(CreateBuilding("iron_defensive_a", PlayerFactionId), ShopLane.Defensive);
+            registry.Register(CreateBuilding("iron_defensive_b", PlayerFactionId), ShopLane.Defensive);
+            registry.Register(CreateBuilding("iron_defensive_c", PlayerFactionId), ShopLane.Defensive);
+            registry.Register(CreateBuilding("iron_defensive_d", PlayerFactionId), ShopLane.Defensive);
+            registry.Register(CreateBuilding("dust_defensive_a", EnemyFactionId), ShopLane.Defensive);
+            registry.Register(CreateBuilding("dust_defensive_b", EnemyFactionId), ShopLane.Defensive);
+            registry.Register(CreateBuilding("dust_defensive_c", EnemyFactionId), ShopLane.Defensive);
+            registry.Register(CreateBuilding("dust_defensive_d", EnemyFactionId), ShopLane.Defensive);
             return registry;
         }
 
@@ -39,7 +52,8 @@ namespace DeadManZone.Core.Tests
             Category = PieceCategory.Building,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
             GoldCost = 4,
-            FactionId = factionId
+            FactionId = factionId,
+            CombatRole = GameTagIds.Support
         };
 
         [Test]

@@ -75,7 +75,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 enemies: new[] { enemy },
                 Layout);
 
-            Assert.AreEqual(new GridCoord(6, 5), goal, "Long range (6) from enemy X=12, capped behind friendly front X=7.");
+            Assert.AreEqual(new GridCoord(4, 5), goal, "Long range (8) from enemy X=12, capped behind friendly front X=7.");
         }
 
         [Test]

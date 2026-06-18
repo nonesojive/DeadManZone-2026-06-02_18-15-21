@@ -286,18 +286,34 @@ namespace DeadManZone.Core.Combat
                 if (target == null)
                     continue;
 
-                int damage = CombatDamageResolver.ComputeDamage(
+                int distance = CombatRange.Manhattan(actor.AnchorPosition, target.AnchorPosition);
+                int accuracyMod = AccuracyModifierCollector.Collect(actor, target, tactic);
+                var outcome = CombatAccuracyResolver.Resolve(
+                    _rng,
                     actor.Definition,
                     target.Definition,
-                    1f,
-                    target.ArmorBuffSteps,
-                    actor.DamageBonus + damageBuff);
-                target.CurrentHp -= damage;
-                actor.DamageDealtThisFight += damage;
-                target.DamageTakenThisFight += damage;
-                _log.Append(segment, GlobalTick, actor.InstanceId, "damage", target.InstanceId, damage);
-                if (!target.IsAlive)
-                    LogDestroyed(segment, target.InstanceId, actor.InstanceId);
+                    distance,
+                    accuracyMod,
+                    actor.DamageBonus + damageBuff,
+                    target.ArmorBuffSteps);
+
+                string actionType = outcome.Kind switch
+                {
+                    CombatAttackOutcomeKind.Hit => "damage",
+                    CombatAttackOutcomeKind.Graze => "graze",
+                    _ => "miss"
+                };
+
+                _log.Append(segment, GlobalTick, actor.InstanceId, actionType, target.InstanceId, outcome.Damage);
+                if (outcome.Damage > 0)
+                {
+                    target.CurrentHp -= outcome.Damage;
+                    actor.DamageDealtThisFight += outcome.Damage;
+                    target.DamageTakenThisFight += outcome.Damage;
+                    if (!target.IsAlive)
+                        LogDestroyed(segment, target.InstanceId, actor.InstanceId);
+                }
+
                 actor.CooldownRemaining = CombatAttackSpeed.GetEffectiveCooldown(
                     actor.Definition.CooldownTicks,
                     actor.Definition.AttackSpeed);

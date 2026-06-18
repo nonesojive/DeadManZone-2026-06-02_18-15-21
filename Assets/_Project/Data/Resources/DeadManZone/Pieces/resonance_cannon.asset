@@ -41,11 +41,12 @@ MonoBehaviour:
   includeInShopPool: 1
   salvageChanceBonus: 0
   attackSpeed: 1
-  attackRange: 2
+  attackRange: 3
   movementSpeed: 2
   armorType: 2
   attackType: 2
   grantedAbility: 0
+  accuracyOverride: 0
   factionId: cartel_of_echoes
   icon: {fileID: 0}
   categoryTint: {r: 0.32999998, g: 0.32, b: 0.63, a: 1}
