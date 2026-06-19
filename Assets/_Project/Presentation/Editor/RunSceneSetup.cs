@@ -7,6 +7,7 @@ using DeadManZone.Presentation.Combat.Arena;
 using DeadManZone.Presentation.DragDrop;
 using DeadManZone.Presentation.Run;
 using DeadManZone.Presentation.Shop;
+using DeadManZone.Presentation.UI;
 using DeadManZone.Presentation.Visual;
 using TMPro;
 using UnityEditor;
@@ -322,14 +323,25 @@ namespace DeadManZone.Presentation.Editor
             panelBg.raycastTarget = false;
             panelGo.SetActive(false);
 
-            var cardGo = new GameObject("UnitCard", typeof(RectTransform), typeof(PieceHoverCard));
-            cardGo.transform.SetParent(panelGo.transform, false);
-            Stretch(cardGo.GetComponent<RectTransform>());
+            var cardPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(CardPrefabPaths.UnitDetailCard);
+            PieceCardView cardView = null;
+            if (cardPrefab != null)
+            {
+                var cardGo = Object.Instantiate(cardPrefab, panelGo.transform);
+                cardGo.name = cardPrefab.name;
+                cardView = cardGo.GetComponent<PieceCardView>();
+                if (cardView == null)
+                    Debug.LogError($"Unit detail card prefab at '{CardPrefabPaths.UnitDetailCard}' is missing PieceCardView.");
+            }
+            else
+            {
+                Debug.LogError($"Unit detail card prefab not found at '{CardPrefabPaths.UnitDetailCard}'.");
+            }
 
             var panelView = panelGo.AddComponent<UnitCardPanelView>();
             var panelSerialized = new SerializedObject(panelView);
             panelSerialized.FindProperty("panelRoot").objectReferenceValue = panelGo.GetComponent<RectTransform>();
-            panelSerialized.FindProperty("unitCard").objectReferenceValue = cardGo.GetComponent<PieceHoverCard>();
+            panelSerialized.FindProperty("cardView").objectReferenceValue = cardView;
             panelSerialized.ApplyModifiedPropertiesWithoutUndo();
             return panelView;
         }

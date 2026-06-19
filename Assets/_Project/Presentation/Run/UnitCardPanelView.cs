@@ -1,7 +1,9 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Tags;
 using DeadManZone.Presentation.Board;
+using DeadManZone.Presentation.UI;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace DeadManZone.Presentation.Run
 {
@@ -9,19 +11,26 @@ namespace DeadManZone.Presentation.Run
     public sealed class UnitCardPanelView : MonoBehaviour
     {
         [SerializeField] private RectTransform panelRoot;
-        [SerializeField] private PieceHoverCard unitCard;
+        [FormerlySerializedAs("unitCard")]
+        [SerializeField] private PieceCardView cardView;
 
         public bool IsVisible => panelRoot != null && panelRoot.gameObject.activeSelf;
 
         public void Show(PieceDefinition definition, PieceCardBuildContext context = null)
         {
-            if (definition == null || unitCard == null)
+            if (definition == null)
                 return;
 
-            unitCard.ConfigureEmbeddedLayout();
+            if (cardView == null)
+            {
+                Debug.LogError("UnitCardPanelView is missing cardView reference.", this);
+                return;
+            }
+
             var model = PieceCardViewModelBuilder.Build(definition, context);
-            unitCard.Bind(model, string.Empty);
-            unitCard.Show();
+            string overflowTooltip = PieceCardOverflowTooltip.Build(definition, model);
+            cardView.Bind(model, overflowTooltip);
+            cardView.Show();
 
             if (panelRoot != null)
                 panelRoot.gameObject.SetActive(true);
@@ -29,7 +38,7 @@ namespace DeadManZone.Presentation.Run
 
         public void Hide()
         {
-            unitCard?.Hide();
+            cardView?.Hide();
             if (panelRoot != null)
                 panelRoot.gameObject.SetActive(false);
         }

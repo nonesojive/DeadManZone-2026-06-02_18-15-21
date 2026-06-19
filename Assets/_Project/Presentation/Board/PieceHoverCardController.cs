@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Tags;
 using DeadManZone.Presentation.Run;
+using DeadManZone.Presentation.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,7 +18,6 @@ namespace DeadManZone.Presentation.Board
         [SerializeField] private Canvas targetCanvas;
         [SerializeField] private Vector2 screenOffset = new(24f, -24f);
 
-        private readonly List<string> _hiddenTagNames = new();
         private readonly PieceHoverLock _hoverLock = new();
 
         private void Awake() => Hide();
@@ -70,7 +69,7 @@ namespace DeadManZone.Presentation.Board
                 return;
 
             PieceCardViewModel model = PieceCardViewModelBuilder.Build(definition, context);
-            string overflowTooltip = BuildOverflowTooltip(definition, model);
+            string overflowTooltip = PieceCardOverflowTooltip.Build(definition, model);
             card.Bind(model, overflowTooltip);
             card.SetScreenPosition(canvas, screenPosition, screenOffset);
             card.Show();
@@ -179,30 +178,6 @@ namespace DeadManZone.Presentation.Board
                 layerGo.AddComponent<GraphicRaycaster>();
 
             return layerRect;
-        }
-
-        private string BuildOverflowTooltip(PieceDefinition definition, PieceCardViewModel model)
-        {
-            if (definition == null || model == null || model.OverflowCount <= 0)
-                return string.Empty;
-
-            PieceTagQueries.PlayerVisibleTagsResult allVisible = PieceTagQueries.GetPlayerVisibleTags(
-                definition,
-                maxOptionalChips: int.MaxValue);
-
-            int visibleCount = model.IdentityTags.Count + model.OptionalTags.Count;
-            if (visibleCount >= allVisible.VisibleTags.Count)
-                return string.Empty;
-
-            _hiddenTagNames.Clear();
-            for (int i = visibleCount; i < allVisible.VisibleTags.Count; i++)
-            {
-                var hiddenTag = allVisible.VisibleTags[i];
-                if (hiddenTag != null && !string.IsNullOrWhiteSpace(hiddenTag.DisplayName))
-                    _hiddenTagNames.Add(hiddenTag.DisplayName);
-            }
-
-            return _hiddenTagNames.Count == 0 ? string.Empty : string.Join(", ", _hiddenTagNames);
         }
 
         private BuildMessagesView ResolveMessagesView()
