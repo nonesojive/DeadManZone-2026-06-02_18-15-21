@@ -286,7 +286,7 @@ namespace DeadManZone.Core.Combat
                 if (target == null)
                     continue;
 
-                int distance = CombatRange.Manhattan(actor.AnchorPosition, target.AnchorPosition);
+                int distance = CombatRange.Distance(actor.AnchorPosition, target.AnchorPosition);
                 int accuracyMod = AccuracyModifierCollector.Collect(actor, target, tactic);
                 var outcome = CombatAccuracyResolver.Resolve(
                     _rng,
