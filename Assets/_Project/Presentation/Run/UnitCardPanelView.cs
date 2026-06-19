@@ -16,10 +16,47 @@ namespace DeadManZone.Presentation.Run
 
         public bool IsVisible => panelRoot != null && panelRoot.gameObject.activeSelf;
 
+        public void EnsureCardView()
+        {
+            if (cardView != null)
+                return;
+
+            cardView = GetComponentInChildren<PieceCardView>(true);
+            if (cardView != null)
+                return;
+
+            var host = panelRoot != null ? panelRoot : transform;
+
+            var legacy = host.GetComponentInChildren<PieceHoverCard>(true);
+            if (legacy != null)
+            {
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                    DestroyImmediate(legacy.gameObject);
+                else
+#endif
+                    Destroy(legacy.gameObject);
+            }
+
+            var prefab = CardPrefabRuntimeLoader.LoadPrefab(CardPrefabPaths.UnitDetailCard);
+            if (prefab == null)
+            {
+                Debug.LogWarning("UnitCardPanelView could not load UnitDetailCard prefab.", this);
+                return;
+            }
+
+            var cardGo = Instantiate(prefab, host);
+            cardGo.name = prefab.name;
+            cardView = cardGo.GetComponent<PieceCardView>();
+        }
+
         public void Show(PieceDefinition definition, PieceCardBuildContext context = null)
         {
             if (definition == null)
                 return;
+
+            if (cardView == null)
+                EnsureCardView();
 
             if (cardView == null)
             {

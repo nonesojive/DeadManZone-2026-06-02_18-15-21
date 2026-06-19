@@ -1,5 +1,6 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
+using DeadManZone.Presentation.Board;
 using NUnit.Framework;
 
 namespace DeadManZone.Presentation.Tests.EditMode

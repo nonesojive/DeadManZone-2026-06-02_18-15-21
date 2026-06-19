@@ -38,6 +38,7 @@ namespace DeadManZone.Presentation.Run
                 mainRowLayout = buildPanel.Find("MainRow")?.GetComponent<BuildRowLayoutFitter>();
 
             EnsureBuildScreenHudController();
+            UnitCardPanelBootstrap.EnsureOnBuildPanel(buildPanel);
             BuildUiChromeBootstrap.RemoveFromBuildPanel(buildPanel);
 
             if (RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel))
