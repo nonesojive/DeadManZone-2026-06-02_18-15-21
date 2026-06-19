@@ -5,7 +5,8 @@
     "DeadManZone.Core",
     "DeadManZone.Core.Tests",
     "DeadManZone.Presentation",
-    "DeadManZone.Data"
+    "DeadManZone.Data",
+    "Unity.TextMeshPro"
   ],
   "includePlatforms": [
     "Editor"
