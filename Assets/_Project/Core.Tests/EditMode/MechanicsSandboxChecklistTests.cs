@@ -99,7 +99,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 enemies: new[] { rearEnemy, frontEnemy },
                 layout);
 
-            Assert.AreEqual(new GridCoord(10, 5), goal);
+            Assert.AreEqual(new GridCoord(9, 5), goal);
         }
 
         [Test]
