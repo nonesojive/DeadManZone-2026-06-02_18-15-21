@@ -56,6 +56,56 @@ namespace DeadManZone.Core.Tests.EditMode
 
         [Test]
 
+        public void Distance_UsesChebyshevMetric()
+
+        {
+
+            var from = new GridCoord(0, 0);
+
+            Assert.AreEqual(1, CombatRange.Distance(from, new GridCoord(1, 1)));
+
+            Assert.AreEqual(2, CombatRange.Distance(from, new GridCoord(2, 0)));
+
+            Assert.AreEqual(3, CombatRange.Distance(from, new GridCoord(3, 1)));
+
+        }
+
+
+
+        [Test]
+
+        public void IsInRange_MeleeIncludesDiagonalNeighbor()
+
+        {
+
+            var from = new GridCoord(5, 5);
+
+            Assert.IsTrue(CombatRange.IsInRange(from, new GridCoord(6, 6), AttackRangeTier.Melee));
+
+            Assert.IsFalse(CombatRange.IsInRange(from, new GridCoord(7, 5), AttackRangeTier.Melee));
+
+            Assert.IsTrue(CombatRange.IsInRange(from, new GridCoord(7, 5), AttackRangeTier.Short));
+
+        }
+
+
+
+        [Test]
+
+        public void Manhattan_RemainsForSortHelpers()
+
+        {
+
+            var from = new GridCoord(0, 0);
+
+            Assert.AreEqual(2, CombatRange.Manhattan(from, new GridCoord(1, 1)));
+
+        }
+
+
+
+        [Test]
+
         public void SelectTarget_SkipsOutOfRangeEnemies()
 
         {

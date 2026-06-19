@@ -15,7 +15,10 @@ namespace DeadManZone.Core.Combat
         };
 
         public static bool IsInRange(GridCoord from, GridCoord to, AttackRangeTier tier) =>
-            Manhattan(from, to) <= GetRangeCells(tier);
+            Distance(from, to) <= GetRangeCells(tier);
+
+        public static int Distance(GridCoord from, GridCoord to) =>
+            System.Math.Max(System.Math.Abs(from.X - to.X), System.Math.Abs(from.Y - to.Y));
 
         public static int Manhattan(GridCoord from, GridCoord to) =>
             System.Math.Abs(from.X - to.X) + System.Math.Abs(from.Y - to.Y);
