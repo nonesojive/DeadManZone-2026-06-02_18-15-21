@@ -33,7 +33,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 enemies: new[] { rearEnemy, frontEnemy },
                 Layout);
 
-            Assert.AreEqual(new GridCoord(10, 5), goal);
+            Assert.AreEqual(new GridCoord(9, 5), goal);
         }
 
         [Test]
@@ -43,7 +43,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 "infantry",
                 combatRole: null,
                 CombatSide.Player,
-                new GridCoord(2, 5),
+                new GridCoord(2, 3),
                 primary: GameTagIds.Infantry);
             var frontEnemy = CreateEnemy("enemy_front", new GridCoord(10, 3));
             var rearEnemy = CreateEnemy("enemy_rear", new GridCoord(12, 3));
@@ -54,7 +54,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 enemies: new[] { rearEnemy, frontEnemy },
                 Layout);
 
-            Assert.AreEqual(new GridCoord(10, 3), goal);
+            Assert.AreEqual(new GridCoord(9, 3), goal);
         }
 
         [Test]
@@ -76,6 +76,40 @@ namespace DeadManZone.Core.Tests.EditMode
                 Layout);
 
             Assert.AreEqual(new GridCoord(4, 5), goal, "Long range (8) from enemy X=12, capped behind friendly front X=7.");
+        }
+
+        [Test]
+        public void ArtilleryRole_GoalSpreadsYAcrossRearBand()
+        {
+            var artyA = CreateCombatant(
+                "arty_a",
+                GameTagIds.Artillery,
+                CombatSide.Player,
+                new GridCoord(1, 3),
+                attackRange: AttackRangeTier.Long);
+            var artyB = CreateCombatant(
+                "arty_b",
+                GameTagIds.Artillery,
+                CombatSide.Player,
+                new GridCoord(1, 7),
+                attackRange: AttackRangeTier.Long);
+            var allyFront = CreateCombatant("ally_front", GameTagIds.Assault, CombatSide.Player, new GridCoord(7, 5));
+            var enemy = CreateEnemy("enemy", new GridCoord(12, 5));
+
+            var goalA = RoleEngagement.ComputeGoal(
+                artyA,
+                allies: new[] { artyA, artyB, allyFront },
+                enemies: new[] { enemy },
+                Layout);
+            var goalB = RoleEngagement.ComputeGoal(
+                artyB,
+                allies: new[] { artyA, artyB, allyFront },
+                enemies: new[] { enemy },
+                Layout);
+
+            Assert.AreEqual(4, goalA.X);
+            Assert.AreEqual(4, goalB.X);
+            Assert.AreNotEqual(goalA.Y, goalB.Y);
         }
 
         [Test]
@@ -158,7 +192,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 enemies: new[] { farEnemy, nearEnemy },
                 Layout);
 
-            Assert.AreEqual(new GridCoord(10, 5), goal);
+            Assert.AreEqual(new GridCoord(9, 5), goal);
         }
 
         private static CombatantState CreateCombatant(
