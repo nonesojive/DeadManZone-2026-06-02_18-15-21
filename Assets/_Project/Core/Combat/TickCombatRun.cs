@@ -227,7 +227,8 @@ namespace DeadManZone.Core.Combat
                     mover.InstanceId,
                     _occupancyGrid,
                     _layout,
-                    spawnAnchorY: mover.SpawnAnchorY);
+                    spawnAnchorY: mover.SpawnAnchorY,
+                    preferLaneHold: RoleEngagement.IsFrontlineMover(mover));
                 if (next == null || next.Value.Equals(mover.AnchorPosition))
                     continue;
 

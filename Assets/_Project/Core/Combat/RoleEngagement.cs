@@ -27,9 +27,7 @@ namespace DeadManZone.Core.Combat
             var role = combatant.Definition.CombatRole;
             var bias = CombatRoleProfile.ResolveBias(role);
 
-            if (IsInfantryPrimary(combatant)
-                || string.Equals(role, GameTagIds.Assault, StringComparison.OrdinalIgnoreCase)
-                || bias == CombatRoleTargetingBias.NearestFront)
+            if (IsFrontlineMover(combatant))
             {
                 var frontline = CollectFrontlineAllies(combatant, allies);
                 return CombatFormationSlots.ResolveFrontlineGoal(combatant, frontline, aliveEnemies, layout);
@@ -49,13 +47,34 @@ namespace DeadManZone.Core.Combat
             if (bias == CombatRoleTargetingBias.NoAttack)
                 return combatant.AnchorPosition;
 
-            if (IsMovableCombatant(combatant))
+            return NearestEnemyGoal(combatant.AnchorPosition, aliveEnemies);
+        }
+
+        public static bool IsFrontlineMover(CombatantState combatant)
+        {
+            if (combatant?.Definition == null)
+                return false;
+
+            string role = combatant.Definition.CombatRole;
+            var bias = CombatRoleProfile.ResolveBias(role);
+            if (IsInfantryPrimary(combatant)
+                || string.Equals(role, GameTagIds.Assault, StringComparison.OrdinalIgnoreCase)
+                || bias == CombatRoleTargetingBias.NearestFront)
             {
-                var frontline = CollectFrontlineAllies(combatant, allies);
-                return CombatFormationSlots.ResolveFrontlineGoal(combatant, frontline, aliveEnemies, layout);
+                return true;
             }
 
-            return NearestEnemyGoal(combatant.AnchorPosition, aliveEnemies);
+            if (string.Equals(role, GameTagIds.Artillery, StringComparison.OrdinalIgnoreCase)
+                || bias == CombatRoleTargetingBias.Furthest
+                || string.Equals(role, GameTagIds.Sniper, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(role, GameTagIds.Support, StringComparison.OrdinalIgnoreCase)
+                || bias == CombatRoleTargetingBias.LowestMaxHpRearPreferred
+                || bias == CombatRoleTargetingBias.NoAttack)
+            {
+                return false;
+            }
+
+            return IsMovableCombatant(combatant);
         }
 
         private static bool IsInfantryPrimary(CombatantState combatant) =>
