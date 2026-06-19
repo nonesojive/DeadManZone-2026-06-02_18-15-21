@@ -421,9 +421,14 @@ namespace DeadManZone.Presentation.Editor
 
             ShopUiBootstrap.EnsureOnShopArea(parent, boardView, null);
 
-            var offerPrefab = CreateOfferCardPrefab(theme);
-            offerPrefab.transform.SetParent(parent, false);
-            offerPrefab.SetActive(false);
+            var offerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(CardPrefabPaths.ShopOfferCard);
+            if (offerPrefab == null)
+            {
+                Debug.LogWarning($"Shop offer card prefab not found at '{CardPrefabPaths.ShopOfferCard}'. Falling back to generated card.");
+                offerPrefab = CreateOfferCardPrefab(theme);
+                offerPrefab.transform.SetParent(parent, false);
+                offerPrefab.SetActive(false);
+            }
 
             var shopView = parent.gameObject.AddComponent<ShopView>();
             var serialized = new SerializedObject(shopView);
