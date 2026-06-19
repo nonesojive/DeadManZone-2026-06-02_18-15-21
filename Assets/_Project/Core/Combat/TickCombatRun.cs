@@ -227,7 +227,8 @@ namespace DeadManZone.Core.Combat
                     mover.InstanceId,
                     _occupancyGrid,
                     _layout,
-                    spawnAnchorY: mover.SpawnAnchorY);
+                    spawnAnchorY: mover.SpawnAnchorY,
+                    preferLaneHold: RoleEngagement.IsFrontlineMover(mover));
                 if (next == null || next.Value.Equals(mover.AnchorPosition))
                     continue;
 
@@ -286,7 +287,7 @@ namespace DeadManZone.Core.Combat
                 if (target == null)
                     continue;
 
-                int distance = CombatRange.Manhattan(actor.AnchorPosition, target.AnchorPosition);
+                int distance = CombatRange.Distance(actor.AnchorPosition, target.AnchorPosition);
                 int accuracyMod = AccuracyModifierCollector.Collect(actor, target, tactic);
                 var outcome = CombatAccuracyResolver.Resolve(
                     _rng,

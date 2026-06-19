@@ -11,7 +11,8 @@ namespace DeadManZone.Core.Combat
     public static class ShapePathfinder
     {
         private const int MaxBfsExpansions = 128;
-        private const int LaneBiasPenalty = 2;
+        private const int FrontlineLaneBiasPenalty = 4;
+        private const int RearLaneBiasPenalty = 1;
 
         private static readonly GridCoord[] NeighborDeltas =
         {
@@ -28,7 +29,8 @@ namespace DeadManZone.Core.Combat
             string moverInstanceId,
             CombatOccupancyGrid occupancy,
             BattlefieldLayout layout,
-            int? spawnAnchorY = null)
+            int? spawnAnchorY = null,
+            bool preferLaneHold = true)
         {
             if (currentAnchor.Equals(goalAnchor))
                 return null;
@@ -40,7 +42,8 @@ namespace DeadManZone.Core.Combat
                 moverInstanceId,
                 occupancy,
                 layout,
-                spawnAnchorY);
+                spawnAnchorY,
+                preferLaneHold);
             if (greedy != null)
                 return greedy;
 
@@ -66,7 +69,8 @@ namespace DeadManZone.Core.Combat
             string moverInstanceId,
             CombatOccupancyGrid occupancy,
             BattlefieldLayout layout,
-            int? spawnAnchorY)
+            int? spawnAnchorY,
+            bool preferLaneHold)
         {
             int currentHeuristic = Manhattan(currentAnchor, goalAnchor);
             GridCoord? best = null;
@@ -84,7 +88,7 @@ namespace DeadManZone.Core.Combat
                 if (heuristic >= currentHeuristic)
                     continue;
 
-                int cost = GetStepCost(currentAnchor, neighbor, layout, spawnAnchorY);
+                int cost = GetStepCost(currentAnchor, neighbor, layout, spawnAnchorY, preferLaneHold);
                 if (heuristic < bestHeuristic
                     || (heuristic == bestHeuristic && cost < bestCost)
                     || (heuristic == bestHeuristic && cost == bestCost && CompareCoords(neighbor, best ?? neighbor) < 0))
@@ -166,11 +170,15 @@ namespace DeadManZone.Core.Combat
             GridCoord from,
             GridCoord to,
             BattlefieldLayout layout,
-            int? spawnAnchorY)
+            int? spawnAnchorY,
+            bool preferLaneHold)
         {
             int cost = CombatMovement.GetStepChargeCost(from, to, layout);
-            if (spawnAnchorY.HasValue && System.Math.Abs(to.Y - spawnAnchorY.Value) > 1)
-                cost += LaneBiasPenalty;
+            if (!spawnAnchorY.HasValue || to.Y == spawnAnchorY.Value)
+                return cost;
+
+            int laneBiasPenalty = preferLaneHold ? FrontlineLaneBiasPenalty : RearLaneBiasPenalty;
+            cost += laneBiasPenalty;
 
             return cost;
         }

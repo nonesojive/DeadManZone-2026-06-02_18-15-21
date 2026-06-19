@@ -27,16 +27,21 @@ namespace DeadManZone.Core.Combat
             var role = combatant.Definition.CombatRole;
             var bias = CombatRoleProfile.ResolveBias(role);
 
-            if (IsInfantryPrimary(combatant) || role == GameTagIds.Assault || bias == CombatRoleTargetingBias.NearestFront)
-                return NearestFrontEnemyGoal(combatant.AnchorPosition, aliveEnemies);
+            if (IsFrontlineMover(combatant))
+            {
+                var frontline = CollectFrontlineAllies(combatant, allies);
+                return CombatFormationSlots.ResolveFrontlineGoal(combatant, frontline, aliveEnemies, layout);
+            }
 
-            if (role == GameTagIds.Artillery || bias == CombatRoleTargetingBias.Furthest)
+            if (string.Equals(role, GameTagIds.Artillery, StringComparison.OrdinalIgnoreCase)
+                || bias == CombatRoleTargetingBias.Furthest)
                 return ArtilleryGoal(combatant, allies, aliveEnemies);
 
-            if (role == GameTagIds.Sniper)
+            if (string.Equals(role, GameTagIds.Sniper, StringComparison.OrdinalIgnoreCase))
                 return SniperGoal(combatant, aliveEnemies);
 
-            if (role == GameTagIds.Support || bias == CombatRoleTargetingBias.LowestMaxHpRearPreferred)
+            if (string.Equals(role, GameTagIds.Support, StringComparison.OrdinalIgnoreCase)
+                || bias == CombatRoleTargetingBias.LowestMaxHpRearPreferred)
                 return SupportGoal(combatant, allies);
 
             if (bias == CombatRoleTargetingBias.NoAttack)
@@ -45,15 +50,50 @@ namespace DeadManZone.Core.Combat
             return NearestEnemyGoal(combatant.AnchorPosition, aliveEnemies);
         }
 
+        public static bool IsFrontlineMover(CombatantState combatant)
+        {
+            if (combatant?.Definition == null)
+                return false;
+
+            string role = combatant.Definition.CombatRole;
+            var bias = CombatRoleProfile.ResolveBias(role);
+            if (IsInfantryPrimary(combatant)
+                || string.Equals(role, GameTagIds.Assault, StringComparison.OrdinalIgnoreCase)
+                || bias == CombatRoleTargetingBias.NearestFront)
+            {
+                return true;
+            }
+
+            if (string.Equals(role, GameTagIds.Artillery, StringComparison.OrdinalIgnoreCase)
+                || bias == CombatRoleTargetingBias.Furthest
+                || string.Equals(role, GameTagIds.Sniper, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(role, GameTagIds.Support, StringComparison.OrdinalIgnoreCase)
+                || bias == CombatRoleTargetingBias.LowestMaxHpRearPreferred
+                || bias == CombatRoleTargetingBias.NoAttack)
+            {
+                return false;
+            }
+
+            return IsMovableCombatant(combatant);
+        }
+
         private static bool IsInfantryPrimary(CombatantState combatant) =>
             string.Equals(combatant.Definition.Primary, GameTagIds.Infantry, StringComparison.OrdinalIgnoreCase)
             || combatant.HasTag(GameTagIds.Infantry);
 
-        private static GridCoord NearestFrontEnemyGoal(GridCoord from, IReadOnlyList<CombatantState> enemies)
+        private static bool IsMovableCombatant(CombatantState combatant) =>
+            combatant?.Definition != null
+            && combatant.Definition.MovementSpeed != MovementSpeedTier.None;
+
+        private static bool IsFrontlineRole(CombatantState combatant)
         {
-            int frontColumn = GetEnemyFrontColumnX(enemies);
-            var frontEnemies = FilterByColumn(enemies, frontColumn);
-            return SelectNearestPosition(from, frontEnemies);
+            if (combatant?.Definition == null)
+                return false;
+
+            string role = combatant.Definition.CombatRole;
+            return IsInfantryPrimary(combatant)
+                || string.Equals(role, GameTagIds.Assault, StringComparison.OrdinalIgnoreCase)
+                || CombatRoleProfile.ResolveBias(role) == CombatRoleTargetingBias.NearestFront;
         }
 
         private static GridCoord ArtilleryGoal(
@@ -66,7 +106,7 @@ namespace DeadManZone.Core.Combat
                 return combatant.AnchorPosition;
 
             int maxRange = CombatRange.GetRangeCells(combatant.Definition.AttackRange);
-            var aliveAllies = CollectAlive(allies, combatant.InstanceId);
+            var aliveAllies = CollectAlive(allies);
             int friendlyFront = aliveAllies.Count > 0
                 ? GetFriendlyFrontColumnX(combatant.Side, aliveAllies)
                 : combatant.AnchorPosition.X;
@@ -74,7 +114,12 @@ namespace DeadManZone.Core.Combat
                 ? System.Math.Min(nearestEnemy.AnchorPosition.X - maxRange, friendlyFront)
                 : System.Math.Max(nearestEnemy.AnchorPosition.X + maxRange, friendlyFront);
 
-            return new GridCoord(goalX, combatant.AnchorPosition.Y);
+            var rearArtillery = CollectRearAlliesByRole(combatant, allies, GameTagIds.Artillery);
+            int slotIndex = IndexInSorted(rearArtillery, combatant.InstanceId);
+            int minY = GetFriendlyMinY(aliveAllies, combatant.AnchorPosition.Y);
+            int maxY = GetFriendlyMaxY(aliveAllies, combatant.AnchorPosition.Y);
+            int spreadY = CombatFormationSlots.ResolveRearSpreadY(slotIndex, rearArtillery.Count, minY, maxY);
+            return new GridCoord(goalX, spreadY);
         }
 
         private static GridCoord SniperGoal(CombatantState combatant, IReadOnlyList<CombatantState> enemies)
@@ -93,19 +138,25 @@ namespace DeadManZone.Core.Combat
 
         private static GridCoord SupportGoal(CombatantState combatant, IReadOnlyList<CombatantState> allies)
         {
-            var aliveAllies = CollectAlive(allies, combatant.InstanceId);
-            if (aliveAllies.Count == 0)
+            var aliveAlliesExcludingSelf = CollectAlive(allies, combatant.InstanceId);
+            if (aliveAlliesExcludingSelf.Count == 0)
                 return combatant.AnchorPosition;
 
-            int friendlyFront = GetFriendlyFrontColumnX(combatant.Side, aliveAllies);
+            int friendlyFront = GetFriendlyFrontColumnX(combatant.Side, aliveAlliesExcludingSelf);
             bool isBehindFront = combatant.Side == CombatSide.Player
                 ? combatant.AnchorPosition.X <= friendlyFront
                 : combatant.AnchorPosition.X >= friendlyFront;
             if (isBehindFront)
                 return combatant.AnchorPosition;
 
-            int rearColumn = GetFriendlyRearColumnX(combatant.Side, aliveAllies);
-            return new GridCoord(rearColumn, combatant.AnchorPosition.Y);
+            int rearColumn = GetFriendlyRearColumnX(combatant.Side, aliveAlliesExcludingSelf);
+            var supportAllies = CollectRearAlliesByRole(combatant, allies, GameTagIds.Support);
+            var aliveAllies = CollectAlive(allies);
+            int slotIndex = IndexInSorted(supportAllies, combatant.InstanceId);
+            int minY = GetFriendlyMinY(aliveAllies, combatant.AnchorPosition.Y);
+            int rearHalfMaxY = (minY + GetFriendlyMaxY(aliveAllies, combatant.AnchorPosition.Y)) / 2;
+            int spreadY = CombatFormationSlots.ResolveRearSpreadY(slotIndex, supportAllies.Count, minY, rearHalfMaxY);
+            return new GridCoord(rearColumn, spreadY);
         }
 
         private static GridCoord NearestEnemyGoal(GridCoord from, IReadOnlyList<CombatantState> enemies) =>
@@ -132,6 +183,118 @@ namespace DeadManZone.Core.Combat
             }
 
             return alive;
+        }
+
+        private static List<CombatantState> CollectFrontlineAllies(
+            CombatantState combatant,
+            IReadOnlyList<CombatantState> allies)
+        {
+            var frontline = new List<CombatantState>();
+            var aliveAllies = CollectAlive(allies);
+            for (int i = 0; i < aliveAllies.Count; i++)
+            {
+                var ally = aliveAllies[i];
+                if (ally.Side != combatant.Side || !IsMovableCombatant(ally) || !IsFrontlineRole(ally))
+                    continue;
+
+                frontline.Add(ally);
+            }
+
+            bool moverAlreadyIncluded = false;
+            for (int i = 0; i < frontline.Count; i++)
+            {
+                if (frontline[i].InstanceId == combatant.InstanceId)
+                {
+                    moverAlreadyIncluded = true;
+                    break;
+                }
+            }
+
+            if (!moverAlreadyIncluded && combatant.IsAlive && IsMovableCombatant(combatant) && IsFrontlineRole(combatant))
+                frontline.Add(combatant);
+
+            frontline.Sort(CompareByInstanceId);
+            return frontline;
+        }
+
+        private static List<CombatantState> CollectRearAlliesByRole(
+            CombatantState combatant,
+            IReadOnlyList<CombatantState> allies,
+            string roleTag)
+        {
+            var sameRole = new List<CombatantState>();
+            var aliveAllies = CollectAlive(allies);
+            for (int i = 0; i < aliveAllies.Count; i++)
+            {
+                var ally = aliveAllies[i];
+                if (ally.Side != combatant.Side)
+                    continue;
+                if (!string.Equals(ally.Definition?.CombatRole, roleTag, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                sameRole.Add(ally);
+            }
+
+            bool moverAlreadyIncluded = false;
+            for (int i = 0; i < sameRole.Count; i++)
+            {
+                if (sameRole[i].InstanceId == combatant.InstanceId)
+                {
+                    moverAlreadyIncluded = true;
+                    break;
+                }
+            }
+
+            if (!moverAlreadyIncluded
+                && combatant.IsAlive
+                && string.Equals(combatant.Definition?.CombatRole, roleTag, StringComparison.OrdinalIgnoreCase))
+            {
+                sameRole.Add(combatant);
+            }
+
+            sameRole.Sort(CompareByInstanceId);
+            return sameRole;
+        }
+
+        private static int GetFriendlyMinY(IReadOnlyList<CombatantState> allies, int fallbackY)
+        {
+            int minY = int.MaxValue;
+            for (int i = 0; i < allies.Count; i++)
+            {
+                int y = allies[i].AnchorPosition.Y;
+                if (y < minY)
+                    minY = y;
+            }
+
+            return minY == int.MaxValue ? fallbackY : minY;
+        }
+
+        private static int GetFriendlyMaxY(IReadOnlyList<CombatantState> allies, int fallbackY)
+        {
+            int maxY = int.MinValue;
+            for (int i = 0; i < allies.Count; i++)
+            {
+                int y = allies[i].AnchorPosition.Y;
+                if (y > maxY)
+                    maxY = y;
+            }
+
+            return maxY == int.MinValue ? fallbackY : maxY;
+        }
+
+        private static int IndexInSorted(IReadOnlyList<CombatantState> sortedCombatants, string instanceId)
+        {
+            if (sortedCombatants == null || sortedCombatants.Count == 0 || instanceId == null)
+                return 0;
+
+            for (int i = 0; i < sortedCombatants.Count; i++)
+            {
+                int comparison = StringComparer.Ordinal.Compare(sortedCombatants[i]?.InstanceId ?? string.Empty, instanceId);
+                if (comparison >= 0)
+                    return i;
+            }
+
+            return sortedCombatants.Count - 1;
         }
 
         private static List<CombatantState> FilterInRange(CombatantState combatant, IReadOnlyList<CombatantState> enemies)
@@ -221,9 +384,6 @@ namespace DeadManZone.Core.Combat
 
             return CompareByInstanceId(candidate, currentBest) < 0;
         }
-
-        private static int GetEnemyFrontColumnX(IReadOnlyList<CombatantState> enemies) =>
-            GetFrontColumnX(enemies[0].Side, enemies);
 
         private static int GetEnemyRearColumnX(IReadOnlyList<CombatantState> enemies) =>
             GetRearColumnX(enemies[0].Side, enemies);
