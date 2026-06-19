@@ -60,7 +60,7 @@ namespace DeadManZone.Core.Run
         public static bool CanStartBattle(BoardState board, int manpower, ContentRegistry content) =>
             manpower >= ComputeFieldingRequirement(board, content);
 
-        private static bool CountsTowardFielding(PieceDefinition definition) =>
+        public static bool CountsTowardFielding(PieceDefinition definition) =>
             PieceTagQueries.HasTag(definition, GameTagIds.Combatant)
             || PieceTagQueries.HasTag(definition, GameTagIds.Hq);
     }

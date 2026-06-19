@@ -149,6 +149,11 @@ namespace DeadManZone.Presentation.Run
                 if (emergencyDraftButton != null)
                     emergencyDraftButton.gameObject.SetActive(false);
                 runHudView?.Refresh(state, failureReason);
+                if (boardView != null)
+                {
+                    var enemyBoard = RunManager.Instance.Orchestrator.GetUpcomingEnemyBoard();
+                    runHudView?.RefreshMatchupFromBoards(boardView.GetBoardState(), enemyBoard);
+                }
             }
             else
             {

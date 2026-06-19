@@ -125,6 +125,14 @@ namespace DeadManZone.Game
             return false;
         }
 
+        public BoardState GetUpcomingEnemyBoard()
+        {
+            var enemyTemplate = _content.GetEnemyTemplate(State.FightIndex);
+            if (enemyTemplate == null)
+                return null;
+            return enemyTemplate.BuildBoard(Faction, _registry);
+        }
+
         public void BeginCombat()
         {
             if (State.Phase != RunPhase.Build)

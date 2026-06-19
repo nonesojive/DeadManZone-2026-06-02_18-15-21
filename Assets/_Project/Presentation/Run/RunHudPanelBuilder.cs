@@ -11,7 +11,7 @@ namespace DeadManZone.Presentation.Run
     public static class RunHudPanelBuilder
     {
         public const string PanelName = "RunHudPanel";
-        public const int PanelVersion = 3;
+        public const int PanelVersion = 4;
 
         public sealed class BuiltPanel
         {
@@ -24,6 +24,7 @@ namespace DeadManZone.Presentation.Run
             public TMP_Text ManpowerValue;
             public TMP_Text AuthorityValue;
             public TMP_Text MoraleValue;
+            public MatchupStrengthView MatchupStrength;
         }
 
         public static BuiltPanel Create(Transform buildPanelRoot, UiThemeSO theme)
@@ -56,7 +57,8 @@ namespace DeadManZone.Presentation.Run
             Stretch(frameGo.GetComponent<RectTransform>());
             ApplyFrameStyle(frameGo.GetComponent<Image>(), theme);
 
-            var header = CreateRegion(panelGo.transform, "HeaderRow", new Vector2(0f, 0.50f), Vector2.one);
+            var header = CreateRegion(panelGo.transform, "HeaderRow", new Vector2(0f, 0.62f), Vector2.one);
+            var matchupRow = CreateRegion(panelGo.transform, "MatchupRow", new Vector2(0f, 0.50f), new Vector2(1f, 0.62f));
             var grid = CreateRegion(panelGo.transform, "ResourceGrid", Vector2.zero, new Vector2(1f, 0.50f));
 
             AddHorizontalRule(header.transform, 0f, theme);
@@ -79,6 +81,12 @@ namespace DeadManZone.Presentation.Run
                 new Vector2(0f, 0f), new Vector2(360f, 20f), TextAlignmentOptions.Center, theme, secondary: true);
             salvageIndicator.gameObject.SetActive(false);
 
+            var matchupText = CreateHudLabel(matchupRow.transform, "", 14, FontStyles.Bold,
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(520f, 22f), TextAlignmentOptions.Center, theme, secondary: true);
+            var matchupView = matchupRow.gameObject.AddComponent<MatchupStrengthView>();
+            matchupView.Configure(matchupText);
+
             AddHorizontalRule(grid.transform, 1f, theme);
 
             var supplies = CreateResourceColumn(grid.transform, "Supplies", theme, 0);
@@ -96,7 +104,8 @@ namespace DeadManZone.Presentation.Run
                 SuppliesValue = supplies,
                 ManpowerValue = manpower,
                 AuthorityValue = authority,
-                MoraleValue = morale
+                MoraleValue = morale,
+                MatchupStrength = matchupView
             };
         }
 
@@ -129,7 +138,8 @@ namespace DeadManZone.Presentation.Run
                 panel.ManpowerValue,
                 panel.AuthorityValue,
                 panel.MoraleValue,
-                panel.SalvageIndicator);
+                panel.SalvageIndicator,
+                panel.MatchupStrength);
         }
 
         public static void ApplyFrameStyle(Image frame, UiThemeSO theme)

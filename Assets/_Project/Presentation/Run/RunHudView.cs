@@ -1,3 +1,5 @@
+using DeadManZone.Core.Board;
+using DeadManZone.Core.Combat;
 using DeadManZone.Core.Run;
 using DeadManZone.Data;
 using DeadManZone.Game;
@@ -17,6 +19,7 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private TMP_Text manpowerValueText;
         [SerializeField] private TMP_Text authorityValueText;
         [SerializeField] private TMP_Text moraleValueText;
+        [SerializeField] private MatchupStrengthView matchupStrengthView;
 
         private ContentDatabase _database;
 
@@ -28,7 +31,8 @@ namespace DeadManZone.Presentation.Run
             TMP_Text manpowerValue,
             TMP_Text authorityValue,
             TMP_Text moraleValue,
-            TMP_Text salvageIndicator = null)
+            TMP_Text salvageIndicator = null,
+            MatchupStrengthView matchupStrength = null)
         {
             fightTitleText = fightTitle;
             fightIndexText = fightIndex;
@@ -38,6 +42,24 @@ namespace DeadManZone.Presentation.Run
             authorityValueText = authorityValue;
             moraleValueText = moraleValue;
             salvageIndicatorText = salvageIndicator;
+            matchupStrengthView = matchupStrength;
+        }
+
+        public void RefreshMatchup(MatchupAssessment? assessment) =>
+            matchupStrengthView?.Refresh(assessment);
+
+        public void RefreshMatchupFromBoards(BoardState playerBoard, BoardState enemyBoard)
+        {
+            if (playerBoard == null || enemyBoard == null)
+            {
+                RefreshMatchup(null);
+                return;
+            }
+
+            var assessment = MatchupAssessment.Compare(
+                ArmyStrengthCalculator.Evaluate(playerBoard),
+                ArmyStrengthCalculator.Evaluate(enemyBoard));
+            RefreshMatchup(assessment);
         }
 
         public void Refresh(RunState state, string battleGateMessage = null)
@@ -108,6 +130,7 @@ namespace DeadManZone.Presentation.Run
             ApplyLabel(manpowerValueText, false, theme);
             ApplyLabel(authorityValueText, false, theme);
             ApplyLabel(moraleValueText, false, theme);
+            matchupStrengthView?.ApplyTheme(theme);
         }
 
         private static void ApplyLabel(TMP_Text label, bool secondary, UiThemeSO theme)
