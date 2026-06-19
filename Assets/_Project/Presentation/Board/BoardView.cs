@@ -316,7 +316,7 @@ private PieceDefinition _selectedPiece;
             }
         }
 
-        private void CreateShapeVisual(
+        private PieceShapeVisual CreateShapeVisual(
             string instanceId,
             PieceDefinition definition,
             GridCoord anchor,
@@ -333,8 +333,11 @@ private PieceDefinition _selectedPiece;
                 anchor,
                 rotation,
                 ResolveCellCenterInOverlay);
-            if (shapeVisual != null)
-                _shapeVisualsByInstance[instanceId] = shapeVisual;
+            if (shapeVisual == null)
+                return null;
+
+            _shapeVisualsByInstance[instanceId] = shapeVisual;
+            return shapeVisual;
         }
 
         public bool TrySellSelectedPiece()
@@ -389,9 +392,11 @@ private PieceDefinition _selectedPiece;
             {
                 var coord = pair.Key;
                 var tile = pair.Value;
-                var zone = _layout.GetZone(coord);
                 InitializeTile(tile, coord, _layout.IsSpecialTile(coord));
                 tile.SetOccupied(null, false);
+                var dragSource = tile.GetComponent<BoardPieceDragSource>();
+                if (dragSource != null)
+                    Destroy(dragSource);
             }
 
             if (_boardState == null)
@@ -417,26 +422,24 @@ private PieceDefinition _selectedPiece;
                         tile.SetOccupied(piece.InstanceId, true);
                 }
 
-                if (!_tiles.TryGetValue(piece.Anchor, out var anchorTile))
-                    continue;
-
-                var drag = anchorTile.GetComponent<BoardPieceDragSource>();
-                if (drag == null)
-                    drag = anchorTile.gameObject.AddComponent<BoardPieceDragSource>();
-                drag.Configure(
-                    piece.InstanceId,
-                    piece.Definition.Id,
-                    piece.Anchor,
-                    piece.Definition,
-                    piece.Rotation,
-                    hoverController,
-                    this);
-
-                CreateShapeVisual(
+                var shapeVisual = CreateShapeVisual(
                     piece.InstanceId,
                     piece.Definition,
                     piece.Anchor,
                     piece.Rotation);
+                if (shapeVisual == null)
+                    continue;
+
+                var footprintHit = shapeVisual.GetComponent<BoardPieceFootprintHit>();
+                if (footprintHit == null)
+                    footprintHit = shapeVisual.gameObject.AddComponent<BoardPieceFootprintHit>();
+                footprintHit.Configure(
+                    piece.InstanceId,
+                    piece.Definition,
+                    piece.Anchor,
+                    piece.Rotation,
+                    hoverController,
+                    this);
             }
 
             if (_synergyOverlay != null)
