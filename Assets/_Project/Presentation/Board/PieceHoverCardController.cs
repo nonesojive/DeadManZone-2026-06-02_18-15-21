@@ -19,8 +19,25 @@ namespace DeadManZone.Presentation.Board
         [SerializeField] private Vector2 screenOffset = new(24f, -24f);
 
         private readonly List<string> _hiddenTagNames = new();
+        private readonly PieceHoverLock _hoverLock = new();
 
         private void Awake() => Hide();
+
+        public void NotifyPieceHoverEnter(
+            string instanceId,
+            PieceDefinition definition,
+            PieceCardBuildContext context)
+        {
+            _hoverLock.Enter(instanceId);
+            Show(definition, Vector2.zero, context);
+        }
+
+        public void NotifyPieceHoverExit(string instanceId)
+        {
+            _hoverLock.Exit(instanceId);
+            if (!_hoverLock.HasActiveHover)
+                Hide();
+        }
 
         public void Show(
             PieceDefinition definition,
