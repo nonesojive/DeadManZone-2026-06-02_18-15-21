@@ -3,6 +3,7 @@ using DeadManZone.Core.Tags;
 using DeadManZone.Presentation.UI;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 namespace DeadManZone.Presentation.Run
 {
@@ -23,6 +24,7 @@ namespace DeadManZone.Presentation.Run
             var host = panelRoot != null ? panelRoot : transform;
             LegacyUnitCardCleanup.RemoveLegacyChildren(host);
             ResolveCardView(host);
+            SuppressPanelBackgroundIfCardPresent();
         }
 
         public void Show(PieceDefinition definition, PieceCardBuildContext context = null)
@@ -45,6 +47,7 @@ namespace DeadManZone.Presentation.Run
             var model = PieceCardViewModelBuilder.Build(definition, context);
             string overflowTooltip = PieceCardOverflowTooltip.Build(definition, model);
             cardView.Bind(model, overflowTooltip);
+            SuppressPanelBackgroundIfCardPresent();
             cardView.Show();
 
             if (panelRoot != null)
@@ -64,6 +67,17 @@ namespace DeadManZone.Presentation.Run
                 return;
 
             cardView = host.GetComponentInChildren<PieceCardView>(true);
+        }
+
+        private void SuppressPanelBackgroundIfCardPresent()
+        {
+            if (cardView == null)
+                return;
+
+            var host = panelRoot != null ? panelRoot : transform;
+            var panelImage = host.GetComponent<Image>();
+            if (panelImage != null)
+                panelImage.enabled = false;
         }
     }
 }

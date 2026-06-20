@@ -88,6 +88,7 @@ namespace DeadManZone.Presentation.UI
         public void InitializeForTests(
             TMP_Text name,
             TMP_Text hp,
+            Image authoredBackground = null,
             TMP_Text damage = null,
             TMP_Text movementSpeed = null,
             TMP_Text attackSpeed = null,
@@ -104,6 +105,7 @@ namespace DeadManZone.Presentation.UI
         {
             nameText = name;
             hpText = hp;
+            background = authoredBackground;
             damageText = damage;
             movementSpeedText = movementSpeed;
             attackSpeedText = attackSpeed;

@@ -115,7 +115,41 @@ namespace DeadManZone.Presentation.Editor
 
             serialized.FindProperty("cardView").objectReferenceValue = cardView;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            DisablePanelBackgroundWhenCardPresent(panel, cardView);
+            ResetLegacyCardInstanceSize(cardView);
             return true;
+        }
+
+        private static void DisablePanelBackgroundWhenCardPresent(UnitCardPanelView panel, PieceCardView cardView)
+        {
+            if (panel == null || cardView == null)
+                return;
+
+            var host = panel.transform;
+            var panelRootField = typeof(UnitCardPanelView).GetField(
+                "panelRoot",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            if (panelRootField?.GetValue(panel) is RectTransform serializedRoot && serializedRoot != null)
+                host = serializedRoot;
+
+            var panelImage = host.GetComponent<UnityEngine.UI.Image>();
+            if (panelImage != null)
+                panelImage.enabled = false;
+        }
+
+        private static void ResetLegacyCardInstanceSize(PieceCardView cardView)
+        {
+            if (cardView == null)
+                return;
+
+            var rect = cardView.transform as RectTransform;
+            if (rect == null)
+                return;
+
+            // ponytail: 280x172 was the old procedural card; authored prefab default is 350x550.
+            if (Mathf.Approximately(rect.sizeDelta.x, 280f) && Mathf.Approximately(rect.sizeDelta.y, 172f))
+                rect.sizeDelta = new Vector2(350f, 550f);
         }
     }
 }

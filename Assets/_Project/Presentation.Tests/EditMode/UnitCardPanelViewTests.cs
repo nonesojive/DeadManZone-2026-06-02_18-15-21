@@ -1,9 +1,11 @@
 using System.Reflection;
+using DeadManZone.Core.Tests;
 using DeadManZone.Presentation.Run;
 using DeadManZone.Presentation.UI;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace DeadManZone.Presentation.Tests.EditMode
 {
@@ -33,6 +35,33 @@ namespace DeadManZone.Presentation.Tests.EditMode
                 Assert.IsNull(panelGo.transform.Find("UnitCard"));
                 Assert.AreEqual(cardView, panelGo.GetComponentInChildren<PieceCardView>(true));
                 Assert.AreEqual(1, panelGo.GetComponentsInChildren<PieceCardView>(true).Length);
+            }
+            finally
+            {
+                Object.DestroyImmediate(panelGo);
+            }
+        }
+
+        [Test]
+        public void Show_DisablesPanelBackgroundImage_WhenCardViewPresent()
+        {
+            var panelGo = new GameObject("UnitCardPanel", typeof(RectTransform), typeof(Image));
+            var panelView = panelGo.AddComponent<UnitCardPanelView>();
+            var panelImage = panelGo.GetComponent<Image>();
+
+            var cardGo = new GameObject("UnitDetailCard", typeof(RectTransform));
+            cardGo.transform.SetParent(panelGo.transform, false);
+            var cardView = cardGo.AddComponent<PieceCardView>();
+            WireMinimalCard(cardView, cardGo.transform);
+
+            SetPrivateField(panelView, "panelRoot", panelGo.GetComponent<RectTransform>());
+            SetPrivateField(panelView, "cardView", cardView);
+
+            try
+            {
+                panelView.Show(TestPieces.RifleSquad());
+
+                Assert.IsFalse(panelImage.enabled);
             }
             finally
             {

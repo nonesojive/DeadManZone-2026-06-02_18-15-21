@@ -16450,14 +16450,6 @@ PrefabInstance:
       value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 5079624402095874385, guid: 0f834a217c179e04f97c8034fea0a556, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 280
-      objectReference: {fileID: 0}
-    - target: {fileID: 5079624402095874385, guid: 0f834a217c179e04f97c8034fea0a556, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 172
-      objectReference: {fileID: 0}
-    - target: {fileID: 5079624402095874385, guid: 0f834a217c179e04f97c8034fea0a556, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -19398,7 +19390,6 @@ GameObject:
   - component: {fileID: 2024403517}
   - component: {fileID: 2024403516}
   - component: {fileID: 2024403515}
-  - component: {fileID: 2024403514}
   - component: {fileID: 2024403513}
   - component: {fileID: 2024403512}
   - component: {fileID: 2024403511}
@@ -19485,23 +19476,6 @@ MonoBehaviour:
   unitCardPanel: {fileID: 1247027808}
   messagesView: {fileID: 556599087}
   buffIconStrip: {fileID: 1920542289}
---- !u!114 &2024403514
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2024403509}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e38905ea238e25e4994e05c75fb1b666, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: DeadManZone.Presentation::DeadManZone.Presentation.Run.BuildScreenHudController
-  buildPanel: {fileID: 2024403510}
-  boardView: {fileID: 0}
-  unitCardPanel: {fileID: 0}
-  messagesView: {fileID: 0}
-  buffIconStrip: {fileID: 0}
 --- !u!114 &2024403515
 MonoBehaviour:
   m_ObjectHideFlags: 0

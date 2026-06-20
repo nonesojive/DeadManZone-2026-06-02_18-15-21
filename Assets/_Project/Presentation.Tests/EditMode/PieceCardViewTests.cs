@@ -4,6 +4,7 @@ using DeadManZone.Presentation.UI;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace DeadManZone.Presentation.Tests.EditMode
 {
@@ -41,6 +42,33 @@ namespace DeadManZone.Presentation.Tests.EditMode
         }
 
         [Test]
+        public void Bind_PreservesAuthoredBackgroundTint_WhenSpriteAssigned()
+        {
+            var root = new GameObject("PieceCardViewRoot", typeof(RectTransform), typeof(Image));
+            try
+            {
+                var view = root.AddComponent<PieceCardView>();
+                var background = root.GetComponent<Image>();
+                background.sprite = CreateTestSprite();
+                background.color = Color.white;
+
+                var name = new GameObject("Name", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                var hp = new GameObject("Hp", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                name.transform.SetParent(root.transform, false);
+                hp.transform.SetParent(root.transform, false);
+                view.InitializeForTests(name, hp, background);
+
+                view.Bind(PieceCardViewModelBuilder.Build(TestPieces.RifleSquad()), string.Empty);
+
+                Assert.AreEqual(Color.white, background.color);
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        [Test]
         public void Bind_SetsDisplayNameAndHp()
         {
             var root = new GameObject("PieceCardViewRoot");
@@ -64,6 +92,17 @@ namespace DeadManZone.Presentation.Tests.EditMode
             {
                 Object.DestroyImmediate(root);
             }
+        }
+
+        private static Sprite CreateTestSprite()
+        {
+            var texture = new Texture2D(4, 4);
+            texture.SetPixels(new[] { Color.white, Color.white, Color.white, Color.white,
+                Color.white, Color.white, Color.white, Color.white,
+                Color.white, Color.white, Color.white, Color.white,
+                Color.white, Color.white, Color.white, Color.white });
+            texture.Apply();
+            return Sprite.Create(texture, new Rect(0f, 0f, 4f, 4f), new Vector2(0.5f, 0.5f));
         }
     }
 }

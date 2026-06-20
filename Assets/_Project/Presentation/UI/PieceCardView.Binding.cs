@@ -11,7 +11,13 @@ namespace DeadManZone.Presentation.UI
         {
             var activeTheme = ResolveTheme();
             if (background != null)
-                background.color = activeTheme.cardColor;
+            {
+                // ponytail: keep authored frame sprites untinted; theme color only fills procedural cards.
+                if (background.sprite == null)
+                    background.color = activeTheme.cardColor;
+                else
+                    background.color = Color.white;
+            }
 
             Color primary = activeTheme.textPrimary;
             Color secondary = activeTheme.textSecondary;
