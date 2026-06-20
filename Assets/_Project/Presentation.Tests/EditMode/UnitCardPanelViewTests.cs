@@ -7,10 +7,10 @@ using UnityEngine;
 
 namespace DeadManZone.Presentation.Tests.EditMode
 {
-    public sealed class UnitCardPanelBootstrapTests
+    public sealed class UnitCardPanelViewTests
     {
         [Test]
-        public void EnsureCardView_RemovesLegacyUnitCardChild_EvenWhenCardViewAlreadyAssigned()
+        public void EnsureCardView_RemovesLegacyUnitCardChild_WhenPieceCardViewAlreadyPresent()
         {
             var panelGo = new GameObject("UnitCardPanel", typeof(RectTransform));
             var panelView = panelGo.AddComponent<UnitCardPanelView>();
@@ -28,10 +28,11 @@ namespace DeadManZone.Presentation.Tests.EditMode
 
             try
             {
-                UnitCardPanelBootstrap.EnsureOnBuildPanel(panelGo.transform);
+                panelView.EnsureCardView();
 
                 Assert.IsNull(panelGo.transform.Find("UnitCard"));
-                Assert.NotNull(panelGo.GetComponentInChildren<PieceCardView>(true));
+                Assert.AreEqual(cardView, panelGo.GetComponentInChildren<PieceCardView>(true));
+                Assert.AreEqual(1, panelGo.GetComponentsInChildren<PieceCardView>(true).Length);
             }
             finally
             {
@@ -40,29 +41,28 @@ namespace DeadManZone.Presentation.Tests.EditMode
         }
 
         [Test]
-        public void EnsureCardView_RemovesLegacyUnitCardChild_WithoutSpawningReplacement()
+        public void EnsureCardView_DoesNotAddSecondCard_WhenPieceCardViewChildExists()
         {
-            var buildPanel = new GameObject("BuildPanel");
             var panelGo = new GameObject("UnitCardPanel", typeof(RectTransform));
-            panelGo.transform.SetParent(buildPanel.transform, false);
-
-            var legacyGo = new GameObject("UnitCard", typeof(RectTransform));
-            legacyGo.transform.SetParent(panelGo.transform, false);
-
             var panelView = panelGo.AddComponent<UnitCardPanelView>();
+
+            var cardGo = new GameObject("UnitDetailCard", typeof(RectTransform));
+            cardGo.transform.SetParent(panelGo.transform, false);
+            var cardView = cardGo.AddComponent<PieceCardView>();
+            WireMinimalCard(cardView, cardGo.transform);
+
             SetPrivateField(panelView, "panelRoot", panelGo.GetComponent<RectTransform>());
 
             try
             {
-                UnitCardPanelBootstrap.EnsureOnBuildPanel(buildPanel.transform);
-
-                Assert.IsNull(panelGo.transform.Find("UnitCard"));
                 panelView.EnsureCardView();
-                Assert.IsNull(panelGo.GetComponentInChildren<PieceCardView>(true));
+
+                Assert.AreEqual(1, panelGo.GetComponentsInChildren<PieceCardView>(true).Length);
+                Assert.AreEqual(cardView, panelGo.GetComponentInChildren<PieceCardView>(true));
             }
             finally
             {
-                Object.DestroyImmediate(buildPanel);
+                Object.DestroyImmediate(panelGo);
             }
         }
 

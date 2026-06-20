@@ -21,12 +21,20 @@ namespace DeadManZone.Presentation.Editor
 
             UiThemeSO theme = UiThemeSceneStyling.LoadTheme();
             BakeShopOfferCard(theme);
-            BakeUnitDetailCard(theme);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log("Baked card prefabs to UI/Prefabs.");
+            Debug.Log("Baked ShopOfferCard prefab. UnitDetailCard is authored manually — use 'Bake Unit Detail Card Prefab' only if you intend to overwrite it.");
+        }
+
+        [MenuItem("DeadManZone/UI/Bake Unit Detail Card Prefab (Overwrites Manual Edits)")]
+        public static void BakeUnitDetailCardMenu()
+        {
+            EnsureFolderExists(PrefabsFolder);
+            BakeUnitDetailCard(UiThemeSceneStyling.LoadTheme());
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
 
         private static void BakeShopOfferCard(UiThemeSO theme)
@@ -46,6 +54,13 @@ namespace DeadManZone.Presentation.Editor
 
         private static void BakeUnitDetailCard(UiThemeSO theme)
         {
+            if (!EditorUtility.DisplayDialog(
+                    "Overwrite Unit Detail Card Prefab?",
+                    "This replaces Assets/_Project/Presentation/UI/Prefabs/UnitDetailCard.prefab with a freshly generated layout. Manual prefab edits will be lost.",
+                    "Overwrite",
+                    "Cancel"))
+                return;
+
             GameObject card = BuildUnitDetailCard(theme);
             try
             {

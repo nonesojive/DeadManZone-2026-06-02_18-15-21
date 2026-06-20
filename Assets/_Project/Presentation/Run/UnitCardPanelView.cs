@@ -1,6 +1,5 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Tags;
-using DeadManZone.Presentation.Board;
 using DeadManZone.Presentation.UI;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -16,38 +15,14 @@ namespace DeadManZone.Presentation.Run
 
         public bool IsVisible => panelRoot != null && panelRoot.gameObject.activeSelf;
 
+        public PieceCardView CardView => cardView;
+
+        /// <summary>Wires an existing scene/prefab instance. Never writes to UnitDetailCard.prefab.</summary>
         public void EnsureCardView()
         {
-            if (cardView != null)
-                return;
-
-            cardView = GetComponentInChildren<PieceCardView>(true);
-            if (cardView != null)
-                return;
-
             var host = panelRoot != null ? panelRoot : transform;
-
-            var legacy = host.GetComponentInChildren<PieceHoverCard>(true);
-            if (legacy != null)
-            {
-#if UNITY_EDITOR
-                if (!Application.isPlaying)
-                    DestroyImmediate(legacy.gameObject);
-                else
-#endif
-                    Destroy(legacy.gameObject);
-            }
-
-            var prefab = CardPrefabRuntimeLoader.LoadPrefab(CardPrefabPaths.UnitDetailCard);
-            if (prefab == null)
-            {
-                Debug.LogWarning("UnitCardPanelView could not load UnitDetailCard prefab.", this);
-                return;
-            }
-
-            var cardGo = Instantiate(prefab, host);
-            cardGo.name = prefab.name;
-            cardView = cardGo.GetComponent<PieceCardView>();
+            LegacyUnitCardCleanup.RemoveLegacyChildren(host);
+            ResolveCardView(host);
         }
 
         public void Show(PieceDefinition definition, PieceCardBuildContext context = null)
@@ -55,12 +30,15 @@ namespace DeadManZone.Presentation.Run
             if (definition == null)
                 return;
 
-            if (cardView == null)
-                EnsureCardView();
+            var host = panelRoot != null ? panelRoot : transform;
+            LegacyUnitCardCleanup.RemoveLegacyChildren(host);
+            ResolveCardView(host);
 
             if (cardView == null)
             {
-                Debug.LogError("UnitCardPanelView is missing cardView reference.", this);
+                Debug.LogWarning(
+                    "UnitCardPanelView has no assigned UnitDetailCard. Place or link one under UnitCardPanel in the Run scene.",
+                    this);
                 return;
             }
 
@@ -78,6 +56,14 @@ namespace DeadManZone.Presentation.Run
             cardView?.Hide();
             if (panelRoot != null)
                 panelRoot.gameObject.SetActive(false);
+        }
+
+        private void ResolveCardView(Transform host)
+        {
+            if (cardView != null)
+                return;
+
+            cardView = host.GetComponentInChildren<PieceCardView>(true);
         }
     }
 }

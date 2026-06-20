@@ -4,23 +4,22 @@ using DeadManZone.Core.Tags;
 using DeadManZone.Presentation.Run;
 using DeadManZone.Presentation.UI;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace DeadManZone.Presentation.Board
 {
+    /// <summary>Shows the fixed center-column unit card panel on piece hover.</summary>
     public sealed class PieceHoverCardController : MonoBehaviour
     {
-        private static PieceHoverCard _sharedHoverCard;
-
-        [SerializeField] private PieceHoverCard hoverCard;
-        [SerializeField] private UnitCardPanelView fixedUnitCardPanel;
+        [SerializeField] private UnitCardPanelView unitCardPanel;
         [SerializeField] private BuildMessagesView messagesView;
-        [SerializeField] private Canvas targetCanvas;
-        [SerializeField] private Vector2 screenOffset = new(24f, -24f);
 
         private readonly PieceHoverLock _hoverLock = new();
 
-        private void Awake() => Hide();
+        private void Awake()
+        {
+            LegacyUnitCardCleanup.RemoveFloatingHoverLayers();
+            Hide();
+        }
 
         public void NotifyPieceHoverEnter(
             string instanceId,
@@ -56,128 +55,31 @@ namespace DeadManZone.Presentation.Board
             if (definition == null)
                 return;
 
-            if (fixedUnitCardPanel != null)
-            {
-                fixedUnitCardPanel.Show(definition, context);
-                ResolveMessagesView()?.SetFlavorFromPiece(definition);
-                return;
-            }
-
-            var card = ResolveHoverCard();
-            var canvas = ResolveCanvas();
-            if (card == null)
+            var panel = ResolveUnitCardPanel();
+            if (panel == null)
                 return;
 
-            PieceCardViewModel model = PieceCardViewModelBuilder.Build(definition, context);
-            string overflowTooltip = PieceCardOverflowTooltip.Build(definition, model);
-            card.Bind(model, overflowTooltip);
-            card.SetScreenPosition(canvas, screenPosition, screenOffset);
-            card.Show();
+            panel.Show(definition, context);
+            ResolveMessagesView()?.SetFlavorFromPiece(definition);
         }
 
         public void Hide()
         {
-            if (fixedUnitCardPanel != null)
-                fixedUnitCardPanel.Hide();
-
+            ResolveUnitCardPanel()?.Hide();
             ResolveMessagesView()?.ClearFlavor();
-
-            if (hoverCard != null)
-                hoverCard.Hide();
         }
 
-        public void SetFixedUnitCardPanel(UnitCardPanelView panel) => fixedUnitCardPanel = panel;
+        public void SetFixedUnitCardPanel(UnitCardPanelView panel) => unitCardPanel = panel;
 
         public void SetMessagesView(BuildMessagesView messages) => messagesView = messages;
 
-        private PieceHoverCard ResolveHoverCard()
+        private UnitCardPanelView ResolveUnitCardPanel()
         {
-            if (hoverCard != null)
-                return hoverCard;
+            if (unitCardPanel != null)
+                return unitCardPanel;
 
-            if (_sharedHoverCard != null)
-            {
-                hoverCard = _sharedHoverCard;
-                return hoverCard;
-            }
-
-            hoverCard = GetComponentInChildren<PieceHoverCard>(true);
-            if (hoverCard != null)
-            {
-                _sharedHoverCard = hoverCard;
-                return hoverCard;
-            }
-
-            var canvas = ResolveCanvas();
-            if (canvas == null)
-                return null;
-
-            var layer = GetOrCreateTooltipLayer(canvas);
-            var cardGo = new GameObject("PieceHoverCard", typeof(RectTransform), typeof(PieceHoverCard));
-            cardGo.transform.SetParent(layer, false);
-            cardGo.SetActive(false);
-            hoverCard = cardGo.GetComponent<PieceHoverCard>();
-            _sharedHoverCard = hoverCard;
-            return hoverCard;
-        }
-
-        private Canvas ResolveCanvas()
-        {
-            if (targetCanvas != null)
-                return targetCanvas;
-
-            var canvas = GetComponentInParent<Canvas>();
-            var outermost = canvas;
-            while (canvas != null)
-            {
-                outermost = canvas;
-                var parent = canvas.transform.parent;
-                canvas = parent != null ? parent.GetComponentInParent<Canvas>() : null;
-            }
-
-            if (outermost != null)
-            {
-                targetCanvas = outermost;
-                return targetCanvas;
-            }
-
-            foreach (var candidate in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
-            {
-                if (candidate.renderMode == RenderMode.ScreenSpaceOverlay)
-                {
-                    targetCanvas = candidate;
-                    return targetCanvas;
-                }
-            }
-
-            targetCanvas = FindFirstObjectByType<Canvas>();
-            return targetCanvas;
-        }
-
-        private static RectTransform GetOrCreateTooltipLayer(Canvas canvas)
-        {
-            const string layerName = "PieceHoverCardLayer";
-            var existing = canvas.transform.Find(layerName);
-            if (existing != null)
-                return existing as RectTransform;
-
-            var layerGo = new GameObject(layerName, typeof(RectTransform));
-            layerGo.transform.SetParent(canvas.transform, false);
-            var layerRect = layerGo.GetComponent<RectTransform>();
-            layerRect.anchorMin = Vector2.zero;
-            layerRect.anchorMax = Vector2.one;
-            layerRect.offsetMin = Vector2.zero;
-            layerRect.offsetMax = Vector2.zero;
-            layerGo.transform.SetAsLastSibling();
-
-            var canvasOverride = layerGo.AddComponent<Canvas>();
-            canvasOverride.overrideSorting = true;
-            canvasOverride.sortingOrder = 500;
-
-            if (canvas.GetComponent<GraphicRaycaster>() != null)
-                layerGo.AddComponent<GraphicRaycaster>();
-
-            return layerRect;
+            unitCardPanel = FindFirstObjectByType<UnitCardPanelView>();
+            return unitCardPanel;
         }
 
         private BuildMessagesView ResolveMessagesView()
