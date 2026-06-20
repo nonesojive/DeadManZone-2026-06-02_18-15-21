@@ -28,13 +28,11 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log("Baked ShopOfferCard prefab. UnitDetailCard is authored manually — use 'Bake Unit Detail Card Prefab' only if you intend to overwrite it.");
         }
 
-        [MenuItem("DeadManZone/UI/Bake Unit Detail Card Prefab (Overwrites Manual Edits)")]
+        [MenuItem("DeadManZone/UI/Bake Unit Detail Card Prefab (Disabled — Edit Prefab Manually)")]
         public static void BakeUnitDetailCardMenu()
         {
-            EnsureFolderExists(PrefabsFolder);
-            BakeUnitDetailCard(UiThemeSceneStyling.LoadTheme());
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            Debug.LogError(
+                "UnitDetailCard.prefab is manually authored. Open Assets/_Project/Presentation/UI/Prefabs/UnitDetailCard.prefab and edit it directly.");
         }
 
         private static void BakeShopOfferCard(UiThemeSO theme)
@@ -45,28 +43,6 @@ namespace DeadManZone.Presentation.Editor
                 PrefabUtility.SaveAsPrefabAsset(card, CardPrefabPaths.ShopOfferCard, out bool success);
                 if (!success)
                     throw new System.InvalidOperationException($"Failed to save prefab at {CardPrefabPaths.ShopOfferCard}.");
-            }
-            finally
-            {
-                Object.DestroyImmediate(card);
-            }
-        }
-
-        private static void BakeUnitDetailCard(UiThemeSO theme)
-        {
-            if (!EditorUtility.DisplayDialog(
-                    "Overwrite Unit Detail Card Prefab?",
-                    "This replaces Assets/_Project/Presentation/UI/Prefabs/UnitDetailCard.prefab with a freshly generated layout. Manual prefab edits will be lost.",
-                    "Overwrite",
-                    "Cancel"))
-                return;
-
-            GameObject card = BuildUnitDetailCard(theme);
-            try
-            {
-                PrefabUtility.SaveAsPrefabAsset(card, CardPrefabPaths.UnitDetailCard, out bool success);
-                if (!success)
-                    throw new System.InvalidOperationException($"Failed to save prefab at {CardPrefabPaths.UnitDetailCard}.");
             }
             finally
             {
@@ -222,131 +198,6 @@ namespace DeadManZone.Presentation.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             return card;
-        }
-
-        private static GameObject BuildUnitDetailCard(UiThemeSO theme)
-        {
-            var card = new GameObject("UnitDetailCard", typeof(RectTransform), typeof(CanvasGroup), typeof(Image), typeof(PieceCardView));
-            var cardRoot = card.GetComponent<RectTransform>();
-            cardRoot.anchorMin = new Vector2(0.5f, 0.5f);
-            cardRoot.anchorMax = new Vector2(0.5f, 0.5f);
-            cardRoot.pivot = new Vector2(0.5f, 0.5f);
-            cardRoot.sizeDelta = new Vector2(280f, 172f);
-
-            var background = card.GetComponent<Image>();
-            UiThemeApplicator.ApplyCard(background, theme);
-            background.raycastTarget = false;
-
-            var content = CreateContentRoot(cardRoot);
-            var nameText = CreateLabel(content, "NameText", 15f, FontStyles.Bold, false);
-            var hpText = CreateLabel(content, "HpText", 13f, FontStyles.Normal, true);
-            var damageText = CreateLabel(content, "DamageText", 13f, FontStyles.Normal, true);
-            var movementSpeedText = CreateLabel(content, "MovementSpeedText", 12f, FontStyles.Normal, true);
-            var attackSpeedText = CreateLabel(content, "AttackSpeedText", 12f, FontStyles.Normal, true);
-            var attackTypeText = CreateLabel(content, "AttackTypeText", 12f, FontStyles.Normal, true);
-            var armorTypeText = CreateLabel(content, "ArmorTypeText", 12f, FontStyles.Normal, true);
-            var synergyText = CreateLabel(content, "SynergyText", 12f, FontStyles.Bold, false);
-            var synergyLinesText = CreateLabel(content, "SynergyLinesText", 11f, FontStyles.Normal, true);
-            var criticalMassText = CreateLabel(content, "CriticalMassText", 11f, FontStyles.Normal, true);
-            var salvageContextText = CreateLabel(content, "SalvageContextText", 11f, FontStyles.Italic, false);
-            var abilityText = CreateLabel(content, "AbilityText", 11f, FontStyles.Normal, true);
-            var tagChipContainer = CreateTagChipContainer(content);
-            var tagChipTemplate = CreateTagChipTemplate(tagChipContainer, theme);
-            var overflowTooltipText = CreateLabel(content, "OverflowTooltipText", 11f, FontStyles.Italic, true);
-
-            var view = card.GetComponent<PieceCardView>();
-            var serialized = new SerializedObject(view);
-            SetObjectRef(serialized, "cardRoot", cardRoot);
-            SetObjectRef(serialized, "canvasGroup", card.GetComponent<CanvasGroup>());
-            SetObjectRef(serialized, "background", background);
-            SetObjectRef(serialized, "theme", theme);
-            SetObjectRef(serialized, "nameText", nameText);
-            SetObjectRef(serialized, "hpText", hpText);
-            SetObjectRef(serialized, "damageText", damageText);
-            SetObjectRef(serialized, "movementSpeedText", movementSpeedText);
-            SetObjectRef(serialized, "attackSpeedText", attackSpeedText);
-            SetObjectRef(serialized, "attackTypeText", attackTypeText);
-            SetObjectRef(serialized, "armorTypeText", armorTypeText);
-            SetObjectRef(serialized, "synergyText", synergyText);
-            SetObjectRef(serialized, "synergyLinesText", synergyLinesText);
-            SetObjectRef(serialized, "criticalMassText", criticalMassText);
-            SetObjectRef(serialized, "salvageContextText", salvageContextText);
-            SetObjectRef(serialized, "abilityText", abilityText);
-            SetObjectRef(serialized, "tagChipContainer", tagChipContainer);
-            SetObjectRef(serialized, "tagChipTemplate", tagChipTemplate);
-            SetObjectRef(serialized, "overflowTooltipText", overflowTooltipText);
-            serialized.ApplyModifiedPropertiesWithoutUndo();
-
-            return card;
-        }
-
-        private static RectTransform CreateContentRoot(RectTransform parent)
-        {
-            var contentGo = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-            contentGo.transform.SetParent(parent, false);
-            var content = contentGo.GetComponent<RectTransform>();
-            content.anchorMin = Vector2.zero;
-            content.anchorMax = Vector2.one;
-            content.offsetMin = new Vector2(10f, 10f);
-            content.offsetMax = new Vector2(-10f, -10f);
-
-            var layout = contentGo.GetComponent<VerticalLayoutGroup>();
-            layout.childControlHeight = false;
-            layout.childControlWidth = true;
-            layout.childForceExpandHeight = false;
-            layout.childForceExpandWidth = true;
-            layout.spacing = 3f;
-
-            var fitter = contentGo.GetComponent<ContentSizeFitter>();
-            fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            return content;
-        }
-
-        private static RectTransform CreateTagChipContainer(Transform parent)
-        {
-            var containerGo = new GameObject("TagChips", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
-            containerGo.transform.SetParent(parent, false);
-            var container = containerGo.GetComponent<RectTransform>();
-
-            var layout = containerGo.GetComponent<HorizontalLayoutGroup>();
-            layout.childControlHeight = false;
-            layout.childControlWidth = false;
-            layout.childForceExpandHeight = false;
-            layout.childForceExpandWidth = false;
-            layout.spacing = 5f;
-
-            var fitter = containerGo.GetComponent<ContentSizeFitter>();
-            fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            return container;
-        }
-
-        private static TMP_Text CreateTagChipTemplate(Transform parent, UiThemeSO theme)
-        {
-            var chipGo = new GameObject("TagChipTemplate", typeof(RectTransform), typeof(TextMeshProUGUI));
-            chipGo.transform.SetParent(parent, false);
-            var chip = chipGo.GetComponent<TextMeshProUGUI>();
-            chip.fontSize = 11f;
-            chip.alignment = TextAlignmentOptions.Center;
-            chip.raycastTarget = false;
-            UiThemeSceneStyling.StyleLabel(chip, theme);
-            chipGo.SetActive(false);
-            return chip;
-        }
-
-        private static TMP_Text CreateLabel(Transform parent, string name, float fontSize, FontStyles style, bool secondary)
-        {
-            var label = MenuSceneSetup.CreateLabelPublic(parent, name, fontSize, style, new Vector2(0.5f, 0.5f), new Vector2(260f, 20f));
-            label.name = name;
-            label.alignment = TextAlignmentOptions.Left;
-            label.raycastTarget = false;
-            UiThemeSceneStyling.StyleLabel(label, UiThemeProvider.Current, secondary);
-            if (secondary)
-                label.enableAutoSizing = false;
-            return label;
         }
 
         private static void FixOfferPreviewComponent(GameObject previewRootGo, RectTransform blockRoot, out ShopPiecePreview piecePreview)

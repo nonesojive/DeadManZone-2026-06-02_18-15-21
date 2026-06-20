@@ -37,13 +37,20 @@ namespace DeadManZone.Presentation.UI
         private readonly List<TMP_Text> _chips = new();
         private RectTransform _contentRoot;
 
+        // ponytail: authored prefabs skip procedural layout; upgrade path is wire nameText in the inspector.
+        private bool UsesProceduralFallback => nameText == null;
+
         public void Bind(PieceCardViewModel model, string overflowTooltip)
         {
             if (model == null)
                 return;
 
-            EnsureRuntimeUi();
-            ApplyTheme();
+            if (UsesProceduralFallback)
+            {
+                EnsureRuntimeUi();
+                ApplyTheme();
+            }
+
             BindMainStats(model);
             BindOptionalSections(model);
             BindTagChips(model);
@@ -52,7 +59,11 @@ namespace DeadManZone.Presentation.UI
 
         public void Show()
         {
-            EnsureRuntimeUi();
+            if (UsesProceduralFallback)
+                EnsureRuntimeUi();
+
+            cardRoot ??= transform as RectTransform;
+            canvasGroup ??= GetComponent<CanvasGroup>();
             if (cardRoot == null || canvasGroup == null)
                 return;
 
