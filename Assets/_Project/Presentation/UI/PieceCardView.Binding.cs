@@ -9,9 +9,6 @@ namespace DeadManZone.Presentation.UI
     {
         private void ApplyTheme()
         {
-            if (!UsesProceduralFallback)
-                return;
-
             var activeTheme = ResolveTheme();
             if (background != null)
                 background.color = activeTheme.cardColor;
@@ -133,8 +130,7 @@ namespace DeadManZone.Presentation.UI
 
             synergyText.gameObject.SetActive(!string.IsNullOrEmpty(bonus));
             synergyText.text = "Synergy: " + bonus.Trim();
-            if (UsesProceduralFallback)
-                synergyText.color = ResolveTheme().accentColor;
+            synergyText.color = ResolveTheme().accentColor;
         }
 
         private void BindSynergyLines(PieceCardViewModel model)
@@ -165,7 +161,7 @@ namespace DeadManZone.Presentation.UI
             bool hasContext = !string.IsNullOrWhiteSpace(model.SalvageContext);
             salvageContextText.gameObject.SetActive(hasContext);
             salvageContextText.text = hasContext ? model.SalvageContext : string.Empty;
-            if (hasContext && UsesProceduralFallback)
+            if (hasContext)
                 salvageContextText.color = ResolveTheme().accentColor;
         }
 
@@ -211,8 +207,7 @@ namespace DeadManZone.Presentation.UI
             var chip = _chips[index];
             chip.gameObject.SetActive(true);
             chip.text = string.IsNullOrWhiteSpace(value) ? "?" : value.Trim();
-            if (UsesProceduralFallback)
-                chip.color = ResolveTheme().textPrimary;
+            chip.color = ResolveTheme().textPrimary;
         }
     }
 }

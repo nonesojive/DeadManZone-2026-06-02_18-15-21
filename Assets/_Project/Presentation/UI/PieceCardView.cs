@@ -46,10 +46,9 @@ namespace DeadManZone.Presentation.UI
                 return;
 
             if (UsesProceduralFallback)
-            {
                 EnsureRuntimeUi();
-                ApplyTheme();
-            }
+
+            ApplyTheme();
 
             BindMainStats(model);
             BindOptionalSections(model);

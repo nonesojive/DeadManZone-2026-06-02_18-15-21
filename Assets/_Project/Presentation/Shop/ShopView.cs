@@ -116,7 +116,14 @@ namespace DeadManZone.Presentation.Shop
             {
                 var cardObject = Instantiate(offerCardPrefab, gridRoot);
                 cardObject.SetActive(true);
-                var card = cardObject.GetComponent<ShopOfferView>() ?? cardObject.AddComponent<ShopOfferView>();
+                var card = cardObject.GetComponent<ShopOfferView>();
+                if (card == null)
+                {
+                    Debug.LogError(
+                        $"Shop offer card prefab '{offerCardPrefab.name}' is missing ShopOfferView. Add it on the prefab — runtime AddComponent is disabled to protect authored layout.");
+                    Object.Destroy(cardObject);
+                    continue;
+                }
                 bool isLocked = RunManager.Instance is { HasActiveRun: true } manager &&
                     manager.Orchestrator.IsOfferLocked(offer);
                 card.Bind(offer, isLocked, cellSize, spacing, gridWidth, gridHeight, offerCount);

@@ -47,6 +47,20 @@ namespace DeadManZone.Presentation.Shop
             previewRoot = preview;
         }
 
+#if UNITY_INCLUDE_TESTS
+        public void InitializeForTests(RectTransform square, TMP_Text pieceId, RectTransform cardRect)
+        {
+            squareRoot = square;
+            pieceIdText = pieceId;
+            if (cardRect != null)
+            {
+                var bg = cardRect.GetComponent<Image>();
+                if (bg != null)
+                    cardBackground = bg;
+            }
+        }
+#endif
+
         private void Awake()
         {
             _database = ContentDatabase.Load();

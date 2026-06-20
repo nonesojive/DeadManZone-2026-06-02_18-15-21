@@ -17,15 +17,15 @@ namespace DeadManZone.Presentation.Editor
         [MenuItem("DeadManZone/UI/Bake Card Prefabs")]
         public static void BakeCardPrefabs()
         {
-            EnsureFolderExists(PrefabsFolder);
+            Debug.LogError(
+                "UnitDetailCard and ShopOfferCard are manually authored. Open them under Assets/_Project/Presentation/UI/Prefabs/ and edit directly.");
+        }
 
-            UiThemeSO theme = UiThemeSceneStyling.LoadTheme();
-            BakeShopOfferCard(theme);
-
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-
-            Debug.Log("Baked ShopOfferCard prefab. UnitDetailCard is authored manually — use 'Bake Unit Detail Card Prefab' only if you intend to overwrite it.");
+        [MenuItem("DeadManZone/UI/Bake Shop Offer Card Prefab (Disabled — Edit Prefab Manually)")]
+        public static void BakeShopOfferCardMenu()
+        {
+            Debug.LogError(
+                "ShopOfferCard.prefab is manually authored. Open Assets/_Project/Presentation/UI/Prefabs/ShopOfferCard.prefab and edit it directly.");
         }
 
         [MenuItem("DeadManZone/UI/Bake Unit Detail Card Prefab (Disabled — Edit Prefab Manually)")]
@@ -40,8 +40,7 @@ namespace DeadManZone.Presentation.Editor
             GameObject card = BuildShopOfferCard(theme);
             try
             {
-                PrefabUtility.SaveAsPrefabAsset(card, CardPrefabPaths.ShopOfferCard, out bool success);
-                if (!success)
+                if (!AuthoredCardPrefabGuard.TrySavePrefab(card, CardPrefabPaths.ShopOfferCard, out bool success) || !success)
                     throw new System.InvalidOperationException($"Failed to save prefab at {CardPrefabPaths.ShopOfferCard}.");
             }
             finally
