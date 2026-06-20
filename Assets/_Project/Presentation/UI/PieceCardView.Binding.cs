@@ -2,6 +2,7 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Tags;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace DeadManZone.Presentation.UI
 {
@@ -184,25 +185,36 @@ namespace DeadManZone.Presentation.UI
         private void EnsureChipCount(int count)
         {
             while (_chips.Count < count)
-            {
-                TMP_Text chip;
-                if (tagChipTemplate != null)
-                {
-                    chip = Instantiate(tagChipTemplate, tagChipContainer);
-                    chip.gameObject.SetActive(true);
-                }
-                else
-                {
-                    var chipGo = new GameObject("TagChip", typeof(RectTransform), typeof(TextMeshProUGUI));
-                    chipGo.transform.SetParent(tagChipContainer, false);
-                    chip = chipGo.GetComponent<TextMeshProUGUI>();
-                    chip.fontSize = 11f;
-                    chip.alignment = TextAlignmentOptions.Center;
-                    chip.raycastTarget = false;
-                }
+                _chips.Add(CreateTagChipLabel());
+        }
 
-                _chips.Add(chip);
+        private TMP_Text CreateTagChipLabel()
+        {
+            if (tagChipPrefab != null)
+            {
+                var chipGo = Instantiate(tagChipPrefab, tagChipContainer);
+                chipGo.name = tagChipPrefab.name;
+                chipGo.SetActive(true);
+                NormalizeTagChipInstance(chipGo);
+                var label = chipGo.GetComponentInChildren<TMP_Text>(true);
+                if (label != null)
+                    return label;
             }
+
+            if (tagChipTemplate != null)
+            {
+                var chip = Instantiate(tagChipTemplate, tagChipContainer);
+                chip.gameObject.SetActive(true);
+                return chip;
+            }
+
+            var fallbackGo = new GameObject("TagChip", typeof(RectTransform), typeof(TextMeshProUGUI));
+            fallbackGo.transform.SetParent(tagChipContainer, false);
+            var fallback = fallbackGo.GetComponent<TextMeshProUGUI>();
+            fallback.fontSize = 11f;
+            fallback.alignment = TextAlignmentOptions.Center;
+            fallback.raycastTarget = false;
+            return fallback;
         }
 
         private void SetChip(int index, string value)
@@ -214,6 +226,46 @@ namespace DeadManZone.Presentation.UI
             chip.gameObject.SetActive(true);
             chip.text = string.IsNullOrWhiteSpace(value) ? "?" : value.Trim();
             chip.color = ResolveTheme().textPrimary;
+        }
+
+        private static void NormalizeTagChipInstance(GameObject chipGo)
+        {
+            if (chipGo == null)
+                return;
+
+            const float chipHeight = 22f;
+            const float maxWidth = 132f;
+
+            var rect = chipGo.GetComponent<RectTransform>();
+            if (rect != null && (rect.sizeDelta.y > chipHeight + 4f || rect.sizeDelta.x > maxWidth))
+                rect.sizeDelta = new Vector2(Mathf.Min(rect.sizeDelta.x, maxWidth), chipHeight);
+
+            var layout = chipGo.GetComponent<LayoutElement>() ?? chipGo.AddComponent<LayoutElement>();
+            layout.minHeight = chipHeight;
+            layout.preferredHeight = chipHeight;
+            layout.flexibleHeight = 0f;
+            layout.flexibleWidth = 0f;
+
+            foreach (var image in chipGo.GetComponentsInChildren<Image>(true))
+            {
+                image.raycastTarget = false;
+                var imageRect = image.rectTransform;
+                if (imageRect == rect)
+                    continue;
+
+                imageRect.anchorMin = Vector2.zero;
+                imageRect.anchorMax = Vector2.one;
+                imageRect.offsetMin = Vector2.zero;
+                imageRect.offsetMax = Vector2.zero;
+                imageRect.sizeDelta = Vector2.zero;
+            }
+
+            foreach (var label in chipGo.GetComponentsInChildren<TMP_Text>(true))
+            {
+                label.enableAutoSizing = false;
+                label.fontSize = 11f;
+                label.margin = Vector4.zero;
+            }
         }
     }
 }

@@ -31,6 +31,7 @@ namespace DeadManZone.Presentation.UI
 
         [Header("Tags")]
         [SerializeField] private RectTransform tagChipContainer;
+        [SerializeField] private GameObject tagChipPrefab;
         [SerializeField] private TMP_Text tagChipTemplate;
         [SerializeField] private TMP_Text overflowTooltipText;
 
@@ -100,6 +101,7 @@ namespace DeadManZone.Presentation.UI
             TMP_Text salvageContext = null,
             TMP_Text ability = null,
             RectTransform chipContainer = null,
+            GameObject chipPrefab = null,
             TMP_Text chipTemplate = null,
             TMP_Text overflowTooltip = null)
         {
@@ -117,6 +119,7 @@ namespace DeadManZone.Presentation.UI
             salvageContextText = salvageContext;
             abilityText = ability;
             tagChipContainer = chipContainer;
+            tagChipPrefab = chipPrefab;
             tagChipTemplate = chipTemplate;
             overflowTooltipText = overflowTooltip;
         }

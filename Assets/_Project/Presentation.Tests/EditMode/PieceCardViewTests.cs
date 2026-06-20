@@ -69,6 +69,66 @@ namespace DeadManZone.Presentation.Tests.EditMode
         }
 
         [Test]
+        public void Bind_NormalizesOversizedTagChipPrefab_OnSpawn()
+        {
+            var root = new GameObject("PieceCardViewRoot", typeof(RectTransform));
+            try
+            {
+                var view = root.AddComponent<PieceCardView>();
+                var containerGo = new GameObject("TagChips", typeof(RectTransform));
+                containerGo.transform.SetParent(root.transform, false);
+                var container = containerGo.GetComponent<RectTransform>();
+
+                var chipPrefab = CreateOversizedTagChipPrefab();
+                var name = new GameObject("Name", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                var hp = new GameObject("Hp", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                name.transform.SetParent(root.transform, false);
+                hp.transform.SetParent(root.transform, false);
+
+                view.InitializeForTests(name, hp, chipContainer: container, chipPrefab: chipPrefab);
+                view.Bind(PieceCardViewModelBuilder.Build(TestPieces.RifleSquad()), string.Empty);
+
+                var spawned = container.GetChild(0) as RectTransform;
+                Assert.NotNull(spawned);
+                Assert.LessOrEqual(spawned.sizeDelta.y, 26f);
+                Assert.LessOrEqual(spawned.sizeDelta.x, 132f);
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        [Test]
+        public void Bind_SpawnsTagChipsFromPrefab_WhenTagChipPrefabAssigned()
+        {
+            var root = new GameObject("PieceCardViewRoot", typeof(RectTransform));
+            try
+            {
+                var view = root.AddComponent<PieceCardView>();
+                var containerGo = new GameObject("TagChips", typeof(RectTransform));
+                containerGo.transform.SetParent(root.transform, false);
+                var container = containerGo.GetComponent<RectTransform>();
+
+                var chipPrefab = CreateTagChipPrefab();
+                var name = new GameObject("Name", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                var hp = new GameObject("Hp", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                name.transform.SetParent(root.transform, false);
+                hp.transform.SetParent(root.transform, false);
+
+                view.InitializeForTests(name, hp, chipContainer: container, chipPrefab: chipPrefab);
+                view.Bind(PieceCardViewModelBuilder.Build(TestPieces.RifleSquad()), string.Empty);
+
+                Assert.GreaterOrEqual(container.childCount, 1);
+                Assert.NotNull(container.GetComponentInChildren<Image>(true));
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        [Test]
         public void Bind_SetsDisplayNameAndHp()
         {
             var root = new GameObject("PieceCardViewRoot");
@@ -103,6 +163,26 @@ namespace DeadManZone.Presentation.Tests.EditMode
                 Color.white, Color.white, Color.white, Color.white });
             texture.Apply();
             return Sprite.Create(texture, new Rect(0f, 0f, 4f, 4f), new Vector2(0.5f, 0.5f));
+        }
+
+        private static GameObject CreateTagChipPrefab()
+        {
+            var chip = new GameObject("TagChip", typeof(RectTransform), typeof(Image));
+            var labelGo = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+            labelGo.transform.SetParent(chip.transform, false);
+            return chip;
+        }
+
+        private static GameObject CreateOversizedTagChipPrefab()
+        {
+            var chip = new GameObject("TagChip", typeof(RectTransform), typeof(Image));
+            chip.GetComponent<RectTransform>().sizeDelta = new Vector2(500f, 225f);
+            var labelGo = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+            labelGo.transform.SetParent(chip.transform, false);
+            var label = labelGo.GetComponent<TextMeshProUGUI>();
+            label.enableAutoSizing = true;
+            label.fontSize = 72f;
+            return chip;
         }
     }
 }
