@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Board
 {
@@ -15,6 +16,8 @@ namespace DeadManZone.Core.Board
         public IReadOnlyList<string> AbilityTags { get; init; } = System.Array.Empty<string>();
         public IReadOnlyList<string> FlavorTags { get; init; } = System.Array.Empty<string>();
         public IReadOnlyList<string> Tags { get; init; } = System.Array.Empty<string>();
+        public IReadOnlyList<PieceAbilityDefinition> Abilities { get; init; }
+            = System.Array.Empty<PieceAbilityDefinition>();
         public int MaxHp { get; init; }
         public int BaseDamage { get; init; }
         public int CooldownTicks { get; init; }

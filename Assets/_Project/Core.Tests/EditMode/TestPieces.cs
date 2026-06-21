@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Tags;
@@ -53,7 +54,8 @@ namespace DeadManZone.Core.Tests
             AttackSpeedTier? attackSpeed = null,
             GrantedAbility? grantedAbility = null,
             int? accuracyOverride = null,
-            int? cooldownTicks = null) =>
+            int? cooldownTicks = null,
+            IReadOnlyList<PieceAbilityDefinition> abilities = null) =>
             new()
             {
                 Id = source.Id,
@@ -67,6 +69,7 @@ namespace DeadManZone.Core.Tests
                 AbilityTags = source.AbilityTags,
                 FlavorTags = source.FlavorTags,
                 Tags = source.Tags,
+                Abilities = abilities ?? source.Abilities,
                 MaxHp = source.MaxHp,
                 BaseDamage = baseDamage ?? source.BaseDamage,
                 CooldownTicks = cooldownTicks ?? source.CooldownTicks,
