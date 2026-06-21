@@ -156,5 +156,19 @@ namespace DeadManZone.Core.Tests.EditMode
 
             StringAssert.Contains("Grenade Lob", model.AbilityText);
         }
+
+        [Test]
+        public void Build_WithCatalogAbility_IncludesAbilityLine()
+        {
+            var aura = new PieceAbilityDefinition
+            {
+                Id = "adjacent_allies_move_plus_one",
+                CardDescription = "Adjacent allies gain +1 move step."
+            };
+            var piece = TestPieces.With(TestPieces.RifleSquad(), abilities: new[] { aura });
+            var vm = PieceCardViewModelBuilder.Build(piece);
+
+            Assert.That(vm.AbilityLines, Does.Contain("Adjacent allies gain +1 move step."));
+        }
     }
 }

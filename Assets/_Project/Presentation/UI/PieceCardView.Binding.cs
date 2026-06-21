@@ -263,9 +263,12 @@ namespace DeadManZone.Presentation.UI
             if (abilityText == null)
                 return;
 
-            bool hasAbility = !string.IsNullOrWhiteSpace(model.AbilityText);
+            string text = model.AbilityLines != null && model.AbilityLines.Count > 0
+                ? string.Join("\n", model.AbilityLines)
+                : model.AbilityText;
+            bool hasAbility = !string.IsNullOrWhiteSpace(text);
             abilityText.gameObject.SetActive(hasAbility);
-            abilityText.text = hasAbility ? model.AbilityText : string.Empty;
+            abilityText.text = hasAbility ? text : string.Empty;
         }
 
         private void EnsureChipCount(int count)

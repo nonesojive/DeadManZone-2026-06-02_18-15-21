@@ -48,6 +48,7 @@ namespace DeadManZone.Core.Tags
                     context?.LastEnemyFactionDisplayName),
                 AttackTypeTooltip = attackProfile?.Tooltip ?? string.Empty,
                 ArmorTypeTooltip = ArmorTypeTooltipCatalog.GetTooltip(piece.ArmorType),
+                AbilityLines = PieceCardTooltipFormatter.BuildAbilityLines(piece),
                 AbilityText = PieceCardTooltipFormatter.BuildAbilityText(piece.GrantedAbility)
             };
         }

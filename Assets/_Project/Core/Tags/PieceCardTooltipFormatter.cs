@@ -65,6 +65,29 @@ namespace DeadManZone.Core.Tags
                 _ => string.Empty
             };
 
+        public static IReadOnlyList<string> BuildAbilityLines(PieceDefinition piece)
+        {
+            if (piece == null)
+                return Array.Empty<string>();
+
+            var lines = new List<string>();
+            if (piece.Abilities != null)
+            {
+                for (int i = 0; i < piece.Abilities.Count; i++)
+                {
+                    string description = piece.Abilities[i].CardDescription;
+                    if (!string.IsNullOrWhiteSpace(description))
+                        lines.Add(description.Trim());
+                }
+            }
+
+            string grantedText = BuildAbilityText(piece.GrantedAbility);
+            if (!string.IsNullOrWhiteSpace(grantedText))
+                lines.Add(grantedText);
+
+            return lines;
+        }
+
         private static string FormatSynergyStatLine(PieceAbilityEngine.SynergyLink link, PlacedPiece sourcePiece)
         {
             int magnitude = ResolveSynergyMagnitude(sourcePiece, link.SourceTagId, link.Stat);

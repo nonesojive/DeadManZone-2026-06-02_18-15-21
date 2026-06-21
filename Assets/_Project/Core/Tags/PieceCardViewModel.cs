@@ -29,6 +29,7 @@ namespace DeadManZone.Core.Tags
         public string SalvageContext { get; init; } = string.Empty;
         public string AttackTypeTooltip { get; init; } = string.Empty;
         public string ArmorTypeTooltip { get; init; } = string.Empty;
+        public IReadOnlyList<string> AbilityLines { get; init; } = Array.Empty<string>();
         public string AbilityText { get; init; } = string.Empty;
     }
 }
