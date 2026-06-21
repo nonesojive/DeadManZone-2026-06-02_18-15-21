@@ -7,14 +7,59 @@ namespace DeadManZone.Core.Combat
     /// <summary>Applies piece-owned adjacency aura buffs from a fight-start snapshot.</summary>
     public static class PieceAbilityEngine
     {
-        public static SynergyEngine.FightStartSynergySnapshot EvaluateFightStart(BoardState board)
+        public readonly struct SynergyResult
+        {
+            public int DamageBonus { get; init; }
+            public int ArmorBuffSteps { get; init; }
+            public int MoveChargeBonus { get; init; }
+        }
+
+        public readonly struct SynergyLink
+        {
+            public string SourceInstanceId { get; init; }
+            public string TargetInstanceId { get; init; }
+            public string SourceTagId { get; init; }
+            public SynergyStat Stat { get; init; }
+        }
+
+        public sealed class FightStartSynergySnapshot
+        {
+            private readonly IReadOnlyDictionary<string, SynergyResult> _resultsByInstanceId;
+            private readonly IReadOnlyList<SynergyLink> _links;
+
+            public IReadOnlyList<SynergyLink> Links => _links;
+
+            public static FightStartSynergySnapshot Empty { get; } =
+                new(new Dictionary<string, SynergyResult>(), new List<SynergyLink>());
+
+            internal FightStartSynergySnapshot(
+                IReadOnlyDictionary<string, SynergyResult> resultsByInstanceId,
+                IReadOnlyList<SynergyLink> links)
+            {
+                _resultsByInstanceId = resultsByInstanceId;
+                _links = links;
+            }
+
+            public bool TryGet(string instanceId, out SynergyResult result)
+            {
+                if (string.IsNullOrWhiteSpace(instanceId))
+                {
+                    result = default;
+                    return false;
+                }
+
+                return _resultsByInstanceId.TryGetValue(instanceId, out result);
+            }
+        }
+
+        public static FightStartSynergySnapshot EvaluateFightStart(BoardState board)
         {
             if (board == null)
-                return SynergyEngine.FightStartSynergySnapshot.Empty;
+                return FightStartSynergySnapshot.Empty;
 
             var piecesById = new Dictionary<string, PlacedPiece>(System.StringComparer.Ordinal);
-            var resultsById = new Dictionary<string, SynergyEngine.SynergyResult>(System.StringComparer.Ordinal);
-            var links = new List<SynergyEngine.SynergyLink>();
+            var resultsById = new Dictionary<string, SynergyResult>(System.StringComparer.Ordinal);
+            var links = new List<SynergyLink>();
 
             foreach (var piece in board.Pieces)
             {
@@ -49,11 +94,11 @@ namespace DeadManZone.Core.Combat
                 }
             }
 
-            return new SynergyEngine.FightStartSynergySnapshot(resultsById, links);
+            return new FightStartSynergySnapshot(resultsById, links);
         }
 
         public static void ApplyToCombatants(
-            SynergyEngine.FightStartSynergySnapshot snapshot,
+            FightStartSynergySnapshot snapshot,
             IList<CombatantState> combatants)
         {
             if (snapshot == null || combatants == null)
@@ -75,7 +120,7 @@ namespace DeadManZone.Core.Combat
             string sourceId,
             IReadOnlyDictionary<string, PlacedPiece> piecesById)
         {
-            // ponytail: duplicated adjacency helper from SynergyEngine; ceiling is dual maintenance drift, upgrade path is a shared internal adjacency utility.
+            // ponytail: duplicated adjacency helper for this engine; ceiling is dual maintenance drift, upgrade path is a shared internal adjacency utility.
             var adjacentPieces = new List<PlacedPiece>();
             foreach (var adjacentId in board.GetAdjacentInstanceIds(sourceId))
             {
@@ -92,8 +137,8 @@ namespace DeadManZone.Core.Combat
             string sourceInstanceId,
             string targetInstanceId,
             PieceAbilityDefinition ability,
-            Dictionary<string, SynergyEngine.SynergyResult> resultsById,
-            List<SynergyEngine.SynergyLink> links)
+            Dictionary<string, SynergyResult> resultsById,
+            List<SynergyLink> links)
         {
             if (!resultsById.TryGetValue(targetInstanceId, out var result))
                 result = default;
@@ -102,7 +147,7 @@ namespace DeadManZone.Core.Combat
             if (amount == 0)
                 return;
 
-            links.Add(new SynergyEngine.SynergyLink
+            links.Add(new SynergyLink
             {
                 SourceInstanceId = sourceInstanceId,
                 TargetInstanceId = targetInstanceId,
@@ -113,7 +158,7 @@ namespace DeadManZone.Core.Combat
             switch (ability.Stat)
             {
                 case SynergyStat.Damage:
-                    result = new SynergyEngine.SynergyResult
+                    result = new SynergyResult
                     {
                         DamageBonus = result.DamageBonus + amount,
                         ArmorBuffSteps = result.ArmorBuffSteps,
@@ -121,7 +166,7 @@ namespace DeadManZone.Core.Combat
                     };
                     break;
                 case SynergyStat.ArmorType:
-                    result = new SynergyEngine.SynergyResult
+                    result = new SynergyResult
                     {
                         DamageBonus = result.DamageBonus,
                         ArmorBuffSteps = result.ArmorBuffSteps + amount,
@@ -129,7 +174,7 @@ namespace DeadManZone.Core.Combat
                     };
                     break;
                 case SynergyStat.MoveChargePercent:
-                    result = new SynergyEngine.SynergyResult
+                    result = new SynergyResult
                     {
                         DamageBonus = result.DamageBonus,
                         ArmorBuffSteps = result.ArmorBuffSteps,

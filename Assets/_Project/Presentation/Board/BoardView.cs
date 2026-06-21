@@ -34,7 +34,7 @@ namespace DeadManZone.Presentation.Board
         private readonly Dictionary<string, PieceShapeVisual> _shapeVisualsByInstance = new();
         private RectTransform _piecesOverlay;
         private BoardSynergyOverlay _synergyOverlay;
-        private SynergyEngine.FightStartSynergySnapshot _lastSynergySnapshot;
+        private PieceAbilityEngine.FightStartSynergySnapshot _lastSynergySnapshot;
         private BoardLayout _layout;
         private BoardState _boardState;
 private PieceDefinition _selectedPiece;
@@ -273,14 +273,14 @@ private PieceDefinition _selectedPiece;
 
         public BoardTileView GetTile(GridCoord coord) => _tiles.TryGetValue(coord, out var tile) ? tile : null;
 
-        public SynergyEngine.SynergyResult? GetSynergyForInstance(string instanceId)
+        public PieceAbilityEngine.SynergyResult? GetSynergyForInstance(string instanceId)
         {
             if (_lastSynergySnapshot != null && _lastSynergySnapshot.TryGet(instanceId, out var result))
                 return result;
             return null;
         }
 
-        public SynergyEngine.FightStartSynergySnapshot GetSynergySnapshot() => _lastSynergySnapshot;
+        public PieceAbilityEngine.FightStartSynergySnapshot GetSynergySnapshot() => _lastSynergySnapshot;
 
         public BoardState GetBoardState() => _boardState;
 
@@ -411,7 +411,7 @@ private PieceDefinition _selectedPiece;
                 LayoutRebuilder.ForceRebuildLayoutImmediate(gridLayout.GetComponent<RectTransform>());
             Canvas.ForceUpdateCanvases();
             
-            _lastSynergySnapshot = SynergyEngine.EvaluateFightStart(_boardState);
+            _lastSynergySnapshot = PieceAbilityEngine.EvaluateFightStart(_boardState);
             var hoverController = ResolvePieceHoverCardController();
 
             foreach (var piece in _boardState.Pieces)

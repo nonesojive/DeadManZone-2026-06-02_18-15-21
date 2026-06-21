@@ -39,7 +39,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 TestPieces.With(TestPieces.RifleSquad(), armorType: ArmorType.Light),
                 1f,
                 0);
-            Assert.AreEqual(95, vsHeavy);
+            Assert.AreEqual(94, vsHeavy);
             Assert.AreEqual(85, vsLight);
         }
 

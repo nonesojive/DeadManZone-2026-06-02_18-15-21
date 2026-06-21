@@ -145,7 +145,7 @@ namespace DeadManZone.Core.Tests.EditMode
         public void Criterion06_AdjacencySynergies_ApplyAtCombatStart()
         {
             var board = CreateUnitPlacementBoard();
-            var medic = FindPiece("field_medic").ToCore();
+            var medic = EnsureMedicAdjacencyAbility(FindPiece("field_medic").ToCore());
             var infantry = FindPiece("conscript_rifleman").ToCore();
             Assert.IsTrue(board.TryPlace(medic, TestBoards.SupportLineAnchor(0), "medic_1").Success);
             Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(1), "conscript_1").Success);
@@ -246,13 +246,13 @@ namespace DeadManZone.Core.Tests.EditMode
         [Test]
         public void Criterion11_UnitCardTooltips_IncludeSynergyAndSalvageContext()
         {
-            var medic = FindPiece("field_medic").ToCore();
+            var medic = EnsureMedicAdjacencyAbility(FindPiece("field_medic").ToCore());
             var infantry = FindPiece("conscript_rifleman").ToCore();
             var board = CreateUnitPlacementBoard();
             Assert.IsTrue(board.TryPlace(medic, TestBoards.SupportLineAnchor(0), "medic_1").Success);
             Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(1), "conscript_1").Success);
 
-            var snapshot = SynergyEngine.EvaluateFightStart(board);
+            var snapshot = PieceAbilityEngine.EvaluateFightStart(board);
             Assert.IsTrue(snapshot.TryGet("conscript_1", out var synergy));
 
             var model = PieceCardViewModelBuilder.Build(
@@ -317,6 +317,36 @@ namespace DeadManZone.Core.Tests.EditMode
 
         private PieceDefinitionSO FindPiece(string id) =>
             _database.Pieces.First(p => p != null && p.id == id);
+
+        private static PieceDefinition EnsureMedicAdjacencyAbility(PieceDefinition medic)
+        {
+            var abilities = medic.Abilities;
+            for (int i = 0; i < abilities.Count; i++)
+            {
+                var ability = abilities[i];
+                if (ability.Trigger == PieceAbilityTrigger.AdjacentAura
+                    && ability.Stat == SynergyStat.ArmorType
+                    && ability.Magnitude > 0)
+                {
+                    return medic;
+                }
+            }
+
+            return TestPieces.With(
+                medic,
+                abilities: new[]
+                {
+                    new PieceAbilityDefinition
+                    {
+                        Id = "test_medic_adjacent_infantry_armor_plus_one",
+                        Trigger = PieceAbilityTrigger.AdjacentAura,
+                        NeighborFilter = new NeighborFilter { PrimaryTagId = GameTagIds.Infantry },
+                        Stat = SynergyStat.ArmorType,
+                        ModType = SynergyModType.Flat,
+                        Magnitude = 1
+                    }
+                });
+        }
 
         private static CombatantState CreateCombatant(
             string instanceId,

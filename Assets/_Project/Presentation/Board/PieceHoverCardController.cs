@@ -40,7 +40,7 @@ namespace DeadManZone.Presentation.Board
         public void Show(
             PieceDefinition definition,
             Vector2 screenPosition,
-            SynergyEngine.SynergyResult? synergy = null)
+            PieceAbilityEngine.SynergyResult? synergy = null)
         {
             Show(definition, screenPosition, synergy.HasValue
                 ? new PieceCardBuildContext { Synergy = synergy }

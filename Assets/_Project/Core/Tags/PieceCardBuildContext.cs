@@ -5,8 +5,8 @@ namespace DeadManZone.Core.Tags
 {
     public sealed class PieceCardBuildContext
     {
-        public SynergyEngine.SynergyResult? Synergy { get; init; }
-        public SynergyEngine.FightStartSynergySnapshot SynergySnapshot { get; init; }
+        public PieceAbilityEngine.SynergyResult? Synergy { get; init; }
+        public PieceAbilityEngine.FightStartSynergySnapshot SynergySnapshot { get; init; }
         public BoardState Board { get; init; }
         public string InstanceId { get; init; }
         public bool IsSalvaged { get; init; }

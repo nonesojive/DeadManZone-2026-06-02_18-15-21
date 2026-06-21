@@ -9,6 +9,16 @@ namespace DeadManZone.Core.Tests.EditMode
 {
     public sealed class ArmyStrengthCalculatorTests
     {
+        private static PieceAbilityDefinition CreateCommandDamageAbility() => new()
+        {
+            Id = "command_adjacent_artillery_damage_plus_two",
+            Trigger = PieceAbilityTrigger.AdjacentAura,
+            NeighborFilter = new NeighborFilter { CombatRoleTagId = GameTagIds.Artillery },
+            Stat = SynergyStat.Damage,
+            ModType = SynergyModType.Flat,
+            Magnitude = 2
+        };
+
         [Test]
         public void EmptyBoard_ReturnsZeroTotals()
         {
@@ -27,7 +37,7 @@ namespace DeadManZone.Core.Tests.EditMode
             var board = new BoardState(layout);
             var rifle = TestPieces.RifleSquad();
             Assert.IsTrue(board.TryPlace(rifle, TestBoards.SupportLineAnchor(0), "rifle_1").Success);
-            Assert.IsTrue(board.TryPlace(TestPieces.HqPiece(), TestBoards.SupportLineAnchor(2), "hq_1").Success);
+            Assert.IsTrue(board.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 2), "hq_1").Success);
 
             var snapshot = ArmyStrengthCalculator.Evaluate(board);
             int expected = PieceCombatRating.ComputeBase(rifle)
@@ -43,6 +53,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 "command",
                 systemTag: GameTagIds.Combatant,
                 synergyTags: new[] { GameTagIds.Command });
+            command = TestPieces.With(command, abilities: new[] { CreateCommandDamageAbility() });
             var artillery = TestPieces.CreateUnit(
                 "artillery",
                 combatRole: GameTagIds.Artillery,

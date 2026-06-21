@@ -10,6 +10,16 @@ namespace DeadManZone.Core.Tests.EditMode
 {
     public sealed class PieceCardViewModelBuilderTests
     {
+        private static PieceAbilityDefinition CreateMedicArmorAbility() => new()
+        {
+            Id = "medic_adjacent_infantry_armor_plus_one",
+            Trigger = PieceAbilityTrigger.AdjacentAura,
+            NeighborFilter = new NeighborFilter { PrimaryTagId = GameTagIds.Infantry },
+            Stat = SynergyStat.ArmorType,
+            ModType = SynergyModType.Flat,
+            Magnitude = 1
+        };
+
         [Test]
         public void Build_IncludesStatIconsAndIdentityChipsOnly()
         {
@@ -108,6 +118,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 "Field Medic",
                 systemTag: GameTagIds.Combatant,
                 synergyTags: new[] { GameTagIds.Medic });
+            medic = TestPieces.With(medic, abilities: new[] { CreateMedicArmorAbility() });
             var infantry = TestPieces.CreateUnit(
                 "Rifle Squad",
                 primary: GameTagIds.Infantry,
@@ -118,7 +129,7 @@ namespace DeadManZone.Core.Tests.EditMode
             Assert.IsTrue(board.TryPlace(medic, TestBoards.SupportLineAnchor(0), "medic_1").Success);
             Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(1), "infantry_1").Success);
 
-            var snapshot = SynergyEngine.EvaluateFightStart(board);
+            var snapshot = PieceAbilityEngine.EvaluateFightStart(board);
             Assert.IsTrue(snapshot.TryGet("infantry_1", out var synergy));
 
             var context = new PieceCardBuildContext

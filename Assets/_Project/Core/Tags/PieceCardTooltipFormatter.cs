@@ -8,7 +8,7 @@ namespace DeadManZone.Core.Tags
     public static class PieceCardTooltipFormatter
     {
         public static IReadOnlyList<string> BuildSynergyLines(
-            SynergyEngine.FightStartSynergySnapshot snapshot,
+            PieceAbilityEngine.FightStartSynergySnapshot snapshot,
             BoardState board,
             string targetInstanceId)
         {
@@ -29,7 +29,7 @@ namespace DeadManZone.Core.Tags
                     continue;
 
                 string sourceName = sourcePiece.Definition?.DisplayName ?? link.SourceInstanceId;
-                string statLine = FormatSynergyStatLine(link);
+                string statLine = FormatSynergyStatLine(link, sourcePiece);
                 if (string.IsNullOrEmpty(statLine))
                     continue;
 
@@ -65,9 +65,9 @@ namespace DeadManZone.Core.Tags
                 _ => string.Empty
             };
 
-        private static string FormatSynergyStatLine(SynergyEngine.SynergyLink link)
+        private static string FormatSynergyStatLine(PieceAbilityEngine.SynergyLink link, PlacedPiece sourcePiece)
         {
-            int magnitude = ResolveSynergyMagnitude(link.SourceTagId, link.Stat);
+            int magnitude = ResolveSynergyMagnitude(sourcePiece, link.SourceTagId, link.Stat);
             if (magnitude == 0)
                 return string.Empty;
 
@@ -80,14 +80,20 @@ namespace DeadManZone.Core.Tags
             };
         }
 
-        private static int ResolveSynergyMagnitude(string sourceTagId, SynergyStat stat)
+        private static int ResolveSynergyMagnitude(PlacedPiece sourcePiece, string sourceAbilityId, SynergyStat stat)
         {
-            var rules = SynergyRuleCatalog.GetRulesForSourceTag(sourceTagId);
-            for (int i = 0; i < rules.Count; i++)
+            if (sourcePiece?.Definition.Abilities == null)
+                return 0;
+
+            var abilities = sourcePiece.Definition.Abilities;
+            for (int i = 0; i < abilities.Count; i++)
             {
-                var rule = rules[i];
-                if (rule.Stat == stat)
-                    return rule.Magnitude;
+                var ability = abilities[i];
+                if (!string.Equals(ability.Id, sourceAbilityId, StringComparison.Ordinal))
+                    continue;
+                if (ability.Stat != stat)
+                    continue;
+                return ability.Magnitude;
             }
 
             return 0;

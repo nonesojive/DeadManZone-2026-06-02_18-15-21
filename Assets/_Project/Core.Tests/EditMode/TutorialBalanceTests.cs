@@ -66,8 +66,13 @@ namespace DeadManZone.Core.Tests.EditMode
 
         private static void AssertReachRate(int fight, float rate, string metric)
         {
-            float required = metric == "pause #2" && fight == 1
-                ? TutorialBalanceFixtures.MinFight1PauseTwoReachRate
+            float required = metric == "pause #2"
+                ? fight switch
+                {
+                    1 => TutorialBalanceFixtures.MinFight1PauseTwoReachRate,
+                    2 => TutorialBalanceFixtures.MinFight2PauseTwoReachRate,
+                    _ => TutorialBalanceFixtures.MinReachRate
+                }
                 : TutorialBalanceFixtures.MinReachRate;
 
             Assert.GreaterOrEqual(

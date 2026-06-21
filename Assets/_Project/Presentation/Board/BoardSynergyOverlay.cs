@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
+using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Presentation.Board
 {
@@ -21,7 +22,7 @@ namespace DeadManZone.Presentation.Board
                 return;
             }
 
-            var snapshot = SynergyEngine.EvaluateFightStart(board);
+            var snapshot = PieceAbilityEngine.EvaluateFightStart(board);
             _activeCount = 0;
 
             foreach (var link in snapshot.Links)
@@ -29,7 +30,7 @@ namespace DeadManZone.Presentation.Board
                 if (visualMap.TryGetValue(link.SourceInstanceId, out var sourceVisual) &&
                     visualMap.TryGetValue(link.TargetInstanceId, out var targetVisual))
                 {
-                    var color = GetLinkColor(link.SourceTagId);
+                    var color = GetLinkColor(link.Stat);
                     var linkView = GetOrCreateLink();
                     linkView.gameObject.SetActive(true);
                     linkView.SetColor(color);
@@ -66,16 +67,13 @@ namespace DeadManZone.Presentation.Board
             return link;
         }
 
-        private Color GetLinkColor(string tagId)
+        private Color GetLinkColor(SynergyStat stat)
         {
-            if (string.IsNullOrEmpty(tagId)) return Color.white;
-
-            return tagId switch
+            return stat switch
             {
-                "Supply" => Color.yellow,
-                "Medic" => Color.green,
-                "Command" => Color.cyan,
-                "Vanguard" => Color.red,
+                SynergyStat.Damage => Color.red,
+                SynergyStat.ArmorType => Color.green,
+                SynergyStat.MoveChargePercent => Color.cyan,
                 _ => Color.white
             };
         }

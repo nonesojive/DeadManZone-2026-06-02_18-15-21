@@ -10,7 +10,7 @@ namespace DeadManZone.Core.Combat
             if (board == null || board.Pieces.Count == 0)
                 return default;
 
-            var synergySnapshot = SynergyEngine.EvaluateFightStart(board);
+            var synergySnapshot = PieceAbilityEngine.EvaluateFightStart(board);
             int baseTotal = 0;
             int effectiveTotal = 0;
 

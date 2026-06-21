@@ -65,7 +65,7 @@ namespace DeadManZone.Core.Tests.EditMode
         {
             var piece = MgTeam();
             int baseRating = PieceCombatRating.ComputeBase(piece);
-            int buffed = PieceCombatRating.Compute(piece, new SynergyEngine.SynergyResult { DamageBonus = 4 });
+            int buffed = PieceCombatRating.Compute(piece, new PieceAbilityEngine.SynergyResult { DamageBonus = 4 });
             Assert.Greater(buffed, baseRating);
         }
     }

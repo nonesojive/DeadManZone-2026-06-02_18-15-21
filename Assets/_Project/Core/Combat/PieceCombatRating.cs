@@ -9,7 +9,7 @@ namespace DeadManZone.Core.Combat
         public static int ComputeBase(PieceDefinition piece) =>
             Compute(piece, synergy: null);
 
-        public static int Compute(PieceDefinition piece, SynergyEngine.SynergyResult? synergy)
+        public static int Compute(PieceDefinition piece, PieceAbilityEngine.SynergyResult? synergy)
         {
             if (piece == null || !ManpowerCalculator.CountsTowardFielding(piece))
                 return 0;

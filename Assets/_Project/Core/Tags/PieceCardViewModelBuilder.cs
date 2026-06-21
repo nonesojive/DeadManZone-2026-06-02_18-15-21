@@ -14,7 +14,7 @@ namespace DeadManZone.Core.Tags
             PieceTagQueries.PlayerVisibleTagsResult visibleTags =
                 PieceTagQueries.GetPlayerVisibleTags(piece, maxOptionalChips: 4);
 
-            SynergyEngine.SynergyResult? synergy = context?.Synergy;
+            PieceAbilityEngine.SynergyResult? synergy = context?.Synergy;
             var attackProfile = AttackTypeProfileCatalog.Get(piece.AttackType);
 
             return new PieceCardViewModel
@@ -52,7 +52,7 @@ namespace DeadManZone.Core.Tags
             };
         }
 
-        public static PieceCardViewModel Build(PieceDefinition piece, SynergyEngine.SynergyResult? synergy)
+        public static PieceCardViewModel Build(PieceDefinition piece, PieceAbilityEngine.SynergyResult? synergy)
         {
             if (!synergy.HasValue)
                 return Build(piece);

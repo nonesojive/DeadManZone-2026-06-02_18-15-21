@@ -55,41 +55,34 @@ namespace DeadManZone.Core.Tags
                 });
             }
 
-            AppendActiveSynergyTags(board, entries);
+            AppendActiveAbilityTags(board, entries);
             return entries;
         }
 
-        private static void AppendActiveSynergyTags(BoardState board, List<BuffStripEntry> entries)
+        private static void AppendActiveAbilityTags(BoardState board, List<BuffStripEntry> entries)
         {
-            var snapshot = SynergyEngine.EvaluateFightStart(board);
+            var snapshot = PieceAbilityEngine.EvaluateFightStart(board);
             var seenTags = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
             foreach (var entry in entries)
                 seenTags.Add(entry.TagId);
 
-            foreach (var piece in board.Pieces)
+            foreach (var link in snapshot.Links)
             {
-                if (!snapshot.TryGet(piece.InstanceId, out var synergy))
+                string abilityId = link.SourceTagId;
+                if (string.IsNullOrWhiteSpace(abilityId) || seenTags.Contains(abilityId))
                     continue;
 
-                if (synergy.DamageBonus == 0 && synergy.ArmorBuffSteps == 0 && synergy.MoveChargeBonus == 0)
-                    continue;
-
-                foreach (var tagId in piece.Definition.SynergyTags)
+                seenTags.Add(abilityId);
+                string displayName = ResolveAbilityDisplayName(board, abilityId);
+                entries.Add(new BuffStripEntry
                 {
-                    if (string.IsNullOrWhiteSpace(tagId) || seenTags.Contains(tagId))
-                        continue;
-
-                    seenTags.Add(tagId);
-                    string displayName = ResolveTagDisplayName(tagId);
-                    entries.Add(new BuffStripEntry
-                    {
-                        TagId = tagId,
-                        DisplayName = displayName,
-                        IsActive = true,
-                        CurrentCount = 0,
-                        DetailText = $"Active synergy: {displayName}"
-                    });
-                }
+                    TagId = abilityId,
+                    RuleId = abilityId,
+                    DisplayName = displayName,
+                    IsActive = true,
+                    CurrentCount = 0,
+                    DetailText = $"Active ability: {displayName}"
+                });
             }
         }
 
@@ -165,6 +158,25 @@ namespace DeadManZone.Core.Tags
                 return "IronMarch Union";
 
             return tagId;
+        }
+
+        private static string ResolveAbilityDisplayName(BoardState board, string abilityId)
+        {
+            foreach (var piece in board.Pieces)
+            {
+                var abilities = piece.Definition.Abilities;
+                for (int i = 0; i < abilities.Count; i++)
+                {
+                    var ability = abilities[i];
+                    if (!string.Equals(ability.Id, abilityId, System.StringComparison.Ordinal))
+                        continue;
+
+                    if (!string.IsNullOrWhiteSpace(ability.CardDescription))
+                        return ability.CardDescription;
+                }
+            }
+
+            return ResolveTagDisplayName(abilityId);
         }
     }
 }
