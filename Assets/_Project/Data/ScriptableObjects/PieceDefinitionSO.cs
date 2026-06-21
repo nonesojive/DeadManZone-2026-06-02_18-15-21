@@ -1,3 +1,4 @@
+using System;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Shop;
@@ -56,6 +57,10 @@ namespace DeadManZone.Data
         public Color categoryTint = Color.white;
         [Tooltip("Optional per-cell board sprites keyed by local shape offset (pre-rotation).")]
         public PieceCellSprite[] cellSprites;
+
+        [Header("Abilities")]
+        public AbilityDefinitionSO[] catalogAbilities = Array.Empty<AbilityDefinitionSO>();
+        public PieceAbilityInlineEntry[] customAbilities = Array.Empty<PieceAbilityInlineEntry>();
 
         [Header("Combat Arena (3D)")]
         [Tooltip("Optional 3D prefab for combat arena presentation. Board/shop still use icon + cellSprites.")]
@@ -138,8 +143,34 @@ namespace DeadManZone.Data
                 AttackType = attackType,
                 GrantedAbility = grantedAbility,
                 AccuracyOverride = accuracyOverride <= 0 ? null : accuracyOverride,
-                FactionId = factionId
+                FactionId = factionId,
+                Abilities = ResolveAbilities()
             };
+        }
+
+        private PieceAbilityDefinition[] ResolveAbilities()
+        {
+            var abilities = new List<PieceAbilityDefinition>();
+
+            if (catalogAbilities != null)
+            {
+                foreach (var ability in catalogAbilities)
+                {
+                    if (ability != null)
+                        abilities.Add(ability.ToCore());
+                }
+            }
+
+            if (customAbilities != null)
+            {
+                foreach (var entry in customAbilities)
+                {
+                    if (entry != null)
+                        abilities.Add(entry.ToCore());
+                }
+            }
+
+            return abilities.ToArray();
         }
 
         private void OnValidate()
