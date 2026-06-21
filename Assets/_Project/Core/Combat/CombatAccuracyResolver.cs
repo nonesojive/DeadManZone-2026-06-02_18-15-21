@@ -63,10 +63,14 @@ namespace DeadManZone.Core.Combat
             int distance,
             int accuracyModifier,
             int flatDamageBonus,
-            int defenderArmorBuffSteps)
+            int defenderArmorBuffSteps,
+            int damagePercentBonus = 0,
+            int accuracyPercentBonus = 0,
+            AttackRangeTier attackRangeTier = AttackRangeTier.Medium,
+            int attackRangeSteps = 0)
         {
-            int maxRange = CombatRange.GetRangeCells(attacker.AttackRange);
-            int baseAccuracy = CombatAccuracyDefaults.GetBaseAccuracy(attacker) + accuracyModifier;
+            int maxRange = CombatRange.GetRangeCells(attackRangeTier, attackRangeSteps);
+            int baseAccuracy = CombatAccuracyDefaults.GetBaseAccuracy(attacker) + accuracyModifier + accuracyPercentBonus;
             int effective = GetEffectiveAccuracy(baseAccuracy, distance, maxRange);
             int grazeBand = GetGrazeBand(distance, maxRange);
             int roll = rng.NextInt(1, 101);
@@ -75,7 +79,8 @@ namespace DeadManZone.Core.Combat
                 defender,
                 1f,
                 defenderArmorBuffSteps,
-                flatDamageBonus);
+                flatDamageBonus,
+                damagePercentBonus);
             return ResolveOutcome(effective, grazeBand, roll, fullDamage);
         }
 

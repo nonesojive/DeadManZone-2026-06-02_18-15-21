@@ -14,6 +14,19 @@ namespace DeadManZone.Core.Combat
             _ => 5
         };
 
+        public static AttackRangeTier StepTier(AttackRangeTier baseTier, int steps)
+        {
+            int value = (int)baseTier + steps;
+            if (value <= (int)AttackRangeTier.Melee)
+                return AttackRangeTier.Melee;
+            if (value >= (int)AttackRangeTier.Long)
+                return AttackRangeTier.Long;
+            return (AttackRangeTier)value;
+        }
+
+        public static int GetRangeCells(AttackRangeTier tier, int tierSteps) =>
+            GetRangeCells(StepTier(tier, tierSteps));
+
         public static bool IsInRange(GridCoord from, GridCoord to, AttackRangeTier tier) =>
             Distance(from, to) <= GetRangeCells(tier);
 

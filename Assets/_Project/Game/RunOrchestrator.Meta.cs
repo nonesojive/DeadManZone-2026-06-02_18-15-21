@@ -20,8 +20,7 @@ namespace DeadManZone.Game
         private void RecordCriticalMassIfTriggered()
         {
             var board = GetPlayerBoard();
-            var bonus = CriticalMassRules.Evaluate(board);
-            if (bonus.DamageBonus > 0 || bonus.ArmorShredSteps > 0)
+            if (CriticalMassEngine.Evaluate(board).HasAnyActiveRule)
                 MetaTracker.RecordCriticalMassTrigger();
         }
 

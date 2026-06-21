@@ -5,6 +5,7 @@ using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Run;
 using DeadManZone.Core.Shop;
+using DeadManZone.Core.Tags;
 using DeadManZone.Data;
 using UnityEngine;
 
@@ -65,6 +66,19 @@ namespace DeadManZone.Game
             }
 
             _orchestrator = new RunOrchestrator(database);
+            LoadCriticalMassRules();
+        }
+
+        private static void LoadCriticalMassRules()
+        {
+            var database = CriticalMassDatabaseSO.LoadDefault();
+            if (database != null)
+            {
+                database.RegisterWithCatalog();
+                return;
+            }
+
+            CriticalMassDefaultRules.RegisterWithCatalog();
         }
 
         public bool TryContinueRun()

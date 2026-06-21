@@ -151,6 +151,17 @@ namespace DeadManZone.Game
 
             var enemyBoard = enemyTemplate.BuildBoard(Faction, _registry);
             ResetAuthorityForBuildRound();
+            var criticalMassSnapshot = CriticalMassEngine.Evaluate(playerBoard);
+            if (criticalMassSnapshot.AuthorityBonus > 0)
+                State.Authority += criticalMassSnapshot.AuthorityBonus;
+            if (criticalMassSnapshot.SuppliesFlatBonus > 0)
+                State.Supplies += criticalMassSnapshot.SuppliesFlatBonus;
+            if (criticalMassSnapshot.SuppliesPercentBonus > 0)
+            {
+                State.Supplies += (int)System.Math.Round(
+                    State.Supplies * (criticalMassSnapshot.SuppliesPercentBonus / 100f));
+            }
+
             int combatSeed = State.RunSeed + State.FightIndex * 1000;
 
             State.Phase = RunPhase.Combat;

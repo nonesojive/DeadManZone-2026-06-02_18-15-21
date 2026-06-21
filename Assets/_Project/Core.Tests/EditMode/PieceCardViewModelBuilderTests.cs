@@ -138,27 +138,6 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
-        public void Build_WithTwoInfantry_IncludesCriticalMassProgressHint()
-        {
-            var infantry = TestPieces.CreateUnit(
-                "inf",
-                primary: GameTagIds.Infantry,
-                combatRole: GameTagIds.Assault,
-                systemTag: GameTagIds.Combatant);
-
-            var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
-            var board = new BoardState(layout);
-            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(0), "a").Success);
-            Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(1), "b").Success);
-
-            var context = new PieceCardBuildContext { Board = board };
-            PieceCardViewModel model = PieceCardViewModelBuilder.Build(infantry, context);
-
-            StringAssert.Contains("2/3", model.CriticalMassHint);
-            StringAssert.Contains("Infantry", model.CriticalMassHint);
-        }
-
-        [Test]
         public void Build_WithGrantedAbility_IncludesAbilityText()
         {
             var piece = TestPieces.With(TestPieces.RifleSquad(), grantedAbility: GrantedAbility.GrenadeLob);

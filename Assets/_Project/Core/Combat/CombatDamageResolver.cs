@@ -10,13 +10,18 @@ namespace DeadManZone.Core.Combat
             PieceDefinition defender,
             float damageScale,
             int armorBuffSteps,
-            int flatBonus = 0)
+            int flatBonus = 0,
+            int damagePercentBonus = 0)
         {
             float baseDamage = (attacker.BaseDamage + flatBonus) * damageScale;
             var armor = StepArmor(defender.ArmorType, armorBuffSteps);
             float afterArmor = baseDamage * BaselineArmorMultiplier(armor);
             float typeMultiplier = AttackTypeMultiplier(attacker.AttackType, armor, defender);
-            return System.Math.Max(1, (int)System.Math.Round(afterArmor * typeMultiplier));
+            float scaled = afterArmor * typeMultiplier;
+            if (damagePercentBonus != 0)
+                scaled *= 1f + damagePercentBonus / 100f;
+
+            return System.Math.Max(1, (int)System.Math.Round(scaled));
         }
 
         public static ArmorType StepArmor(ArmorType baseArmor, int steps)

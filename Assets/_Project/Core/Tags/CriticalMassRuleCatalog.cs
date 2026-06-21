@@ -1,41 +1,17 @@
 using System.Collections.Generic;
+using DeadManZone.Core.Tags;
 
-namespace DeadManZone.Core.Tags
+namespace DeadManZone.Core.Combat
 {
+    /// <summary>Holds runtime critical mass rules loaded from <see cref="Data.CriticalMassDatabaseSO"/>.</summary>
     public static class CriticalMassRuleCatalog
     {
-        private static readonly CriticalMassRuleDefinition[] DemoRules =
-        {
-            new()
-            {
-                TagId = GameTagIds.Infantry,
-                CountCategory = CriticalMassCountCategory.Primary,
-                Threshold = 3,
-                DamageBonus = 2
-            },
-            new()
-            {
-                TagId = GameTagIds.Vehicle,
-                CountCategory = CriticalMassCountCategory.Primary,
-                Threshold = 2,
-                ArmorShredSteps = 1
-            },
-            new()
-            {
-                TagId = GameTagIds.Artillery,
-                CountCategory = CriticalMassCountCategory.CombatRole,
-                Threshold = 2,
-                DamageBonus = 3
-            },
-            new()
-            {
-                TagId = GameTagIds.Assault,
-                CountCategory = CriticalMassCountCategory.CombatRole,
-                Threshold = 3,
-                MoveChargePercentBonus = 10
-            }
-        };
+        private static IReadOnlyList<CriticalMassRuleDefinition> _registeredRules =
+            System.Array.Empty<CriticalMassRuleDefinition>();
 
-        public static IReadOnlyList<CriticalMassRuleDefinition> GetRules() => DemoRules;
+        public static void Register(IReadOnlyList<CriticalMassRuleDefinition> rules) =>
+            _registeredRules = rules ?? System.Array.Empty<CriticalMassRuleDefinition>();
+
+        public static IReadOnlyList<CriticalMassRuleDefinition> GetRules() => _registeredRules;
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Tags;
@@ -8,10 +9,12 @@ namespace DeadManZone.Core.Tags
     public sealed class BuffStripEntry
     {
         public string TagId { get; init; } = string.Empty;
+        public string RuleId { get; init; } = string.Empty;
         public string DisplayName { get; init; } = string.Empty;
         public bool IsActive { get; init; }
         public int CurrentCount { get; init; }
-        public int Threshold { get; init; }
+        public int ActiveThreshold { get; init; }
+        public int NextThreshold { get; init; }
         public string DetailText { get; init; } = string.Empty;
     }
 
@@ -23,28 +26,32 @@ namespace DeadManZone.Core.Tags
             if (board == null)
                 return entries;
 
-            var rules = CriticalMassRuleCatalog.GetRules();
-            for (int i = 0; i < rules.Count; i++)
+            var snapshot = CriticalMassEngine.Evaluate(board);
+            for (int i = 0; i < snapshot.Rules.Count; i++)
             {
-                var rule = rules[i];
-                if (rule.Threshold <= 0 || string.IsNullOrWhiteSpace(rule.TagId))
+                var evaluated = snapshot.Rules[i];
+                var rule = evaluated.Rule;
+                if (rule.Tiers == null || rule.Tiers.Length == 0)
                     continue;
 
-                int count = CountMatchingPieces(board, rule);
-                bool isActive = count >= rule.Threshold;
-                bool isNearMiss = !isActive && count >= rule.Threshold - 1 && count > 0;
-                if (!isActive && !isNearMiss)
+                int firstThreshold = rule.Tiers[0].Threshold;
+                bool isNearMiss = !evaluated.IsActive
+                    && evaluated.Count >= firstThreshold - 1
+                    && evaluated.Count > 0;
+                if (!evaluated.IsActive && !isNearMiss)
                     continue;
 
-                string displayName = ResolveTagDisplayName(rule.TagId);
+                string displayName = ResolveDisplayName(rule);
                 entries.Add(new BuffStripEntry
                 {
-                    TagId = rule.TagId,
+                    TagId = rule.CountTagId,
+                    RuleId = rule.Id,
                     DisplayName = displayName,
-                    IsActive = isActive,
-                    CurrentCount = count,
-                    Threshold = rule.Threshold,
-                    DetailText = BuildDetailText(displayName, rule, count, isActive)
+                    IsActive = evaluated.IsActive,
+                    CurrentCount = evaluated.Count,
+                    ActiveThreshold = evaluated.IsActive ? evaluated.ActiveTier.Threshold : 0,
+                    NextThreshold = evaluated.IsActive ? 0 : firstThreshold,
+                    DetailText = BuildDetailText(displayName, evaluated)
                 });
             }
 
@@ -80,50 +87,73 @@ namespace DeadManZone.Core.Tags
                         DisplayName = displayName,
                         IsActive = true,
                         CurrentCount = 0,
-                        Threshold = 0,
                         DetailText = $"Active synergy: {displayName}"
                     });
                 }
             }
         }
 
-        private static int CountMatchingPieces(BoardState board, CriticalMassRuleDefinition rule)
+        private static string BuildDetailText(string displayName, EvaluatedCriticalMassRule evaluated)
         {
-            int count = 0;
-            foreach (var piece in board.Pieces)
+            var rule = evaluated.Rule;
+            string bonus = FormatBonus(rule, evaluated.ActiveTier.Magnitude);
+            if (evaluated.IsActive)
             {
-                if (piece.Definition == null)
-                    continue;
-
-                if (rule.CountCategory == CriticalMassCountCategory.Primary
-                    && PieceTagQueries.HasPrimaryTag(piece.Definition, rule.TagId))
-                    count++;
-                else if (rule.CountCategory == CriticalMassCountCategory.CombatRole
-                    && PieceTagQueries.HasCombatRoleTag(piece.Definition, rule.TagId))
-                    count++;
-                else if (rule.CountCategory == CriticalMassCountCategory.Synergy
-                    && PieceTagQueries.HasSynergyTag(piece.Definition, rule.TagId))
-                    count++;
+                return string.IsNullOrEmpty(bonus)
+                    ? $"{displayName} critical mass active ({evaluated.Count}/{evaluated.ActiveTier.Threshold})"
+                    : $"{displayName} {evaluated.Count}/{evaluated.ActiveTier.Threshold}: {bonus}";
             }
 
-            return count;
+            int nextThreshold = rule.Tiers[0].Threshold;
+            for (int i = 0; i < rule.Tiers.Length; i++)
+            {
+                if (evaluated.Count < rule.Tiers[i].Threshold)
+                {
+                    nextThreshold = rule.Tiers[i].Threshold;
+                    bonus = FormatBonus(rule, rule.Tiers[i].Magnitude);
+                    break;
+                }
+            }
+
+            return $"{displayName} {evaluated.Count}/{nextThreshold} — {bonus}";
         }
 
-        private static string BuildDetailText(
-            string displayName,
-            CriticalMassRuleDefinition rule,
-            int count,
-            bool isActive)
+        private static string FormatBonus(CriticalMassRuleDefinition rule, int magnitude)
         {
-            if (isActive)
+            if (magnitude == 0)
+                return string.Empty;
+
+            return rule.ModType switch
             {
-                string bonus = FormatBonus(rule);
-                return string.IsNullOrEmpty(bonus)
-                    ? $"{displayName} critical mass active ({count}/{rule.Threshold})"
-                    : $"{displayName} critical mass ({count}/{rule.Threshold}): {bonus}";
+                SynergyModType.Percent => $"+{magnitude}% {HumanizeStat(rule.Stat)}",
+                SynergyModType.TierStep => $"+{magnitude} {HumanizeStat(rule.Stat)}",
+                _ => $"+{magnitude} {HumanizeStat(rule.Stat)}"
+            };
+        }
+
+        private static string HumanizeStat(CriticalMassStat stat) => stat switch
+        {
+            CriticalMassStat.MaxHp => "HP",
+            CriticalMassStat.Damage => "Damage",
+            CriticalMassStat.Accuracy => "Accuracy",
+            CriticalMassStat.AttackSpeed => "Attack Speed",
+            CriticalMassStat.MovementSpeed => "Move Speed",
+            CriticalMassStat.AttackRange => "Attack Range",
+            CriticalMassStat.Authority => "Authority",
+            CriticalMassStat.Supplies => "Supplies",
+            _ => stat.ToString()
+        };
+
+        private static string ResolveDisplayName(CriticalMassRuleDefinition rule)
+        {
+            if (!string.IsNullOrWhiteSpace(rule.Id)
+                && TagRegistry.TryGet(rule.Id, out var idTag)
+                && !string.IsNullOrWhiteSpace(idTag.DisplayName))
+            {
+                return idTag.DisplayName;
             }
 
-            return $"{displayName} {count}/{rule.Threshold} — {FormatBonus(rule)}";
+            return ResolveTagDisplayName(rule.CountTagId);
         }
 
         private static string ResolveTagDisplayName(string tagId)
@@ -131,18 +161,10 @@ namespace DeadManZone.Core.Tags
             if (TagRegistry.TryGet(tagId, out var tag) && !string.IsNullOrWhiteSpace(tag.DisplayName))
                 return tag.DisplayName;
 
-            return tagId;
-        }
+            if (tagId == "iron_vanguard")
+                return "IronMarch Union";
 
-        private static string FormatBonus(CriticalMassRuleDefinition rule)
-        {
-            if (rule.DamageBonus > 0)
-                return $"+{rule.DamageBonus} damage";
-            if (rule.ArmorShredSteps > 0)
-                return $"{rule.ArmorShredSteps} armor shred";
-            if (rule.MoveChargePercentBonus > 0)
-                return $"+{rule.MoveChargePercentBonus}% move charge";
-            return string.Empty;
+            return tagId;
         }
     }
 }

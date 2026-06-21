@@ -39,36 +39,6 @@ namespace DeadManZone.Core.Tags
             return lines;
         }
 
-        public static string BuildCriticalMassHint(BoardState board, PieceDefinition piece)
-        {
-            if (board == null || piece == null)
-                return string.Empty;
-
-            var hints = new List<string>();
-            var rules = CriticalMassRuleCatalog.GetRules();
-            for (int i = 0; i < rules.Count; i++)
-            {
-                var rule = rules[i];
-                if (!PieceMatchesRule(piece, rule))
-                    continue;
-
-                int count = CountMatchingPieces(board, rule);
-                string tagName = TagRegistry.TryGet(rule.TagId, out var tag)
-                    ? tag.DisplayName
-                    : rule.TagId;
-                string bonus = FormatCriticalMassBonus(rule);
-                if (string.IsNullOrEmpty(bonus))
-                    continue;
-
-                if (count >= rule.Threshold)
-                    hints.Add($"Critical mass active: {tagName} ({bonus})");
-                else
-                    hints.Add($"Critical mass: {count}/{rule.Threshold} {tagName} ({bonus})");
-            }
-
-            return hints.Count == 0 ? string.Empty : string.Join("\n", hints);
-        }
-
         public static string BuildSalvageContext(
             bool isSalvaged,
             string lastEnemyFactionId,
@@ -121,45 +91,6 @@ namespace DeadManZone.Core.Tags
             }
 
             return 0;
-        }
-
-        private static bool PieceMatchesRule(PieceDefinition piece, CriticalMassRuleDefinition rule)
-        {
-            return rule.CountCategory switch
-            {
-                CriticalMassCountCategory.Primary => PieceTagQueries.HasPrimaryTag(piece, rule.TagId),
-                CriticalMassCountCategory.CombatRole => PieceTagQueries.HasCombatRoleTag(piece, rule.TagId),
-                CriticalMassCountCategory.Synergy => PieceTagQueries.HasSynergyTag(piece, rule.TagId),
-                _ => false
-            };
-        }
-
-        private static int CountMatchingPieces(BoardState board, CriticalMassRuleDefinition rule)
-        {
-            int count = 0;
-            foreach (var placed in board.Pieces)
-            {
-                if (placed.Definition == null)
-                    continue;
-
-                if (PieceMatchesRule(placed.Definition, rule))
-                    count++;
-            }
-
-            return count;
-        }
-
-        private static string FormatCriticalMassBonus(CriticalMassRuleDefinition rule)
-        {
-            var parts = new List<string>();
-            if (rule.DamageBonus > 0)
-                parts.Add($"+{rule.DamageBonus} Damage");
-            if (rule.ArmorShredSteps > 0)
-                parts.Add($"+{rule.ArmorShredSteps} Armor shred");
-            if (rule.MoveChargePercentBonus > 0)
-                parts.Add($"+{rule.MoveChargePercentBonus}% Move charge");
-
-            return parts.Count == 0 ? string.Empty : string.Join(", ", parts);
         }
     }
 }

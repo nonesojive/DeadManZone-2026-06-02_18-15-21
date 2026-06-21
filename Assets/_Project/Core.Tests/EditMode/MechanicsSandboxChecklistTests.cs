@@ -196,6 +196,21 @@ namespace DeadManZone.Core.Tests.EditMode
         [Test]
         public void Criterion09_EmergencyDraftCriticalMassAndTactics_AreFunctional()
         {
+            CriticalMassRuleSource.SetRulesForTests(new[]
+            {
+                new CriticalMassRuleDefinition
+                {
+                    Id = "infantry",
+                    CountTagId = GameTagIds.Infantry,
+                    CountCategory = CriticalMassCountCategory.Primary,
+                    Tiers = new[] { new CriticalMassTier { Threshold = 5, Magnitude = 10 } },
+                    Stat = CriticalMassStat.MaxHp,
+                    ModType = SynergyModType.Flat,
+                    Scope = CriticalMassScope.FightCombat,
+                    Target = new CriticalMassTargetFilter { PrimaryTagIds = new[] { GameTagIds.Infantry } }
+                }
+            });
+
             var state = RunState.CreateNew("iron_vanguard", 1, 10, 2, 5, 100);
             Assert.IsTrue(EmergencyDraft.TryUse(state, manpowerShortfall: 3));
             Assert.IsTrue(state.EmergencyDraftUsed);
@@ -206,12 +221,14 @@ namespace DeadManZone.Core.Tests.EditMode
                 primary: GameTagIds.Infantry,
                 combatRole: GameTagIds.Assault,
                 systemTag: GameTagIds.Combatant);
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 5; i++)
                 Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(i), $"inf_{i}").Success);
 
-            Assert.GreaterOrEqual(CriticalMassRules.EvaluateFightStart(board).DamageBonus, 2);
+            Assert.IsTrue(CriticalMassEngine.Evaluate(board).HasAnyActiveRule);
             Assert.Greater(TacticEffects.GetMovementChargeMultiplier(TacticType.Advance), 100);
             Assert.Greater(TacticEffects.GetDamageBuff(TacticType.DisciplinedFire), 0);
+
+            CriticalMassRuleSource.ClearTestOverride();
         }
 
         [Test]

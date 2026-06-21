@@ -242,9 +242,8 @@ namespace DeadManZone.Presentation.UI
             if (criticalMassText == null)
                 return;
 
-            bool hasHint = !string.IsNullOrWhiteSpace(model.CriticalMassHint);
-            criticalMassText.gameObject.SetActive(hasHint);
-            criticalMassText.text = hasHint ? model.CriticalMassHint : string.Empty;
+            criticalMassText.gameObject.SetActive(false);
+            criticalMassText.text = string.Empty;
         }
 
         private void BindSalvageContext(PieceCardViewModel model)

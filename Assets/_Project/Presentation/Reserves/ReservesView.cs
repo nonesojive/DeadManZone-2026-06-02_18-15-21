@@ -71,6 +71,9 @@ namespace DeadManZone.Presentation.Reserves
 
             Canvas.ForceUpdateCanvases();
 
+            var hoverController = ResolvePieceHoverCardController();
+            var boardView = FindFirstObjectByType<BoardView>();
+
             foreach (var piece in reserves.Pieces)
             {
                 foreach (var cell in piece.Definition.Shape.GetCells(piece.Anchor, piece.Rotation))
@@ -78,19 +81,6 @@ namespace DeadManZone.Presentation.Reserves
                     if (_tiles.TryGetValue(cell, out var tile))
                         tile.SetOccupied(piece.InstanceId, true);
                 }
-
-                if (!_tiles.TryGetValue(piece.Anchor, out var anchorTile))
-                    continue;
-
-                var drag = anchorTile.GetComponent<ReservesPieceDragSource>();
-                if (drag == null)
-                    drag = anchorTile.gameObject.AddComponent<ReservesPieceDragSource>();
-                drag.Configure(
-                    piece.InstanceId,
-                    piece.Definition.Id,
-                    piece.Anchor,
-                    piece.Definition,
-                    piece.Rotation);
 
                 var shapeCells = piece.Definition.Shape
                     .GetCells(piece.Anchor, piece.Rotation)
@@ -105,9 +95,30 @@ namespace DeadManZone.Presentation.Reserves
                     piece.Anchor,
                     piece.Rotation,
                     ResolveCellCenterInOverlay);
-                if (shapeVisual != null)
-                    _shapeVisualsByInstance[piece.InstanceId] = shapeVisual;
+                if (shapeVisual == null)
+                    continue;
+
+                _shapeVisualsByInstance[piece.InstanceId] = shapeVisual;
+
+                var footprintHit = shapeVisual.GetComponent<ReservesPieceFootprintHit>();
+                if (footprintHit == null)
+                    footprintHit = shapeVisual.gameObject.AddComponent<ReservesPieceFootprintHit>();
+                footprintHit.Configure(
+                    piece.InstanceId,
+                    piece.Definition,
+                    piece.Anchor,
+                    piece.Rotation,
+                    hoverController,
+                    boardView);
             }
+
+            hoverController?.Hide();
+        }
+
+        private PieceHoverCardController ResolvePieceHoverCardController()
+        {
+            var controller = FindFirstObjectByType<PieceHoverCardController>();
+            return controller;
         }
 
         private void EnsurePiecesOverlay()
@@ -243,7 +254,12 @@ namespace DeadManZone.Presentation.Reserves
         private void ClearOccupancy()
         {
             foreach (var tile in _tiles.Values)
+            {
                 tile.SetOccupied(null, false);
+                var drag = tile.GetComponent<ReservesPieceDragSource>();
+                if (drag != null)
+                    Destroy(drag);
+            }
         }
 
         private void ClearChips()

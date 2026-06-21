@@ -22,6 +22,10 @@ namespace DeadManZone.Core.Combat
         public int MoveCharge { get; set; }
         public int MoveChargePercentBonus { get; set; }
         public int DamageBonus { get; set; }
+        public int DamagePercentBonus { get; set; }
+        public int AccuracyPercentBonus { get; set; }
+        public int AttackSpeedSteps { get; set; }
+        public int AttackRangeSteps { get; set; }
         public int ArmorBuffSteps { get; set; }
         public int DamageDealtThisFight { get; set; }
         public int DamageTakenThisFight { get; set; }

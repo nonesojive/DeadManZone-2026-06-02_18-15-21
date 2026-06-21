@@ -63,12 +63,12 @@ namespace DeadManZone.Core.Combat
             _enemyCombatants = SpawnCombatants(enemyBoard, CombatSide.Enemy, _layout.EnemyOriginX);
             var playerSynergySnapshot = SynergyEngine.EvaluateFightStart(playerBoard);
             var enemySynergySnapshot = SynergyEngine.EvaluateFightStart(enemyBoard);
-            var playerCriticalMassSnapshot = CriticalMassRules.EvaluateFightStart(playerBoard);
-            var enemyCriticalMassSnapshot = CriticalMassRules.EvaluateFightStart(enemyBoard);
+            var playerCriticalMassSnapshot = CriticalMassEngine.Evaluate(playerBoard);
+            var enemyCriticalMassSnapshot = CriticalMassEngine.Evaluate(enemyBoard);
             SynergyEngine.ApplyToCombatants(playerSynergySnapshot, _playerCombatants);
             SynergyEngine.ApplyToCombatants(enemySynergySnapshot, _enemyCombatants);
-            CriticalMassRules.ApplyToCombatants(playerBoard, _playerCombatants, playerCriticalMassSnapshot);
-            CriticalMassRules.ApplyToCombatants(enemyBoard, _enemyCombatants, enemyCriticalMassSnapshot);
+            CriticalMassEngine.ApplyToCombatants(playerCriticalMassSnapshot, _playerCombatants);
+            CriticalMassEngine.ApplyToCombatants(enemyCriticalMassSnapshot, _enemyCombatants);
             ApplyTacticDamageBuffs();
             RebuildOccupied();
         }
@@ -296,7 +296,11 @@ namespace DeadManZone.Core.Combat
                     distance,
                     accuracyMod,
                     actor.DamageBonus + damageBuff,
-                    target.ArmorBuffSteps);
+                    target.ArmorBuffSteps,
+                    actor.DamagePercentBonus,
+                    actor.AccuracyPercentBonus,
+                    actor.Definition.AttackRange,
+                    actor.AttackRangeSteps);
 
                 string actionType = outcome.Kind switch
                 {
@@ -317,7 +321,8 @@ namespace DeadManZone.Core.Combat
 
                 actor.CooldownRemaining = CombatAttackSpeed.GetEffectiveCooldown(
                     actor.Definition.CooldownTicks,
-                    actor.Definition.AttackSpeed);
+                    actor.Definition.AttackSpeed,
+                    actor.AttackSpeedSteps);
             }
         }
 

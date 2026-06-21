@@ -1,0 +1,751 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3730dcab2711894caa6b2ef398e8d60, type: 3}
+  m_Name: CriticalMassDatabase
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CriticalMassDatabaseSO
+  rules:
+  - id: infantry
+    countTagId: infantry
+    countCategory: 0
+    tiers:
+    - threshold: 5
+      magnitude: 10
+    - threshold: 7
+      magnitude: 15
+    - threshold: 10
+      magnitude: 20
+    stat: 0
+    modType: 0
+    scope: 0
+    target:
+      primaryTagIds:
+      - infantry
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: vehicle
+    countTagId: vehicle
+    countCategory: 0
+    tiers:
+    - threshold: 3
+      magnitude: 5
+    - threshold: 5
+      magnitude: 8
+    - threshold: 7
+      magnitude: 12
+    stat: 2
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds:
+      - vehicle
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: structure
+    countTagId: structure
+    countCategory: 0
+    tiers:
+    - threshold: 3
+      magnitude: 15
+    - threshold: 5
+      magnitude: 25
+    - threshold: 7
+      magnitude: 40
+    stat: 0
+    modType: 0
+    scope: 0
+    target:
+      primaryTagIds:
+      - structure
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: assault
+    countTagId: assault
+    countCategory: 1
+    tiers:
+    - threshold: 5
+      magnitude: 1
+    - threshold: 7
+      magnitude: 2
+    - threshold: 10
+      magnitude: 3
+    stat: 1
+    modType: 0
+    scope: 0
+    target:
+      primaryTagIds:
+      - infantry
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: tank
+    countTagId: tank
+    countCategory: 1
+    tiers:
+    - threshold: 3
+      magnitude: 1
+    - threshold: 5
+      magnitude: 2
+    - threshold: 7
+      magnitude: 3
+    stat: 1
+    modType: 0
+    scope: 0
+    target:
+      primaryTagIds:
+      - vehicle
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: artillery
+    countTagId: artillery
+    countCategory: 1
+    tiers:
+    - threshold: 3
+      magnitude: 1
+    - threshold: 5
+      magnitude: 2
+    - threshold: 7
+      magnitude: 3
+    stat: 3
+    modType: 1
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 2
+      useAttackType: 1
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: sniper
+    countTagId: sniper
+    countCategory: 1
+    tiers:
+    - threshold: 3
+      magnitude: 1
+    - threshold: 5
+      magnitude: 2
+    - threshold: 7
+      magnitude: 3
+    stat: 3
+    modType: 1
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 3
+      useAttackRange: 1
+      factionId: 
+  - id: defender
+    countTagId: defender
+    countCategory: 1
+    tiers:
+    - threshold: 3
+      magnitude: 5
+    - threshold: 5
+      magnitude: 10
+    - threshold: 7
+      magnitude: 15
+    stat: 0
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds:
+      - infantry
+      - vehicle
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: utility
+    countTagId: utility
+    countCategory: 1
+    tiers:
+    - threshold: 3
+      magnitude: 1
+    - threshold: 5
+      magnitude: 2
+    - threshold: 7
+      magnitude: 3
+    stat: 4
+    modType: 1
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: support
+    countTagId: support
+    countCategory: 1
+    tiers:
+    - threshold: 3
+      magnitude: 1
+    - threshold: 5
+      magnitude: 2
+    - threshold: 7
+      magnitude: 3
+    stat: 3
+    modType: 1
+    scope: 0
+    target:
+      primaryTagIds:
+      - infantry
+      - vehicle
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: explosive
+    countTagId: explosive
+    countCategory: 5
+    tiers:
+    - threshold: 5
+      magnitude: 5
+    - threshold: 7
+      magnitude: 10
+    - threshold: 10
+      magnitude: 15
+    stat: 1
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 2
+      useAttackType: 1
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: melee
+    countTagId: melee
+    countCategory: 5
+    tiers:
+    - threshold: 3
+      magnitude: 5
+    - threshold: 5
+      magnitude: 10
+    - threshold: 7
+      magnitude: 15
+    stat: 0
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 6
+      useAttackType: 1
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: gas
+    countTagId: gas
+    countCategory: 5
+    tiers:
+    - threshold: 3
+      magnitude: 5
+    - threshold: 5
+      magnitude: 10
+    - threshold: 7
+      magnitude: 15
+    stat: 1
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 7
+      useAttackType: 1
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: fire
+    countTagId: fire
+    countCategory: 5
+    tiers:
+    - threshold: 3
+      magnitude: 5
+    - threshold: 5
+      magnitude: 10
+    - threshold: 7
+      magnitude: 15
+    stat: 1
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 5
+      useAttackType: 1
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: ballistic
+    countTagId: ballistic
+    countCategory: 5
+    tiers:
+    - threshold: 5
+      magnitude: 5
+    - threshold: 7
+      magnitude: 10
+    - threshold: 10
+      magnitude: 15
+    stat: 1
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 1
+      useAttackType: 1
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: piercing
+    countTagId: piercing
+    countCategory: 5
+    tiers:
+    - threshold: 5
+      magnitude: 5
+    - threshold: 7
+      magnitude: 10
+    - threshold: 10
+      magnitude: 15
+    stat: 1
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 3
+      useAttackType: 1
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: shredding
+    countTagId: shredding
+    countCategory: 5
+    tiers:
+    - threshold: 5
+      magnitude: 5
+    - threshold: 7
+      magnitude: 10
+    - threshold: 10
+      magnitude: 15
+    stat: 1
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 4
+      useAttackType: 1
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: phalanx
+    countTagId: phalanx
+    countCategory: 2
+    tiers:
+    - threshold: 5
+      magnitude: 5
+    - threshold: 7
+      magnitude: 10
+    - threshold: 10
+      magnitude: 15
+    stat: 0
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: phalanx
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: command
+    countTagId: command
+    countCategory: 2
+    tiers:
+    - threshold: 2
+      magnitude: 1
+    - threshold: 4
+      magnitude: 3
+    - threshold: 6
+      magnitude: 6
+    - threshold: 8
+      magnitude: 10
+    stat: 6
+    modType: 0
+    scope: 1
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: supplier
+    countTagId: supplier
+    countCategory: 2
+    tiers:
+    - threshold: 2
+      magnitude: 20
+    - threshold: 4
+      magnitude: 45
+    - threshold: 6
+      magnitude: 70
+    - threshold: 8
+      magnitude: 100
+    stat: 7
+    modType: 0
+    scope: 1
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: convoy
+    countTagId: convoy
+    countCategory: 2
+    tiers:
+    - threshold: 3
+      magnitude: 1
+    - threshold: 5
+      magnitude: 2
+    - threshold: 7
+      magnitude: 3
+    stat: 4
+    modType: 1
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: convoy
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: medic
+    countTagId: medic
+    countCategory: 2
+    tiers:
+    - threshold: 3
+      magnitude: 5
+    - threshold: 5
+      magnitude: 10
+    - threshold: 7
+      magnitude: 15
+    stat: 0
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds:
+      - infantry
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: mechanic
+    countTagId: mechanic
+    countCategory: 2
+    tiers:
+    - threshold: 3
+      magnitude: 5
+    - threshold: 5
+      magnitude: 10
+    - threshold: 7
+      magnitude: 15
+    stat: 0
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds:
+      - vehicle
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: fanatic
+    countTagId: fanatic
+    countCategory: 2
+    tiers:
+    - threshold: 3
+      magnitude: 1
+    - threshold: 5
+      magnitude: 2
+    - threshold: 7
+      magnitude: 3
+    stat: 3
+    modType: 1
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: fanatic
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: entrenched
+    countTagId: entrenched
+    countCategory: 2
+    tiers:
+    - threshold: 3
+      magnitude: 5
+    - threshold: 5
+      magnitude: 10
+    - threshold: 7
+      magnitude: 15
+    stat: 0
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: defender
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: berserk
+    countTagId: berserk
+    countCategory: 3
+    tiers:
+    - threshold: 3
+      magnitude: 1
+    - threshold: 5
+      magnitude: 2
+    - threshold: 7
+      magnitude: 3
+    stat: 3
+    modType: 1
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: assault
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: grenadier
+    countTagId: grenadier
+    countCategory: 3
+    tiers:
+    - threshold: 3
+      magnitude: 1
+    - threshold: 5
+      magnitude: 2
+    - threshold: 7
+      magnitude: 3
+    stat: 5
+    modType: 1
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: grenadier
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: siege
+    countTagId: siege
+    countCategory: 4
+    tiers:
+    - threshold: 2
+      magnitude: 1
+    - threshold: 4
+      magnitude: 2
+    - threshold: 6
+      magnitude: 3
+    stat: 3
+    modType: 1
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: artillery
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: logistics
+    countTagId: logistics
+    countCategory: 4
+    tiers:
+    - threshold: 3
+      magnitude: 5
+    - threshold: 5
+      magnitude: 10
+    - threshold: 7
+      magnitude: 15
+    stat: 7
+    modType: 2
+    scope: 1
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: ironmarch_union
+    countTagId: iron_vanguard
+    countCategory: 6
+    tiers:
+    - threshold: 5
+      magnitude: 1
+    - threshold: 7
+      magnitude: 2
+    - threshold: 10
+      magnitude: 3
+    stat: 1
+    modType: 0
+    scope: 0
+    target:
+      primaryTagIds:
+      - infantry
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 

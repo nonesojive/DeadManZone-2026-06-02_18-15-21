@@ -56,6 +56,24 @@ namespace DeadManZone.Core.Tags
             return ContainsTag(piece.SynergyTags, targetKey);
         }
 
+        public static bool HasAbilityTag(PieceDefinition piece, string tagId)
+        {
+            string targetKey = NormalizeTagKey(tagId);
+            if (piece == null || targetKey.Length == 0)
+                return false;
+
+            return ContainsTag(piece.AbilityTags, targetKey);
+        }
+
+        public static bool HasFlavorTag(PieceDefinition piece, string tagId)
+        {
+            string targetKey = NormalizeTagKey(tagId);
+            if (piece == null || targetKey.Length == 0)
+                return false;
+
+            return ContainsTag(piece.FlavorTags, targetKey);
+        }
+
         public static IReadOnlyList<string> GetAllTagIds(PieceDefinition piece)
         {
             if (piece == null)

@@ -42,7 +42,6 @@ namespace DeadManZone.Core.Tags
                     context?.SynergySnapshot,
                     context?.Board,
                     context?.InstanceId),
-                CriticalMassHint = PieceCardTooltipFormatter.BuildCriticalMassHint(context?.Board, piece),
                 SalvageContext = PieceCardTooltipFormatter.BuildSalvageContext(
                     context?.IsSalvaged ?? false,
                     context?.LastEnemyFactionId,

@@ -4,16 +4,22 @@ namespace DeadManZone.Core.Tags
     {
         Primary,
         CombatRole,
-        Synergy
+        Synergy,
+        Ability,
+        Flavor,
+        AttackType,
+        Faction
     }
 
     public readonly struct CriticalMassRuleDefinition
     {
-        public string TagId { get; init; }
+        public string Id { get; init; }
+        public string CountTagId { get; init; }
         public CriticalMassCountCategory CountCategory { get; init; }
-        public int Threshold { get; init; }
-        public int DamageBonus { get; init; }
-        public int ArmorShredSteps { get; init; }
-        public int MoveChargePercentBonus { get; init; }
+        public CriticalMassTier[] Tiers { get; init; }
+        public CriticalMassStat Stat { get; init; }
+        public SynergyModType ModType { get; init; }
+        public CriticalMassScope Scope { get; init; }
+        public CriticalMassTargetFilter Target { get; init; }
     }
 }

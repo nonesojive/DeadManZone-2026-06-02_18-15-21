@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Tags;
+using DeadManZone.Presentation.UI;
 using DeadManZone.Presentation.Visual;
 using TMPro;
 using UnityEngine;
@@ -14,6 +15,7 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private Image iconTemplate;
         [SerializeField] private TMP_Text hoverDetailText;
         [SerializeField] private UiThemeSO theme;
+        [SerializeField] private CriticalMassIconsSO criticalMassIcons;
 
         private readonly List<Image> _icons = new();
         private readonly List<BuffStripEntry> _entries = new();
@@ -45,9 +47,13 @@ namespace DeadManZone.Presentation.Run
                     ? theme != null ? theme.accentColor : Color.white
                     : new Color(0.65f, 0.65f, 0.65f, 0.85f);
 
+                var sprite = criticalMassIcons != null ? criticalMassIcons.GetIconForEntry(entry) : null;
+                icon.sprite = sprite;
+                icon.preserveAspect = true;
+
                 var label = icon.GetComponentInChildren<TMP_Text>();
                 if (label != null)
-                    label.text = Abbreviate(entry.DisplayName);
+                    label.text = sprite != null ? string.Empty : Abbreviate(entry.DisplayName);
 
                 EnsureHoverTarget(icon, i);
             }

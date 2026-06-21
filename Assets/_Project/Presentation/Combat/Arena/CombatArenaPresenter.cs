@@ -98,6 +98,10 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             EnsureReferences();
 
+#if UNITY_EDITOR
+            SidekickPreviewSceneCleanup.DestroyLeakedPreviewIfPresent();
+#endif
+
             if (battlefield == null)
                 return;
 
