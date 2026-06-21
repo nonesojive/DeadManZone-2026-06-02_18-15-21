@@ -260,6 +260,43 @@ namespace DeadManZone.Presentation.Tests.EditMode
             return Sprite.Create(texture, new Rect(0f, 0f, 4f, 4f), new Vector2(0.5f, 0.5f));
         }
 
+        [Test]
+        public void Bind_SetsAbilityTextOnAuthoredSlot()
+        {
+            var root = new GameObject("PieceCardViewRoot", typeof(RectTransform));
+            try
+            {
+                var view = root.AddComponent<PieceCardView>();
+                var name = new GameObject("Name", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                var hp = new GameObject("Hp", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                name.transform.SetParent(root.transform, false);
+                hp.transform.SetParent(root.transform, false);
+
+                var abilityFrame = new GameObject("AbilityFrame_UnitCard", typeof(RectTransform));
+                abilityFrame.transform.SetParent(root.transform, false);
+                var ability = new GameObject("AbilityText_UnitCard", typeof(TextMeshProUGUI));
+                ability.transform.SetParent(abilityFrame.transform, false);
+                var abilityText = ability.GetComponent<TextMeshProUGUI>();
+
+                view.InitializeForTests(name, hp, ability: abilityText);
+
+                var aura = new PieceAbilityDefinition
+                {
+                    Id = "adjacent_infantry_armor_plus_one",
+                    CardDescription = "Adjacent infantry gain +1 armor."
+                };
+                var piece = TestPieces.With(TestPieces.RifleSquad(), abilities: new[] { aura });
+                view.Bind(PieceCardViewModelBuilder.Build(piece), string.Empty);
+
+                Assert.AreEqual("Adjacent infantry gain +1 armor.", view.AbilityTextForTests);
+                Assert.IsTrue(abilityFrame.activeSelf);
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
         private static GameObject CreateTagChipPrefab()
         {
             var chip = new GameObject("TagChip", typeof(RectTransform), typeof(Image));

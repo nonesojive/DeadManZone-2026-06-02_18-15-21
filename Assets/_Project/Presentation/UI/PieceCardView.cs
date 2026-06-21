@@ -55,6 +55,8 @@ namespace DeadManZone.Presentation.UI
 
             if (UsesProceduralFallback)
                 EnsureRuntimeUi();
+            else
+                ResolveAuthoredRefsIfNeeded();
 
             ApplyTheme();
 
@@ -154,7 +156,25 @@ namespace DeadManZone.Presentation.UI
         public Sprite AttackTypeIconSpriteForTests => attackTypeIcon?.sprite;
         public Sprite CombatRoleIconSpriteForTests => combatRoleIcon?.sprite;
         public int TagChipCountForTests => _chips.Count(c => c != null && c.gameObject.activeSelf);
+        public string AbilityTextForTests => abilityText?.text;
 #endif
+
+        private void ResolveAuthoredRefsIfNeeded()
+        {
+            abilityText ??= FindAuthoredText("AbilityText_UnitCard");
+        }
+
+        private TMP_Text FindAuthoredText(string objectName)
+        {
+            var texts = GetComponentsInChildren<TMP_Text>(true);
+            for (int i = 0; i < texts.Length; i++)
+            {
+                if (texts[i] != null && texts[i].gameObject.name == objectName)
+                    return texts[i];
+            }
+
+            return null;
+        }
 
         private void EnsureRuntimeUi()
         {

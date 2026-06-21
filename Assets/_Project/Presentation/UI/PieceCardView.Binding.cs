@@ -269,6 +269,11 @@ namespace DeadManZone.Presentation.UI
             bool hasAbility = !string.IsNullOrWhiteSpace(text);
             abilityText.gameObject.SetActive(hasAbility);
             abilityText.text = hasAbility ? text : string.Empty;
+
+            // ponytail: AbilityFrame_UnitCard is the authored abilities panel; hide when empty.
+            var abilityFrame = abilityText.transform.parent;
+            if (abilityFrame != null)
+                abilityFrame.gameObject.SetActive(hasAbility);
         }
 
         private void EnsureChipCount(int count)
