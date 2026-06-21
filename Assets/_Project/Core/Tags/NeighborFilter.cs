@@ -4,15 +4,16 @@ using DeadManZone.Core.Board;
 
 namespace DeadManZone.Core.Tags
 {
-    public readonly struct NeighborFilter
+    [Serializable]
+    public struct NeighborFilter
     {
         public static NeighborFilter Any => default;
 
-        public string PrimaryTagId { get; init; }
-        public string CombatRoleTagId { get; init; }
-        public string SystemTagId { get; init; }
-        public string SynergyTagId { get; init; }
-        public string AbilityTagId { get; init; }
+        public string PrimaryTagId;
+        public string CombatRoleTagId;
+        public string SystemTagId;
+        public string SynergyTagId;
+        public string AbilityTagId;
 
         public bool Matches(PieceDefinition piece)
         {

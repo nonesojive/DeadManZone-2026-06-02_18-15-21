@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a4cdde8da71d5e43b6f696cec9f8869, type: 3}
+  m_Name: adjacent_artillery_damage_plus_two
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.AbilityDefinitionSO
+  id: adjacent_artillery_damage_plus_two
+  cardDescription: Adjacent artillery gain +2 damage.
+  trigger: 0
+  neighborFilter:
+    PrimaryTagId: 
+    CombatRoleTagId: artillery
+    SystemTagId: 
+    SynergyTagId: 
+    AbilityTagId: 
+  stat: 0
+  modType: 0
+  magnitude: 2

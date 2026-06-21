@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a4cdde8da71d5e43b6f696cec9f8869, type: 3}
+  m_Name: adjacent_infantry_armor_plus_one
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.AbilityDefinitionSO
+  id: adjacent_infantry_armor_plus_one
+  cardDescription: Adjacent infantry gain +1 armor.
+  trigger: 0
+  neighborFilter:
+    PrimaryTagId: infantry
+    CombatRoleTagId: 
+    SystemTagId: 
+    SynergyTagId: 
+    AbilityTagId: 
+  stat: 3
+  modType: 0
+  magnitude: 1
