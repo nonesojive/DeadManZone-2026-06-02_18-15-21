@@ -58,6 +58,28 @@ namespace DeadManZone.Core.Tests.EditMode
             Object.DestroyImmediate(art);
         }
 
+        [Test]
+        public void PickReserveSlot_IsStableForSameCoordinate()
+        {
+            var art = ScriptableObject.CreateInstance<BoardTerrainArtSO>();
+            art.reserveSlotTiles = new[] { CreateStubSprite("g1"), CreateStubSprite("g2") };
+
+            var coord = new GridCoord(5, 1);
+            var first = art.PickReserveSlot(coord);
+            var second = art.PickReserveSlot(coord);
+
+            Assert.AreSame(first, second);
+            Object.DestroyImmediate(art);
+        }
+
+        [Test]
+        public void PickReserveSlot_ReturnsNullWhenPoolEmpty()
+        {
+            var art = ScriptableObject.CreateInstance<BoardTerrainArtSO>();
+            Assert.IsNull(art.PickReserveSlot(new GridCoord(0, 0)));
+            Object.DestroyImmediate(art);
+        }
+
         private static Sprite CreateStubSprite(string name)
         {
             var texture = new Texture2D(4, 4, TextureFormat.RGBA32, false);

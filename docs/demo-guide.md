@@ -20,10 +20,11 @@
 
 - **10-fight gauntlet** with escalating enemy templates
 - **4 resources**: Supplies, Manpower, Authority, Morale
-- **Shop**: Offensive / Defensive / Specialty lanes with salvage refunds
-- **Combat**: Tick-based movement, gas phase, tactics pause between segments
-- **Synergies**: Adjacency buffs (Supply, Medic, Command+Artillery, Echo+Stealth)
-- **Critical Mass**: 3+ Infantry, 2+ Vehicles, 2+ Artillery thresholds
+- **Shop**: Unified 8–12 slot offer grid with salvage refunds (lane weighting in data)
+- **Combat**: Tick-based sim; HP-triggered pauses at 75%/30% army HP; gas ramp ~30s
+- **Synergies**: Medic→Infantry, Command→Artillery, Echo→Stealth ability, Inspiring→any
+- **Critical Mass**: 3+ Infantry, 2+ Vehicles, 2+ Artillery, 3+ Assault thresholds
+- **HUD**: Army strength / matchup preview vs next enemy
 - **Meta**: Achievements, local leaderboard, faction unlocks (Steam stub ready)
 
 ## Setup

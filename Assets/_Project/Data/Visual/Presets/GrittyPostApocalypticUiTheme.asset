@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bad06eddaf305704088f4041c67b1296, type: 3}
+  m_Name: GrittyPostApocalypticUiTheme
+  m_EditorClassIdentifier: DeadManZone.Presentation::DeadManZone.Presentation.Visual.UiThemeSO
+  backgroundColor: {r: 0.05, g: 0.05, b: 0.06, a: 1}
+  panelColor: {r: 0.11, g: 0.11, b: 0.13, a: 0.96}
+  cardColor: {r: 0.15, g: 0.14, b: 0.13, a: 0.98}
+  resourcePanelBackgroundColor: {r: 0.24, g: 0.16, b: 0.09, a: 1}
+  accentColor: {r: 0.77, g: 0.36, b: 0.1, a: 1}
+  accentMutedColor: {r: 0.55, g: 0.35, b: 0.18, a: 1}
+  dangerColor: {r: 0.55, g: 0.18, b: 0.1, a: 1}
+  sellZoneColor: {r: 0.42, g: 0.14, b: 0.08, a: 0.85}
+  textPrimary: {r: 0.9, g: 0.86, b: 0.78, a: 1}
+  textSecondary: {r: 0.58, g: 0.54, b: 0.48, a: 1}
+  textOnAccent: {r: 0.08, g: 0.06, b: 0.05, a: 1}
+  buttonNormal: {r: 0.18, g: 0.18, b: 0.2, a: 0.98}
+  buttonHighlighted: {r: 0.28, g: 0.26, b: 0.24, a: 1}
+  buttonPressed: {r: 0.1, g: 0.1, b: 0.11, a: 1}
+  rearZoneColor: {r: 0.16, g: 0.24, b: 0.34, a: 1}
+  supportZoneColor: {r: 0.18, g: 0.28, b: 0.2, a: 1}
+  frontZoneColor: {r: 0.48, g: 0.2, b: 0.14, a: 1}
+  neutralZoneColor: {r: 0.3, g: 0.26, b: 0.2, a: 1}
+  specialTileColor: {r: 0.58, g: 0.38, b: 0.14, a: 0.45}
+  tileHoverColor: {r: 0.35, g: 0.38, b: 0.45, a: 0.5}
+  invalidPlacementColor: {r: 0.8, g: 0.15, b: 0.12, a: 0.55}
+  generalLaneTint: {r: 0.2, g: 0.22, b: 0.28, a: 0.35}
+  engineersLaneTint: {r: 0.18, g: 0.24, b: 0.2, a: 0.35}
+  requisitionLaneTint: {r: 0.26, g: 0.18, b: 0.24, a: 0.35}
+  shopBackgroundSprite: {fileID: 21300000, guid: 023ecf3674d8b3b44b4d54a754034fc3, type: 3}
+  shopBackgroundScrimColor: {r: 0.03, g: 0.03, b: 0.04, a: 0.55}
+  shopLaneTintScaleWithBackground: 0.45
+  terrainZoneTintStrength: 0.08
+  boardCellZoneOverlayAlpha: 0
+  boardGridLineColor: {r: 1, g: 1, b: 1, a: 0.12}
+  boardZoneDividerColor: {r: 1, g: 1, b: 1, a: 0.22}
+  neutralTokenBackgroundColor: {r: 0.32, g: 0.33, b: 0.36, a: 0.42}
+  unitTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  buildingTint: {r: 0.48, g: 0.4, b: 0.28, a: 1}
+  hybridTint: {r: 0.38, g: 0.32, b: 0.48, a: 1}
+  combatOverlayColor: {r: 0.02, g: 0.02, b: 0.03, a: 0.58}
+  combatBannerColor: {r: 0.07, g: 0.07, b: 0.08, a: 0.92}
+  panelSprite: {fileID: 21300000, guid: 7cfb8fd45364a8842bacdab0539e9377, type: 3}
+  cardSprite: {fileID: 21300000, guid: 87a7c0083a143e149bf4458f3d60a1fe, type: 3}
+  modalFrameSprite: {fileID: 21300000, guid: 9af6aee43fb1ff14f97105da60086966, type: 3}
+  sidebarPanelSprite: {fileID: 21300000, guid: 06b8846e67762e548bf10d5463f39c17, type: 3}
+  inventoryPanelSprite: {fileID: 21300000, guid: 02f36ccf615839f479bbd9045c5bec60, type: 3}
+  securityTerminalFrameSprite: {fileID: 0}
+  bannerSprite: {fileID: 21300000, guid: 7f271adb93788534196061674e62db6a, type: 3}
+  buttonNormalSprite: {fileID: 21300000, guid: 95f9603cf3a19154d90323c94e53685a, type: 3}
+  buttonHighlightedSprite: {fileID: 21300000, guid: 90db7fd743fb84d40ba3fac479fd9934, type: 3}
+  buttonPressedSprite: {fileID: 21300000, guid: aeb023c8fd59d9c4da43d1125081bc59, type: 3}
+  buttonDisabledSprite: {fileID: 21300000, guid: b4808fa82ee8135449ba522b9945b22c, type: 3}
+  accentButtonSprite: {fileID: 21300000, guid: 958e1b5e6d893ae458821e126aebc1f1, type: 3}
+  secondaryButtonSprite: {fileID: 21300000, guid: b4808fa82ee8135449ba522b9945b22c, type: 3}
+  dangerButtonSprite: {fileID: 21300000, guid: b2ffb63228815174f8a17bbedcf5500a, type: 3}
+  warningButtonSprite: {fileID: 0}
+  sellZoneSprite: {fileID: 0}
+  sellZoneIconSprite: {fileID: 0}
+  slotEmptySprite: {fileID: 21300000, guid: 28d1647649c0a5b498120c70b680ba3e, type: 3}
+  slotSelectedSprite: {fileID: 21300000, guid: f1b8e9febc2a82c4790dbdf7301a3c51, type: 3}
+  storageSlotEmptySprite: {fileID: 21300000, guid: e26fe131a1800ab4da870aa952ac8476, type: 3}
+  storageSlotSelectedSprite: {fileID: 21300000, guid: ff11e97d625940344a0e98cff8ce175c, type: 3}
+  menuBackgroundSprite: {fileID: 21300000, guid: 7a8dd5e208fbe324d9b86bb635bc25b0, type: 3}
+  runBackgroundSprite: {fileID: 21300000, guid: 041bbeb7c0b414744964c4e619ba2e3d, type: 3}
+  combatBackgroundSprite: {fileID: 21300000, guid: 9c8d321b454ec6e4ba3c7465d39f8955, type: 3}

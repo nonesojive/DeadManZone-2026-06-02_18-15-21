@@ -39,10 +39,10 @@ MonoBehaviour:
   shopBackgroundSprite: {fileID: 21300000, guid: 54bf25e70d3f4fd88f3f37a179b12cde, type: 3}
   shopBackgroundScrimColor: {r: 0.04, g: 0.05, b: 0.07, a: 0.38}
   shopLaneTintScaleWithBackground: 0.45
-  terrainZoneTintStrength: 0.12
-  boardCellZoneOverlayAlpha: 0.1
-  boardGridLineColor: {r: 1, g: 1, b: 1, a: 0.14}
-  boardZoneDividerColor: {r: 1, g: 1, b: 1, a: 0.28}
+  terrainZoneTintStrength: 0.08
+  boardCellZoneOverlayAlpha: 0
+  boardGridLineColor: {r: 1, g: 1, b: 1, a: 0.12}
+  boardZoneDividerColor: {r: 1, g: 1, b: 1, a: 0.22}
   neutralTokenBackgroundColor: {r: 0.32, g: 0.33, b: 0.36, a: 0.42}
   unitTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
   buildingTint: {r: 0.48, g: 0.4, b: 0.28, a: 1}
@@ -68,7 +68,7 @@ MonoBehaviour:
   sellZoneIconSprite: {fileID: 21300000, guid: 757af5ce0e0dec74e9d3ef425eea5157, type: 3}
   slotEmptySprite: {fileID: 0}
   slotSelectedSprite: {fileID: 0}
-  storageSlotEmptySprite: {fileID: 0}
+  storageSlotEmptySprite: {fileID: 21300000, guid: e26fe131a1800ab4da870aa952ac8476, type: 3}
   storageSlotSelectedSprite: {fileID: 0}
   menuBackgroundSprite: {fileID: 0}
   runBackgroundSprite: {fileID: 0}

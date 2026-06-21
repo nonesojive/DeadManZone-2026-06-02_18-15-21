@@ -20,11 +20,27 @@ namespace DeadManZone.Presentation.Reserves
                 baseImage.raycastTarget = true;
         }
 
-        public void Initialize(GridCoord coord, Color baseColor)
+        public void Initialize(GridCoord coord, Color baseColor, Sprite slotSprite = null)
         {
             Coord = coord;
-            if (baseImage != null)
-                baseImage.color = baseColor;
+            ApplySlotVisual(slotSprite, baseColor);
+        }
+
+        public void ApplySlotVisual(Sprite slotSprite, Color fallbackColor)
+        {
+            if (baseImage == null)
+                return;
+
+            if (slotSprite != null)
+            {
+                baseImage.sprite = slotSprite;
+                baseImage.type = Image.Type.Simple;
+                baseImage.preserveAspect = false;
+                baseImage.color = Color.white;
+                return;
+            }
+
+            baseImage.color = fallbackColor;
         }
 
         public void SetOccupied(string instanceId, bool occupied) =>

@@ -16,7 +16,7 @@ namespace DeadManZone.Presentation.UI
                 definition,
                 maxOptionalChips: int.MaxValue);
 
-            int visibleCount = model.IdentityTags.Count + model.OptionalTags.Count;
+            int visibleCount = model.ChipTags.Count;
             if (visibleCount >= allVisible.VisibleTags.Count)
                 return string.Empty;
 

@@ -1,3 +1,5 @@
+using System.Linq;
+using DeadManZone.Core.Board;
 using DeadManZone.Core.Tags;
 using DeadManZone.Core.Tests;
 using DeadManZone.Presentation.UI;
@@ -129,7 +131,7 @@ namespace DeadManZone.Presentation.Tests.EditMode
         }
 
         [Test]
-        public void Bind_SetsDisplayNameAndHp()
+        public void Bind_SetsDisplayNameAndNumericStats()
         {
             var root = new GameObject("PieceCardViewRoot");
             try
@@ -137,16 +139,109 @@ namespace DeadManZone.Presentation.Tests.EditMode
                 var view = root.AddComponent<PieceCardView>();
                 var name = new GameObject("Name", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
                 var hp = new GameObject("Hp", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                var damage = new GameObject("Damage", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                var movement = new GameObject("Movement", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                var attackSpeed = new GameObject("AttackSpeed", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                var primaryTag = new GameObject("PrimaryTag", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
                 name.transform.SetParent(root.transform, false);
                 hp.transform.SetParent(root.transform, false);
+                damage.transform.SetParent(root.transform, false);
+                movement.transform.SetParent(root.transform, false);
+                attackSpeed.transform.SetParent(root.transform, false);
+                primaryTag.transform.SetParent(root.transform, false);
 
-                view.InitializeForTests(name, hp);
+                view.InitializeForTests(
+                    name,
+                    hp,
+                    damage: damage,
+                    movementSpeed: movement,
+                    attackSpeed: attackSpeed,
+                    primaryTag: primaryTag);
 
-                PieceCardViewModel model = PieceCardViewModelBuilder.Build(TestPieces.RifleSquad());
+                PieceCardViewModel model = PieceCardViewModelBuilder.Build(
+                    TestPieces.CreateUnit(
+                        "rifle",
+                        primary: GameTagIds.Infantry,
+                        combatRole: GameTagIds.Assault,
+                        systemTag: GameTagIds.Combatant));
                 view.Bind(model, string.Empty);
 
                 Assert.AreEqual(model.DisplayName, view.NameTextForTests);
-                Assert.AreEqual($"HP: {model.Hp}", view.HpTextForTests);
+                Assert.AreEqual(model.Hp.ToString(), view.HpTextForTests);
+                Assert.AreEqual(model.BaseDamage.ToString(), view.DamageTextForTests);
+                Assert.AreEqual(model.MovementSpeedValue.ToString(), view.MovementSpeedTextForTests);
+                Assert.AreEqual(model.AttackSpeedValue.ToString(), view.AttackSpeedTextForTests);
+                Assert.AreEqual(model.PrimaryTag.DisplayName, view.PrimaryTagTextForTests);
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        [Test]
+        public void Bind_SetsArmorIconFromCatalog()
+        {
+            var root = new GameObject("PieceCardViewRoot");
+            try
+            {
+                var view = root.AddComponent<PieceCardView>();
+                var name = new GameObject("Name", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                var hp = new GameObject("Hp", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                var armor = new GameObject("Armor", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+                name.transform.SetParent(root.transform, false);
+                hp.transform.SetParent(root.transform, false);
+                armor.transform.SetParent(root.transform, false);
+
+                var icons = ScriptableObject.CreateInstance<UnitCardIconsSO>();
+                icons.hideFlags = HideFlags.HideAndDontSave;
+                var heavyShield = CreateTestSprite();
+                icons.AssignArmorIconsForTests(null, null, heavyShield);
+
+                view.InitializeForTests(name, hp, armor: armor, cardIcons: icons);
+                view.Bind(
+                    PieceCardViewModelBuilder.Build(TestPieces.With(TestPieces.RifleSquad(), armorType: ArmorType.Heavy)),
+                    string.Empty);
+
+                Assert.AreEqual(heavyShield, view.ArmorIconSpriteForTests);
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        [Test]
+        public void Bind_UsesChipTagsOnly_ForTagRow()
+        {
+            var root = new GameObject("PieceCardViewRoot");
+            try
+            {
+                var view = root.AddComponent<PieceCardView>();
+                var containerGo = new GameObject("TagChips", typeof(RectTransform));
+                containerGo.transform.SetParent(root.transform, false);
+                var container = containerGo.GetComponent<RectTransform>();
+
+                var chipPrefab = CreateTagChipPrefab();
+                var name = new GameObject("Name", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                var hp = new GameObject("Hp", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+                name.transform.SetParent(root.transform, false);
+                hp.transform.SetParent(root.transform, false);
+
+                view.InitializeForTests(name, hp, chipContainer: container, chipPrefab: chipPrefab);
+
+                var piece = TestPieces.CreateUnit(
+                    "rifle",
+                    primary: GameTagIds.Infantry,
+                    combatRole: GameTagIds.Assault,
+                    systemTag: GameTagIds.Combatant);
+                PieceCardViewModel model = PieceCardViewModelBuilder.Build(piece);
+                view.Bind(model, string.Empty);
+
+                Assert.IsFalse(model.ChipTags.Any(t => t.Id == GameTagIds.Infantry));
+                Assert.IsFalse(model.ChipTags.Any(t => t.Id == GameTagIds.Assault));
+                Assert.IsTrue(model.ChipTags.Any(t => t.Id == "neutral"));
+                Assert.GreaterOrEqual(view.TagChipCountForTests, 1);
             }
             finally
             {

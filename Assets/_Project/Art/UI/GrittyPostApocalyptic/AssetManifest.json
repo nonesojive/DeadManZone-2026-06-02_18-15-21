@@ -1,0 +1,1598 @@
+{
+  "components": [
+    {
+      "id": "component_sheet_01_01",
+      "alias": "slot_empty",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/slot_empty.png",
+      "bounds": [
+        169,
+        169,
+        1016,
+        1061
+      ],
+      "size": [
+        847,
+        892
+      ]
+    },
+    {
+      "id": "component_sheet_01_02",
+      "alias": "slot_empty_02",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/slot_empty_02.png",
+      "bounds": [
+        1054,
+        169,
+        1901,
+        1061
+      ],
+      "size": [
+        847,
+        892
+      ]
+    },
+    {
+      "id": "component_sheet_01_03",
+      "alias": "slot_empty_03",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/slot_empty_03.png",
+      "bounds": [
+        1939,
+        169,
+        2786,
+        1061
+      ],
+      "size": [
+        847,
+        892
+      ]
+    },
+    {
+      "id": "component_sheet_01_04",
+      "alias": "slot_empty_04",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/slot_empty_04.png",
+      "bounds": [
+        2824,
+        169,
+        3671,
+        1061
+      ],
+      "size": [
+        847,
+        892
+      ]
+    },
+    {
+      "id": "component_sheet_01_05",
+      "alias": "slot_progress_35",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/slot_progress_35.png",
+      "bounds": [
+        169,
+        1099,
+        1016,
+        1991
+      ],
+      "size": [
+        847,
+        892
+      ]
+    },
+    {
+      "id": "component_sheet_01_06",
+      "alias": "slot_progress_50",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/slot_progress_50.png",
+      "bounds": [
+        1054,
+        1099,
+        1901,
+        1991
+      ],
+      "size": [
+        847,
+        892
+      ]
+    },
+    {
+      "id": "component_sheet_01_07",
+      "alias": "slot_empty_05",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/slot_empty_05.png",
+      "bounds": [
+        1939,
+        1099,
+        2786,
+        1991
+      ],
+      "size": [
+        847,
+        892
+      ]
+    },
+    {
+      "id": "component_sheet_01_08",
+      "alias": "slot_empty_06",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/slot_empty_06.png",
+      "bounds": [
+        2824,
+        1099,
+        3671,
+        1991
+      ],
+      "size": [
+        847,
+        892
+      ]
+    },
+    {
+      "id": "component_sheet_02_01",
+      "alias": "btn_normal",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/btn_normal.png",
+      "bounds": [
+        153,
+        151,
+        1248,
+        669
+      ],
+      "size": [
+        1095,
+        518
+      ]
+    },
+    {
+      "id": "component_sheet_02_02",
+      "alias": "btn_accent",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/btn_accent.png",
+      "bounds": [
+        153,
+        712,
+        1248,
+        1144
+      ],
+      "size": [
+        1095,
+        432
+      ]
+    },
+    {
+      "id": "component_sheet_02_03",
+      "alias": "btn_secondary",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/btn_secondary.png",
+      "bounds": [
+        153,
+        1188,
+        1248,
+        1944
+      ],
+      "size": [
+        1095,
+        756
+      ]
+    },
+    {
+      "id": "component_sheet_02_04",
+      "alias": "btn_normal_alt",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/btn_normal_alt.png",
+      "bounds": [
+        3148,
+        151,
+        3705,
+        669
+      ],
+      "size": [
+        557,
+        518
+      ]
+    },
+    {
+      "id": "component_sheet_02_05",
+      "alias": "btn_tab",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/btn_tab.png",
+      "bounds": [
+        3148,
+        712,
+        3705,
+        1144
+      ],
+      "size": [
+        557,
+        432
+      ]
+    },
+    {
+      "id": "component_sheet_02_06",
+      "alias": "btn_secondary_alt",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/btn_secondary_alt.png",
+      "bounds": [
+        3148,
+        1188,
+        3705,
+        1944
+      ],
+      "size": [
+        557,
+        756
+      ]
+    },
+    {
+      "id": "component_sheet_02_07",
+      "alias": "sidebar_panel",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/sidebar_panel.png",
+      "bounds": [
+        2227,
+        162,
+        2553,
+        1998
+      ],
+      "size": [
+        326,
+        1836
+      ]
+    },
+    {
+      "id": "component_sheet_02_08",
+      "alias": "sidebar_panel_alt",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/sidebar_panel_alt.png",
+      "bounds": [
+        2630,
+        162,
+        2956,
+        1998
+      ],
+      "size": [
+        326,
+        1836
+      ]
+    },
+    {
+      "id": "component_sheet_03_01",
+      "alias": "panel_wide",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/panel_wide.png",
+      "bounds": [
+        118,
+        118,
+        1298,
+        1062
+      ],
+      "size": [
+        1180,
+        944
+      ]
+    },
+    {
+      "id": "component_sheet_03_02",
+      "alias": "panel_square",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/panel_square.png",
+      "bounds": [
+        1330,
+        118,
+        2510,
+        1062
+      ],
+      "size": [
+        1180,
+        944
+      ]
+    },
+    {
+      "id": "component_sheet_03_03",
+      "alias": "panel_wide_list",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/panel_wide_list.png",
+      "bounds": [
+        2542,
+        118,
+        3722,
+        1062
+      ],
+      "size": [
+        1180,
+        944
+      ]
+    },
+    {
+      "id": "component_sheet_03_04",
+      "alias": "panel_wide_dials",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/panel_wide_dials.png",
+      "bounds": [
+        118,
+        1098,
+        1298,
+        2042
+      ],
+      "size": [
+        1180,
+        944
+      ]
+    },
+    {
+      "id": "component_sheet_03_05",
+      "alias": "panel_square_list",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/panel_square_list.png",
+      "bounds": [
+        1330,
+        1098,
+        2510,
+        2042
+      ],
+      "size": [
+        1180,
+        944
+      ]
+    },
+    {
+      "id": "component_sheet_03_06",
+      "alias": "panel_square_alt",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/panel_square_alt.png",
+      "bounds": [
+        2542,
+        1098,
+        3722,
+        2042
+      ],
+      "size": [
+        1180,
+        944
+      ]
+    },
+    {
+      "id": "component_sheet_04_01",
+      "alias": "card_frame_01",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_04.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/card_frame_01.png",
+      "bounds": [
+        112,
+        112,
+        1294,
+        1063
+      ],
+      "size": [
+        1182,
+        951
+      ]
+    },
+    {
+      "id": "component_sheet_04_02",
+      "alias": "card_frame_02",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_04.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/card_frame_02.png",
+      "bounds": [
+        1328,
+        112,
+        2511,
+        1063
+      ],
+      "size": [
+        1183,
+        951
+      ]
+    },
+    {
+      "id": "component_sheet_04_03",
+      "alias": "card_frame_03",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_04.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/card_frame_03.png",
+      "bounds": [
+        2545,
+        112,
+        3728,
+        1063
+      ],
+      "size": [
+        1183,
+        951
+      ]
+    },
+    {
+      "id": "component_sheet_04_04",
+      "alias": "modal_frame_01",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_04.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/modal_frame_01.png",
+      "bounds": [
+        112,
+        1097,
+        1294,
+        2048
+      ],
+      "size": [
+        1182,
+        951
+      ]
+    },
+    {
+      "id": "component_sheet_04_05",
+      "alias": "modal_frame_02",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_04.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/modal_frame_02.png",
+      "bounds": [
+        1328,
+        1097,
+        2511,
+        2048
+      ],
+      "size": [
+        1183,
+        951
+      ]
+    },
+    {
+      "id": "component_sheet_04_06",
+      "alias": "modal_frame_03",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/component_sheet/component_sheet_04.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Components/modal_frame_03.png",
+      "bounds": [
+        2545,
+        1097,
+        3728,
+        2048
+      ],
+      "size": [
+        1183,
+        951
+      ]
+    }
+  ],
+  "icons": [
+    {
+      "id": "icon_sheet_01_01",
+      "alias": "icon_sheet_01_01",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_01.png",
+      "bounds": [
+        148,
+        148,
+        584,
+        748
+      ],
+      "size": [
+        436,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_02",
+      "alias": "icon_sheet_01_02",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_02.png",
+      "bounds": [
+        610,
+        148,
+        1047,
+        748
+      ],
+      "size": [
+        437,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_03",
+      "alias": "icon_sheet_01_03",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_03.png",
+      "bounds": [
+        1073,
+        148,
+        1510,
+        748
+      ],
+      "size": [
+        437,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_04",
+      "alias": "icon_sheet_01_04",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_04.png",
+      "bounds": [
+        1536,
+        148,
+        2168,
+        748
+      ],
+      "size": [
+        632,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_05",
+      "alias": "icon_sheet_01_05",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_05.png",
+      "bounds": [
+        2194,
+        148,
+        2689,
+        748
+      ],
+      "size": [
+        495,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_06",
+      "alias": "icon_sheet_01_06",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_06.png",
+      "bounds": [
+        2715,
+        148,
+        3691,
+        748
+      ],
+      "size": [
+        976,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_07",
+      "alias": "icon_sheet_01_07",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_07.png",
+      "bounds": [
+        148,
+        780,
+        584,
+        1380
+      ],
+      "size": [
+        436,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_08",
+      "alias": "icon_sheet_01_08",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_08.png",
+      "bounds": [
+        610,
+        780,
+        1047,
+        1380
+      ],
+      "size": [
+        437,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_09",
+      "alias": "icon_sheet_01_09",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_09.png",
+      "bounds": [
+        1073,
+        780,
+        1510,
+        1380
+      ],
+      "size": [
+        437,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_10",
+      "alias": "icon_sheet_01_10",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_10.png",
+      "bounds": [
+        1536,
+        780,
+        2168,
+        1380
+      ],
+      "size": [
+        632,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_11",
+      "alias": "icon_sheet_01_11",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_11.png",
+      "bounds": [
+        2194,
+        780,
+        2689,
+        1380
+      ],
+      "size": [
+        495,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_12",
+      "alias": "icon_sheet_01_12",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_12.png",
+      "bounds": [
+        2715,
+        780,
+        3691,
+        1380
+      ],
+      "size": [
+        976,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_13",
+      "alias": "icon_sheet_01_13",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_13.png",
+      "bounds": [
+        148,
+        1412,
+        584,
+        2012
+      ],
+      "size": [
+        436,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_14",
+      "alias": "icon_sheet_01_14",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_14.png",
+      "bounds": [
+        610,
+        1412,
+        1047,
+        2012
+      ],
+      "size": [
+        437,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_15",
+      "alias": "icon_sheet_01_15",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_15.png",
+      "bounds": [
+        1073,
+        1412,
+        1510,
+        2012
+      ],
+      "size": [
+        437,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_16",
+      "alias": "icon_sheet_01_16",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_16.png",
+      "bounds": [
+        1536,
+        1412,
+        2168,
+        2012
+      ],
+      "size": [
+        632,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_17",
+      "alias": "icon_sheet_01_17",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_17.png",
+      "bounds": [
+        2194,
+        1412,
+        2689,
+        2012
+      ],
+      "size": [
+        495,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_01_18",
+      "alias": "icon_sheet_01_18",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_01.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_01_18.png",
+      "bounds": [
+        2715,
+        1412,
+        3691,
+        2012
+      ],
+      "size": [
+        976,
+        600
+      ]
+    },
+    {
+      "id": "icon_sheet_02_01",
+      "alias": "icon_sheet_02_01",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_01.png",
+      "bounds": [
+        489,
+        172,
+        932,
+        703
+      ],
+      "size": [
+        443,
+        531
+      ]
+    },
+    {
+      "id": "icon_sheet_02_02",
+      "alias": "icon_sheet_02_02",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_02.png",
+      "bounds": [
+        932,
+        172,
+        1432,
+        703
+      ],
+      "size": [
+        500,
+        531
+      ]
+    },
+    {
+      "id": "icon_sheet_02_03",
+      "alias": "icon_sheet_02_03",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_03.png",
+      "bounds": [
+        1432,
+        172,
+        1935,
+        703
+      ],
+      "size": [
+        503,
+        531
+      ]
+    },
+    {
+      "id": "icon_sheet_02_04",
+      "alias": "icon_sheet_02_04",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_04.png",
+      "bounds": [
+        1935,
+        172,
+        2424,
+        703
+      ],
+      "size": [
+        489,
+        531
+      ]
+    },
+    {
+      "id": "icon_sheet_02_05",
+      "alias": "icon_sheet_02_05",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_05.png",
+      "bounds": [
+        2424,
+        172,
+        2877,
+        703
+      ],
+      "size": [
+        453,
+        531
+      ]
+    },
+    {
+      "id": "icon_sheet_02_06",
+      "alias": "icon_sheet_02_06",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_06.png",
+      "bounds": [
+        2877,
+        172,
+        3366,
+        703
+      ],
+      "size": [
+        489,
+        531
+      ]
+    },
+    {
+      "id": "icon_sheet_02_07",
+      "alias": "icon_sheet_02_07",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_07.png",
+      "bounds": [
+        497,
+        737,
+        1021,
+        1131
+      ],
+      "size": [
+        524,
+        394
+      ]
+    },
+    {
+      "id": "icon_sheet_02_08",
+      "alias": "icon_sheet_02_08",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_08.png",
+      "bounds": [
+        1021,
+        737,
+        1520,
+        1131
+      ],
+      "size": [
+        499,
+        394
+      ]
+    },
+    {
+      "id": "icon_sheet_02_09",
+      "alias": "icon_sheet_02_09",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_09.png",
+      "bounds": [
+        1520,
+        737,
+        2037,
+        1131
+      ],
+      "size": [
+        517,
+        394
+      ]
+    },
+    {
+      "id": "icon_sheet_02_10",
+      "alias": "icon_sheet_02_10",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_10.png",
+      "bounds": [
+        2037,
+        737,
+        2559,
+        1131
+      ],
+      "size": [
+        522,
+        394
+      ]
+    },
+    {
+      "id": "icon_sheet_02_11",
+      "alias": "icon_sheet_02_11",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_11.png",
+      "bounds": [
+        2559,
+        737,
+        3050,
+        1131
+      ],
+      "size": [
+        491,
+        394
+      ]
+    },
+    {
+      "id": "icon_sheet_02_12",
+      "alias": "icon_sheet_02_12",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_12.png",
+      "bounds": [
+        3050,
+        737,
+        3567,
+        1131
+      ],
+      "size": [
+        517,
+        394
+      ]
+    },
+    {
+      "id": "icon_sheet_02_13",
+      "alias": "icon_sheet_02_13",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_13.png",
+      "bounds": [
+        580,
+        1165,
+        1017,
+        1559
+      ],
+      "size": [
+        437,
+        394
+      ]
+    },
+    {
+      "id": "icon_sheet_02_14",
+      "alias": "icon_sheet_02_14",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_14.png",
+      "bounds": [
+        1017,
+        1165,
+        1538,
+        1559
+      ],
+      "size": [
+        521,
+        394
+      ]
+    },
+    {
+      "id": "icon_sheet_02_15",
+      "alias": "icon_sheet_02_15",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_15.png",
+      "bounds": [
+        1538,
+        1165,
+        2058,
+        1559
+      ],
+      "size": [
+        520,
+        394
+      ]
+    },
+    {
+      "id": "icon_sheet_02_16",
+      "alias": "icon_sheet_02_16",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_16.png",
+      "bounds": [
+        2058,
+        1165,
+        2559,
+        1559
+      ],
+      "size": [
+        501,
+        394
+      ]
+    },
+    {
+      "id": "icon_sheet_02_17",
+      "alias": "icon_sheet_02_17",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_17.png",
+      "bounds": [
+        2559,
+        1165,
+        3050,
+        1559
+      ],
+      "size": [
+        491,
+        394
+      ]
+    },
+    {
+      "id": "icon_sheet_02_18",
+      "alias": "icon_sheet_02_18",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_18.png",
+      "bounds": [
+        3050,
+        1165,
+        3551,
+        1559
+      ],
+      "size": [
+        501,
+        394
+      ]
+    },
+    {
+      "id": "icon_sheet_02_19",
+      "alias": "icon_sheet_02_19",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_19.png",
+      "bounds": [
+        497,
+        1593,
+        1021,
+        1988
+      ],
+      "size": [
+        524,
+        395
+      ]
+    },
+    {
+      "id": "icon_sheet_02_20",
+      "alias": "icon_sheet_02_20",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_20.png",
+      "bounds": [
+        1021,
+        1593,
+        1520,
+        1988
+      ],
+      "size": [
+        499,
+        395
+      ]
+    },
+    {
+      "id": "icon_sheet_02_21",
+      "alias": "icon_sheet_02_21",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_21.png",
+      "bounds": [
+        1520,
+        1593,
+        2037,
+        1988
+      ],
+      "size": [
+        517,
+        395
+      ]
+    },
+    {
+      "id": "icon_sheet_02_22",
+      "alias": "icon_sheet_02_22",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_22.png",
+      "bounds": [
+        2037,
+        1593,
+        2559,
+        1988
+      ],
+      "size": [
+        522,
+        395
+      ]
+    },
+    {
+      "id": "icon_sheet_02_23",
+      "alias": "icon_sheet_02_23",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_23.png",
+      "bounds": [
+        2559,
+        1593,
+        3050,
+        1988
+      ],
+      "size": [
+        491,
+        395
+      ]
+    },
+    {
+      "id": "icon_sheet_02_24",
+      "alias": "icon_sheet_02_24",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_02.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_02_24.png",
+      "bounds": [
+        3050,
+        1593,
+        3567,
+        1988
+      ],
+      "size": [
+        517,
+        395
+      ]
+    },
+    {
+      "id": "icon_sheet_03_01",
+      "alias": "icon_sheet_03_01",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_01.png",
+      "bounds": [
+        146,
+        146,
+        717,
+        701
+      ],
+      "size": [
+        571,
+        555
+      ]
+    },
+    {
+      "id": "icon_sheet_03_02",
+      "alias": "icon_sheet_03_02",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_02.png",
+      "bounds": [
+        741,
+        146,
+        1312,
+        701
+      ],
+      "size": [
+        571,
+        555
+      ]
+    },
+    {
+      "id": "icon_sheet_03_03",
+      "alias": "icon_sheet_03_03",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_03.png",
+      "bounds": [
+        1336,
+        146,
+        1908,
+        701
+      ],
+      "size": [
+        572,
+        555
+      ]
+    },
+    {
+      "id": "icon_sheet_03_04",
+      "alias": "icon_sheet_03_04",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_04.png",
+      "bounds": [
+        1932,
+        146,
+        2503,
+        701
+      ],
+      "size": [
+        571,
+        555
+      ]
+    },
+    {
+      "id": "icon_sheet_03_05",
+      "alias": "icon_sheet_03_05",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_05.png",
+      "bounds": [
+        2527,
+        146,
+        3098,
+        701
+      ],
+      "size": [
+        571,
+        555
+      ]
+    },
+    {
+      "id": "icon_sheet_03_06",
+      "alias": "icon_sheet_03_06",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_06.png",
+      "bounds": [
+        3122,
+        146,
+        3694,
+        701
+      ],
+      "size": [
+        572,
+        555
+      ]
+    },
+    {
+      "id": "icon_sheet_03_07",
+      "alias": "icon_sheet_03_07",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_07.png",
+      "bounds": [
+        146,
+        727,
+        717,
+        1139
+      ],
+      "size": [
+        571,
+        412
+      ]
+    },
+    {
+      "id": "icon_sheet_03_08",
+      "alias": "icon_sheet_03_08",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_08.png",
+      "bounds": [
+        741,
+        727,
+        1312,
+        1139
+      ],
+      "size": [
+        571,
+        412
+      ]
+    },
+    {
+      "id": "icon_sheet_03_09",
+      "alias": "icon_sheet_03_09",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_09.png",
+      "bounds": [
+        1336,
+        727,
+        1908,
+        1139
+      ],
+      "size": [
+        572,
+        412
+      ]
+    },
+    {
+      "id": "icon_sheet_03_10",
+      "alias": "icon_sheet_03_10",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_10.png",
+      "bounds": [
+        1932,
+        727,
+        2503,
+        1139
+      ],
+      "size": [
+        571,
+        412
+      ]
+    },
+    {
+      "id": "icon_sheet_03_11",
+      "alias": "icon_sheet_03_11",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_11.png",
+      "bounds": [
+        2527,
+        727,
+        3098,
+        1139
+      ],
+      "size": [
+        571,
+        412
+      ]
+    },
+    {
+      "id": "icon_sheet_03_12",
+      "alias": "icon_sheet_03_12",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_12.png",
+      "bounds": [
+        3122,
+        727,
+        3694,
+        1139
+      ],
+      "size": [
+        572,
+        412
+      ]
+    },
+    {
+      "id": "icon_sheet_03_13",
+      "alias": "icon_sheet_03_13",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_13.png",
+      "bounds": [
+        146,
+        1165,
+        717,
+        1576
+      ],
+      "size": [
+        571,
+        411
+      ]
+    },
+    {
+      "id": "icon_sheet_03_14",
+      "alias": "icon_sheet_03_14",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_14.png",
+      "bounds": [
+        741,
+        1165,
+        1312,
+        1576
+      ],
+      "size": [
+        571,
+        411
+      ]
+    },
+    {
+      "id": "icon_sheet_03_15",
+      "alias": "icon_sheet_03_15",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_15.png",
+      "bounds": [
+        1336,
+        1165,
+        1908,
+        1576
+      ],
+      "size": [
+        572,
+        411
+      ]
+    },
+    {
+      "id": "icon_sheet_03_16",
+      "alias": "icon_sheet_03_16",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_16.png",
+      "bounds": [
+        1932,
+        1165,
+        2503,
+        1576
+      ],
+      "size": [
+        571,
+        411
+      ]
+    },
+    {
+      "id": "icon_sheet_03_17",
+      "alias": "icon_sheet_03_17",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_17.png",
+      "bounds": [
+        2527,
+        1165,
+        3098,
+        1576
+      ],
+      "size": [
+        571,
+        411
+      ]
+    },
+    {
+      "id": "icon_sheet_03_18",
+      "alias": "icon_sheet_03_18",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_18.png",
+      "bounds": [
+        3122,
+        1165,
+        3694,
+        1576
+      ],
+      "size": [
+        572,
+        411
+      ]
+    },
+    {
+      "id": "icon_sheet_03_19",
+      "alias": "icon_sheet_03_19",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_19.png",
+      "bounds": [
+        146,
+        1602,
+        717,
+        2014
+      ],
+      "size": [
+        571,
+        412
+      ]
+    },
+    {
+      "id": "icon_sheet_03_20",
+      "alias": "icon_sheet_03_20",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_20.png",
+      "bounds": [
+        741,
+        1602,
+        1312,
+        2014
+      ],
+      "size": [
+        571,
+        412
+      ]
+    },
+    {
+      "id": "icon_sheet_03_21",
+      "alias": "icon_sheet_03_21",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_21.png",
+      "bounds": [
+        1336,
+        1602,
+        1908,
+        2014
+      ],
+      "size": [
+        572,
+        412
+      ]
+    },
+    {
+      "id": "icon_sheet_03_22",
+      "alias": "icon_sheet_03_22",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_22.png",
+      "bounds": [
+        1932,
+        1602,
+        2503,
+        2014
+      ],
+      "size": [
+        571,
+        412
+      ]
+    },
+    {
+      "id": "icon_sheet_03_23",
+      "alias": "icon_sheet_03_23",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_23.png",
+      "bounds": [
+        2527,
+        1602,
+        3098,
+        2014
+      ],
+      "size": [
+        571,
+        412
+      ]
+    },
+    {
+      "id": "icon_sheet_03_24",
+      "alias": "icon_sheet_03_24",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/icon_sheet/icon_sheet_03.png",
+      "output": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Icons/icon_sheet_03_24.png",
+      "bounds": [
+        3122,
+        1602,
+        3694,
+        2014
+      ],
+      "size": [
+        572,
+        412
+      ]
+    }
+  ],
+  "screens": [
+    {
+      "alias": "screen_main_menu_title",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/main_menu/main_menu_01.png",
+      "output": "C:/Users/jiveg/OneDrive/Desktop/Game Projects/DeadManZone/Assets/_Project/Art/UI/GrittyPostApocalyptic/Screens/screen_main_menu_title.png"
+    },
+    {
+      "alias": "screen_main_menu_buttons",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/main_menu/main_menu_02.png",
+      "output": "C:/Users/jiveg/OneDrive/Desktop/Game Projects/DeadManZone/Assets/_Project/Art/UI/GrittyPostApocalyptic/Screens/screen_main_menu_buttons.png"
+    },
+    {
+      "alias": "screen_main_menu_dark",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/main_menu/main_menu_03.png",
+      "output": "C:/Users/jiveg/OneDrive/Desktop/Game Projects/DeadManZone/Assets/_Project/Art/UI/GrittyPostApocalyptic/Screens/screen_main_menu_dark.png"
+    },
+    {
+      "alias": "hud_quickbar_center",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/game_hud/game_hud_01.png",
+      "output": "C:/Users/jiveg/OneDrive/Desktop/Game Projects/DeadManZone/Assets/_Project/Art/UI/GrittyPostApocalyptic/Screens/hud_quickbar_center.png"
+    },
+    {
+      "alias": "hud_status_bars",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/game_hud/game_hud_02.png",
+      "output": "C:/Users/jiveg/OneDrive/Desktop/Game Projects/DeadManZone/Assets/_Project/Art/UI/GrittyPostApocalyptic/Screens/hud_status_bars.png"
+    },
+    {
+      "alias": "hud_minimap_frame",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/game_hud/game_hud_03.png",
+      "output": "C:/Users/jiveg/OneDrive/Desktop/Game Projects/DeadManZone/Assets/_Project/Art/UI/GrittyPostApocalyptic/Screens/hud_minimap_frame.png"
+    },
+    {
+      "alias": "hud_compass_strip",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/game_hud/game_hud_04.png",
+      "output": "C:/Users/jiveg/OneDrive/Desktop/Game Projects/DeadManZone/Assets/_Project/Art/UI/GrittyPostApocalyptic/Screens/hud_compass_strip.png"
+    },
+    {
+      "alias": "hud_ammo_stamina",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/game_hud/game_hud_05.png",
+      "output": "C:/Users/jiveg/OneDrive/Desktop/Game Projects/DeadManZone/Assets/_Project/Art/UI/GrittyPostApocalyptic/Screens/hud_ammo_stamina.png"
+    },
+    {
+      "alias": "screen_inventory_grid",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/inventory_management/inventory_management_01.png",
+      "output": "C:/Users/jiveg/OneDrive/Desktop/Game Projects/DeadManZone/Assets/_Project/Art/UI/GrittyPostApocalyptic/Screens/screen_inventory_grid.png"
+    },
+    {
+      "alias": "screen_inventory_equipment",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/inventory_management/inventory_management_02.png",
+      "output": "C:/Users/jiveg/OneDrive/Desktop/Game Projects/DeadManZone/Assets/_Project/Art/UI/GrittyPostApocalyptic/Screens/screen_inventory_equipment.png"
+    },
+    {
+      "alias": "screen_crafting_bench",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/crafting_workbench/crafting_workbench_01.png",
+      "output": "C:/Users/jiveg/OneDrive/Desktop/Game Projects/DeadManZone/Assets/_Project/Art/UI/GrittyPostApocalyptic/Screens/screen_crafting_bench.png"
+    },
+    {
+      "alias": "screen_character_stats",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/character_stats/character_stats_01.png",
+      "output": "C:/Users/jiveg/OneDrive/Desktop/Game Projects/DeadManZone/Assets/_Project/Art/UI/GrittyPostApocalyptic/Screens/screen_character_stats.png"
+    },
+    {
+      "alias": "screen_map_full",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/map_navigation/map_navigation_01.png",
+      "output": "C:/Users/jiveg/OneDrive/Desktop/Game Projects/DeadManZone/Assets/_Project/Art/UI/GrittyPostApocalyptic/Screens/screen_map_full.png"
+    },
+    {
+      "alias": "screen_journal_quests",
+      "source": "Assets/_Project/Art/UI/GrittyPostApocalyptic/Sprites/journal_log/journal_log_01.png",
+      "output": "C:/Users/jiveg/OneDrive/Desktop/Game Projects/DeadManZone/Assets/_Project/Art/UI/GrittyPostApocalyptic/Screens/screen_journal_quests.png"
+    }
+  ],
+  "theme_wiring": {
+    "panelSprite": "Components/panel_wide.png",
+    "cardSprite": "Components/card_frame_01.png",
+    "modalFrameSprite": "Components/modal_frame_01.png",
+    "sidebarPanelSprite": "Components/sidebar_panel.png",
+    "bannerSprite": "Components/panel_square.png",
+    "buttonNormalSprite": "Components/btn_normal.png",
+    "accentButtonSprite": "Components/btn_accent.png",
+    "secondaryButtonSprite": "Components/btn_secondary.png",
+    "slotEmptySprite": "Components/slot_empty.png",
+    "slotSelectedSprite": "Components/slot_progress_50.png",
+    "menuBackgroundSprite": "Screens/screen_main_menu_title.png",
+    "runBackgroundSprite": "Screens/screen_inventory_grid.png",
+    "combatBackgroundSprite": "Screens/hud_status_bars.png",
+    "shopBackgroundSprite": "Screens/screen_crafting_bench.png"
+  }
+}

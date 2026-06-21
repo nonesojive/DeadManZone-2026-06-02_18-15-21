@@ -30,6 +30,7 @@ namespace DeadManZone.Presentation.UI
             SetColor(attackSpeedText, secondary);
             SetColor(attackTypeText, secondary);
             SetColor(armorTypeText, secondary);
+            SetColor(primaryTagText, secondary);
             SetColor(synergyLinesText, secondary);
             SetColor(criticalMassText, secondary);
             SetColor(salvageContextText, secondary);
@@ -40,10 +41,87 @@ namespace DeadManZone.Presentation.UI
         private void BindMainStats(PieceCardViewModel model)
         {
             SetText(nameText, model.DisplayName);
-            SetText(hpText, $"HP: {model.Hp}");
-            SetText(damageText, $"DMG: {model.BaseDamage}");
-            SetText(movementSpeedText, $"Move: {model.MovementSpeed}");
-            SetText(attackSpeedText, $"Atk Speed: {model.AttackSpeed}");
+            SetText(hpText, model.Hp.ToString());
+            SetText(damageText, model.BaseDamage.ToString());
+            SetText(movementSpeedText, model.MovementSpeedValue.ToString());
+            SetText(attackSpeedText, model.AttackSpeedValue.ToString());
+        }
+
+        private void BindDedicatedSlots(PieceCardViewModel model)
+        {
+            BindPrimaryTag(model);
+            BindArmorIcon(model);
+            BindAttackTypeIcon(model);
+            BindCombatRoleIcon(model);
+            BindUnitImage();
+        }
+
+        private void BindPrimaryTag(PieceCardViewModel model)
+        {
+            if (primaryTagText == null)
+                return;
+
+            bool hasPrimary = model.PrimaryTag != null
+                && !string.IsNullOrWhiteSpace(model.PrimaryTag.DisplayName);
+            primaryTagText.gameObject.SetActive(hasPrimary);
+            primaryTagText.text = hasPrimary ? model.PrimaryTag.DisplayName : string.Empty;
+        }
+
+        private void BindArmorIcon(PieceCardViewModel model)
+        {
+            if (armorIcon == null)
+                return;
+
+            bool hasArmor = model.ArmorType != ArmorType.None;
+            armorIcon.gameObject.SetActive(hasArmor);
+            if (!hasArmor)
+                return;
+
+            Sprite sprite = icons != null ? icons.GetArmorIcon(model.ArmorType) : null;
+            if (sprite != null)
+                armorIcon.sprite = sprite;
+        }
+
+        private void BindAttackTypeIcon(PieceCardViewModel model)
+        {
+            if (attackTypeIcon == null)
+                return;
+
+            bool hasAttackType = model.AttackType != AttackType.None;
+            attackTypeIcon.gameObject.SetActive(hasAttackType);
+            if (!hasAttackType)
+                return;
+
+            // ponytail: icon catalog fills in when attack-type sprites are imported.
+            Sprite sprite = icons != null ? icons.GetAttackTypeIcon(model.AttackType) : null;
+            if (sprite != null)
+                attackTypeIcon.sprite = sprite;
+        }
+
+        private void BindCombatRoleIcon(PieceCardViewModel model)
+        {
+            if (combatRoleIcon == null)
+                return;
+
+            string roleId = model.CombatRoleTag?.Id;
+            bool hasRole = !string.IsNullOrWhiteSpace(roleId);
+            combatRoleIcon.gameObject.SetActive(hasRole);
+            if (!hasRole)
+                return;
+
+            // ponytail: icon catalog fills in when combat-role sprites are imported.
+            Sprite sprite = icons != null ? icons.GetCombatRoleIcon(roleId) : null;
+            if (sprite != null)
+                combatRoleIcon.sprite = sprite;
+        }
+
+        private void BindUnitImage()
+        {
+            if (unitImage == null)
+                return;
+
+            // ponytail: piece art hook lands when unit portrait pipeline exists.
+            unitImage.gameObject.SetActive(unitImage.sprite != null);
         }
 
         private void BindOptionalSections(PieceCardViewModel model)
@@ -59,16 +137,12 @@ namespace DeadManZone.Presentation.UI
 
         private void BindTagChips(PieceCardViewModel model)
         {
-            int visibleTagCount = model.IdentityTags.Count + model.OptionalTags.Count;
-            int totalChipCount = visibleTagCount + (model.OverflowCount > 0 ? 1 : 0);
-            EnsureChipCount(totalChipCount);
+            int visibleTagCount = model.ChipTags.Count + (model.OverflowCount > 0 ? 1 : 0);
+            EnsureChipCount(visibleTagCount);
 
             int index = 0;
-            for (int i = 0; i < model.IdentityTags.Count; i++)
-                SetChip(index++, model.IdentityTags[i]?.DisplayName);
-
-            for (int i = 0; i < model.OptionalTags.Count; i++)
-                SetChip(index++, model.OptionalTags[i]?.DisplayName);
+            for (int i = 0; i < model.ChipTags.Count; i++)
+                SetChip(index++, model.ChipTags[i]?.DisplayName);
 
             if (model.OverflowCount > 0)
                 SetChip(index++, $"+{model.OverflowCount}");
@@ -95,6 +169,13 @@ namespace DeadManZone.Presentation.UI
             if (attackTypeText == null)
                 return;
 
+            // Authored cards use AttackTypeIcon_UnitCard; keep legacy text for procedural fallback only.
+            if (!UsesProceduralFallback)
+            {
+                attackTypeText.gameObject.SetActive(false);
+                return;
+            }
+
             bool hasAttackType = model.AttackType != AttackType.None;
             attackTypeText.gameObject.SetActive(hasAttackType);
             if (!hasAttackType)
@@ -110,6 +191,12 @@ namespace DeadManZone.Presentation.UI
         {
             if (armorTypeText == null)
                 return;
+
+            if (!UsesProceduralFallback)
+            {
+                armorTypeText.gameObject.SetActive(false);
+                return;
+            }
 
             bool hasArmorType = model.ArmorType != ArmorType.None;
             armorTypeText.gameObject.SetActive(hasArmorType);

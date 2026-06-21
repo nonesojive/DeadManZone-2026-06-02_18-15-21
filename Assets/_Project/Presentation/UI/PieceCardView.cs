@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Tags;
 using DeadManZone.Presentation.Visual;
@@ -21,6 +22,12 @@ namespace DeadManZone.Presentation.UI
         [SerializeField] private TMP_Text damageText;
         [SerializeField] private TMP_Text movementSpeedText;
         [SerializeField] private TMP_Text attackSpeedText;
+        [SerializeField] private Image armorIcon;
+        [SerializeField] private Image attackTypeIcon;
+        [SerializeField] private Image combatRoleIcon;
+        [SerializeField] private Image unitImage;
+        [SerializeField] private TMP_Text primaryTagText;
+        [SerializeField] private UnitCardIconsSO icons;
         [SerializeField] private TMP_Text attackTypeText;
         [SerializeField] private TMP_Text armorTypeText;
         [SerializeField] private TMP_Text synergyText;
@@ -52,6 +59,7 @@ namespace DeadManZone.Presentation.UI
             ApplyTheme();
 
             BindMainStats(model);
+            BindDedicatedSlots(model);
             BindOptionalSections(model);
             BindTagChips(model);
             BindOverflowTooltip(overflowTooltip);
@@ -93,7 +101,13 @@ namespace DeadManZone.Presentation.UI
             TMP_Text damage = null,
             TMP_Text movementSpeed = null,
             TMP_Text attackSpeed = null,
-            TMP_Text attackType = null,
+            Image armor = null,
+            Image attackType = null,
+            Image combatRole = null,
+            Image unitArt = null,
+            TMP_Text primaryTag = null,
+            UnitCardIconsSO cardIcons = null,
+            TMP_Text attackTypeLabel = null,
             TMP_Text armorType = null,
             TMP_Text synergy = null,
             TMP_Text synergyLines = null,
@@ -111,7 +125,13 @@ namespace DeadManZone.Presentation.UI
             damageText = damage;
             movementSpeedText = movementSpeed;
             attackSpeedText = attackSpeed;
-            attackTypeText = attackType;
+            armorIcon = armor;
+            attackTypeIcon = attackType;
+            combatRoleIcon = combatRole;
+            unitImage = unitArt;
+            primaryTagText = primaryTag;
+            icons = cardIcons;
+            attackTypeText = attackTypeLabel;
             armorTypeText = armorType;
             synergyText = synergy;
             synergyLinesText = synergyLines;
@@ -126,6 +146,14 @@ namespace DeadManZone.Presentation.UI
 
         public string NameTextForTests => nameText?.text;
         public string HpTextForTests => hpText?.text;
+        public string DamageTextForTests => damageText?.text;
+        public string MovementSpeedTextForTests => movementSpeedText?.text;
+        public string AttackSpeedTextForTests => attackSpeedText?.text;
+        public string PrimaryTagTextForTests => primaryTagText?.text;
+        public Sprite ArmorIconSpriteForTests => armorIcon?.sprite;
+        public Sprite AttackTypeIconSpriteForTests => attackTypeIcon?.sprite;
+        public Sprite CombatRoleIconSpriteForTests => combatRoleIcon?.sprite;
+        public int TagChipCountForTests => _chips.Count(c => c != null && c.gameObject.activeSelf);
 #endif
 
         private void EnsureRuntimeUi()

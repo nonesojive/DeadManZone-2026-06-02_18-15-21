@@ -15,6 +15,7 @@ MonoBehaviour:
   backgroundColor: {r: 0.06, g: 0.07, b: 0.08, a: 1}
   panelColor: {r: 0.14, g: 0.15, b: 0.13, a: 0.96}
   cardColor: {r: 0.18, g: 0.19, b: 0.17, a: 0.98}
+  resourcePanelBackgroundColor: {r: 0.24, g: 0.16, b: 0.09, a: 1}
   accentColor: {r: 0.85, g: 0.65, b: 0.2, a: 1}
   accentMutedColor: {r: 0.55, g: 0.42, b: 0.12, a: 1}
   dangerColor: {r: 0.78, g: 0.22, b: 0.15, a: 1}
@@ -38,10 +39,10 @@ MonoBehaviour:
   shopBackgroundSprite: {fileID: 21300000, guid: 54bf25e70d3f4fd88f3f37a179b12cde, type: 3}
   shopBackgroundScrimColor: {r: 0.04, g: 0.05, b: 0.07, a: 0.38}
   shopLaneTintScaleWithBackground: 0.45
-  terrainZoneTintStrength: 0.12
-  boardCellZoneOverlayAlpha: 0.1
-  boardGridLineColor: {r: 1, g: 1, b: 1, a: 0.14}
-  boardZoneDividerColor: {r: 1, g: 1, b: 1, a: 0.28}
+  terrainZoneTintStrength: 0.08
+  boardCellZoneOverlayAlpha: 0
+  boardGridLineColor: {r: 1, g: 1, b: 1, a: 0.12}
+  boardZoneDividerColor: {r: 1, g: 1, b: 1, a: 0.22}
   neutralTokenBackgroundColor: {r: 0.32, g: 0.33, b: 0.36, a: 0.42}
   unitTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
   buildingTint: {r: 0.48, g: 0.4, b: 0.28, a: 1}
@@ -67,7 +68,7 @@ MonoBehaviour:
   sellZoneIconSprite: {fileID: 21300000, guid: 757af5ce0e0dec74e9d3ef425eea5157, type: 3}
   slotEmptySprite: {fileID: 21300000, guid: 5406699c47174d5abfc2dc07070387a4, type: 3}
   slotSelectedSprite: {fileID: 21300000, guid: 98865779e5fe47a8878cd20a4e9c2acd, type: 3}
-  storageSlotEmptySprite: {fileID: 21300000, guid: 91abd64b6c3f409bb9c51df940b199f1, type: 3}
+  storageSlotEmptySprite: {fileID: 21300000, guid: e26fe131a1800ab4da870aa952ac8476, type: 3}
   storageSlotSelectedSprite: {fileID: 21300000, guid: bee5f73dba3147858bd789d6ee36cc33, type: 3}
   menuBackgroundSprite: {fileID: 21300000, guid: e84b64b24a5a48058dc39484d5888ad2, type: 3}
   runBackgroundSprite: {fileID: 21300000, guid: 5574e009ffaf41f686f2d6f79376eed7, type: 3}

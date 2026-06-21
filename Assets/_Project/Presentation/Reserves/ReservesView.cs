@@ -55,6 +55,7 @@ namespace DeadManZone.Presentation.Reserves
                 return;
 
             EnsureGridBuilt();
+            ApplyReserveSlotVisuals();
             SyncGridFromBoardView();
             SyncPiecesOverlay();
             var registry = _database != null ? ContentRegistryProvider.Build(_database) : ContentRegistryProvider.Build(ContentDatabase.Load());
@@ -228,7 +229,7 @@ namespace DeadManZone.Presentation.Reserves
                     if (tileView == null)
                         tileView = tileObject.AddComponent<ReservesTileView>();
 
-                    tileView.Initialize(coord, Theme.GetReserveSlotColor());
+                    tileView.Initialize(coord, Theme.GetReserveSlotColor(), PickReserveSlotSprite(coord));
                     if (tileObject.GetComponent<ReservesTileDropTarget>() == null)
                         tileObject.AddComponent<ReservesTileDropTarget>();
                     _tiles[coord] = tileView;
@@ -255,6 +256,16 @@ namespace DeadManZone.Presentation.Reserves
 
             _shapeVisualsByInstance.Clear();
         }
+
+        private void ApplyReserveSlotVisuals()
+        {
+            var fallback = Theme.GetReserveSlotColor();
+            foreach (var pair in _tiles)
+                pair.Value.ApplySlotVisual(PickReserveSlotSprite(pair.Key), fallback);
+        }
+
+        private static Sprite PickReserveSlotSprite(GridCoord coord) =>
+            BoardTerrainArtProvider.Current?.PickReserveSlot(coord);
 
         private UiThemeSO Theme => theme != null ? theme : UiThemeProvider.Current;
     }

@@ -1,0 +1,21 @@
+LICENSE — Gritty Post-Apocalyptic Survival UI
+Copyright © 2026 Nexa Visuals. All rights reserved.
+
+GRANT OF LICENSE
+This license grants you (the purchaser) a non-exclusive, worldwide,
+perpetual commercial license to:
+- Use in unlimited personal and commercial game projects
+- Use in applications, UI/UX designs, and interactive media
+- Use in marketing materials for projects that include these assets
+- Modify assets for your specific project needs
+
+RESTRICTIONS
+- Do NOT resell or redistribute the raw asset pack as a standalone product
+- Do NOT claim exclusive ownership of the individual assets
+- Do NOT use assets to train competing AI image generation models
+
+DISCLAIMER
+Assets are AI-generated. No warranty is provided for trademark non-infringement.
+Buyer is responsible for compliance with applicable laws and platform policies.
+
+Version 1.0

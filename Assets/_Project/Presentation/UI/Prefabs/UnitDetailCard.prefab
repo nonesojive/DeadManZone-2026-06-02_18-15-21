@@ -1241,9 +1241,15 @@ MonoBehaviour:
   theme: {fileID: 11400000, guid: 52fb4f6b433a877438140731d0092e44, type: 2}
   nameText: {fileID: 2010694672249395250}
   hpText: {fileID: 5963405806069089106}
-  damageText: {fileID: 0}
-  movementSpeedText: {fileID: 0}
-  attackSpeedText: {fileID: 0}
+  damageText: {fileID: 3511467988422773178}
+  movementSpeedText: {fileID: 9045097506945692878}
+  attackSpeedText: {fileID: 5489463982279539682}
+  armorIcon: {fileID: 97084602184610343}
+  attackTypeIcon: {fileID: 4199944713135651160}
+  combatRoleIcon: {fileID: 3130187621761693755}
+  unitImage: {fileID: 6455668430826285}
+  primaryTagText: {fileID: 2689795422831892271}
+  icons: {fileID: 11400000, guid: 9c4e2b1f8a3d4e5f6a7b8c9d0e1f2a3b, type: 2}
   attackTypeText: {fileID: 0}
   armorTypeText: {fileID: 0}
   synergyText: {fileID: 0}

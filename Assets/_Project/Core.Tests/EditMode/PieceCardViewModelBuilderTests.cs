@@ -39,9 +39,13 @@ namespace DeadManZone.Core.Tests.EditMode
             Assert.AreEqual(10, model.Hp);
             Assert.AreEqual(4, model.BaseDamage);
             Assert.AreEqual(MovementSpeedTier.Medium, model.MovementSpeed);
+            Assert.AreEqual(5, model.MovementSpeedValue);
             Assert.AreEqual(AttackSpeedTier.Slow, model.AttackSpeed);
             Assert.AreEqual(AttackType.Ballistic, model.AttackType);
             Assert.AreEqual(ArmorType.Light, model.ArmorType);
+
+            Assert.AreEqual(GameTagIds.Infantry, model.PrimaryTag.Id);
+            Assert.AreEqual(GameTagIds.Assault, model.CombatRoleTag.Id);
 
             Assert.IsTrue(model.IdentityTags.Any(t => t.Id == GameTagIds.Infantry));
             Assert.IsTrue(model.IdentityTags.Any(t => t.Id == GameTagIds.Assault));
@@ -49,9 +53,14 @@ namespace DeadManZone.Core.Tests.EditMode
             Assert.IsTrue(model.IdentityTags.Any(t => t.Id == GameTagIds.Ballistic));
             Assert.IsFalse(model.IdentityTags.Any(t => t.Id == GameTagIds.Combatant));
 
+            Assert.IsFalse(model.ChipTags.Any(t => t.Id == GameTagIds.Infantry));
+            Assert.IsFalse(model.ChipTags.Any(t => t.Id == GameTagIds.Assault));
+            Assert.IsFalse(model.ChipTags.Any(t => t.Id == GameTagIds.Ballistic));
+            Assert.IsTrue(model.ChipTags.Any(t => t.Id == "neutral"));
+
             Assert.AreEqual(1, model.OptionalTags.Count);
+            Assert.AreEqual(1, model.ChipTags.Count(t => t.Id == "flamethrower"));
             Assert.AreEqual(0, model.OverflowCount);
-            Assert.IsTrue(model.OptionalTags.Any(t => t.Id == "flamethrower"));
         }
 
         [Test]

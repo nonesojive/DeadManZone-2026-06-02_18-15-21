@@ -21,6 +21,9 @@ namespace DeadManZone.Data
         public Sprite[] frontTiles = System.Array.Empty<Sprite>();
         public Sprite[] neutralTiles = System.Array.Empty<Sprite>();
 
+        [Header("Reserves slot pool")]
+        public Sprite[] reserveSlotTiles = System.Array.Empty<Sprite>();
+
         public Sprite PickTile(ZoneType zone, GridCoord coord)
         {
             if (cellSprite != null)
@@ -32,6 +35,15 @@ namespace DeadManZone.Data
 
             int index = Mathf.Abs(coord.X * 73 + coord.Y * 97) % pool.Length;
             return pool[index];
+        }
+
+        public Sprite PickReserveSlot(GridCoord coord)
+        {
+            if (reserveSlotTiles == null || reserveSlotTiles.Length == 0)
+                return null;
+
+            int index = Mathf.Abs(coord.X * 53 + coord.Y * 89) % reserveSlotTiles.Length;
+            return reserveSlotTiles[index];
         }
 
         public bool HasBattlefieldBackdrop => battlefieldBackdrop != null;

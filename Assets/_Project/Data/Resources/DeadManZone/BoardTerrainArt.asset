@@ -13,18 +13,31 @@ MonoBehaviour:
   m_Name: BoardTerrainArt
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.BoardTerrainArtSO
   battlefieldBackdrop: {fileID: 0}
-  cellSprite: {fileID: 21300000, guid: 657bab830b9cad846a37e6189b94c89f, type: 3}
+  cellSprite: {fileID: 0}
   rearTiles:
-  - {fileID: 21300000, guid: 2625c54758009504393aebcb5020a15c, type: 3}
-  - {fileID: 21300000, guid: 9ea69126b18b0ad42a81c19f57aa44f0, type: 3}
+  - {fileID: 21300000, guid: 605737e1c3fd56c4d82abdc1be039312, type: 3}
+  - {fileID: 21300000, guid: 7fcd54dcdd2b12b49a01d0db17217223, type: 3}
+  - {fileID: 21300000, guid: f881e668b27f5454590640c66b36797c, type: 3}
+  - {fileID: 21300000, guid: e20e4c6079ce8b8498c3c0b86ee9bbf2, type: 3}
+  - {fileID: 21300000, guid: 1a7c3421e4202614db1901366c4fa3aa, type: 3}
   supportTiles:
-  - {fileID: 21300000, guid: a3768a35cbb693f499d8f19c4c60d184, type: 3}
-  - {fileID: 21300000, guid: 7a68deeb615494c48bbb2922b39d9fb9, type: 3}
-  - {fileID: 21300000, guid: 657bab830b9cad846a37e6189b94c89f, type: 3}
-  - {fileID: 21300000, guid: 0f4a0c99025ef514495690f52eab6b9f, type: 3}
+  - {fileID: 21300000, guid: 0c6117833bdb8034f942cb30e41f5775, type: 3}
+  - {fileID: 21300000, guid: 7fd360ce5288bb34ab58153434363277, type: 3}
+  - {fileID: 21300000, guid: abd8277b0f8254f48a289db857b4db63, type: 3}
+  - {fileID: 21300000, guid: a78557b9136b2ce47a71ef9701ce1c08, type: 3}
+  - {fileID: 21300000, guid: 01668bc8d038e1c45be3f47ef1cfbd3d, type: 3}
+  - {fileID: 21300000, guid: 2daa66326871f8c49bec4e8d3b583cd9, type: 3}
   frontTiles:
-  - {fileID: 21300000, guid: 93d9a10f345a82d4083ccb974b80a029, type: 3}
-  - {fileID: 21300000, guid: dfd662df0feee1b4a851435c6b7750c7, type: 3}
-  - {fileID: 21300000, guid: 1beda1153e1300b41bf1825ce4d8459f, type: 3}
-  - {fileID: 21300000, guid: 3999fdd106b14fc49915c7be1ff49911, type: 3}
+  - {fileID: 21300000, guid: c3b082889c81818489a2156113155c61, type: 3}
+  - {fileID: 21300000, guid: 4c919e712e6b0f34388320504a665dd5, type: 3}
+  - {fileID: 21300000, guid: 859b250f273c7144880ffa4db3db260d, type: 3}
+  - {fileID: 21300000, guid: fa85df1d24e8a164586ee0200a7703df, type: 3}
+  - {fileID: 21300000, guid: 12496919c1d07e94fbf61d74573559fb, type: 3}
+  - {fileID: 21300000, guid: e7f64e5b87126c945861e13748fe2826, type: 3}
   neutralTiles: []
+  reserveSlotTiles:
+  - {fileID: 21300000, guid: e26fe131a1800ab4da870aa952ac8476, type: 3}
+  - {fileID: 21300000, guid: f7545520c9d510f4a86575f015373a22, type: 3}
+  - {fileID: 21300000, guid: d1443d0a4a214e143982175f6884dac1, type: 3}
+  - {fileID: 21300000, guid: 21c797c743b513045b4644aca3279a90, type: 3}
+  - {fileID: 21300000, guid: e393391d81368764a836e63bf898ae5e, type: 3}
