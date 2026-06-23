@@ -64,9 +64,9 @@ namespace DeadManZone.Presentation.MainMenu
             if (ironVanguardButton != null)
                 ironVanguardButton.onClick.AddListener(() => StartFaction(FactionIds.IronVanguard));
             if (dustScourgeButton != null)
-                dustScourgeButton.onClick.AddListener(() => StartFaction("FactionIds.DustScourge"));
+                dustScourgeButton.onClick.AddListener(() => StartFaction(FactionIds.DustScourge));
             if (cartelButton != null)
-                cartelButton.onClick.AddListener(() => StartFaction("FactionIds.CartelOfEchoes"));
+                cartelButton.onClick.AddListener(() => StartFaction(FactionIds.CartelOfEchoes));
             if (factionBackButton != null)
                 factionBackButton.onClick.AddListener(ShowMainPanel);
 
@@ -99,8 +99,8 @@ namespace DeadManZone.Presentation.MainMenu
         private void RefreshFactionButtons()
         {
             SetFactionButton(ironVanguardButton, FactionIds.IronVanguard, "IronMarch Union");
-            SetFactionButton(dustScourgeButton, "FactionIds.DustScourge", "Dust Scourge");
-            SetFactionButton(cartelButton, "FactionIds.CartelOfEchoes", "Cartel of Echoes");
+            SetFactionButton(dustScourgeButton, FactionIds.DustScourge, "Dust Scourge");
+            SetFactionButton(cartelButton, FactionIds.CartelOfEchoes, "Cartel of Echoes");
         }
 
         private static void SetFactionButton(Button button, string factionId, string displayName)

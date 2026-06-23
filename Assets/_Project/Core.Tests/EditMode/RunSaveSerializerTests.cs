@@ -1,4 +1,5 @@
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Run;
@@ -186,14 +187,14 @@ namespace DeadManZone.Core.Tests
         {
             var state = new RunState
             {
-                LastEnemyFactionId = "FactionIds.DustScourge",
+                LastEnemyFactionId = FactionIds.DustScourge,
                 SalvageChancePercent = 23,
                 SaveSchemaVersion = 6
             };
 
             var loaded = RunSaveSerializer.FromJson(RunSaveSerializer.ToJson(state));
 
-            Assert.AreEqual("FactionIds.DustScourge", loaded.LastEnemyFactionId);
+            Assert.AreEqual(FactionIds.DustScourge, loaded.LastEnemyFactionId);
             Assert.AreEqual(23, loaded.SalvageChancePercent);
             Assert.AreEqual(6, loaded.SaveSchemaVersion);
         }

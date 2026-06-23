@@ -79,8 +79,8 @@ namespace DeadManZone.Core.Meta
             data.TotalRunsCompleted++;
             data.TotalFightsWon += fightsCleared;
 
-            UnlockFaction("FactionIds.DustScourge");
-            UnlockFaction("FactionIds.CartelOfEchoes");
+            UnlockFaction(FactionIds.DustScourge);
+            UnlockFaction(FactionIds.CartelOfEchoes);
 
             data.LeaderboardEntries.Add(new LeaderboardEntryRecord
             {

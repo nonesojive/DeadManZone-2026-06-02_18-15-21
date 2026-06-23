@@ -103,7 +103,7 @@ namespace DeadManZone.Core.Tests.EditMode
             var context = new PieceCardBuildContext
             {
                 IsSalvaged = true,
-                LastEnemyFactionId = "FactionIds.DustScourge",
+                LastEnemyFactionId = FactionIds.DustScourge,
                 LastEnemyFactionDisplayName = "Dust Scourge"
             };
 

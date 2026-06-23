@@ -57,10 +57,10 @@ namespace DeadManZone.Core.Meta
                 case FactionIds.IronVanguard:
                     yield return AchievementIds.WinIronmarch;
                     break;
-                case "FactionIds.DustScourge":
+                case FactionIds.DustScourge:
                     yield return AchievementIds.WinDustScourge;
                     break;
-                case "FactionIds.CartelOfEchoes":
+                case FactionIds.CartelOfEchoes:
                     yield return AchievementIds.WinCartel;
                     break;
             }

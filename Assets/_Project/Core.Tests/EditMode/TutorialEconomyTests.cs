@@ -1,3 +1,4 @@
+using DeadManZone.Core;
 using DeadManZone.Data;
 using NUnit.Framework;
 

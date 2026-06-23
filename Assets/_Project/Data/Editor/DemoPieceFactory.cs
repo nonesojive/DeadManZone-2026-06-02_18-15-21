@@ -148,18 +148,18 @@ namespace DeadManZone.Data.Editor
         private static PieceDefinitionSO[] CreateDustScourgePieces() => new[]
         {
             SaveMappedPiece("dust_hq", "Nomad Command", PieceCategory.Building, ShopLane.Defensive,
-                DemoSandboxShapes.HorizontalPair, "FactionIds.DustScourge", maxHp: 220, goldCost: 0, manpowerCost: 0,
+                DemoSandboxShapes.HorizontalPair, FactionIds.DustScourge, maxHp: 220, goldCost: 0, manpowerCost: 0,
                 includeInShopPool: false),
             SaveMappedPiece("sand_raider", "Sand Raider", PieceCategory.Unit, ShopLane.Offensive,
-                DemoSandboxShapes.Single, "FactionIds.DustScourge",
+                DemoSandboxShapes.Single, FactionIds.DustScourge,
                 maxHp: 90, baseDamage: 24, cooldownTicks: 2, goldCost: 6,
                 attackType: AttackType.Melee, armorType: ArmorType.Light, movementSpeed: MovementSpeedTier.High),
             SaveMappedPiece("scrap_rig", "Scrap Rig", PieceCategory.Unit, ShopLane.Offensive,
-                DemoSandboxShapes.HorizontalPair, "FactionIds.DustScourge",
+                DemoSandboxShapes.HorizontalPair, FactionIds.DustScourge,
                 maxHp: 160, baseDamage: 16, goldCost: 7,
                 attackType: AttackType.Shredding, armorType: ArmorType.Medium),
             SaveMappedPiece("toxin_launcher", "Toxin Launcher", PieceCategory.Hybrid, ShopLane.Specialty,
-                DemoSandboxShapes.Single, "FactionIds.DustScourge",
+                DemoSandboxShapes.Single, FactionIds.DustScourge,
                 maxHp: 100, baseDamage: 32, goldCost: 9, requisitionCost: 2,
                 grantedAbility: GrantedAbility.GrenadeLob,
                 attackType: AttackType.Gas, armorType: ArmorType.Light)
@@ -168,19 +168,19 @@ namespace DeadManZone.Data.Editor
         private static PieceDefinitionSO[] CreateCartelPieces() => new[]
         {
             SaveMappedPiece("echo_hq", "Echo Nexus", PieceCategory.Building, ShopLane.Defensive,
-                DemoSandboxShapes.HorizontalPair, "FactionIds.CartelOfEchoes", maxHp: 200, goldCost: 0, manpowerCost: 0,
+                DemoSandboxShapes.HorizontalPair, FactionIds.CartelOfEchoes, maxHp: 200, goldCost: 0, manpowerCost: 0,
                 includeInShopPool: false),
             SaveMappedPiece("phantom_agent", "Phantom Agent", PieceCategory.Unit, ShopLane.Offensive,
-                DemoSandboxShapes.Single, "FactionIds.CartelOfEchoes",
+                DemoSandboxShapes.Single, FactionIds.CartelOfEchoes,
                 maxHp: 70, baseDamage: 24, cooldownTicks: 2, goldCost: 7,
                 abilityTags: new[] { GameTagIds.Stealth },
                 attackType: AttackType.Piercing, armorType: ArmorType.Light,
                 mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, GameTagIds.Combatant)),
             SaveMappedPiece("signal_relay", "Signal Relay", PieceCategory.Building, ShopLane.Defensive,
-                DemoSandboxShapes.Single, "FactionIds.CartelOfEchoes",
+                DemoSandboxShapes.Single, FactionIds.CartelOfEchoes,
                 maxHp: 110, goldCost: 6, musterPerShop: 1, shopModifiers: ShopModifierFlags.EnemyTagPreview),
             SaveMappedPiece("resonance_cannon", "Resonance Cannon", PieceCategory.Hybrid, ShopLane.Specialty,
-                DemoSandboxShapes.HorizontalPair, "FactionIds.CartelOfEchoes",
+                DemoSandboxShapes.HorizontalPair, FactionIds.CartelOfEchoes,
                 maxHp: 130, baseDamage: 40, goldCost: 10, requisitionCost: 2,
                 attackType: AttackType.Explosive, armorType: ArmorType.Medium, attackRange: AttackRangeTier.Long)
         };

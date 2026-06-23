@@ -141,8 +141,8 @@ namespace DeadManZone.Data.Editor
             return factionId switch
             {
                 FactionIds.IronVanguard => new Color(0.22f, 0.28f, 0.38f, 0.45f),
-                "FactionIds.DustScourge" => new Color(0.42f, 0.34f, 0.24f, 0.45f),
-                "FactionIds.CartelOfEchoes" => new Color(0.32f, 0.26f, 0.42f, 0.45f),
+                FactionIds.DustScourge => new Color(0.42f, 0.34f, 0.24f, 0.45f),
+                FactionIds.CartelOfEchoes => new Color(0.32f, 0.26f, 0.42f, 0.45f),
                 "crimson_legion" => new Color(0.45f, 0.20f, 0.18f, 0.45f),
                 "ash_wraiths" => new Color(0.28f, 0.28f, 0.30f, 0.45f),
                 "neutral" => new Color(0.32f, 0.33f, 0.36f, 0.42f),
@@ -175,8 +175,8 @@ namespace DeadManZone.Data.Editor
         {
             return factionId switch
             {
-                "FactionIds.DustScourge" => new Color(r + 0.1f, g + 0.05f, b - 0.1f, 1f),
-                "FactionIds.CartelOfEchoes" => new Color(r - 0.05f, g, b + 0.15f, 1f),
+                FactionIds.DustScourge => new Color(r + 0.1f, g + 0.05f, b - 0.1f, 1f),
+                FactionIds.CartelOfEchoes => new Color(r - 0.05f, g, b + 0.15f, 1f),
                 "crimson_legion" => new Color(r + 0.15f, g - 0.1f, b - 0.1f, 1f),
                 "ash_wraiths" => new Color(r - 0.05f, g - 0.05f, b - 0.05f, 1f),
                 _ => new Color(r, g, b, 1f)

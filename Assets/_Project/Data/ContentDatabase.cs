@@ -16,8 +16,8 @@ namespace DeadManZone.Data
         public static readonly string[] PlayableFactionIds =
         {
             FactionIds.IronVanguard,
-            "FactionIds.DustScourge",
-            "FactionIds.CartelOfEchoes"
+            FactionIds.DustScourge,
+            FactionIds.CartelOfEchoes
         };
 
         /// <summary>Demo shop roster piece ids.</summary>

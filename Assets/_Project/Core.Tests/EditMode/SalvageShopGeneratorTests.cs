@@ -1,4 +1,5 @@
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Content;
@@ -11,7 +12,7 @@ namespace DeadManZone.Core.Tests
     public sealed class SalvageShopGeneratorTests
     {
         private const string PlayerFactionId = FactionIds.IronVanguard;
-        private const string EnemyFactionId = "FactionIds.DustScourge";
+        private const string EnemyFactionId = FactionIds.DustScourge;
 
         private static ContentRegistry CreateSalvageRegistry()
         {
