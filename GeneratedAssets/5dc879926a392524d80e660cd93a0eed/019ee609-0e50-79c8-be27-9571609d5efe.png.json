@@ -1,0 +1,31 @@
+{
+    "asset": "5dc879926a392524d80e660cd93a0eed",
+    "fileName": "019ee609-0e50-79c8-be27-9571609d5efe.png",
+    "prompt": "Steel Panel on an Underground bunker wall\nStyle: steel, riveted panels, worn industrial textures.\nMood: Gritty • Scavenged • Weathered • Functional • Urgent",
+    "negativePrompt": "",
+    "model": "game-ui-essentials-2",
+    "modelName": "Game UI Essentials 2.0",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

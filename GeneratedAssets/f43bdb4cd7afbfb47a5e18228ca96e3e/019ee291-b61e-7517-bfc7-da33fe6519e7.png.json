@@ -1,0 +1,46 @@
+{
+    "asset": "f43bdb4cd7afbfb47a5e18228ca96e3e",
+    "fileName": "019ee291-b61e-7517-bfc7-da33fe6519e7.png",
+    "prompt": "A Square frame\nStyle: Corroded steel, rust-orange accents, riveted panels, worn industrial textures.\nMood: Gritty • Scavenged • Weathered • Functional • Urgent",
+    "negativePrompt": "",
+    "model": "game-ui-essentials-2",
+    "modelName": "Game UI Essentials 2.0",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "441b61eb779e0954c94ef1686194d383",
+                "unlabeledIndex": -1
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": [
+            {
+                "key": "shadow_mode",
+                "value": ""
+            }
+        ]
+    }
+}

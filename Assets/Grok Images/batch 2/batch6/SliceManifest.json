@@ -1,0 +1,4661 @@
+{
+  "sheets": 24,
+  "outputs": [
+    {
+      "id": "037c2cd3_01",
+      "source": "grok-image-037c2cd3-692e-43bd-ad98-e04b070cd14f.jpg",
+      "bounds": [
+        23,
+        233,
+        169,
+        475
+      ],
+      "size": [
+        146,
+        242
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/037c2cd3_01.png"
+    },
+    {
+      "id": "037c2cd3_02",
+      "source": "grok-image-037c2cd3-692e-43bd-ad98-e04b070cd14f.jpg",
+      "bounds": [
+        188,
+        189,
+        352,
+        475
+      ],
+      "size": [
+        164,
+        286
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/037c2cd3_02.png"
+    },
+    {
+      "id": "037c2cd3_03",
+      "source": "grok-image-037c2cd3-692e-43bd-ad98-e04b070cd14f.jpg",
+      "bounds": [
+        371,
+        219,
+        535,
+        506
+      ],
+      "size": [
+        164,
+        287
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/037c2cd3_03.png"
+    },
+    {
+      "id": "037c2cd3_04",
+      "source": "grok-image-037c2cd3-692e-43bd-ad98-e04b070cd14f.jpg",
+      "bounds": [
+        554,
+        214,
+        718,
+        431
+      ],
+      "size": [
+        164,
+        217
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/037c2cd3_04.png"
+    },
+    {
+      "id": "037c2cd3_05",
+      "source": "grok-image-037c2cd3-692e-43bd-ad98-e04b070cd14f.jpg",
+      "bounds": [
+        737,
+        225,
+        895,
+        496
+      ],
+      "size": [
+        158,
+        271
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/037c2cd3_05.png"
+    },
+    {
+      "id": "037c2cd3_06",
+      "source": "grok-image-037c2cd3-692e-43bd-ad98-e04b070cd14f.jpg",
+      "bounds": [
+        920,
+        212,
+        1084,
+        509
+      ],
+      "size": [
+        164,
+        297
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/037c2cd3_06.png"
+    },
+    {
+      "id": "037c2cd3_07",
+      "source": "grok-image-037c2cd3-692e-43bd-ad98-e04b070cd14f.jpg",
+      "bounds": [
+        1103,
+        251,
+        1280,
+        485
+      ],
+      "size": [
+        177,
+        234
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/037c2cd3_07.png"
+    },
+    {
+      "id": "09ee1410_01",
+      "source": "grok-image-09ee1410-c291-4d67-b13d-e95cdd5f8272.jpg",
+      "bounds": [
+        14,
+        254,
+        149,
+        471
+      ],
+      "size": [
+        135,
+        217
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/09ee1410_01.png"
+    },
+    {
+      "id": "09ee1410_02",
+      "source": "grok-image-09ee1410-c291-4d67-b13d-e95cdd5f8272.jpg",
+      "bounds": [
+        164,
+        247,
+        309,
+        472
+      ],
+      "size": [
+        145,
+        225
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/09ee1410_02.png"
+    },
+    {
+      "id": "09ee1410_03",
+      "source": "grok-image-09ee1410-c291-4d67-b13d-e95cdd5f8272.jpg",
+      "bounds": [
+        324,
+        253,
+        469,
+        477
+      ],
+      "size": [
+        145,
+        224
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/09ee1410_03.png"
+    },
+    {
+      "id": "09ee1410_04",
+      "source": "grok-image-09ee1410-c291-4d67-b13d-e95cdd5f8272.jpg",
+      "bounds": [
+        484,
+        224,
+        629,
+        488
+      ],
+      "size": [
+        145,
+        264
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/09ee1410_04.png"
+    },
+    {
+      "id": "09ee1410_05",
+      "source": "grok-image-09ee1410-c291-4d67-b13d-e95cdd5f8272.jpg",
+      "bounds": [
+        644,
+        221,
+        789,
+        483
+      ],
+      "size": [
+        145,
+        262
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/09ee1410_05.png"
+    },
+    {
+      "id": "09ee1410_06",
+      "source": "grok-image-09ee1410-c291-4d67-b13d-e95cdd5f8272.jpg",
+      "bounds": [
+        804,
+        276,
+        949,
+        460
+      ],
+      "size": [
+        145,
+        184
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/09ee1410_06.png"
+    },
+    {
+      "id": "09ee1410_07",
+      "source": "grok-image-09ee1410-c291-4d67-b13d-e95cdd5f8272.jpg",
+      "bounds": [
+        964,
+        233,
+        1109,
+        469
+      ],
+      "size": [
+        145,
+        236
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/09ee1410_07.png"
+    },
+    {
+      "id": "09ee1410_08",
+      "source": "grok-image-09ee1410-c291-4d67-b13d-e95cdd5f8272.jpg",
+      "bounds": [
+        1124,
+        241,
+        1275,
+        472
+      ],
+      "size": [
+        151,
+        231
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/09ee1410_08.png"
+    },
+    {
+      "id": "399b423b_01",
+      "source": "grok-image-399b423b-ba72-441a-a0d6-1c1b40c602f1.jpg",
+      "bounds": [
+        13,
+        260,
+        133,
+        455
+      ],
+      "size": [
+        120,
+        195
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/399b423b_01.png"
+    },
+    {
+      "id": "399b423b_02",
+      "source": "grok-image-399b423b-ba72-441a-a0d6-1c1b40c602f1.jpg",
+      "bounds": [
+        145,
+        256,
+        275,
+        426
+      ],
+      "size": [
+        130,
+        170
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/399b423b_02.png"
+    },
+    {
+      "id": "399b423b_03",
+      "source": "grok-image-399b423b-ba72-441a-a0d6-1c1b40c602f1.jpg",
+      "bounds": [
+        287,
+        256,
+        417,
+        456
+      ],
+      "size": [
+        130,
+        200
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/399b423b_03.png"
+    },
+    {
+      "id": "399b423b_04",
+      "source": "grok-image-399b423b-ba72-441a-a0d6-1c1b40c602f1.jpg",
+      "bounds": [
+        429,
+        259,
+        559,
+        461
+      ],
+      "size": [
+        130,
+        202
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/399b423b_04.png"
+    },
+    {
+      "id": "399b423b_05",
+      "source": "grok-image-399b423b-ba72-441a-a0d6-1c1b40c602f1.jpg",
+      "bounds": [
+        571,
+        251,
+        702,
+        461
+      ],
+      "size": [
+        131,
+        210
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/399b423b_05.png"
+    },
+    {
+      "id": "399b423b_06",
+      "source": "grok-image-399b423b-ba72-441a-a0d6-1c1b40c602f1.jpg",
+      "bounds": [
+        714,
+        253,
+        844,
+        472
+      ],
+      "size": [
+        130,
+        219
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/399b423b_06.png"
+    },
+    {
+      "id": "399b423b_07",
+      "source": "grok-image-399b423b-ba72-441a-a0d6-1c1b40c602f1.jpg",
+      "bounds": [
+        856,
+        251,
+        986,
+        479
+      ],
+      "size": [
+        130,
+        228
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/399b423b_07.png"
+    },
+    {
+      "id": "399b423b_08",
+      "source": "grok-image-399b423b-ba72-441a-a0d6-1c1b40c602f1.jpg",
+      "bounds": [
+        998,
+        244,
+        1128,
+        484
+      ],
+      "size": [
+        130,
+        240
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/399b423b_08.png"
+    },
+    {
+      "id": "399b423b_09",
+      "source": "grok-image-399b423b-ba72-441a-a0d6-1c1b40c602f1.jpg",
+      "bounds": [
+        1140,
+        252,
+        1280,
+        473
+      ],
+      "size": [
+        140,
+        221
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/399b423b_09.png"
+    },
+    {
+      "id": "3fea94f1_01",
+      "source": "grok-image-3fea94f1-b1f7-4276-a182-d80a158984ae.jpg",
+      "bounds": [
+        19,
+        254,
+        169,
+        471
+      ],
+      "size": [
+        150,
+        217
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/3fea94f1_01.png"
+    },
+    {
+      "id": "3fea94f1_02",
+      "source": "grok-image-3fea94f1-b1f7-4276-a182-d80a158984ae.jpg",
+      "bounds": [
+        188,
+        231,
+        352,
+        443
+      ],
+      "size": [
+        164,
+        212
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/3fea94f1_02.png"
+    },
+    {
+      "id": "3fea94f1_03",
+      "source": "grok-image-3fea94f1-b1f7-4276-a182-d80a158984ae.jpg",
+      "bounds": [
+        371,
+        236,
+        535,
+        463
+      ],
+      "size": [
+        164,
+        227
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/3fea94f1_03.png"
+    },
+    {
+      "id": "3fea94f1_04",
+      "source": "grok-image-3fea94f1-b1f7-4276-a182-d80a158984ae.jpg",
+      "bounds": [
+        554,
+        243,
+        718,
+        473
+      ],
+      "size": [
+        164,
+        230
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/3fea94f1_04.png"
+    },
+    {
+      "id": "3fea94f1_05",
+      "source": "grok-image-3fea94f1-b1f7-4276-a182-d80a158984ae.jpg",
+      "bounds": [
+        737,
+        235,
+        901,
+        467
+      ],
+      "size": [
+        164,
+        232
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/3fea94f1_05.png"
+    },
+    {
+      "id": "3fea94f1_06",
+      "source": "grok-image-3fea94f1-b1f7-4276-a182-d80a158984ae.jpg",
+      "bounds": [
+        920,
+        250,
+        1084,
+        468
+      ],
+      "size": [
+        164,
+        218
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/3fea94f1_06.png"
+    },
+    {
+      "id": "3fea94f1_07",
+      "source": "grok-image-3fea94f1-b1f7-4276-a182-d80a158984ae.jpg",
+      "bounds": [
+        1103,
+        237,
+        1275,
+        471
+      ],
+      "size": [
+        172,
+        234
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/3fea94f1_07.png"
+    },
+    {
+      "id": "501d4a24_01",
+      "source": "grok-image-501d4a24-e85d-46d6-8aad-c1703d586e65.jpg",
+      "bounds": [
+        7,
+        241,
+        234,
+        456
+      ],
+      "size": [
+        227,
+        215
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/501d4a24_01.png"
+    },
+    {
+      "id": "501d4a24_02",
+      "source": "grok-image-501d4a24-e85d-46d6-8aad-c1703d586e65.jpg",
+      "bounds": [
+        268,
+        235,
+        490,
+        478
+      ],
+      "size": [
+        222,
+        243
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/501d4a24_02.png"
+    },
+    {
+      "id": "501d4a24_03",
+      "source": "grok-image-501d4a24-e85d-46d6-8aad-c1703d586e65.jpg",
+      "bounds": [
+        524,
+        214,
+        746,
+        498
+      ],
+      "size": [
+        222,
+        284
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/501d4a24_03.png"
+    },
+    {
+      "id": "501d4a24_04",
+      "source": "grok-image-501d4a24-e85d-46d6-8aad-c1703d586e65.jpg",
+      "bounds": [
+        780,
+        236,
+        1002,
+        459
+      ],
+      "size": [
+        222,
+        223
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/501d4a24_04.png"
+    },
+    {
+      "id": "501d4a24_05",
+      "source": "grok-image-501d4a24-e85d-46d6-8aad-c1703d586e65.jpg",
+      "bounds": [
+        1036,
+        221,
+        1276,
+        506
+      ],
+      "size": [
+        240,
+        285
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/501d4a24_05.png"
+    },
+    {
+      "id": "6e2326ff_01",
+      "source": "grok-image-6e2326ff-139b-41a1-b07a-5cde96cc74f7.jpg",
+      "bounds": [
+        17,
+        275,
+        169,
+        442
+      ],
+      "size": [
+        152,
+        167
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/6e2326ff_01.png"
+    },
+    {
+      "id": "6e2326ff_02",
+      "source": "grok-image-6e2326ff-139b-41a1-b07a-5cde96cc74f7.jpg",
+      "bounds": [
+        198,
+        259,
+        352,
+        411
+      ],
+      "size": [
+        154,
+        152
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/6e2326ff_02.png"
+    },
+    {
+      "id": "6e2326ff_03",
+      "source": "grok-image-6e2326ff-139b-41a1-b07a-5cde96cc74f7.jpg",
+      "bounds": [
+        371,
+        261,
+        535,
+        458
+      ],
+      "size": [
+        164,
+        197
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/6e2326ff_03.png"
+    },
+    {
+      "id": "6e2326ff_04",
+      "source": "grok-image-6e2326ff-139b-41a1-b07a-5cde96cc74f7.jpg",
+      "bounds": [
+        554,
+        284,
+        718,
+        430
+      ],
+      "size": [
+        164,
+        146
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/6e2326ff_04.png"
+    },
+    {
+      "id": "6e2326ff_05",
+      "source": "grok-image-6e2326ff-139b-41a1-b07a-5cde96cc74f7.jpg",
+      "bounds": [
+        737,
+        265,
+        901,
+        442
+      ],
+      "size": [
+        164,
+        177
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/6e2326ff_05.png"
+    },
+    {
+      "id": "6e2326ff_06",
+      "source": "grok-image-6e2326ff-139b-41a1-b07a-5cde96cc74f7.jpg",
+      "bounds": [
+        920,
+        259,
+        1084,
+        441
+      ],
+      "size": [
+        164,
+        182
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/6e2326ff_06.png"
+    },
+    {
+      "id": "6e2326ff_07",
+      "source": "grok-image-6e2326ff-139b-41a1-b07a-5cde96cc74f7.jpg",
+      "bounds": [
+        1103,
+        263,
+        1275,
+        443
+      ],
+      "size": [
+        172,
+        180
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/6e2326ff_07.png"
+    },
+    {
+      "id": "99a11592_01",
+      "source": "grok-image-99a11592-7e6c-427a-bb67-e133fb3942cc.jpg",
+      "bounds": [
+        108,
+        108,
+        285,
+        338
+      ],
+      "size": [
+        177,
+        230
+      ],
+      "mode": "grid_5x2",
+      "square": "units_sq/99a11592_01.png"
+    },
+    {
+      "id": "99a11592_02",
+      "source": "grok-image-99a11592-7e6c-427a-bb67-e133fb3942cc.jpg",
+      "bounds": [
+        329,
+        108,
+        506,
+        338
+      ],
+      "size": [
+        177,
+        230
+      ],
+      "mode": "grid_5x2",
+      "square": "units_sq/99a11592_02.png"
+    },
+    {
+      "id": "99a11592_03",
+      "source": "grok-image-99a11592-7e6c-427a-bb67-e133fb3942cc.jpg",
+      "bounds": [
+        551,
+        108,
+        728,
+        338
+      ],
+      "size": [
+        177,
+        230
+      ],
+      "mode": "grid_5x2",
+      "square": "units_sq/99a11592_03.png"
+    },
+    {
+      "id": "99a11592_04",
+      "source": "grok-image-99a11592-7e6c-427a-bb67-e133fb3942cc.jpg",
+      "bounds": [
+        772,
+        108,
+        949,
+        338
+      ],
+      "size": [
+        177,
+        230
+      ],
+      "mode": "grid_5x2",
+      "square": "units_sq/99a11592_04.png"
+    },
+    {
+      "id": "99a11592_05",
+      "source": "grok-image-99a11592-7e6c-427a-bb67-e133fb3942cc.jpg",
+      "bounds": [
+        994,
+        108,
+        1171,
+        338
+      ],
+      "size": [
+        177,
+        230
+      ],
+      "mode": "grid_5x2",
+      "square": "units_sq/99a11592_05.png"
+    },
+    {
+      "id": "99a11592_06",
+      "source": "grok-image-99a11592-7e6c-427a-bb67-e133fb3942cc.jpg",
+      "bounds": [
+        108,
+        382,
+        285,
+        612
+      ],
+      "size": [
+        177,
+        230
+      ],
+      "mode": "grid_5x2",
+      "square": "units_sq/99a11592_06.png"
+    },
+    {
+      "id": "99a11592_07",
+      "source": "grok-image-99a11592-7e6c-427a-bb67-e133fb3942cc.jpg",
+      "bounds": [
+        329,
+        382,
+        506,
+        612
+      ],
+      "size": [
+        177,
+        230
+      ],
+      "mode": "grid_5x2",
+      "square": "units_sq/99a11592_07.png"
+    },
+    {
+      "id": "99a11592_08",
+      "source": "grok-image-99a11592-7e6c-427a-bb67-e133fb3942cc.jpg",
+      "bounds": [
+        551,
+        382,
+        728,
+        612
+      ],
+      "size": [
+        177,
+        230
+      ],
+      "mode": "grid_5x2",
+      "square": "units_sq/99a11592_08.png"
+    },
+    {
+      "id": "99a11592_09",
+      "source": "grok-image-99a11592-7e6c-427a-bb67-e133fb3942cc.jpg",
+      "bounds": [
+        772,
+        382,
+        949,
+        612
+      ],
+      "size": [
+        177,
+        230
+      ],
+      "mode": "grid_5x2",
+      "square": "units_sq/99a11592_09.png"
+    },
+    {
+      "id": "99a11592_10",
+      "source": "grok-image-99a11592-7e6c-427a-bb67-e133fb3942cc.jpg",
+      "bounds": [
+        994,
+        382,
+        1171,
+        612
+      ],
+      "size": [
+        177,
+        230
+      ],
+      "mode": "grid_5x2",
+      "square": "units_sq/99a11592_10.png"
+    },
+    {
+      "id": "ce796536_01",
+      "source": "grok-image-ce796536-9a66-4f5d-8258-4ce96f976416.jpg",
+      "bounds": [
+        38,
+        207,
+        196,
+        507
+      ],
+      "size": [
+        158,
+        300
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/ce796536_01.png"
+    },
+    {
+      "id": "ce796536_02",
+      "source": "grok-image-ce796536-9a66-4f5d-8258-4ce96f976416.jpg",
+      "bounds": [
+        222,
+        197,
+        409,
+        516
+      ],
+      "size": [
+        187,
+        319
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/ce796536_02.png"
+    },
+    {
+      "id": "ce796536_03",
+      "source": "grok-image-ce796536-9a66-4f5d-8258-4ce96f976416.jpg",
+      "bounds": [
+        435,
+        146,
+        623,
+        502
+      ],
+      "size": [
+        188,
+        356
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/ce796536_03.png"
+    },
+    {
+      "id": "ce796536_04",
+      "source": "grok-image-ce796536-9a66-4f5d-8258-4ce96f976416.jpg",
+      "bounds": [
+        661,
+        197,
+        836,
+        497
+      ],
+      "size": [
+        175,
+        300
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/ce796536_04.png"
+    },
+    {
+      "id": "ce796536_05",
+      "source": "grok-image-ce796536-9a66-4f5d-8258-4ce96f976416.jpg",
+      "bounds": [
+        862,
+        207,
+        1049,
+        509
+      ],
+      "size": [
+        187,
+        302
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/ce796536_05.png"
+    },
+    {
+      "id": "ce796536_06",
+      "source": "grok-image-ce796536-9a66-4f5d-8258-4ce96f976416.jpg",
+      "bounds": [
+        1075,
+        212,
+        1280,
+        506
+      ],
+      "size": [
+        205,
+        294
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/ce796536_06.png"
+    },
+    {
+      "id": "d54cea3d_01",
+      "source": "grok-image-d54cea3d-229d-42dd-bb81-6296f22d4fdb.jpg",
+      "bounds": [
+        13,
+        275,
+        169,
+        441
+      ],
+      "size": [
+        156,
+        166
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/d54cea3d_01.png"
+    },
+    {
+      "id": "d54cea3d_02",
+      "source": "grok-image-d54cea3d-229d-42dd-bb81-6296f22d4fdb.jpg",
+      "bounds": [
+        188,
+        261,
+        352,
+        421
+      ],
+      "size": [
+        164,
+        160
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/d54cea3d_02.png"
+    },
+    {
+      "id": "d54cea3d_03",
+      "source": "grok-image-d54cea3d-229d-42dd-bb81-6296f22d4fdb.jpg",
+      "bounds": [
+        371,
+        266,
+        535,
+        431
+      ],
+      "size": [
+        164,
+        165
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/d54cea3d_03.png"
+    },
+    {
+      "id": "d54cea3d_04",
+      "source": "grok-image-d54cea3d-229d-42dd-bb81-6296f22d4fdb.jpg",
+      "bounds": [
+        554,
+        271,
+        718,
+        431
+      ],
+      "size": [
+        164,
+        160
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/d54cea3d_04.png"
+    },
+    {
+      "id": "d54cea3d_05",
+      "source": "grok-image-d54cea3d-229d-42dd-bb81-6296f22d4fdb.jpg",
+      "bounds": [
+        752,
+        264,
+        901,
+        436
+      ],
+      "size": [
+        149,
+        172
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/d54cea3d_05.png"
+    },
+    {
+      "id": "d54cea3d_06",
+      "source": "grok-image-d54cea3d-229d-42dd-bb81-6296f22d4fdb.jpg",
+      "bounds": [
+        920,
+        262,
+        1084,
+        433
+      ],
+      "size": [
+        164,
+        171
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/d54cea3d_06.png"
+    },
+    {
+      "id": "d54cea3d_07",
+      "source": "grok-image-d54cea3d-229d-42dd-bb81-6296f22d4fdb.jpg",
+      "bounds": [
+        1140,
+        267,
+        1275,
+        437
+      ],
+      "size": [
+        135,
+        170
+      ],
+      "mode": "horizontal",
+      "square": "units_sq/d54cea3d_07.png"
+    },
+    {
+      "id": "06f337ca_01",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        5,
+        7,
+        237,
+        239
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_02",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        249,
+        7,
+        481,
+        239
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_03",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        491,
+        7,
+        723,
+        239
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_04",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        734,
+        7,
+        966,
+        239
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_05",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        9,
+        248,
+        237,
+        476
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_06",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        250,
+        248,
+        478,
+        476
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_07",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        492,
+        248,
+        720,
+        476
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_08",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        737,
+        248,
+        965,
+        476
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_09",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        9,
+        485,
+        239,
+        715
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_10",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        249,
+        485,
+        479,
+        715
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_11",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        491,
+        485,
+        721,
+        715
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_12",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        736,
+        485,
+        966,
+        715
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_13",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        7,
+        723,
+        241,
+        957
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_14",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        248,
+        723,
+        482,
+        957
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_15",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        492,
+        723,
+        726,
+        957
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "06f337ca_16",
+      "source": "grok-image-06f337ca-84a5-4804-9f53-2d183e0e4fbe.jpg",
+      "bounds": [
+        734,
+        723,
+        968,
+        957
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_01",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        6,
+        3,
+        242,
+        239
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_02",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        248,
+        3,
+        484,
+        239
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_03",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        493,
+        3,
+        729,
+        239
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_04",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        737,
+        3,
+        973,
+        239
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_05",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        10,
+        251,
+        238,
+        479
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_06",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        254,
+        251,
+        482,
+        479
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_07",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        496,
+        251,
+        724,
+        479
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_08",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        737,
+        251,
+        965,
+        479
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_09",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        13,
+        489,
+        239,
+        715
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_10",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        251,
+        489,
+        477,
+        715
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_11",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        496,
+        489,
+        722,
+        715
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_12",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        739,
+        489,
+        965,
+        715
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_13",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        7,
+        722,
+        237,
+        952
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_14",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        251,
+        722,
+        481,
+        952
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_15",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        493,
+        722,
+        723,
+        952
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "13377495_16",
+      "source": "grok-image-13377495-07bb-40be-8ae8-d831a0b1935b.jpg",
+      "bounds": [
+        735,
+        722,
+        965,
+        952
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_01",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        8,
+        7,
+        240,
+        239
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_02",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        247,
+        7,
+        479,
+        239
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_03",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        488,
+        7,
+        720,
+        239
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_04",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        732,
+        7,
+        964,
+        239
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_05",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        12,
+        248,
+        240,
+        476
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_06",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        251,
+        248,
+        479,
+        476
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_07",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        488,
+        248,
+        716,
+        476
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_08",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        736,
+        248,
+        964,
+        476
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_09",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        11,
+        486,
+        239,
+        714
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_10",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        254,
+        486,
+        482,
+        714
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_11",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        494,
+        486,
+        722,
+        714
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_12",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        734,
+        486,
+        962,
+        714
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_13",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        7,
+        722,
+        239,
+        954
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_14",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        248,
+        722,
+        480,
+        954
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_15",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        488,
+        722,
+        720,
+        954
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "14a5c829_16",
+      "source": "grok-image-14a5c829-d615-47f2-8bf0-8f8d239b249f.jpg",
+      "bounds": [
+        734,
+        722,
+        966,
+        954
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_01",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        7,
+        10,
+        239,
+        242
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_02",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        251,
+        10,
+        483,
+        242
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_03",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        494,
+        10,
+        726,
+        242
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_04",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        735,
+        10,
+        967,
+        242
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_05",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        9,
+        250,
+        237,
+        478
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_06",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        251,
+        250,
+        479,
+        478
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_07",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        494,
+        250,
+        722,
+        478
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_08",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        738,
+        250,
+        966,
+        478
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_09",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        10,
+        489,
+        236,
+        715
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_10",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        254,
+        489,
+        480,
+        715
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_11",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        495,
+        489,
+        721,
+        715
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_12",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        737,
+        489,
+        963,
+        715
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_13",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        8,
+        722,
+        238,
+        952
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_14",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        249,
+        722,
+        479,
+        952
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_15",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        492,
+        722,
+        722,
+        952
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "238216e6_16",
+      "source": "grok-image-238216e6-dafb-4ba6-a1ad-2ca4a658a060.jpg",
+      "bounds": [
+        736,
+        722,
+        966,
+        952
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_01",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        4,
+        4,
+        238,
+        238
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_02",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        245,
+        4,
+        479,
+        238
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_03",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        489,
+        4,
+        723,
+        238
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_04",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        731,
+        4,
+        965,
+        238
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_05",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        9,
+        247,
+        237,
+        475
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_06",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        250,
+        247,
+        478,
+        475
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_07",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        494,
+        247,
+        722,
+        475
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_08",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        735,
+        247,
+        963,
+        475
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_09",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        9,
+        484,
+        237,
+        712
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_10",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        251,
+        484,
+        479,
+        712
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_11",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        493,
+        484,
+        721,
+        712
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_12",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        733,
+        484,
+        961,
+        712
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_13",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        6,
+        723,
+        242,
+        959
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_14",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        247,
+        723,
+        483,
+        959
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_15",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        490,
+        723,
+        726,
+        959
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "36308bd6_16",
+      "source": "grok-image-36308bd6-6111-4a1a-8efa-97c9decf6166.jpg",
+      "bounds": [
+        731,
+        723,
+        967,
+        959
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_01",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        10,
+        9,
+        240,
+        239
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_02",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        252,
+        9,
+        482,
+        239
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_03",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        485,
+        9,
+        715,
+        239
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_04",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        734,
+        9,
+        964,
+        239
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_05",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        8,
+        248,
+        234,
+        474
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_06",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        253,
+        248,
+        479,
+        474
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_07",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        486,
+        248,
+        712,
+        474
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_08",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        739,
+        248,
+        965,
+        474
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_09",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        11,
+        491,
+        237,
+        717
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_10",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        257,
+        491,
+        483,
+        717
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_11",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        486,
+        491,
+        712,
+        717
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_12",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        733,
+        491,
+        959,
+        717
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_13",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        3,
+        724,
+        233,
+        954
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_14",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        251,
+        724,
+        481,
+        954
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_15",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        487,
+        724,
+        717,
+        954
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "393d0517_16",
+      "source": "grok-image-393d0517-c70d-44b0-b6fe-937f3d5de13d.jpg",
+      "bounds": [
+        734,
+        724,
+        964,
+        954
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_01",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        5,
+        4,
+        237,
+        236
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_02",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        249,
+        4,
+        481,
+        236
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_03",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        485,
+        4,
+        717,
+        236
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_04",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        734,
+        4,
+        966,
+        236
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_05",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        10,
+        245,
+        238,
+        473
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_06",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        252,
+        245,
+        480,
+        473
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_07",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        488,
+        245,
+        716,
+        473
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_08",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        732,
+        245,
+        960,
+        473
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_09",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        4,
+        483,
+        236,
+        715
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_10",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        249,
+        483,
+        481,
+        715
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_11",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        485,
+        483,
+        717,
+        715
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_12",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        731,
+        483,
+        963,
+        715
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_13",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        3,
+        723,
+        239,
+        959
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_14",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        248,
+        723,
+        484,
+        959
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_15",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        485,
+        723,
+        721,
+        959
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "42cbbcf1_16",
+      "source": "grok-image-42cbbcf1-65c7-4699-a107-dd25b3621708.jpg",
+      "bounds": [
+        730,
+        723,
+        966,
+        959
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_01",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        6,
+        6,
+        240,
+        240
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_02",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        246,
+        6,
+        480,
+        240
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_03",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        487,
+        6,
+        721,
+        240
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_04",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        732,
+        6,
+        966,
+        240
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_05",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        10,
+        250,
+        236,
+        476
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_06",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        253,
+        250,
+        479,
+        476
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_07",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        490,
+        250,
+        716,
+        476
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_08",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        736,
+        250,
+        962,
+        476
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_09",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        10,
+        484,
+        236,
+        710
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_10",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        250,
+        484,
+        476,
+        710
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_11",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        493,
+        484,
+        719,
+        710
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_12",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        737,
+        484,
+        963,
+        710
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_13",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        5,
+        722,
+        241,
+        958
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_14",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        245,
+        722,
+        481,
+        958
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_15",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        489,
+        722,
+        725,
+        958
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "4af3aa09_16",
+      "source": "grok-image-4af3aa09-6099-41ba-bd1a-33fa03f1f788.jpg",
+      "bounds": [
+        735,
+        722,
+        971,
+        958
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_01",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        11,
+        3,
+        247,
+        239
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_02",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        246,
+        3,
+        482,
+        239
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_03",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        490,
+        3,
+        726,
+        239
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_04",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        724,
+        3,
+        960,
+        239
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_05",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        7,
+        248,
+        237,
+        478
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_06",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        244,
+        248,
+        474,
+        478
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_07",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        492,
+        248,
+        722,
+        478
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_08",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        733,
+        248,
+        963,
+        478
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_09",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        8,
+        486,
+        238,
+        716
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_10",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        247,
+        486,
+        477,
+        716
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_11",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        491,
+        486,
+        721,
+        716
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_12",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        733,
+        486,
+        963,
+        716
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_13",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        6,
+        724,
+        240,
+        958
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_14",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        245,
+        724,
+        479,
+        958
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_15",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        490,
+        724,
+        724,
+        958
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "5c4d918a_16",
+      "source": "grok-image-5c4d918a-c3f9-4144-a8f5-1c5890fe48f5.jpg",
+      "bounds": [
+        732,
+        724,
+        966,
+        958
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_01",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        8,
+        6,
+        240,
+        238
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_02",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        248,
+        6,
+        480,
+        238
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_03",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        489,
+        6,
+        721,
+        238
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_04",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        734,
+        6,
+        966,
+        238
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_05",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        8,
+        247,
+        236,
+        475
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_06",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        250,
+        247,
+        478,
+        475
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_07",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        490,
+        247,
+        718,
+        475
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_08",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        735,
+        247,
+        963,
+        475
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_09",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        8,
+        487,
+        238,
+        717
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_10",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        250,
+        487,
+        480,
+        717
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_11",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        488,
+        487,
+        718,
+        717
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_12",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        738,
+        487,
+        968,
+        717
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_13",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        7,
+        724,
+        241,
+        958
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_14",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        247,
+        724,
+        481,
+        958
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_15",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        488,
+        724,
+        722,
+        958
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "71e60cd7_16",
+      "source": "grok-image-71e60cd7-4e3b-421f-aaba-81061dc9556c.jpg",
+      "bounds": [
+        732,
+        724,
+        966,
+        958
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_01",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        6,
+        2,
+        242,
+        238
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_02",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        246,
+        2,
+        482,
+        238
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_03",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        487,
+        2,
+        723,
+        238
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_04",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        728,
+        2,
+        964,
+        238
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_05",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        10,
+        248,
+        238,
+        476
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_06",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        250,
+        248,
+        478,
+        476
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_07",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        489,
+        248,
+        717,
+        476
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_08",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        733,
+        248,
+        961,
+        476
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_09",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        9,
+        484,
+        237,
+        712
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_10",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        248,
+        484,
+        476,
+        712
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_11",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        490,
+        484,
+        718,
+        712
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_12",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        732,
+        484,
+        960,
+        712
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_13",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        5,
+        721,
+        241,
+        957
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_14",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        244,
+        721,
+        480,
+        957
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_15",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        490,
+        721,
+        726,
+        957
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "7b36db2b_16",
+      "source": "grok-image-7b36db2b-e4e4-4fa2-a279-cedf85838a08.jpg",
+      "bounds": [
+        730,
+        721,
+        966,
+        957
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_01",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        7,
+        4,
+        241,
+        238
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_02",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        247,
+        4,
+        481,
+        238
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_03",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        489,
+        4,
+        723,
+        238
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_04",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        735,
+        4,
+        969,
+        238
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_05",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        9,
+        247,
+        239,
+        477
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_06",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        249,
+        247,
+        479,
+        477
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_07",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        492,
+        247,
+        722,
+        477
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_08",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        737,
+        247,
+        967,
+        477
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_09",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        9,
+        486,
+        239,
+        716
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_10",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        250,
+        486,
+        480,
+        716
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_11",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        492,
+        486,
+        722,
+        716
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_12",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        738,
+        486,
+        968,
+        716
+      ],
+      "size": [
+        230,
+        230
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_13",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        7,
+        724,
+        243,
+        960
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_14",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        246,
+        724,
+        482,
+        960
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_15",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        490,
+        724,
+        726,
+        960
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "be9cb935_16",
+      "source": "grok-image-be9cb935-3dc4-4167-87b1-0d021815e608.jpg",
+      "bounds": [
+        731,
+        724,
+        967,
+        960
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_01",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        7,
+        7,
+        239,
+        239
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_02",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        250,
+        7,
+        482,
+        239
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_03",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        491,
+        7,
+        723,
+        239
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_04",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        734,
+        7,
+        966,
+        239
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_05",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        14,
+        247,
+        242,
+        475
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_06",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        250,
+        247,
+        478,
+        475
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_07",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        492,
+        247,
+        720,
+        475
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_08",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        737,
+        247,
+        965,
+        475
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_09",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        10,
+        485,
+        242,
+        717
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_10",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        250,
+        485,
+        482,
+        717
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_11",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        491,
+        485,
+        723,
+        717
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_12",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        737,
+        485,
+        969,
+        717
+      ],
+      "size": [
+        232,
+        232
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_13",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        9,
+        725,
+        245,
+        961
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_14",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        248,
+        725,
+        484,
+        961
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_15",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        488,
+        725,
+        724,
+        961
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "df1685cf_16",
+      "source": "grok-image-df1685cf-02a3-4cb2-9046-1ac8c270061f.jpg",
+      "bounds": [
+        733,
+        725,
+        969,
+        961
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_01",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        4,
+        3,
+        240,
+        239
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_02",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        245,
+        3,
+        481,
+        239
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_03",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        486,
+        3,
+        722,
+        239
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_04",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        731,
+        3,
+        967,
+        239
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_05",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        10,
+        249,
+        238,
+        477
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_06",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        250,
+        249,
+        478,
+        477
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_07",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        493,
+        249,
+        721,
+        477
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_08",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        736,
+        249,
+        964,
+        477
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_09",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        10,
+        485,
+        238,
+        713
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_10",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        251,
+        485,
+        479,
+        713
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_11",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        489,
+        485,
+        717,
+        713
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_12",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        736,
+        485,
+        964,
+        713
+      ],
+      "size": [
+        228,
+        228
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_13",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        5,
+        722,
+        239,
+        956
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_14",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        246,
+        722,
+        480,
+        956
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_15",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        489,
+        722,
+        723,
+        956
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "ea660899_16",
+      "source": "grok-image-ea660899-e43e-4013-ba31-2c6923fb274b.jpg",
+      "bounds": [
+        734,
+        722,
+        968,
+        956
+      ],
+      "size": [
+        234,
+        234
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_01",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        4,
+        5,
+        240,
+        241
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_02",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        249,
+        5,
+        485,
+        241
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_03",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        488,
+        5,
+        724,
+        241
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_04",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        730,
+        5,
+        966,
+        241
+      ],
+      "size": [
+        236,
+        236
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_05",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        9,
+        252,
+        235,
+        478
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_06",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        252,
+        252,
+        478,
+        478
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_07",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        491,
+        252,
+        717,
+        478
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_08",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        736,
+        252,
+        962,
+        478
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_09",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        9,
+        486,
+        235,
+        712
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_10",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        253,
+        486,
+        479,
+        712
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_11",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        492,
+        486,
+        718,
+        712
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_12",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        735,
+        486,
+        961,
+        712
+      ],
+      "size": [
+        226,
+        226
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_13",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        4,
+        723,
+        242,
+        961
+      ],
+      "size": [
+        238,
+        238
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_14",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        249,
+        723,
+        487,
+        961
+      ],
+      "size": [
+        238,
+        238
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_15",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        487,
+        723,
+        725,
+        961
+      ],
+      "size": [
+        238,
+        238
+      ],
+      "mode": "grid_4x4"
+    },
+    {
+      "id": "f2305753_16",
+      "source": "grok-image-f2305753-d4c3-4a5b-b582-dd52ed5648a9.jpg",
+      "bounds": [
+        729,
+        723,
+        967,
+        961
+      ],
+      "size": [
+        238,
+        238
+      ],
+      "mode": "grid_4x4"
+    }
+  ]
+}

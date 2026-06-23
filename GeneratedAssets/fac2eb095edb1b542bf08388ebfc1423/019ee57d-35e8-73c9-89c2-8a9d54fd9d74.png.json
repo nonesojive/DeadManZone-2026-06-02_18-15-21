@@ -1,0 +1,31 @@
+{
+    "asset": "fac2eb095edb1b542bf08388ebfc1423",
+    "fileName": "019ee57d-35e8-73c9-89c2-8a9d54fd9d74.png",
+    "prompt": "\"A clean minimalist tactical UI icon in grimdark military strategy game style inspired by Warhammer 40k and Helldivers 2. Strict flat design, bold clean black outlines (strong 3–4 px weight at 256 px), minimal subtle shading for form only, high contrast, sharp vector-art aesthetic with crisp edges. Perfectly centered, tightly composed symbol only on pure transparent background. No frames, no borders, no extra backgrounds, no text, no speed lines or comic effects. Professional game asset quality, optimized for excellent legibility at 32×32 and 64×64 px on dense unit cards. Square 1:1 aspect ratio.\"\nSubject: \"a large heavy-caliber bullet or armor-piercing shell oriented vertically, subtle radiating impact lines at the tip only. ",
+    "negativePrompt": "",
+    "model": "game-ui-essentials-2",
+    "modelName": "Game UI Essentials 2.0",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}

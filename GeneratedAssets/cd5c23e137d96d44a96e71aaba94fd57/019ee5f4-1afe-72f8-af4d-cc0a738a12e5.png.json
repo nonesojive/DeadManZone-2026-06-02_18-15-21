@@ -1,0 +1,31 @@
+{
+    "asset": "cd5c23e137d96d44a96e71aaba94fd57",
+    "fileName": "019ee5f4-1afe-72f8-af4d-cc0a738a12e5.png",
+    "prompt": "Flat Garbage Can Icon\nStyle: Corroded steel, rust-orange accents, riveted panels, worn industrial textures.\nMood: Gritty • Scavenged • Weathered • Functional • Urgent",
+    "negativePrompt": "",
+    "model": "game-ui-essentials-2",
+    "modelName": "Game UI Essentials 2.0",
+    "customSeed": -1,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelatePixelGridSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0,
+    "dynamicParams": {
+        "serializedData": []
+    }
+}
