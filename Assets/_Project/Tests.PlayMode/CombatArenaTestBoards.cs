@@ -1,4 +1,5 @@
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Data;
@@ -14,7 +15,7 @@ namespace DeadManZone.PlayMode.Tests
 
         public static BattlefieldState BuildFieldGunVsHq(ContentDatabase database)
         {
-            var faction = database.GetFaction("iron_vanguard");
+            var faction = database.GetFaction(FactionIds.IronVanguard);
             Assert.NotNull(faction, "iron_vanguard faction required for arena replay tests.");
 
             var player = new BoardState(faction.CreateBoardLayout());

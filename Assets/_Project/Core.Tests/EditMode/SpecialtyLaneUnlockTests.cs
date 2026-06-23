@@ -11,14 +11,14 @@ namespace DeadManZone.Core.Tests.EditMode
         public void Unlocked_WhenCommandBunkerOnBoard()
         {
             var board = TestBoards.WithCommandBunker();
-            Assert.IsTrue(SpecialtyLaneUnlock.IsUnlocked(board, "iron_vanguard"));
+            Assert.IsTrue(SpecialtyLaneUnlock.IsUnlocked(board, FactionIds.IronVanguard));
         }
 
         [Test]
         public void Locked_WhenEmptyBoard()
         {
             var board = new BoardState(TestBoards.Layout);
-            Assert.IsFalse(SpecialtyLaneUnlock.IsUnlocked(board, "iron_vanguard"));
+            Assert.IsFalse(SpecialtyLaneUnlock.IsUnlocked(board, FactionIds.IronVanguard));
         }
     }
 }

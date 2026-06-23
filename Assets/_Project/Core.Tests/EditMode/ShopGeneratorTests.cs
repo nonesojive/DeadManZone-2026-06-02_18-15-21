@@ -26,7 +26,7 @@ namespace DeadManZone.Core.Tests
             var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
 
-            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 42);
+            var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 42);
 
             Assert.AreEqual(8, shop.Offers.Count);
         }
@@ -37,7 +37,7 @@ namespace DeadManZone.Core.Tests
             var board = BuildBoardWithSupplyDepot();
             var registry = TestContentRegistry.Create();
             var generator = new ShopGenerator(registry);
-            var shop = generator.Generate(board, factionId: "iron_vanguard", round: 2, seed: 999);
+            var shop = generator.Generate(board, factionId: FactionIds.IronVanguard, round: 2, seed: 999);
 
             Assert.That(shop.Modifiers.GoldDiscountPercent, Is.GreaterThanOrEqualTo(10));
         }
@@ -49,8 +49,8 @@ namespace DeadManZone.Core.Tests
             var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
 
-            var shopA = generator.Generate(board, "iron_vanguard", round: 1, seed: 42);
-            var shopB = generator.Generate(board, "iron_vanguard", round: 1, seed: 42);
+            var shopA = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 42);
+            var shopB = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 42);
 
             Assert.AreEqual(shopA.Offers.Count, shopB.Offers.Count);
             for (int i = 0; i < shopA.Offers.Count; i++)
@@ -68,7 +68,7 @@ namespace DeadManZone.Core.Tests
 
             var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
-            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 100);
+            var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 100);
 
             Assert.AreEqual(8, shop.Offers.Count);
             Assert.That(shop.Modifiers.ExtraGeneralSlots, Is.EqualTo(1));
@@ -82,8 +82,8 @@ namespace DeadManZone.Core.Tests
             var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
 
-            var shopWithout = generator.Generate(boardWithout, "iron_vanguard", round: 1, seed: 50);
-            var shopWith = generator.Generate(boardWith, "iron_vanguard", round: 1, seed: 50);
+            var shopWithout = generator.Generate(boardWithout, FactionIds.IronVanguard, round: 1, seed: 50);
+            var shopWith = generator.Generate(boardWith, FactionIds.IronVanguard, round: 1, seed: 50);
 
             var generalWithout = shopWithout.Offers.First(o => o.GoldPrice > 0);
             var matchingWith = shopWith.Offers.First(o => o.PieceId == generalWithout.PieceId);
@@ -102,7 +102,7 @@ namespace DeadManZone.Core.Tests
             registry.Register(TestPieces.CommandBunker(), ShopLane.Defensive);
 
             var generator = new ShopGenerator(registry);
-            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 7);
+            var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 7);
 
             Assert.That(shop.Offers.Any(o => o.Lane == ShopLane.Defensive), Is.True);
             Assert.IsTrue(shop.Modifiers.GuaranteeEngineerOffer);
@@ -115,7 +115,7 @@ namespace DeadManZone.Core.Tests
             var registry = TestContentRegistry.Create();
             var generator = new ShopGenerator(registry);
 
-            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 42);
+            var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 42);
 
             Assert.IsFalse(shop.Offers.Any(o => o.Lane == ShopLane.Specialty));
         }
@@ -126,7 +126,7 @@ namespace DeadManZone.Core.Tests
             var board = new BoardState(DefaultLayout());
             var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
-            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 7);
+            var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 7);
 
             var offensiveOffers = shop.Offers.Where(o => o.SlotIndex < 4).ToList();
             Assert.That(offensiveOffers, Is.Not.Empty);
@@ -140,7 +140,7 @@ namespace DeadManZone.Core.Tests
             var board = new BoardState(DefaultLayout());
             var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
-            var shop = generator.Generate(board, "iron_vanguard", round: 1, seed: 7);
+            var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 7);
 
             var defensiveOffers = shop.Offers.Where(o => o.SlotIndex >= 4).ToList();
             Assert.That(defensiveOffers, Is.Not.Empty);
@@ -169,7 +169,7 @@ namespace DeadManZone.Core.Tests
             Category = PieceCategory.Unit,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
             CombatRole = combatRole,
-            FactionId = "iron_vanguard",
+            FactionId = FactionIds.IronVanguard,
             GoldCost = 5,
             MaxHp = 10
         };

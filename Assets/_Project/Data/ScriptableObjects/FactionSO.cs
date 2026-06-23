@@ -1,4 +1,5 @@
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Run;
@@ -9,7 +10,7 @@ namespace DeadManZone.Data
     [CreateAssetMenu(menuName = "DeadManZone/Faction")]
     public class FactionSO : ScriptableObject
     {
-        public string factionId = "iron_vanguard";
+        public string factionId = FactionIds.IronVanguard;
         public string displayName = "IronMarch Union";
         public int boardWidth = 9;
         public int boardHeight = 10;

@@ -28,7 +28,7 @@ namespace DeadManZone.Core.Tests.EditMode
 
         public static BoardState BuildReferencePlayerBoard(ContentDatabase database, int fightIndex = 1, bool includeRifle = true)
         {
-            var faction = database.GetFaction("iron_vanguard");
+            var faction = database.GetFaction(FactionIds.IronVanguard);
             Assert.NotNull(faction);
 
             var board = new BoardState(faction.CreateBoardLayout());
@@ -57,7 +57,7 @@ namespace DeadManZone.Core.Tests.EditMode
 
         public static BoardState BuildEnemyBoard(ContentDatabase database, int fightIndex)
         {
-            var faction = database.GetFaction("iron_vanguard");
+            var faction = database.GetFaction(FactionIds.IronVanguard);
             var template = database.GetEnemyTemplate(fightIndex);
             Assert.NotNull(template);
             var board = template.BuildBoard(faction, database.BuildRegistry());

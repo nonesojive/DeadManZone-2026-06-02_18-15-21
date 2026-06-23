@@ -1,4 +1,5 @@
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Tags;
 using DeadManZone.Data;
@@ -15,7 +16,7 @@ namespace DeadManZone.Core.Tests.EditMode
             Assert.NotNull(database, "ContentDatabase asset missing from Resources.");
 
             var neutral = database.Pieces.Where(p => p != null && p.factionId == "neutral").ToList();
-            var ironMarch = database.Pieces.Where(p => p != null && p.factionId == "iron_vanguard").ToList();
+            var ironMarch = database.Pieces.Where(p => p != null && p.factionId == FactionIds.IronVanguard).ToList();
 
             Assert.GreaterOrEqual(neutral.Count, 10, "Expected at least 10 neutral sandbox pieces.");
             Assert.GreaterOrEqual(ironMarch.Count, 15, "Expected at least 15 IronMarch Union pieces.");

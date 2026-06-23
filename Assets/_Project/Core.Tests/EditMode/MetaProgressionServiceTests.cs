@@ -1,3 +1,4 @@
+using DeadManZone.Core;
 using DeadManZone.Core.Meta;
 using NUnit.Framework;
 
@@ -20,7 +21,7 @@ namespace DeadManZone.Core.Tests.EditMode
         [Test]
         public void IronVanguard_UnlockedByDefault()
         {
-            Assert.IsTrue(MetaProgressionService.IsFactionUnlocked("iron_vanguard"));
+            Assert.IsTrue(MetaProgressionService.IsFactionUnlocked(FactionIds.IronVanguard));
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
@@ -14,7 +15,7 @@ namespace DeadManZone.Data.Editor
         public static void Run()
         {
             var database = ContentDatabase.Load();
-            var faction = database.GetFaction("iron_vanguard");
+            var faction = database.GetFaction(FactionIds.IronVanguard);
             var registry = database.BuildRegistry();
             var referencePlayer = BuildReferencePlayerBoard(database, faction);
             var referenceSnapshot = ArmyStrengthCalculator.Evaluate(referencePlayer);

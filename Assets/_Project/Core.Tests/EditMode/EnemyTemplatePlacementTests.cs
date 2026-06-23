@@ -1,3 +1,4 @@
+using DeadManZone.Core;
 using DeadManZone.Data;
 using DeadManZone.Game;
 using NUnit.Framework;
@@ -15,7 +16,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 Assert.Ignore("ContentDatabase not found.");
             }
 
-            var faction = database.GetFaction("iron_vanguard");
+            var faction = database.GetFaction(FactionIds.IronVanguard);
             Assert.NotNull(faction);
             var registry = database.BuildRegistry();
 

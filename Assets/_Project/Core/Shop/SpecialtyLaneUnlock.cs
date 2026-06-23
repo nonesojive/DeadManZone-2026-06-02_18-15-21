@@ -1,4 +1,5 @@
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Content;
 using DeadManZone.Core.Tags;
@@ -15,7 +16,7 @@ namespace DeadManZone.Core.Shop
             if (HasPieceOnBoard(board, "command_bunker"))
                 return true;
 
-            if (factionId == "iron_vanguard" &&
+            if (factionId == FactionIds.IronVanguard &&
                 board.Pieces.Count(p => PieceTagQueries.HasTag(p.Definition, GameTagIds.Combatant)) >= 3)
                 return true;
 

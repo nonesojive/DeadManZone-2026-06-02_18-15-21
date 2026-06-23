@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Tags;
@@ -221,7 +222,7 @@ namespace DeadManZone.Core.Tags
             if (TagRegistry.TryGet(tagId, out var tag) && !string.IsNullOrWhiteSpace(tag.DisplayName))
                 return tag.DisplayName;
 
-            if (tagId == "iron_vanguard")
+            if (tagId == FactionIds.IronVanguard)
                 return "IronMarch Union";
 
             return tagId;

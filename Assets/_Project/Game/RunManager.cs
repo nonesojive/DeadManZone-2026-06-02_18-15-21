@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
@@ -93,7 +94,7 @@ namespace DeadManZone.Game
             return loaded;
         }
 
-        public void StartNewRun(string factionId = "iron_vanguard")
+        public void StartNewRun(string factionId = FactionIds.IronVanguard)
         {
             EnsureOrchestrator();
             _orchestrator.StartNewRun(factionId);

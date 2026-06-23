@@ -1,4 +1,5 @@
 using System.Collections;
+using DeadManZone.Core;
 using DeadManZone.Game;
 using NUnit.Framework;
 using UnityEngine;
@@ -18,7 +19,7 @@ namespace DeadManZone.PlayMode.Tests
             var manager = managerObject.AddComponent<RunManager>();
             yield return null;
 
-            manager.StartNewRun("iron_vanguard");
+            manager.StartNewRun(FactionIds.IronVanguard);
             manager.Orchestrator.State.Supplies = 55;
             manager.SaveAndExit();
 

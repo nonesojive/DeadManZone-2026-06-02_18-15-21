@@ -1,4 +1,5 @@
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Run;
 using DeadManZone.Data;
 using DeadManZone.Game;
@@ -34,7 +35,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void TryEmergencyDraft_WhenShortfall_AppliesManpowerOnce()
         {
-            _orchestrator.StartNewRun("iron_vanguard", runSeed: 777);
+            _orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 777);
             var board = _orchestrator.GetPlayerBoard();
             var rifle = _database.Pieces.First(p => p.id == "rifle_squad").ToCore();
             Assert.IsTrue(board.TryPlace(rifle, TestBoards.FrontLineAnchor(), "rifle_1").Success);

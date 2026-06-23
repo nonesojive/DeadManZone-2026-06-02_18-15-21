@@ -1,4 +1,5 @@
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
@@ -24,7 +25,7 @@ namespace DeadManZone.Core.Tests.EditMode
 
             SaveManager.DeleteSave();
             var orchestrator = new RunOrchestrator(database);
-            orchestrator.StartNewRun("iron_vanguard", runSeed: 1);
+            orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 1);
             var board = orchestrator.GetPlayerBoard();
             var hq = System.Linq.Enumerable.FirstOrDefault(
                 board.Pieces,
@@ -45,7 +46,7 @@ namespace DeadManZone.Core.Tests.EditMode
 
             SaveManager.DeleteSave();
             var orchestrator = new RunOrchestrator(database);
-            orchestrator.StartNewRun("iron_vanguard", runSeed: 1);
+            orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 1);
             Assert.IsFalse(orchestrator.TryMovePlacedPiece("hq_player", new GridCoord(2, 2)));
         }
 
@@ -61,7 +62,7 @@ namespace DeadManZone.Core.Tests.EditMode
 
             SaveManager.DeleteSave();
             var orchestrator = new RunOrchestrator(database);
-            orchestrator.StartNewRun("iron_vanguard", runSeed: 1);
+            orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 1);
             Assert.IsFalse(orchestrator.TrySellPlacedPiece("hq_player"));
         }
     }

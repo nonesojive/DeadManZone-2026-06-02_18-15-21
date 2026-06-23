@@ -1,3 +1,4 @@
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using NUnit.Framework;
 
@@ -15,7 +16,7 @@ namespace DeadManZone.Core.Tests.EditMode
             Assert.AreEqual(ArmorType.Light, piece.ArmorType);
             Assert.AreEqual(AttackType.Ballistic, piece.AttackType);
             Assert.AreEqual(GrantedAbility.None, piece.GrantedAbility);
-            Assert.AreEqual("iron_vanguard", piece.FactionId);
+            Assert.AreEqual(FactionIds.IronVanguard, piece.FactionId);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.IO;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Shop;
 using UnityEditor;
@@ -131,7 +132,7 @@ namespace DeadManZone.Data.Editor
         {
             var path = $"{Root}/Factions/iron_vanguard.asset";
             var asset = LoadOrCreate<FactionSO>(path);
-            asset.factionId = "iron_vanguard";
+            asset.factionId = FactionIds.IronVanguard;
             asset.displayName = "IronMarch Union";
             EditorUtility.SetDirty(asset);
             return asset;

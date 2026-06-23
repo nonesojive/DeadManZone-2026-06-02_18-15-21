@@ -10,8 +10,8 @@ namespace DeadManZone.Core.Tests
 {
     public sealed class SalvageShopGeneratorTests
     {
-        private const string PlayerFactionId = "iron_vanguard";
-        private const string EnemyFactionId = "dust_scourge";
+        private const string PlayerFactionId = FactionIds.IronVanguard;
+        private const string EnemyFactionId = "FactionIds.DustScourge";
 
         private static ContentRegistry CreateSalvageRegistry()
         {

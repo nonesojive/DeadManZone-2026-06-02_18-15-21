@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
@@ -163,7 +164,7 @@ namespace DeadManZone.Core.Tests.EditMode
             var generator = new ShopGenerator(registry);
             var shop = generator.Generate(
                 VerticalSliceTestFixtures.BuildGauntletBoard(_database),
-                "iron_vanguard",
+                FactionIds.IronVanguard,
                 round: 2,
                 seed: 42,
                 lastEnemyFactionId: "neutral",
@@ -211,7 +212,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 }
             });
 
-            var state = RunState.CreateNew("iron_vanguard", 1, 10, 2, 5, 100);
+            var state = RunState.CreateNew(FactionIds.IronVanguard, 1, 10, 2, 5, 100);
             Assert.IsTrue(EmergencyDraft.TryUse(state, manpowerShortfall: 3));
             Assert.IsTrue(state.EmergencyDraftUsed);
 
@@ -276,7 +277,7 @@ namespace DeadManZone.Core.Tests.EditMode
         public void Criterion12_SandboxRosters_MeetNeutralAndIronMarchTargets()
         {
             int neutral = _database.Pieces.Count(p => p != null && p.factionId == "neutral");
-            int ironMarch = _database.Pieces.Count(p => p != null && p.factionId == "iron_vanguard");
+            int ironMarch = _database.Pieces.Count(p => p != null && p.factionId == FactionIds.IronVanguard);
 
             Assert.GreaterOrEqual(neutral, 10);
             Assert.GreaterOrEqual(ironMarch, 15);
@@ -290,7 +291,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 VerticalSliceTestFixtures.BuildGauntletBoard(_database));
 
             var saved = new RunOrchestrator(_database);
-            saved.StartNewRun("iron_vanguard", runSeed: seed);
+            saved.StartNewRun(FactionIds.IronVanguard, runSeed: seed);
             saved.SavePlayerBoard(VerticalSliceTestFixtures.BuildGauntletBoard(_database));
             saved.BeginCombat();
             saved.AdvanceCombat();
@@ -303,7 +304,7 @@ namespace DeadManZone.Core.Tests.EditMode
             var reloadedStep = reloaded.AdvanceCombat();
 
             var fresh = new RunOrchestrator(_database);
-            fresh.StartNewRun("iron_vanguard", runSeed: seed);
+            fresh.StartNewRun(FactionIds.IronVanguard, runSeed: seed);
             fresh.SavePlayerBoard(VerticalSliceTestFixtures.BuildGauntletBoard(_database));
             fresh.BeginCombat();
             fresh.AdvanceCombat();

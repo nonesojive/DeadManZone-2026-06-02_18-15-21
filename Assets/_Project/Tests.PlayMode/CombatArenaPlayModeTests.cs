@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Data;
@@ -94,7 +95,7 @@ namespace DeadManZone.PlayMode.Tests
 
         private static BoardState BuildBuildingShowcaseBoard(ContentDatabase database)
         {
-            var faction = database.GetFaction("iron_vanguard");
+            var faction = database.GetFaction(FactionIds.IronVanguard);
             Assert.NotNull(faction, "iron_vanguard faction required for arena building test.");
 
             var board = new BoardState(faction.CreateBoardLayout());
@@ -106,7 +107,7 @@ namespace DeadManZone.PlayMode.Tests
 
         private static BoardState BuildMinimalEnemyBoard(ContentDatabase database)
         {
-            var faction = database.GetFaction("iron_vanguard");
+            var faction = database.GetFaction(FactionIds.IronVanguard);
             var board = new BoardState(faction.CreateBoardLayout());
             Place(board, database, "ironmarch_hq", new GridCoord(0, 4), "enemy_hq");
             return board;

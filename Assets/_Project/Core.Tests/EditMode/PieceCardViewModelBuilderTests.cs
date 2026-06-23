@@ -1,4 +1,5 @@
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
@@ -102,7 +103,7 @@ namespace DeadManZone.Core.Tests.EditMode
             var context = new PieceCardBuildContext
             {
                 IsSalvaged = true,
-                LastEnemyFactionId = "dust_scourge",
+                LastEnemyFactionId = "FactionIds.DustScourge",
                 LastEnemyFactionDisplayName = "Dust Scourge"
             };
 

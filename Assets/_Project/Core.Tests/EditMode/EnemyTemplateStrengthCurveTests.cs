@@ -1,3 +1,4 @@
+using DeadManZone.Core;
 using DeadManZone.Core.Combat;
 using DeadManZone.Data;
 using NUnit.Framework;
@@ -14,7 +15,7 @@ namespace DeadManZone.Core.Tests.EditMode
         [Test]
         public void AllEnemyTemplates_HavePositiveEffectiveStrength()
         {
-            var faction = _database.GetFaction("iron_vanguard");
+            var faction = _database.GetFaction(FactionIds.IronVanguard);
             var registry = _database.BuildRegistry();
 
             for (int fight = 1; fight <= 10; fight++)
@@ -29,7 +30,7 @@ namespace DeadManZone.Core.Tests.EditMode
         [Test]
         public void EnemyStrength_GrowsRoughlyWithFightIndex()
         {
-            var faction = _database.GetFaction("iron_vanguard");
+            var faction = _database.GetFaction(FactionIds.IronVanguard);
             var registry = _database.BuildRegistry();
 
             int fight1 = ArmyStrengthCalculator.Evaluate(
@@ -44,7 +45,7 @@ namespace DeadManZone.Core.Tests.EditMode
         public void ReferencePlayerBoard_WithinSoftBandOfMidFightEnemy()
         {
             var player = TutorialBalanceFixtures.BuildReferencePlayerBoard(_database, fightIndex: 5);
-            var faction = _database.GetFaction("iron_vanguard");
+            var faction = _database.GetFaction(FactionIds.IronVanguard);
             var registry = _database.BuildRegistry();
             var enemy = ArmyStrengthCalculator.Evaluate(
                 _database.GetEnemyTemplate(5).BuildBoard(faction, registry));

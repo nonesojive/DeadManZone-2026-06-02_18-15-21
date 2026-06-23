@@ -1,3 +1,4 @@
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 
 namespace DeadManZone.Core.Shop
@@ -23,7 +24,7 @@ namespace DeadManZone.Core.Shop
             int manpower = 0;
 
             // Faction salvage bonus: Dust Scourge gets +25% supplies from salvage.
-            if (factionId == "dust_scourge")
+            if (factionId == "FactionIds.DustScourge")
                 supplies = (int)(supplies * 1.25f);
 
             return new SalvageRefund

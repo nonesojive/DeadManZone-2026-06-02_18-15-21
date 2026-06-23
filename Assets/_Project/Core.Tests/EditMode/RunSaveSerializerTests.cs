@@ -62,7 +62,7 @@ namespace DeadManZone.Core.Tests
                 Manpower = 10,
                 Morale = 100,
                 RunSeed = 777,
-                FactionId = "iron_vanguard",
+                FactionId = FactionIds.IronVanguard,
                 Phase = RunPhase.Build
             };
 
@@ -186,14 +186,14 @@ namespace DeadManZone.Core.Tests
         {
             var state = new RunState
             {
-                LastEnemyFactionId = "dust_scourge",
+                LastEnemyFactionId = "FactionIds.DustScourge",
                 SalvageChancePercent = 23,
                 SaveSchemaVersion = 6
             };
 
             var loaded = RunSaveSerializer.FromJson(RunSaveSerializer.ToJson(state));
 
-            Assert.AreEqual("dust_scourge", loaded.LastEnemyFactionId);
+            Assert.AreEqual("FactionIds.DustScourge", loaded.LastEnemyFactionId);
             Assert.AreEqual(23, loaded.SalvageChancePercent);
             Assert.AreEqual(6, loaded.SaveSchemaVersion);
         }

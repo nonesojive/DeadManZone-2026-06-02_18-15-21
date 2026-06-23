@@ -17,7 +17,7 @@ namespace DeadManZone.Core.Tests
 
         public static BoardState BuildGauntletBoard(ContentDatabase database)
         {
-            var faction = database.GetFaction("iron_vanguard");
+            var faction = database.GetFaction(FactionIds.IronVanguard);
             Assert.NotNull(faction, "iron_vanguard faction required for regression tests.");
 
             var board = new BoardState(faction.CreateBoardLayout());

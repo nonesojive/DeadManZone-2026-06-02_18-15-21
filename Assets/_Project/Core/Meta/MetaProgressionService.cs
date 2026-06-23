@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using DeadManZone.Core;
 using Newtonsoft.Json;
 
 namespace DeadManZone.Core.Meta
@@ -48,7 +49,7 @@ namespace DeadManZone.Core.Meta
 
         public static bool IsFactionUnlocked(string factionId)
         {
-            if (string.Equals(factionId, "iron_vanguard", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(factionId, FactionIds.IronVanguard, StringComparison.OrdinalIgnoreCase))
                 return true;
 
             var data = Load();
@@ -78,8 +79,8 @@ namespace DeadManZone.Core.Meta
             data.TotalRunsCompleted++;
             data.TotalFightsWon += fightsCleared;
 
-            UnlockFaction("dust_scourge");
-            UnlockFaction("cartel_of_echoes");
+            UnlockFaction("FactionIds.DustScourge");
+            UnlockFaction("FactionIds.CartelOfEchoes");
 
             data.LeaderboardEntries.Add(new LeaderboardEntryRecord
             {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 
@@ -12,7 +13,7 @@ namespace DeadManZone.Core.Shop
             IReadOnlyList<PieceDefinition> pool,
             int fightIndex,
             Rng rng,
-            string playerFactionId = "iron_vanguard") =>
+            string playerFactionId = FactionIds.IronVanguard) =>
             ShopPiecePicker.PickWeighted(pool, Array.Empty<string>(), preferredRoleWeight: 1f, rng);
     }
 }

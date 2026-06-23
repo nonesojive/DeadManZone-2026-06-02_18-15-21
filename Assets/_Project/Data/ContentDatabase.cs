@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Content;
 using DeadManZone.Core.Shop;
 using UnityEngine;
@@ -14,9 +15,9 @@ namespace DeadManZone.Data
         /// <summary>Playable factions shown in faction select.</summary>
         public static readonly string[] PlayableFactionIds =
         {
-            "iron_vanguard",
-            "dust_scourge",
-            "cartel_of_echoes"
+            FactionIds.IronVanguard,
+            "FactionIds.DustScourge",
+            "FactionIds.CartelOfEchoes"
         };
 
         /// <summary>Demo shop roster piece ids.</summary>

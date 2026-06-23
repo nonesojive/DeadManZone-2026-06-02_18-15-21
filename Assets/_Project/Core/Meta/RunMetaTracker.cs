@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DeadManZone.Core;
 
 namespace DeadManZone.Core.Meta
 {
@@ -53,13 +54,13 @@ namespace DeadManZone.Core.Meta
 
             switch (factionId)
             {
-                case "iron_vanguard":
+                case FactionIds.IronVanguard:
                     yield return AchievementIds.WinIronmarch;
                     break;
-                case "dust_scourge":
+                case "FactionIds.DustScourge":
                     yield return AchievementIds.WinDustScourge;
                     break;
-                case "cartel_of_echoes":
+                case "FactionIds.CartelOfEchoes":
                     yield return AchievementIds.WinCartel;
                     break;
             }

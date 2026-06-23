@@ -1,4 +1,5 @@
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Data;
@@ -9,7 +10,7 @@ namespace DeadManZone.Presentation.Combat.Arena
     {
         public static BattlefieldState BuildIronVanguardSkirmish(ContentDatabase database)
         {
-            var faction = database.GetFaction("iron_vanguard");
+            var faction = database.GetFaction(FactionIds.IronVanguard);
             if (faction == null)
                 return null;
 

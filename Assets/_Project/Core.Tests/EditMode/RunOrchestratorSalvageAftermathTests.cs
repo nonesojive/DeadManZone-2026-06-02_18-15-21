@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DeadManZone.Core;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Run;
 using DeadManZone.Core.Shop;
@@ -36,7 +37,7 @@ namespace DeadManZone.Core.Tests
         public void CompleteFight_SetsLastEnemyFactionIdAndSalvageChance()
         {
             var board = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
-            _orchestrator.StartNewRun("iron_vanguard", runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
+            _orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
             _orchestrator.SavePlayerBoard(board);
 
             var template = _database.GetEnemyTemplate(1);

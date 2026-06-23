@@ -20,7 +20,7 @@ namespace DeadManZone.Core.Tests.EditMode
         public void DustScourge_GetsSalvageBonus()
         {
             var piece = new PieceDefinition { GoldCost = 10 };
-            var refund = SalvageCalculator.Compute(piece, "dust_scourge");
+            var refund = SalvageCalculator.Compute(piece, "FactionIds.DustScourge");
             Assert.AreEqual(6, refund.Supplies);
         }
     }

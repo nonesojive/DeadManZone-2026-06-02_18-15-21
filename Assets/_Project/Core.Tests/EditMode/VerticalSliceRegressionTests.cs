@@ -45,7 +45,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void AllEnemyTemplates_FixedSeedCombat_IsDeterministic()
         {
-            var faction = _database.GetFaction("iron_vanguard");
+            var faction = _database.GetFaction(FactionIds.IronVanguard);
             var registry = _database.BuildRegistry();
             var resolver = new CombatResolver();
 
@@ -78,7 +78,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void AllEnemyTemplates_FixedSeedCombat_ProducesEventLog()
         {
-            var faction = _database.GetFaction("iron_vanguard");
+            var faction = _database.GetFaction(FactionIds.IronVanguard);
             var registry = _database.BuildRegistry();
             var resolver = new CombatResolver();
 
@@ -103,7 +103,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void GauntletBoard_WinsFightOne_WithBoardAuthority()
         {
-            var faction = _database.GetFaction("iron_vanguard");
+            var faction = _database.GetFaction(FactionIds.IronVanguard);
             var registry = _database.BuildRegistry();
             var player = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
             var enemy = _database.GetEnemyTemplate(1).BuildBoard(faction, registry);
@@ -168,7 +168,7 @@ namespace DeadManZone.Core.Tests
         public void SaveManager_BuildPhase_RestoresShopAndBoard()
         {
             var orchestrator = new RunOrchestrator(_database);
-            orchestrator.StartNewRun("iron_vanguard", runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
+            orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
             orchestrator.SavePlayerBoard(VerticalSliceTestFixtures.BuildGauntletBoard(_database));
             int supplies = orchestrator.State.Supplies;
             int offerCount = orchestrator.State.Shop.Offers.Count;
@@ -185,11 +185,11 @@ namespace DeadManZone.Core.Tests
 
         private RunState CreateRepresentativeState(RunPhase phase)
         {
-            var faction = _database.GetFaction("iron_vanguard");
+            var faction = _database.GetFaction(FactionIds.IronVanguard);
             var board = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
 
             var state = RunState.CreateNew(
-                "iron_vanguard",
+                FactionIds.IronVanguard,
                 VerticalSliceTestFixtures.RegressionRunSeed,
                 faction.startingSupplies,
                 faction.startingManpower,
