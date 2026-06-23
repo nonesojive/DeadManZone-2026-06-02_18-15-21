@@ -1,4 +1,5 @@
 using System.Collections;
+using DeadManZone.Data;
 using DeadManZone.Game;
 using DeadManZone.Presentation.Run;
 using UnityEngine;
@@ -24,13 +25,16 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public IEnumerator LoadAsync()
         {
-            if (!SceneManager.GetSceneByName(GameScenes.CombatArena).isLoaded)
+            var config = Resources.Load<CombatArenaConfigSO>("DeadManZone/CombatArenaConfig");
+            string sceneName = GameScenes.ResolveCombatArenaScene(config);
+
+            if (!SceneManager.GetSceneByName(sceneName).isLoaded)
                 IsLoaded = false;
 
             if (IsLoaded)
                 yield break;
 
-            var op = SceneManager.LoadSceneAsync(GameScenes.CombatArena, LoadSceneMode.Additive);
+            var op = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
             while (op != null && !op.isDone)
                 yield return null;
 
@@ -57,7 +61,10 @@ namespace DeadManZone.Presentation.Combat.Arena
             CombatArenaUiController.ExitArenaMode(runSceneController?.BuildPanelTransform);
             GetComponent<CombatArenaPresenter>()?.OnArenaUnloaded();
 
-            var op = SceneManager.UnloadSceneAsync(GameScenes.CombatArena);
+            string sceneToUnload = SceneManager.GetSceneByName(GameScenes.CombatArena2D).isLoaded
+                ? GameScenes.CombatArena2D
+                : GameScenes.CombatArena;
+            var op = SceneManager.UnloadSceneAsync(sceneToUnload);
             while (op != null && !op.isDone)
                 yield return null;
 

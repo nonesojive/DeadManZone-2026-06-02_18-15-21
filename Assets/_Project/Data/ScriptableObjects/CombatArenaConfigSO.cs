@@ -5,6 +5,10 @@ namespace DeadManZone.Data
     [CreateAssetMenu(menuName = "DeadManZone/Combat Arena Config")]
     public sealed class CombatArenaConfigSO : ScriptableObject
     {
+        [Header("Presentation mode")]
+        [Tooltip("Legacy3D keeps Synty models and perspective camera. TopTroops2D uses ortho camera and sprite units.")]
+        public CombatArenaVisualMode visualMode = CombatArenaVisualMode.Legacy3D;
+
         [Header("Grid → world (meters)")]
         public float cellWidth = 1.8f;
         public float cellDepth = 1.8f;
@@ -26,6 +30,14 @@ namespace DeadManZone.Data
         public Color topTroopsNeutralZoneColor = new(0.46f, 0.42f, 0.36f);
         public Color topTroopsEnemyZoneColor = new(0.42f, 0.34f, 0.30f);
         public Color topTroopsSkyColor = new(0.24f, 0.21f, 0.18f);
+
+        [Header("2D arena")]
+        [Tooltip("Peak height of arced rifle/cannon tracers in world units.")]
+        public float projectileArcHeight = 0.6f;
+        [Tooltip("Oblique pitch for orthographic TopTroops2D camera (same convention as cameraElevationDegrees).")]
+        public float orthoCameraElevationDegrees = 52f;
+        [Tooltip("Orbit yaw for 2D mode (same convention as cameraAzimuthDegrees). 270 = player left, enemy right.")]
+        public float orthoCameraAzimuthDegrees = 270f;
 
         [Header("Camera — Top Troops style")]
         [Tooltip("Downward pitch. Top Troops uses a steep oblique angle (~48–52°).")]

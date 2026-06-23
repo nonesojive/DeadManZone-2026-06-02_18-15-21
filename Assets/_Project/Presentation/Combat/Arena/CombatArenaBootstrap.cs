@@ -53,6 +53,12 @@ namespace DeadManZone.Presentation.Combat.Arena
             EnsureGround();
             ConfigureCamera();
 
+            if (CombatArenaPresentationMode.IsTopTroops2D(config))
+            {
+                FrameBattlefield2D(layout);
+                return;
+            }
+
             if (arenaCamera != null)
                 CombatArenaCameraFramer.Frame(arenaCamera, layout, config);
 
@@ -66,6 +72,42 @@ namespace DeadManZone.Presentation.Combat.Arena
             SpawnPerimeterProps(layout);
             CombatArenaGridView.Build(transform, layout, config);
             CombatArenaBackdrop.Build(transform, layout, config, config?.atmosphereProfile);
+        }
+
+        private void FrameBattlefield2D(BattlefieldLayout layout)
+        {
+            DestroyLegacyGround();
+            ClearLegacyBattlefieldRoots();
+            TopTroopsAtmosphere.Apply(config, transform, arenaCamera);
+
+            var mapper = new CombatGridMapper(layout, config.cellWidth, config.cellDepth);
+            CombatArena2DBattlefieldView.Build(transform, layout, mapper, config, arenaCamera);
+
+            if (arenaCamera != null)
+                CombatArenaOrthographicFramer.Frame(arenaCamera, layout, config);
+        }
+
+        private void DestroyLegacyGround()
+        {
+            if (groundRoot == null)
+                return;
+
+            DestroyGroundObject(groundRoot.gameObject);
+            groundRoot = null;
+            _usingGridBackdrop = false;
+            _usingFlatGround = false;
+            _usingSyntyGround = false;
+        }
+
+        private void ClearLegacyBattlefieldRoots()
+        {
+            var topTroops = transform.Find("TopTroopsBattlefield");
+            if (topTroops != null)
+                DestroyGroundObject(topTroops.gameObject);
+
+            var grid = transform.Find("CombatArenaGrid");
+            if (grid != null)
+                DestroyGroundObject(grid.gameObject);
         }
 
         private void ApplyTopTroopsBattlefield(BattlefieldLayout layout)
@@ -120,6 +162,12 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void ApplyEnvironment()
         {
+            if (config != null && CombatArenaPresentationMode.IsTopTroops2D(config))
+            {
+                TopTroopsAtmosphere.Apply(config, transform, arenaCamera);
+                return;
+            }
+
             if (config != null && config.useTopTroopsProceduralBattlefield)
             {
                 TopTroopsAtmosphere.Apply(config, transform, arenaCamera);
@@ -151,6 +199,9 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void EnsureGround()
         {
+            if (config != null && CombatArenaPresentationMode.IsTopTroops2D(config))
+                return;
+
             if (config != null && config.showCheckerboardGrid && TryEnsureGridBackdropGround())
                 return;
 
@@ -369,6 +420,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             arenaCamera.depth = 10f;
             arenaCamera.rect = new Rect(0f, 0f, 1f, 1f);
             arenaCamera.allowHDR = false;
+            if (config != null && CombatArenaPresentationMode.IsTopTroops2D(config))
+                arenaCamera.orthographic = true;
+
             EnsureUrpCameraData(arenaCamera);
 
             if (RenderSettings.skybox == null)

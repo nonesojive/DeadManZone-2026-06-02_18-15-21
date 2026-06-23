@@ -62,7 +62,9 @@ namespace DeadManZone.Data
         public AbilityDefinitionSO[] catalogAbilities = Array.Empty<AbilityDefinitionSO>();
         public PieceAbilityInlineEntry[] customAbilities = Array.Empty<PieceAbilityInlineEntry>();
 
-        [Header("Combat Arena (3D)")]
+        [Header("Combat Arena")]
+        [Tooltip("Optional dedicated 2D combat sprite (TopTroops2D mode). Falls back to icon then role silhouette.")]
+        public Sprite combatArenaSprite;
         [Tooltip("Optional 3D prefab for combat arena presentation. Board/shop still use icon + cellSprites.")]
         public GameObject combatArenaPrefab;
         [Tooltip("Uniform scale applied before height fitting. 1 = asset default.")]

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace DeadManZone.Presentation.Combat.Arena
 {
-    public sealed class CombatArenaVfx : MonoBehaviour
+    public sealed class CombatArenaVfx : MonoBehaviour, ICombatArenaVfxPresenter
     {
         [SerializeField] private CombatArenaFreezeController freezeController;
         [SerializeField] private CombatArenaVfxSetSO vfxSet;

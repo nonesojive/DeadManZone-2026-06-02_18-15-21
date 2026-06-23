@@ -15,7 +15,10 @@ namespace DeadManZone.Presentation.Combat.Arena
     {
         [SerializeField] private CombatDirector combatDirector;
         [SerializeField] private CombatArenaVfx vfx;
+        [SerializeField] private CombatArena2DVfx vfx2D;
         [SerializeField] private CombatArenaAudioPresenter audio;
+
+        private ICombatArenaVfxPresenter _activeVfx;
 
         private readonly Dictionary<string, CombatUnitActor> _actors = new();
         private readonly CombatReplayState _replayState = new();
@@ -113,6 +116,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (config == null)
                 return;
 
+            bool use2D = CombatArenaPresentationMode.IsTopTroops2D(config);
+            _activeVfx = ResolveVfxPresenter(use2D);
+
             _mapper = new CombatGridMapper(battlefield.Layout, config.cellWidth, config.cellDepth);
             _battlefield = battlefield;
             bootstrap.FrameBattlefield(battlefield.Layout);
@@ -159,7 +165,8 @@ namespace DeadManZone.Presentation.Combat.Arena
                     cell.Side,
                     config.useProceduralUnitVisuals,
                     config.useTopTroopsFreeChaseMovement,
-                    config.topTroopsChaseMaxLeadCells);
+                    config.topTroopsChaseMaxLeadCells,
+                    use2D);
 
                 _actors[cell.InstanceId] = actor;
                 actor.SetFrozen(IsPresentationFrozen);
@@ -193,6 +200,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             var config = bootstrap?.Config;
             if (config == null)
                 return;
+
+            bool use2D = CombatArenaPresentationMode.IsTopTroops2D(config);
+            _activeVfx = ResolveVfxPresenter(use2D);
 
             Transform poolRoot = bootstrap.UnitsRoot != null ? bootstrap.UnitsRoot : transform;
             DestroyOrphanActors(poolRoot);
@@ -245,7 +255,8 @@ namespace DeadManZone.Presentation.Combat.Arena
                     cell.Side,
                     config.useProceduralUnitVisuals,
                     config.useTopTroopsFreeChaseMovement,
-                    config.topTroopsChaseMaxLeadCells);
+                    config.topTroopsChaseMaxLeadCells,
+                    use2D);
 
                 _actors[cell.InstanceId] = actor;
                 actor.SetFrozen(IsPresentationFrozen);
@@ -314,7 +325,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             if (!_actors.TryGetValue(combatEvent.ActorId, out var attacker))
             {
-                vfx?.PlayDamage(targetWorld, combatEvent.Value);
+                _activeVfx?.PlayDamage(targetWorld, combatEvent.Value);
                 return;
             }
 
@@ -358,11 +369,11 @@ namespace DeadManZone.Presentation.Combat.Arena
                 case CombatAttackPresentationKind.VehicleCannon:
                 case CombatAttackPresentationKind.BuildingArtillery:
                     audio?.PlayCannonShot(muzzleWorld);
-                    vfx?.PlayCannonMuzzleAndTracer(muzzleWorld, targetWorld);
+                    _activeVfx?.PlayCannonMuzzleAndTracer(muzzleWorld, targetWorld);
                     break;
                 default:
                     audio?.PlayRifleShot(muzzleWorld);
-                    vfx?.PlayRifleMuzzleAndTracer(muzzleWorld, targetWorld);
+                    _activeVfx?.PlayRifleMuzzleAndTracer(muzzleWorld, targetWorld);
                     break;
             }
         }
@@ -378,11 +389,11 @@ namespace DeadManZone.Presentation.Combat.Arena
                 case CombatAttackPresentationKind.VehicleCannon:
                 case CombatAttackPresentationKind.BuildingArtillery:
                     audio?.PlayExplosion(targetWorld);
-                    vfx?.PlayExplosion(targetWorld, damageAmount);
+                    _activeVfx?.PlayExplosion(targetWorld, damageAmount);
                     break;
                 default:
                     audio?.PlayImpact(targetWorld);
-                    vfx?.PlayImpact(targetWorld, damageAmount);
+                    _activeVfx?.PlayImpact(targetWorld, damageAmount);
                     break;
             }
         }
@@ -404,7 +415,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _actors.Remove(combatEvent.ActorId);
             dead.PlayDeath(() => _pool.Release(dead));
             audio?.PlayDeath(deathWorld);
-            vfx?.PlayDeath(deathWorld);
+            _activeVfx?.PlayDeath(deathWorld);
         }
 
         private bool TryGetDamageTargetPosition(CombatEvent combatEvent, out Vector3 worldPosition)
@@ -507,8 +518,22 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (vfx == null)
                 vfx = GetComponent<CombatArenaVfx>();
 
+            if (vfx2D == null)
+                vfx2D = GetComponent<CombatArena2DVfx>();
+
             if (audio == null)
                 audio = GetComponent<CombatArenaAudioPresenter>();
+
+            var bootstrap = CombatArenaBootstrap.Instance;
+            bool use2D = bootstrap?.Config != null && CombatArenaPresentationMode.IsTopTroops2D(bootstrap.Config);
+            _activeVfx = ResolveVfxPresenter(use2D);
+        }
+
+        private ICombatArenaVfxPresenter ResolveVfxPresenter(bool use2D)
+        {
+            if (use2D && vfx2D != null)
+                return vfx2D;
+            return vfx;
         }
 
         private void EnsureChaseController()

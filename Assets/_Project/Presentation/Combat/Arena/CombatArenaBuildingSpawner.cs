@@ -83,6 +83,14 @@ namespace DeadManZone.Presentation.Combat.Arena
             var footprint = ComputeFootprintBounds(cell.Position, cell.Definition.Shape, mapper, DefaultBuildingHeight);
             string objectName = $"Building_{cell.InstanceId}";
 
+            if (CombatArenaPresentationMode.IsTopTroops2D(config))
+            {
+                var building2D = CombatArena2DBuildingVisual.Spawn(cell.InstanceId, footprint.Center, source, cell.Side);
+                building2D.name = objectName;
+                building2D.transform.SetParent(buildingsRoot, false);
+                return building2D;
+            }
+
             var prefab = CombatArenaPrefabResolver.ResolveBuildingPrefab(source, cell.Definition, config);
             GameObject root = prefab != null
                 ? SpawnPrefabBuilding(source, prefab, footprint, objectName)

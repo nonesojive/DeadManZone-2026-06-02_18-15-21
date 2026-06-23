@@ -13,6 +13,8 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private CombatBillboard _billboard;
         private CombatArenaUnitVisual _unitVisual;
+        private CombatUnitVisual2D _visual2D;
+        private bool _use2DVisual;
         private CombatGridMapper _mapper;
         private Transform _presentationRoot;
         private GridCoord _anchor;
@@ -59,7 +61,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             CombatSide combatSide = CombatSide.Player,
             bool useProceduralUnitVisuals = false,
             bool useFreeChaseMovement = false,
-            float chaseMaxLeadCells = 4f)
+            float chaseMaxLeadCells = 4f,
+            bool use2DUnitVisuals = false)
         {
             InstanceId = instanceId;
             PieceId = pieceId;
@@ -83,6 +86,16 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             ClearPresentation();
             EnsurePresentationRoot();
+
+            _use2DVisual = use2DUnitVisuals;
+            if (_use2DVisual && pieceDefinition != null)
+            {
+                _visual2D = gameObject.AddComponent<CombatUnitVisual2D>();
+                int squadSize = Mathf.Clamp(pieceDefinition.manpowerCost, 1, 5);
+                _visual2D.Build(pieceDefinition, combatSide, cameraTransform != null ? cameraTransform.GetComponent<Camera>() : null, squadSize);
+                SnapToAnchor(anchor);
+                return;
+            }
 
             _useModelVisual = arenaPrefab != null;
             _useProceduralVisual = false;
@@ -151,6 +164,12 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (!IsAlive || _frozen || _mapper == null)
                 return;
 
+            if (_use2DVisual && _visual2D != null)
+            {
+                Update2DMovementAndPresentation();
+                return;
+            }
+
             Vector3 current = transform.position;
             Vector3 simWorld = _mapper.ToWorld(_anchor);
 
@@ -186,6 +205,63 @@ namespace DeadManZone.Presentation.Combat.Arena
             transform.position = Vector3.MoveTowards(current, flatTarget, step);
 
             UpdateIdleBob();
+        }
+
+        private void Update2DMovementAndPresentation()
+        {
+            Vector3 current = transform.position;
+            Vector3 simWorld = _mapper.ToWorld(_anchor);
+
+            if (_freeChaseEnabled && _chaseTargetWorld.HasValue)
+            {
+                Vector3 chaseWorld = _chaseTargetWorld.Value;
+                if (!CombatArenaFreeChaseMovement.ShouldKeepMarching(current, chaseWorld))
+                {
+                    _visual2D.SetWalking(false);
+                    _visual2D.UpdateSortAndBob(transform.position);
+                    return;
+                }
+
+                Vector3 next = CombatArenaFreeChaseMovement.ComputeStep(
+                    current, simWorld, chaseWorld, _moveWorldSpeed, Time.deltaTime,
+                    _mapper.CellWidth, _chaseMaxLeadCells);
+                next = CombatArenaFreeChaseMovement.ClampToSimLead(next, simWorld, _mapper.CellWidth, _chaseMaxLeadCells);
+
+                Vector3 moveDelta = next - current;
+                moveDelta.y = 0f;
+                if (moveDelta.sqrMagnitude > 0.0001f)
+                    _visual2D.FaceDirection(moveDelta);
+
+                _visual2D.SetWalking(true);
+                transform.position = new Vector3(next.x, current.y, next.z);
+                _visual2D.UpdateSortAndBob(transform.position);
+                return;
+            }
+
+            Vector3 target = simWorld;
+            var flatTarget = new Vector3(target.x, current.y, target.z);
+            var flatCurrent = new Vector3(current.x, 0f, current.z);
+            float dist = Vector3.Distance(flatCurrent, new Vector3(flatTarget.x, 0f, flatTarget.z));
+            bool atDestination = dist <= 0.02f;
+            bool withinMarchGrace = Time.time - _lastMoveCommandTime < _marchGraceSeconds;
+
+            if (atDestination)
+            {
+                if (current != flatTarget)
+                    transform.position = flatTarget;
+                _visual2D.SetWalking(withinMarchGrace);
+            }
+            else
+            {
+                _visual2D.SetWalking(true);
+                Vector3 delta = flatTarget - current;
+                delta.y = 0f;
+                _visual2D.FaceDirection(delta);
+                float step = _moveWorldSpeed * Time.deltaTime;
+                transform.position = Vector3.MoveTowards(current, flatTarget, step);
+            }
+
+            _visual2D.UpdateSortAndBob(transform.position);
         }
 
         private void ApplyFreeChaseMovement(Vector3 current, Vector3 simWorld)
@@ -255,6 +331,12 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (_frozen || !IsAlive)
                 return;
 
+            if (_use2DVisual && _visual2D != null)
+            {
+                _visual2D.PlayAttack(profile, targetWorld, onMuzzle, onImpact);
+                return;
+            }
+
             if (profile.UseForwardStep)
             {
                 if (_useProceduralVisual)
@@ -299,6 +381,16 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (_attackTimingRoutine != null)
                 StopCoroutine(_attackTimingRoutine);
             _unitVisual?.SetWalking(false);
+
+            if (_use2DVisual && _visual2D != null)
+            {
+                _visual2D.PlayDeath(() =>
+                {
+                    onComplete?.Invoke();
+                    gameObject.SetActive(false);
+                });
+                return;
+            }
 
             if (_useModelVisual && _unitVisual != null && _unitVisual.HasModel)
             {
@@ -413,6 +505,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _frozen = false;
             _useModelVisual = false;
             _useProceduralVisual = false;
+            _use2DVisual = false;
             _freeChaseEnabled = false;
             _chaseTargetWorld = null;
             _presentationRoot = null;
@@ -485,6 +578,13 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void ClearPresentation()
         {
+            if (_visual2D != null)
+            {
+                _visual2D.Clear();
+                Destroy(_visual2D);
+                _visual2D = null;
+            }
+
             if (_unitVisual != null)
             {
                 _unitVisual.Clear();

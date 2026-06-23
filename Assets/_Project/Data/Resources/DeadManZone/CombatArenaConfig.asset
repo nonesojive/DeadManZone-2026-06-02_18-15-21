@@ -12,18 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8f2a1b3d4e5678901234567890abcde, type: 3}
   m_Name: CombatArenaConfig
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatArenaConfigSO
+  visualMode: 1
   cellWidth: 1.8
   cellDepth: 1.8
-  useTopTroopsProceduralBattlefield: 1
+  useTopTroopsProceduralBattlefield: 0
   useProceduralUnitVisuals: 0
   useTopTroopsFreeChaseMovement: 1
   topTroopsChaseSpeedMultiplier: 1.2
   topTroopsChaseMaxLeadCells: 2
-  useTopTroopsBrightSky: 0
+  useTopTroopsBrightSky: 1
   topTroopsPlayerZoneColor: {r: 0.54, g: 0.44, b: 0.3, a: 1}
   topTroopsNeutralZoneColor: {r: 0.46, g: 0.42, b: 0.36, a: 1}
   topTroopsEnemyZoneColor: {r: 0.42, g: 0.34, b: 0.3, a: 1}
-  topTroopsSkyColor: {r: 0.24, g: 0.21, b: 0.18, a: 1}
+  topTroopsSkyColor: {r: 0.621, g: 0.475, b: 0.326, a: 1}
+  projectileArcHeight: 0.65
+  orthoCameraElevationDegrees: 52
+  orthoCameraAzimuthDegrees: 270
   cameraElevationDegrees: 52
   cameraAzimuthDegrees: 270
   cameraDistance: 28
@@ -33,7 +37,7 @@ MonoBehaviour:
   autoFrameVerticalPosition: 1
   boardVerticalViewportCenter: 0.5
   autoFrameVerticalFill: 1
-  verticalViewportFill: 0.58
+  verticalViewportFill: 0.66
   cameraDistanceScale: 0.92
   lookAtDepthOffset: 0
   useManualCameraPose: 0
