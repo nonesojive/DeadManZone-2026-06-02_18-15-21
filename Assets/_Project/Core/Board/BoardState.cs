@@ -27,13 +27,13 @@ namespace DeadManZone.Core.Board
         {
             foreach (var cell in definition.Shape.GetCells(anchor, rotation))
             {
-                if (cell.X < 0 || cell.Y < 0 || cell.X >= Layout.Width || cell.Y >= Layout.Height)
+                if (!Layout.IsPlaceableCell(cell))
                     return false;
 
                 if (_occupied.Contains(cell))
                     return false;
 
-                if (!IsZoneAllowedForDefinition(definition, Layout.GetZone(cell)))
+                if (!IsPlacementAllowedForDefinition(definition, cell))
                     return false;
             }
 
@@ -50,14 +50,24 @@ namespace DeadManZone.Core.Board
 
             foreach (var cell in definition.Shape.GetCells(anchor, rotation))
             {
-                if (cell.X < 0 || cell.Y < 0 || cell.X >= Layout.Width || cell.Y >= Layout.Height)
-                    return new PlacementResult { Success = false, Reason = "Out of bounds" };
+                if (!Layout.IsPlaceableCell(cell))
+                    return new PlacementResult
+                    {
+                        Success = false,
+                        Reason = Layout.IsBlocked(cell) ? "Cell blocked" : "Out of bounds"
+                    };
 
                 if (_occupied.Contains(cell))
                     return new PlacementResult { Success = false, Reason = "Cell occupied" };
 
-                if (!IsZoneAllowedForDefinition(definition, Layout.GetZone(cell)))
+                if (!IsPlacementAllowedForDefinition(definition, cell))
+                {
+                    var boardReason = BoardPlacementRules.InvalidBoardReason(definition, Layout.Kind);
+                    if (!string.IsNullOrEmpty(boardReason))
+                        return new PlacementResult { Success = false, Reason = boardReason };
+
                     return new PlacementResult { Success = false, Reason = "Invalid zone for category" };
+                }
             }
 
             foreach (var cell in definition.Shape.GetCells(anchor, rotation))
@@ -128,6 +138,26 @@ namespace DeadManZone.Core.Board
 
         private static bool IsImmovableHq(PieceDefinition definition) =>
             PieceTagQueries.HasTag(definition, GameTagIds.Hq);
+
+        private static bool IsPlacementAllowedForDefinition(
+            PieceDefinition definition,
+            GridCoord cell,
+            BoardLayout layout)
+        {
+            if (definition == null)
+                return false;
+
+            if (!BoardPlacementRules.IsAllowedForBoard(definition, layout.Kind))
+                return false;
+
+            if (!layout.UsesZones)
+                return true;
+
+            return IsZoneAllowedForDefinition(definition, layout.GetZone(cell));
+        }
+
+        private bool IsPlacementAllowedForDefinition(PieceDefinition definition, GridCoord cell) =>
+            IsPlacementAllowedForDefinition(definition, cell, Layout);
 
         private static bool IsZoneAllowedForDefinition(PieceDefinition definition, ZoneType zone)
         {

@@ -170,7 +170,9 @@ namespace DeadManZone.Core.Tests
         {
             var orchestrator = new RunOrchestrator(_database);
             orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
-            orchestrator.SavePlayerBoard(VerticalSliceTestFixtures.BuildGauntletBoard(_database));
+            var boards = VerticalSliceTestFixtures.BuildGauntletBoards(_database);
+            orchestrator.SaveCombatBoard(boards.Combat);
+            orchestrator.SaveHqBoard(boards.Hq);
             int supplies = orchestrator.State.Supplies;
             int offerCount = orchestrator.State.Shop.Offers.Count;
 
@@ -181,13 +183,15 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(RunPhase.Build, reloaded.State.Phase);
             Assert.AreEqual(supplies, reloaded.State.Supplies);
             Assert.AreEqual(offerCount, reloaded.State.Shop.Offers.Count);
-            Assert.AreEqual(9, reloaded.GetPlayerBoard().Pieces.Count);
+            Assert.AreEqual(7, reloaded.GetCombatBoard().Pieces.Count);
+            Assert.AreEqual(1, reloaded.GetHqBoard().Pieces.Count);
         }
 
         private RunState CreateRepresentativeState(RunPhase phase)
         {
             var faction = _database.GetFaction(FactionIds.IronVanguard);
-            var board = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
+            var boards = VerticalSliceTestFixtures.BuildGauntletBoards(_database);
+            var board = boards.ToAggregateBoard();
 
             var state = RunState.CreateNew(
                 FactionIds.IronVanguard,
@@ -196,12 +200,13 @@ namespace DeadManZone.Core.Tests
                 faction.startingManpower,
                 faction.startingAuthority,
                 faction.startingMorale);
-            state.PlayerBoard = BoardSnapshotMapper.FromBoard(board, faction.rearCols, faction.supportCols);
+            state.CombatBoard = BoardSnapshotMapper.FromBoard(boards.Combat);
+            state.HqBoard = BoardSnapshotMapper.FromBoard(boards.Hq);
             state.Phase = phase;
             state.FightIndex = 2;
             state.Supplies = 37;
             state.Authority = 5;
-            state.SaveSchemaVersion = 5;
+            state.SaveSchemaVersion = 8;
             state.Reserves = new ReservesSnapshot
             {
                 Width = ReservesState.Width,
@@ -318,8 +323,10 @@ namespace DeadManZone.Core.Tests
                 expected.Reserves.Pieces[0].PieceId,
                 actual.Reserves.Pieces[0].PieceId);
 
-            Assert.NotNull(actual.PlayerBoard);
-            Assert.AreEqual(expected.PlayerBoard.Pieces.Count, actual.PlayerBoard.Pieces.Count);
+            Assert.NotNull(actual.CombatBoard);
+            Assert.NotNull(actual.HqBoard);
+            Assert.AreEqual(expected.CombatBoard.Pieces.Count, actual.CombatBoard.Pieces.Count);
+            Assert.AreEqual(expected.HqBoard.Pieces.Count, actual.HqBoard.Pieces.Count);
 
             switch (phase)
             {

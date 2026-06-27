@@ -17,5 +17,8 @@ namespace DeadManZone.Core.Run
                 p.Definition.CommandActions.HasFlag(CommandActionFlags.ChangeStance));
             return pool;
         }
+
+        public static int ComputeRoundPool(BuildBoardSet boards) =>
+            ComputeRoundPool(boards?.ToAggregateBoard());
     }
 }

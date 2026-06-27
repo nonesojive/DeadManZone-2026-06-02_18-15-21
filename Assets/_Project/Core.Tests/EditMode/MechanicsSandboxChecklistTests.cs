@@ -292,7 +292,9 @@ namespace DeadManZone.Core.Tests.EditMode
 
             var saved = new RunOrchestrator(_database);
             saved.StartNewRun(FactionIds.IronVanguard, runSeed: seed);
-            saved.SavePlayerBoard(VerticalSliceTestFixtures.BuildGauntletBoard(_database));
+            var boards = VerticalSliceTestFixtures.BuildGauntletBoards(_database);
+            saved.SaveCombatBoard(boards.Combat);
+            saved.SaveHqBoard(boards.Hq);
             saved.BeginCombat();
             saved.AdvanceCombat();
             saved.SubmitCombatCommands(commands);
@@ -305,7 +307,9 @@ namespace DeadManZone.Core.Tests.EditMode
 
             var fresh = new RunOrchestrator(_database);
             fresh.StartNewRun(FactionIds.IronVanguard, runSeed: seed);
-            fresh.SavePlayerBoard(VerticalSliceTestFixtures.BuildGauntletBoard(_database));
+            var boards = VerticalSliceTestFixtures.BuildGauntletBoards(_database);
+            fresh.SaveCombatBoard(boards.Combat);
+            fresh.SaveHqBoard(boards.Hq);
             fresh.BeginCombat();
             fresh.AdvanceCombat();
             fresh.SubmitCombatCommands(commands);

@@ -11,6 +11,9 @@ namespace DeadManZone.Core.Combat
         public static CriticalMassSnapshot Evaluate(BoardState board) =>
             Evaluate(board, CriticalMassRuleSource.GetRules());
 
+        public static CriticalMassSnapshot Evaluate(BuildBoardSet boards) =>
+            Evaluate(boards?.ToAggregateBoard(), CriticalMassRuleSource.GetRules());
+
         public static CriticalMassSnapshot Evaluate(
             BoardState board,
             IReadOnlyList<CriticalMassRuleDefinition> rules)

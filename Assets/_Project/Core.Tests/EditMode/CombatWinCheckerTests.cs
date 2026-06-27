@@ -8,7 +8,7 @@ namespace DeadManZone.Core.Tests.EditMode
     public sealed class CombatWinCheckerTests
     {
         [Test]
-        public void PlayerWins_WhenEnemyHQDestroyed()
+        public void PlayerWins_WhenAllEnemyFightersDestroyed()
         {
             var player = new List<CombatantState>
             {
@@ -16,8 +16,7 @@ namespace DeadManZone.Core.Tests.EditMode
             };
             var enemy = new List<CombatantState>
             {
-                Make("hq", TestPieces.HqPiece(), alive: false),
-                Make("e1", TestPieces.RifleSquad(), alive: true)
+                Make("e1", TestPieces.RifleSquad(), alive: false)
             };
 
             var (over, playerWon, isDraw) = CombatWinChecker.Evaluate(player, enemy);
@@ -27,7 +26,7 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
-        public void NoInstantWin_WhenEnemyHasNoHqTag()
+        public void FightContinues_WhenBothSidesHaveLivingFighters()
         {
             var player = new List<CombatantState> { Make("p1", TestPieces.RifleSquad(), alive: true) };
             var enemy = new List<CombatantState> { Make("e1", TestPieces.RifleSquad(), alive: true) };

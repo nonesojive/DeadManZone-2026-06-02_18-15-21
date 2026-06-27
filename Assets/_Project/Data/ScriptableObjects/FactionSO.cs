@@ -12,6 +12,18 @@ namespace DeadManZone.Data
     {
         public string factionId = FactionIds.IronVanguard;
         public string displayName = "IronMarch Union";
+
+        [Header("Combat board")]
+        public int combatBoardSize = 6;
+        public Vector2Int[] combatSpecialTileCoords = System.Array.Empty<Vector2Int>();
+
+        [Header("HQ board")]
+        public int hqBoardWidth = 6;
+        public int hqBoardHeight = 3;
+        public Vector2Int[] hqBlockedCells = System.Array.Empty<Vector2Int>();
+        public Vector2Int[] hqSpecialTileCoords = System.Array.Empty<Vector2Int>();
+
+        [Header("Legacy (deprecated)")]
         public int boardWidth = 9;
         public int boardHeight = 10;
         public int rearCols = 4;
@@ -22,6 +34,7 @@ namespace DeadManZone.Data
             new Vector2Int(4, 4),
             new Vector2Int(7, 4)
         };
+
         public int startingSupplies = 100;
         public int startingManpower = 100;
 
@@ -41,17 +54,37 @@ namespace DeadManZone.Data
         [Tooltip("Semi-transparent fill behind unit tokens on board, shop, and drag ghost.")]
         public Color tokenBackgroundColor = new Color(0f, 0f, 0f, 0f);
 
-        [Header("HQ")]
-        public string hqPieceId = "ironmarch_hq";
-        public Vector2Int hqSpawnAnchor = new(0, 4);
-        public int hqSpawnRotation = 0;
+        public BoardLayout CreateCombatBoardLayout()
+        {
+            var specialTiles = ToGridCoords(combatSpecialTileCoords);
+            return BoardLayout.CreateCombatBoard(combatBoardSize, specialTiles);
+        }
 
+        public BoardLayout CreateHqBoardLayout()
+        {
+            return BoardLayout.CreateHqBoard(
+                hqBoardWidth,
+                hqBoardHeight,
+                ToGridCoords(hqBlockedCells),
+                ToGridCoords(hqSpecialTileCoords));
+        }
+
+        public BoardSnapshot CreateEmptyCombatBoardSnapshot()
+        {
+            var layout = CreateCombatBoardLayout();
+            return BoardSnapshotMapper.FromBoard(new BoardState(layout));
+        }
+
+        public BoardSnapshot CreateEmptyHqBoardSnapshot()
+        {
+            var layout = CreateHqBoardLayout();
+            return BoardSnapshotMapper.FromBoard(new BoardState(layout));
+        }
+
+        [System.Obsolete("Use CreateCombatBoardLayout for schema v8.")]
         public BoardLayout CreateBoardLayout()
         {
-            var specialTiles = new GridCoord[specialTileCoords.Length];
-            for (int i = 0; i < specialTileCoords.Length; i++)
-                specialTiles[i] = new GridCoord(specialTileCoords[i].x, specialTileCoords[i].y);
-
+            var specialTiles = ToGridCoords(specialTileCoords);
             return BoardLayout.CreateHorizontalZones(
                 boardWidth,
                 boardHeight,
@@ -60,6 +93,7 @@ namespace DeadManZone.Data
                 specialTiles);
         }
 
+        [System.Obsolete("Use CreateEmptyCombatBoardSnapshot and CreateEmptyHqBoardSnapshot.")]
         public BoardSnapshot CreateEmptyBoardSnapshot()
         {
             return new BoardSnapshot
@@ -72,6 +106,17 @@ namespace DeadManZone.Data
                     .Select(c => new GridCoordRecord { X = c.x, Y = c.y })
                     .ToList()
             };
+        }
+
+        private static GridCoord[] ToGridCoords(Vector2Int[] coords)
+        {
+            if (coords == null || coords.Length == 0)
+                return System.Array.Empty<GridCoord>();
+
+            var tiles = new GridCoord[coords.Length];
+            for (int i = 0; i < coords.Length; i++)
+                tiles[i] = new GridCoord(coords[i].x, coords[i].y);
+            return tiles;
         }
     }
 }

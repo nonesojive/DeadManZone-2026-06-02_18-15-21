@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
 {
@@ -10,31 +9,22 @@ namespace DeadManZone.Core.Combat
             IReadOnlyList<CombatantState> playerCombatants,
             IReadOnlyList<CombatantState> enemyCombatants)
         {
-            bool playerHasHq = playerCombatants.Any(c => c.HasTag(GameTagIds.Hq));
-            bool enemyHasHq = enemyCombatants.Any(c => c.HasTag(GameTagIds.Hq));
+            bool enemyAlive = HasLivingFighters(enemyCombatants);
+            bool playerAlive = HasLivingFighters(playerCombatants);
 
-            if (enemyHasHq && !HasLivingTag(enemyCombatants, GameTagIds.Hq))
-                return (true, true, false);
-
-            if (playerHasHq && !HasLivingTag(playerCombatants, GameTagIds.Hq))
-                return (true, false, false);
-
-            bool enemyCombatantsAlive = HasLivingTag(enemyCombatants, GameTagIds.Combatant);
-            bool playerCombatantsAlive = HasLivingTag(playerCombatants, GameTagIds.Combatant);
-
-            if (!enemyCombatantsAlive && !playerCombatantsAlive)
+            if (!enemyAlive && !playerAlive)
                 return (true, true, true);
 
-            if (!enemyCombatantsAlive)
+            if (!enemyAlive)
                 return (true, true, false);
 
-            if (!playerCombatantsAlive)
+            if (!playerAlive)
                 return (true, false, false);
 
             return (false, false, false);
         }
 
-        private static bool HasLivingTag(IEnumerable<CombatantState> combatants, string tag) =>
-            combatants.Any(c => c.IsAlive && c.HasTag(tag));
+        private static bool HasLivingFighters(IEnumerable<CombatantState> combatants) =>
+            combatants.Any(c => c.IsAlive && c.Definition.MaxHp > 0);
     }
 }

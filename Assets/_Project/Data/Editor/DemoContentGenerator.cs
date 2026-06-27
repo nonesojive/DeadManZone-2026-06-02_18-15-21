@@ -112,7 +112,6 @@ namespace DeadManZone.Data.Editor
         internal static FactionSO SaveFaction(
             string id,
             string displayName,
-            string hqPieceId,
             int startingSupplies = 100,
             int startingManpower = 100,
             int baseMusterPerShop = 12,
@@ -124,7 +123,9 @@ namespace DeadManZone.Data.Editor
             var asset = LoadOrCreate<FactionSO>(path);
             asset.factionId = id;
             asset.displayName = displayName;
-            asset.hqPieceId = hqPieceId;
+            asset.combatBoardSize = 6;
+            asset.hqBoardWidth = 6;
+            asset.hqBoardHeight = 3;
             asset.startingSupplies = startingSupplies;
             asset.startingManpower = startingManpower;
             asset.baseMusterPerShop = baseMusterPerShop;

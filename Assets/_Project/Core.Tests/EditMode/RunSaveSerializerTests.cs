@@ -43,13 +43,32 @@ namespace DeadManZone.Core.Tests
                 "  \"Phase\": \"Build\"\n" +
                 "}";
 
-            var loaded = RunSaveSerializer.Deserialize(legacyJson);
+            Assert.Throws<System.InvalidOperationException>(() => RunSaveSerializer.Deserialize(legacyJson));
+        }
 
-            Assert.AreEqual(2, loaded.SaveSchemaVersion);
-            Assert.AreEqual(88, loaded.Supplies);
-            Assert.AreEqual(5, loaded.Authority);
-            Assert.AreEqual(100, loaded.Manpower);
-            Assert.AreEqual(100, loaded.Morale);
+        [Test]
+        public void SerializeDeserialize_PreservesCombatAndHqBoards()
+        {
+            var state = RunState.CreateNew(FactionIds.IronVanguard, 42, 100, 100, 2, 100);
+            state.CombatBoard = new BoardSnapshot
+            {
+                BoardKind = BoardKind.Combat.ToString(),
+                Width = 6,
+                Height = 6
+            };
+            state.HqBoard = new BoardSnapshot
+            {
+                BoardKind = BoardKind.Hq.ToString(),
+                Width = 6,
+                Height = 3
+            };
+
+            var loaded = RunSaveSerializer.FromJson(RunSaveSerializer.ToJson(state));
+            Assert.AreEqual(8, loaded.SaveSchemaVersion);
+            Assert.NotNull(loaded.CombatBoard);
+            Assert.NotNull(loaded.HqBoard);
+            Assert.AreEqual(6, loaded.CombatBoard.Width);
+            Assert.AreEqual(3, loaded.HqBoard.Height);
         }
 
         [Test]
@@ -171,10 +190,7 @@ namespace DeadManZone.Core.Tests
         {
             var registry = TestContentRegistry.Create();
             var source = TestBoards.WithCommandBunker();
-            var snapshot = BoardSnapshotMapper.FromBoard(
-                source,
-                TestBoards.DefaultRearCols,
-                TestBoards.DefaultSupportCols);
+            var snapshot = BoardSnapshotMapper.FromBoard(source);
             var restored = BoardSnapshotMapper.ToBoard(snapshot, registry);
 
             Assert.AreEqual(source.Pieces.Count, restored.Pieces.Count);

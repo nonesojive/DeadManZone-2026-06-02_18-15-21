@@ -1,9 +1,6 @@
 using System.Linq;
 using DeadManZone.Core;
 using DeadManZone.Core.Board;
-using DeadManZone.Core.Combat;
-using DeadManZone.Core.Common;
-using DeadManZone.Core.Run;
 using DeadManZone.Core.Tags;
 using DeadManZone.Data;
 using DeadManZone.Game;
@@ -14,7 +11,7 @@ namespace DeadManZone.Core.Tests.EditMode
     public sealed class HqSpawnTests
     {
         [Test]
-        public void StartNewRun_PlacesHqAtFactionAnchor()
+        public void StartNewRun_DoesNotAutoPlaceHqOnCombatBoard()
         {
             var database = ContentDatabase.Load();
             if (database == null)
@@ -26,16 +23,12 @@ namespace DeadManZone.Core.Tests.EditMode
             SaveManager.DeleteSave();
             var orchestrator = new RunOrchestrator(database);
             orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 1);
-            var board = orchestrator.GetPlayerBoard();
-            var hq = System.Linq.Enumerable.FirstOrDefault(
-                board.Pieces,
-                p => PieceTagQueries.HasTag(p.Definition, GameTagIds.Hq));
-            Assert.IsNotNull(hq);
-            Assert.AreEqual(new GridCoord(0, 4), hq.Anchor);
+            var combat = orchestrator.GetCombatBoard();
+            Assert.IsFalse(combat.Pieces.Any(p => PieceTagQueries.HasTag(p.Definition, GameTagIds.Hq)));
         }
 
         [Test]
-        public void TryMovePlacedPiece_RejectsHq()
+        public void Buildings_PlaceOnHqBoard_NotCombat()
         {
             var database = ContentDatabase.Load();
             if (database == null)
@@ -47,23 +40,10 @@ namespace DeadManZone.Core.Tests.EditMode
             SaveManager.DeleteSave();
             var orchestrator = new RunOrchestrator(database);
             orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 1);
-            Assert.IsFalse(orchestrator.TryMovePlacedPiece("hq_player", new GridCoord(2, 2)));
-        }
-
-        [Test]
-        public void TrySellPlacedPiece_RejectsHq()
-        {
-            var database = ContentDatabase.Load();
-            if (database == null)
-            {
-                Assert.Ignore("ContentDatabase not found.");
-                return;
-            }
-
-            SaveManager.DeleteSave();
-            var orchestrator = new RunOrchestrator(database);
-            orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 1);
-            Assert.IsFalse(orchestrator.TrySellPlacedPiece("hq_player"));
+            var hqBoard = orchestrator.GetHqBoard();
+            var radio = database.Pieces.First(p => p.id == "radio_array").ToCore();
+            Assert.IsTrue(hqBoard.TryPlace(radio, new Core.Common.GridCoord(1, 0), "radio_test").Success);
+            Assert.IsFalse(orchestrator.GetCombatBoard().TryPlace(radio, new Core.Common.GridCoord(1, 0), "radio_fail").Success);
         }
     }
 }

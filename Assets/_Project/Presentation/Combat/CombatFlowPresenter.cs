@@ -102,7 +102,19 @@ namespace DeadManZone.Presentation.Combat
                 yield return null;
 
             HideLoadingOverlay();
-            combatDirector?.PresentCombatAfterLoading();
+            var combat = RunManager.Instance?.State?.Combat;
+            if (combat is { AwaitingCommand: true, GlobalTick: 0 }
+                && (combat.EventLog == null || combat.EventLog.Count == 0))
+            {
+                var context = RunManager.Instance.Orchestrator?.GetCombatPauseContext();
+                if (tacticPausePanel != null && context != null)
+                    tacticPausePanel.ShowPause(context);
+            }
+            else
+            {
+                combatDirector?.PresentCombatAfterLoading();
+            }
+
             _loadingRoutine = null;
         }
 

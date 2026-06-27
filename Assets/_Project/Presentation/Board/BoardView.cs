@@ -30,6 +30,8 @@ namespace DeadManZone.Presentation.Board
         [SerializeField] private BoardGridOverlay gridOverlay;
         [SerializeField] private PieceHoverCardController pieceHoverCardController;
 
+        [SerializeField] private BoardKind boardBinding = BoardKind.Combat;
+
         private readonly Dictionary<GridCoord, BoardTileView> _tiles = new();
         private readonly Dictionary<string, PieceShapeVisual> _shapeVisualsByInstance = new();
         private RectTransform _piecesOverlay;
@@ -48,6 +50,17 @@ private PieceDefinition _selectedPiece;
 
         public GridLayoutGroup GridLayout => gridLayout;
 
+        public BoardKind BoardBinding => boardBinding;
+
+        public void SetBoardBinding(BoardKind kind)
+        {
+            boardBinding = kind;
+            if (_layout != null && _layout.Kind != kind)
+                RefreshFromRunManager();
+        }
+
+        public BoardState GetBoardState() => _boardState;
+
         public void SyncLayoutFromBoard()
         {
             if (gridLayout == null)
@@ -55,7 +68,15 @@ private PieceDefinition _selectedPiece;
 
             SyncPiecesOverlay();
             Canvas.ForceUpdateCanvases();
-            GetComponent<BoardZoneStripLayout>()?.ApplyLayout();
+            if (_layout != null && _layout.UsesZones)
+                GetComponent<BoardZoneStripLayout>()?.ApplyLayout();
+            else
+            {
+                var zoneStrip = GetComponent<BoardZoneStripLayout>();
+                if (zoneStrip != null)
+                    zoneStrip.enabled = false;
+            }
+
             SyncBattlefieldPresentation();
 
             if (_boardState != null)
@@ -64,7 +85,8 @@ private PieceDefinition _selectedPiece;
 
         private void Awake()
         {
-            BoardZoneStripBootstrap.Ensure(this);
+            if (boardBinding == BoardKind.Combat)
+                BoardZoneStripBootstrap.Ensure(this);
             RemoveLegacySynergySidePanel(transform);
             EnsureBattlefieldPresentation();
             ResolvePieceHoverCardController();
@@ -207,8 +229,9 @@ private PieceDefinition _selectedPiece;
                 return;
             }
 
-            if (state.PlayerBoard != null)
-                LoadSnapshot(state.PlayerBoard, ContentRegistryProvider.Build(database));
+            var snapshot = boardBinding == BoardKind.Hq ? state.HqBoard : state.CombatBoard;
+            if (snapshot != null)
+                LoadSnapshot(snapshot, ContentRegistryProvider.Build(database));
         }
 
         public void RefreshCombatFromRunManager(ContentDatabase database = null)
@@ -218,11 +241,11 @@ private PieceDefinition _selectedPiece;
                 return;
 
             var state = RunManager.Instance.State;
-            if (state?.Combat?.EnemyBoard == null || state.PlayerBoard == null)
+            if (state?.Combat?.EnemyBoard == null || state.CombatBoard == null)
                 return;
 
             var registry = ContentRegistryProvider.Build(database);
-            var playerBoard = BoardSnapshotMapper.ToBoard(state.PlayerBoard, registry);
+            var playerBoard = BoardSnapshotMapper.ToBoard(state.CombatBoard, registry);
             var enemyBoard = BoardSnapshotMapper.ToBoard(state.Combat.EnemyBoard, registry);
             var battlefield = BattlefieldState.FromBoards(playerBoard, enemyBoard);
 
@@ -263,12 +286,24 @@ private PieceDefinition _selectedPiece;
 
             if (result.Success)
             {
-                RunManager.Instance.Orchestrator.SavePlayerBoard(_boardState);
+                PersistBoundBoard();
                 RefreshOccupancyVisuals();
                 _selectedPiece = null;
             }
 
             return result;
+        }
+
+        private void PersistBoundBoard()
+        {
+            var orchestrator = RunManager.Instance?.Orchestrator;
+            if (orchestrator == null || _boardState == null)
+                return;
+
+            if (boardBinding == BoardKind.Hq)
+                orchestrator.SaveHqBoard(_boardState);
+            else
+                orchestrator.SaveCombatBoard(_boardState);
         }
 
         public BoardTileView GetTile(GridCoord coord) => _tiles.TryGetValue(coord, out var tile) ? tile : null;
@@ -281,8 +316,6 @@ private PieceDefinition _selectedPiece;
         }
 
         public PieceAbilityEngine.FightStartSynergySnapshot GetSynergySnapshot() => _lastSynergySnapshot;
-
-        public BoardState GetBoardState() => _boardState;
 
         public void RefreshZoneColors()
 {

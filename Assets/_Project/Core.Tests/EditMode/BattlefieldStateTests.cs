@@ -52,14 +52,13 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
-        public void NeutralColumns_AreBetweenHalves()
+        public void CombatBoardLayout_Uses6x6HalvesAndNeutralBand()
         {
-            var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.Layout);
+            var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.CombatLayout);
+            Assert.AreEqual(6, layout.PlayerHalfWidth);
             Assert.AreEqual(5, layout.NeutralWidth);
-            Assert.IsTrue(layout.IsNeutralColumn(layout.NeutralStartX));
-            Assert.IsTrue(layout.IsNeutralColumn(layout.NeutralStartX + layout.NeutralWidth - 1));
-            Assert.IsFalse(layout.IsNeutralColumn(layout.NeutralStartX - 1));
-            Assert.IsFalse(layout.IsNeutralColumn(layout.NeutralStartX + layout.NeutralWidth));
+            Assert.AreEqual(17, layout.TotalWidth);
+            Assert.AreEqual(11, layout.EnemyOriginX);
         }
     }
 }

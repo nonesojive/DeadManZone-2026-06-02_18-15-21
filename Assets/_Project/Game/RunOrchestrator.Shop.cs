@@ -101,7 +101,7 @@ namespace DeadManZone.Game
                 return false;
 
             var piece = _registry.GetById(offer.PieceId);
-            return GetPlayerBoard().CanPlace(piece, anchor);
+            return GetBoardForPiece(piece).CanPlace(piece, anchor);
         }
 
         public bool TryAcquireOfferToBoard(
@@ -118,7 +118,7 @@ namespace DeadManZone.Game
                 return false;
 
             var piece = _registry.GetById(offer.PieceId);
-            var board = GetPlayerBoard();
+            var board = GetBoardForPiece(piece);
             if (!board.CanPlace(piece, anchor, rotation))
                 return false;
 
@@ -133,7 +133,7 @@ namespace DeadManZone.Game
                 return false;
             }
 
-            SavePlayerBoard(board);
+            SaveBoardForPiece(piece, board);
             RemoveOffer(offerId);
             Persist();
             return true;
@@ -151,8 +151,9 @@ namespace DeadManZone.Game
             if (!reserves.TryRemove(instanceId, out var removed))
                 return false;
 
-            var board = GetPlayerBoard();
-            var place = board.TryPlace(removed.Definition, boardAnchor, removed.InstanceId, rotation);
+            var piece = removed.Definition;
+            var board = GetBoardForPiece(piece);
+            var place = board.TryPlace(piece, boardAnchor, removed.InstanceId, rotation);
             if (!place.Success)
             {
                 reserves.TryPlace(removed.Definition, removed.Anchor, removed.InstanceId, removed.Rotation);
@@ -160,7 +161,7 @@ namespace DeadManZone.Game
             }
 
             SaveReserves(reserves);
-            SavePlayerBoard(board);
+            SaveBoardForPiece(piece, board);
             return true;
         }
 
@@ -190,8 +191,8 @@ namespace DeadManZone.Game
             if (State.Phase != RunPhase.Build)
                 return false;
 
-            var board = GetPlayerBoard();
-            if (!board.TryRemove(boardInstanceId, out var removed))
+            if (!TryFindPlacedPiece(boardInstanceId, out var board, out var removed)
+                || !board.TryRemove(boardInstanceId, out removed))
                 return false;
 
             var reserves = GetReserves();
@@ -206,7 +207,7 @@ namespace DeadManZone.Game
                 return false;
             }
 
-            SavePlayerBoard(board);
+            SaveBoardForPiece(removed.Definition, board);
             SaveReserves(reserves);
             return true;
         }
@@ -281,7 +282,7 @@ namespace DeadManZone.Game
 
         private void RefreshShop()
         {
-            var board = GetPlayerBoard();
+            var board = GetShopBoard();
             int shopSeed = State.RunSeed + State.FightIndex * 100 + State.RerollCountThisRound;
             var shop = _shopGenerator.Generate(
                 board,
@@ -297,7 +298,7 @@ namespace DeadManZone.Game
 
         private void ApplyMuster()
         {
-            var board = GetPlayerBoard();
+            var board = GetShopBoard();
             int gained = MusterCalculator.Compute(board, Faction.baseMusterPerShop);
             State.Manpower += gained;
             State.LastMusterGained = gained;
@@ -308,7 +309,7 @@ namespace DeadManZone.Game
             if (State.Shop?.Offers == null)
                 return;
 
-            var board = GetPlayerBoard();
+            var board = GetShopBoard();
             var modifiers = State.Shop.Modifiers ?? ShopGenerator.ComputeModifiers(board);
             var fixedSlots = new Dictionary<int, ShopOffer>();
 

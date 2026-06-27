@@ -14,12 +14,13 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
-        public void FromPlayerBoard_TotalWidth_IsTwentyThree()
+        public void FromPlayerBoard_TotalWidth_IsSeventeen_ForCombatBoard()
         {
-            var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.Layout);
+            var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.CombatLayout);
             Assert.AreEqual(5, layout.NeutralWidth);
-            Assert.AreEqual(23, layout.TotalWidth);
-            Assert.AreEqual(14, layout.EnemyOriginX);
+            Assert.AreEqual(17, layout.TotalWidth);
+            Assert.AreEqual(11, layout.EnemyOriginX);
+            Assert.AreEqual(6, layout.PlayerHalfWidth);
         }
     }
 }

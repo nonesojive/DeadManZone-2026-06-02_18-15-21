@@ -6,7 +6,8 @@ namespace DeadManZone.Core.Run
 {
     public static class RunSaveSerializer
     {
-        private const int CurrentSchemaVersion = 7;
+        private const int CurrentSchemaVersion = 8;
+        private const int MinimumSupportedSchemaVersion = 8;
         private const int LegacyMigrationTargetVersion = 2;
         private const int LegacyDefaultManpower = 100;
         private const int LegacyDefaultMorale = 100;
@@ -29,6 +30,10 @@ namespace DeadManZone.Core.Run
         {
             var root = JObject.Parse(json);
             int schemaVersion = root.Value<int?>("SaveSchemaVersion") ?? 1;
+
+            if (schemaVersion < MinimumSupportedSchemaVersion)
+                throw new System.InvalidOperationException(
+                    $"Save schema v{schemaVersion} is no longer supported. Start a new run.");
 
             if (schemaVersion < LegacyMigrationTargetVersion)
                 json = MigrateLegacySave(root).ToString();

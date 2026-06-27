@@ -52,6 +52,7 @@ namespace DeadManZone.Presentation.Run
             ApplySellZoneSize();
             ApplyCenterColumnLayout();
             ApplyCombatButtonLabel();
+            DualBoardBootstrap.EnsureHqBoardView(boardView, buildPanel.Find("MainRow/BoardArea") ?? buildPanel);
         }
 
         private void ApplyCenterColumnLayout()

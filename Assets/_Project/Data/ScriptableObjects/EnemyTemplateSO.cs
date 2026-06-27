@@ -32,10 +32,9 @@ namespace DeadManZone.Data
 
             var snapshot = new BoardSnapshot
             {
-                Width = 9,
-                Height = 10,
-                RearCols = 4,
-                SupportCols = 3,
+                BoardKind = BoardKind.Combat.ToString(),
+                Width = 6,
+                Height = 6,
                 SpecialTiles = new System.Collections.Generic.List<GridCoordRecord>()
             };
 
@@ -61,14 +60,8 @@ namespace DeadManZone.Data
         public BoardState BuildBoard(FactionSO faction, ContentRegistry registry)
         {
             var snapshot = ToBoardSnapshot();
-            snapshot.Width = faction.boardWidth;
-            snapshot.Height = faction.boardHeight;
-            snapshot.RearCols = faction.rearCols;
-            snapshot.SupportCols = faction.supportCols;
-            snapshot.SpecialTiles = faction.specialTileCoords
-                .Select(c => new GridCoordRecord { X = c.x, Y = c.y })
-                .ToList();
-
+            snapshot.Width = faction.combatBoardSize;
+            snapshot.Height = faction.combatBoardSize;
             return BoardSnapshotMapper.ToBoard(snapshot, registry);
         }
     }

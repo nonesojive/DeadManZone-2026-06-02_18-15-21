@@ -20,6 +20,7 @@ namespace DeadManZone.Core.Combat
         private readonly CombatEventLog _log = new();
         private CombatOccupancyGrid _occupancyGrid = new();
         private bool _awaitingCommand;
+        private bool _awaitingOpeningCommand;
 
         public BoardState PlayerBoard => _playerBoard;
         public int Authority { get; private set; }
@@ -35,7 +36,9 @@ namespace DeadManZone.Core.Combat
         public bool AwaitingCommand => !IsFightOver && _awaitingCommand;
 
         /// <summary>Index of the pause currently awaiting commands, or -1.</summary>
-        public int CurrentPauseIndex => AwaitingCommand ? CheckpointsFired - 1 : -1;
+        public int CurrentPauseIndex => AwaitingCommand
+            ? _awaitingOpeningCommand ? 0 : 1
+            : -1;
 
         public TacticType PlayerTactic => _tactics.PlayerTactic;
 
@@ -70,7 +73,14 @@ namespace DeadManZone.Core.Combat
             CriticalMassEngine.ApplyToCombatants(playerCriticalMassSnapshot, _playerCombatants);
             CriticalMassEngine.ApplyToCombatants(enemyCriticalMassSnapshot, _enemyCombatants);
             ApplyTacticDamageBuffs();
-            RebuildOccupied();
+            _awaitingOpeningCommand = true;
+            _awaitingCommand = true;
+            LastPauseTrigger = new PauseTriggerContext
+            {
+                CheckpointIndex = 0,
+                TriggeredBy = CombatSide.Player,
+                Threshold = 1f
+            };
         }
 
         public static TickCombatRun Start(
@@ -87,10 +97,18 @@ namespace DeadManZone.Core.Combat
 
             if (_awaitingCommand)
             {
-                ApplyCommands(commands, CheckpointsFired - 1);
+                ApplyCommands(commands, CurrentPauseIndex);
                 _awaitingCommand = false;
-                if (TryEndFight(CheckpointsFired))
+                if (_awaitingOpeningCommand)
+                {
+                    _awaitingOpeningCommand = false;
+                    if (TryEndFight(CheckpointsFired))
+                        return CompleteResult();
+                }
+                else if (TryEndFight(CheckpointsFired))
+                {
                     return CompleteResult();
+                }
             }
 
             int segment = CheckpointsFired;
@@ -100,12 +118,14 @@ namespace DeadManZone.Core.Combat
 
         public void FastForwardToCheckpoint(int checkpointsFired, IReadOnlyList<PhaseCommand> submittedCommands)
         {
-            if (checkpointsFired <= 0)
+            if (checkpointsFired <= 0 && !_awaitingOpeningCommand)
                 return;
 
-            Continue(System.Array.Empty<PhaseCommand>());
+            if (_awaitingOpeningCommand)
+                Continue(FilterCommands(submittedCommands, 0));
+
             while (!IsFightOver && _awaitingCommand && CheckpointsFired < checkpointsFired)
-                Continue(FilterCommands(submittedCommands, CheckpointsFired - 1));
+                Continue(FilterCommands(submittedCommands, CurrentPauseIndex));
         }
 
         private void RunUntilPauseOrEnd(int segment)
@@ -173,7 +193,7 @@ namespace DeadManZone.Core.Combat
             _awaitingCommand = true;
             LastPauseTrigger = new PauseTriggerContext
             {
-                CheckpointIndex = CheckpointsFired - 1,
+                CheckpointIndex = 1,
                 TriggeredBy = triggeredBy,
                 Threshold = lastThreshold
             };
@@ -197,7 +217,7 @@ namespace DeadManZone.Core.Combat
             if (aliveTargets.Count == 0)
                 return;
 
-            foreach (var mover in movers.Where(m => m.IsAlive && m.HasTag(GameTagIds.Combatant)).OrderBy(m => m.InstanceId))
+            foreach (var mover in movers.Where(m => m.IsAlive && m.Definition.MovementSpeed != MovementSpeedTier.None).OrderBy(m => m.InstanceId))
             {
                 if (mover.Definition.MovementSpeed == MovementSpeedTier.None)
                     continue;
@@ -381,7 +401,7 @@ namespace DeadManZone.Core.Combat
         {
             var (total, lost, hqDamaged) = ComputePlayerLossStats();
             var survivors = _playerCombatants
-                .Where(c => c.IsAlive && c.HasTag(GameTagIds.Combatant))
+                .Where(c => c.IsAlive && c.Definition.MaxHp > 0)
                 .Select(c => c.InstanceId)
                 .ToList();
 
@@ -411,22 +431,18 @@ namespace DeadManZone.Core.Combat
         {
             int total = 0;
             int lost = 0;
-            bool hqDamaged = false;
 
             foreach (var combatant in _playerCombatants)
             {
-                if (combatant.HasTag(GameTagIds.Combatant))
-                {
-                    total++;
-                    if (!combatant.IsAlive)
-                        lost++;
-                }
+                if (combatant.Definition.MaxHp <= 0)
+                    continue;
 
-                if (combatant.HasTag(GameTagIds.Hq) && combatant.CurrentHp < combatant.Definition.MaxHp)
-                    hqDamaged = true;
+                total++;
+                if (!combatant.IsAlive)
+                    lost++;
             }
 
-            return (total, lost, hqDamaged);
+            return (total, lost, hqDamaged: false);
         }
 
         private void RebuildOccupied()

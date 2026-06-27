@@ -191,17 +191,16 @@ Main Menu
 
 ## 5. Board, zones & reserves
 
-### Player half (build = combat)
+### Player build boards (v8)
 
-| Property | Value |
-|----------|-------|
-| Width | 9 columns |
-| Height | 10 rows |
-| Rear | 4 leftmost columns |
-| Support | 3 middle columns |
-| Front | 2 rightmost columns (toward enemy) |
+| Board | Size (IronMarch) | Contents |
+|-------|------------------|----------|
+| **Combat board** | 6×6 | Infantry, vehicles, combat structures |
+| **HQ board** | 6×3 (faction-specific, may use blocked cells) | Buildings and economy |
 
-Pieces have **shapes** (1×1, 1×2, 2×2, L-shapes). Placement is a spatial puzzle with zone restrictions.
+Shared **Reserves** (2×9) hold unplaced pieces for both boards. Combat projection uses player 6 + neutral 5 + enemy 6 columns.
+
+Legacy Rear/Support/Front zones are removed from the combat board. "Front" remains a rule concept only (rightmost player column / leftmost enemy column).
 
 ### Combined battlefield (23 columns)
 

@@ -16,23 +16,29 @@ namespace DeadManZone.Core.Tests
         public const int RegressionRunSeed = 24_680;
         public const int RegressionRequisition = 8;
 
-        public static BoardState BuildGauntletBoard(ContentDatabase database)
+        public static BuildBoardSet BuildGauntletBoards(ContentDatabase database)
         {
             var faction = database.GetFaction(FactionIds.IronVanguard);
             Assert.NotNull(faction, "iron_vanguard faction required for regression tests.");
 
-            var board = new BoardState(faction.CreateBoardLayout());
-            Place(board, database, "ironmarch_hq", new GridCoord(0, 4), "hq_player");
-            Place(board, database, "radio_array", new GridCoord(1, 4), "radio_1");
-            Place(board, database, "mobile_cannon", new GridCoord(4, 0), "cannon_1");
-            Place(board, database, "grenade_thrower", new GridCoord(6, 2), "grenade_1");
-            Place(board, database, "armored_transport", new GridCoord(4, 3), "transport_1");
-            Place(board, database, "field_medic", new GridCoord(5, 6), "medic_1");
-            Place(board, database, "conscript_rifleman", new GridCoord(6, 5), "conscript_1");
-            Place(board, database, "diesel_walker", new GridCoord(7, 3), "walker_1");
-            Place(board, database, "rifle_squad", new GridCoord(7, 6), "rifle_1");
-            return board;
+            var combat = new BoardState(faction.CreateCombatBoardLayout());
+            Place(combat, database, "mobile_cannon", new GridCoord(0, 0), "cannon_1");
+            Place(combat, database, "grenade_thrower", new GridCoord(2, 1), "grenade_1");
+            Place(combat, database, "armored_transport", new GridCoord(3, 2), "transport_1");
+            Place(combat, database, "field_medic", new GridCoord(4, 5), "medic_1");
+            Place(combat, database, "conscript_rifleman", new GridCoord(5, 4), "conscript_1");
+            Place(combat, database, "diesel_walker", new GridCoord(3, 3), "walker_1");
+            Place(combat, database, "rifle_squad", new GridCoord(5, 5), "rifle_1");
+
+            var hq = new BoardState(faction.CreateHqBoardLayout());
+            Place(hq, database, "radio_array", new GridCoord(1, 0), "radio_1");
+
+            return new BuildBoardSet { Combat = combat, Hq = hq };
         }
+
+        /// <summary>Aggregate board for combat command helpers that scan all placed pieces.</summary>
+        public static BoardState BuildGauntletBoard(ContentDatabase database) =>
+            BuildGauntletBoards(database).ToAggregateBoard();
 
         public static List<PhaseCommand> BuildAggressiveCommands(BoardState board)
         {

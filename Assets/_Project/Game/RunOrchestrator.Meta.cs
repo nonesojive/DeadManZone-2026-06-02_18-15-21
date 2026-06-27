@@ -19,8 +19,8 @@ namespace DeadManZone.Game
 
         private void RecordCriticalMassIfTriggered()
         {
-            var board = GetPlayerBoard();
-            if (CriticalMassEngine.Evaluate(board).HasAnyActiveRule)
+            var boards = GetBuildBoards();
+            if (CriticalMassEngine.Evaluate(boards).HasAnyActiveRule)
                 MetaTracker.RecordCriticalMassTrigger();
         }
 

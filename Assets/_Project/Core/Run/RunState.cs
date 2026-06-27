@@ -47,7 +47,7 @@ namespace DeadManZone.Core.Run
 
     public sealed class RunState
     {
-        public int SaveSchemaVersion { get; set; } = 7;
+        public int SaveSchemaVersion { get; set; } = 8;
         public int FightIndex { get; set; } = 1;
         public int Supplies { get; set; }
         public int Manpower { get; set; }
@@ -59,6 +59,10 @@ namespace DeadManZone.Core.Run
         public int RunSeed { get; set; }
         public string FactionId { get; set; }
         public RunPhase Phase { get; set; } = RunPhase.Build;
+        public BoardSnapshot CombatBoard { get; set; }
+        public BoardSnapshot HqBoard { get; set; }
+
+        [System.Obsolete("Use CombatBoard and HqBoard (schema v8).")]
         public BoardSnapshot PlayerBoard { get; set; }
         public ReservesSnapshot Reserves { get; set; }
         public ShopState Shop { get; set; }
@@ -91,7 +95,7 @@ namespace DeadManZone.Core.Run
                 Morale = startingMorale,
                 Phase = RunPhase.Build,
                 FightIndex = 1,
-                SaveSchemaVersion = 7,
+                SaveSchemaVersion = 8,
                 Reserves = new ReservesSnapshot
                 {
                     Width = ReservesState.Width,

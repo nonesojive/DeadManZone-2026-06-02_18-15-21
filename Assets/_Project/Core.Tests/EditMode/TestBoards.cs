@@ -9,6 +9,23 @@ namespace DeadManZone.Core.Tests
         public const int DefaultHeight = 10;
         public const int DefaultRearCols = 4;
         public const int DefaultSupportCols = 3;
+        public const int CombatBoardSize = 6;
+        public const int IronMarchHqWidth = 6;
+        public const int IronMarchHqHeight = 3;
+
+        public static BoardLayout CombatLayout =>
+            BoardLayout.CreateCombatBoard(CombatBoardSize);
+
+        public static BoardLayout IronMarchHqLayout =>
+            BoardLayout.CreateHqBoard(IronMarchHqWidth, IronMarchHqHeight);
+
+        public static BoardLayout HqLayoutWithBlockedCorner() =>
+            BoardLayout.CreateHqBoard(
+                IronMarchHqWidth,
+                IronMarchHqHeight,
+                blockedCells: new[] { new GridCoord(0, 0), new GridCoord(1, 0) });
+
+        public static GridCoord CombatBoardAnchor(int x = 0, int y = 0) => new(x, y);
 
         public static BoardLayout Layout =>
             BoardLayout.CreateHorizontalZones(

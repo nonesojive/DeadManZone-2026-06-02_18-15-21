@@ -122,5 +122,57 @@ namespace DeadManZone.Core.Tests
             Assert.IsFalse(board.CanPlace(unit, new GridCoord(anchor.X, anchor.Y + 1)));
             Assert.IsTrue(board.CanPlace(unit, new GridCoord(anchor.X, anchor.Y - 1)));
         }
+
+        [Test]
+        public void CombatBoard_6x6_HasNoZoneRestrictionsForUnits()
+        {
+            var board = new BoardState(TestBoards.CombatLayout);
+            Assert.AreEqual(BoardKind.Combat, board.Layout.Kind);
+            Assert.IsFalse(board.Layout.UsesZones);
+
+            Assert.IsTrue(board.TryPlace(TestPieces.RifleSquad(), new GridCoord(0, 0)).Success);
+            Assert.IsTrue(board.TryPlace(TestPieces.RifleSquad(), new GridCoord(5, 5), instanceId: "rifle_2").Success);
+        }
+
+        [Test]
+        public void HqBoard_RejectsPlacementOnBlockedCells()
+        {
+            var board = new BoardState(TestBoards.HqLayoutWithBlockedCorner());
+            var depot = TestPieces.SupplyDepot();
+
+            var blocked = board.TryPlace(depot, new GridCoord(0, 0));
+            Assert.IsFalse(blocked.Success);
+            Assert.That(blocked.Reason, Does.Contain("blocked").IgnoreCase);
+
+            Assert.IsTrue(board.TryPlace(depot, new GridCoord(2, 0)).Success);
+        }
+
+        [Test]
+        public void Buildings_OnlyAllowedOnHqBoard()
+        {
+            var combat = new BoardState(TestBoards.CombatLayout);
+            var hq = new BoardState(TestBoards.IronMarchHqLayout);
+            var bunker = TestPieces.CommandBunker();
+
+            var onCombat = combat.TryPlace(bunker, new GridCoord(0, 0));
+            Assert.IsFalse(onCombat.Success);
+            Assert.That(onCombat.Reason, Does.Contain("HQ board").IgnoreCase);
+
+            Assert.IsTrue(hq.TryPlace(bunker, new GridCoord(0, 0)).Success);
+        }
+
+        [Test]
+        public void Units_OnlyAllowedOnCombatBoard()
+        {
+            var combat = new BoardState(TestBoards.CombatLayout);
+            var hq = new BoardState(TestBoards.IronMarchHqLayout);
+            var rifle = TestPieces.RifleSquad();
+
+            var onHq = hq.TryPlace(rifle, new GridCoord(0, 0));
+            Assert.IsFalse(onHq.Success);
+            Assert.That(onHq.Reason, Does.Contain("combat board").IgnoreCase);
+
+            Assert.IsTrue(combat.TryPlace(rifle, new GridCoord(0, 0)).Success);
+        }
     }
 }

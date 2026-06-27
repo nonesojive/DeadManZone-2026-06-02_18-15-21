@@ -4,8 +4,8 @@ namespace DeadManZone.Core.Combat
     {
         public const int TicksPerSecond = 10;
 
-        /// <summary>Army HP fractions that fire command pauses, in firing order.</summary>
-        public static readonly float[] PauseThresholds = { 0.75f, 0.30f };
+        /// <summary>Army HP fraction that fires the mid-fight command pause.</summary>
+        public static readonly float[] PauseThresholds = { 0.60f };
 
         /// <summary>Global tick at which anti-stall gas starts ramping (~30s of fight).</summary>
         public const int GasStartTick = 300;

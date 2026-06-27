@@ -13,17 +13,19 @@ namespace DeadManZone.PlayMode.Tests
         public static BattlefieldState BuildIronVanguardSkirmish(ContentDatabase database) =>
             CombatSliceLayouts.BuildIronVanguardSkirmish(database);
 
-        public static BattlefieldState BuildFieldGunVsHq(ContentDatabase database)
+        public static BattlefieldState BuildFieldGunVsHq(ContentDatabase database) =>
+            BuildFieldGunVsRifle(database);
+
+        public static BattlefieldState BuildFieldGunVsRifle(ContentDatabase database)
         {
             var faction = database.GetFaction(FactionIds.IronVanguard);
             Assert.NotNull(faction, "iron_vanguard faction required for arena replay tests.");
 
-            var player = new BoardState(faction.CreateBoardLayout());
-            Place(player, database, "ironmarch_hq", new GridCoord(0, 4), "hq_player");
-            Place(player, database, "field_gun_nest", new GridCoord(3, 2), "field_gun_1");
+            var player = new BoardState(faction.CreateCombatBoardLayout());
+            Place(player, database, "field_gun_nest", new GridCoord(2, 2), "field_gun_1");
 
-            var enemy = new BoardState(faction.CreateBoardLayout());
-            Place(enemy, database, "ironmarch_hq", new GridCoord(0, 4), "enemy_hq");
+            var enemy = new BoardState(faction.CreateCombatBoardLayout());
+            Place(enemy, database, "conscript_rifleman", new GridCoord(5, 3), "enemy_rifle_1");
 
             return BattlefieldState.FromBoards(player, enemy);
         }

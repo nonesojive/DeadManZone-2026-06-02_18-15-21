@@ -61,7 +61,6 @@ namespace DeadManZone.Core.Run
             manpower >= ComputeFieldingRequirement(board, content);
 
         public static bool CountsTowardFielding(PieceDefinition definition) =>
-            PieceTagQueries.HasTag(definition, GameTagIds.Combatant)
-            || PieceTagQueries.HasTag(definition, GameTagIds.Hq);
+            definition != null && definition.ManpowerCost > 0;
     }
 }

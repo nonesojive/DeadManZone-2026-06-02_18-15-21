@@ -12,7 +12,7 @@ namespace DeadManZone.Presentation.Tests.EditMode
         [Test]
         public void ToWorld_CentersBattlefieldOnX()
         {
-            var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.Layout);
+            var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.CombatLayout);
             var mapper = new CombatGridMapper(layout, cellWidth: 2f, cellDepth: 2f);
 
             var center = new GridCoord(layout.TotalWidth / 2, 0);
@@ -24,7 +24,7 @@ namespace DeadManZone.Presentation.Tests.EditMode
         [Test]
         public void ToWorld_FrontRow_HasLowerZThanBackRow()
         {
-            var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.Layout);
+            var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.CombatLayout);
             var mapper = new CombatGridMapper(layout, 2f, 2f);
 
             var backRow = mapper.ToWorld(new GridCoord(0, 0));
@@ -36,7 +36,7 @@ namespace DeadManZone.Presentation.Tests.EditMode
         [Test]
         public void TryWorldToCoord_RoundTrips()
         {
-            var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.Layout);
+            var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.CombatLayout);
             var mapper = new CombatGridMapper(layout, 1.8f, 1.8f);
             var original = new GridCoord(3, 2);
 

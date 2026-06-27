@@ -38,6 +38,16 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
+        public void StartNewRun_CreatesEmptyCombatAndHqBoards()
+        {
+            _orchestrator.StartNewRun(FactionIds.IronVanguard);
+            Assert.IsEmpty(_orchestrator.GetCombatBoard().Pieces);
+            Assert.IsEmpty(_orchestrator.GetHqBoard().Pieces);
+            Assert.AreEqual(6, _orchestrator.GetCombatBoard().Layout.Width);
+            Assert.AreEqual(3, _orchestrator.GetHqBoard().Layout.Height);
+        }
+
+        [Test]
         public void StartNewRun_SetsBuildPhaseAndShop()
         {
             _orchestrator.StartNewRun(FactionIds.IronVanguard);
@@ -45,17 +55,17 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(RunPhase.Build, _orchestrator.State.Phase);
             Assert.AreEqual(1, _orchestrator.State.FightIndex);
             Assert.Greater(_orchestrator.State.Shop.Offers.Count, 0);
-            Assert.AreEqual(7, _orchestrator.State.SaveSchemaVersion);
+            Assert.AreEqual(8, _orchestrator.State.SaveSchemaVersion);
             Assert.AreEqual(ReservesState.Width, _orchestrator.State.Reserves.Width);
             Assert.AreEqual(ReservesState.Height, _orchestrator.State.Reserves.Height);
             Assert.IsEmpty(_orchestrator.State.Reserves.Pieces);
         }
 
         [Test]
-        public void TryLoadSavedRun_RejectsSchemaBelowV3()
+        public void TryLoadSavedRun_RejectsSchemaBelowV8()
         {
             _orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 111);
-            _orchestrator.State.SaveSchemaVersion = 2;
+            _orchestrator.State.SaveSchemaVersion = 7;
             _orchestrator.SaveAndExit();
 
             var loaded = new RunOrchestrator(_database);
@@ -82,17 +92,16 @@ namespace DeadManZone.Core.Tests
             _orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 77);
             int startingSupplies = _orchestrator.State.Supplies;
 
-            var board = _orchestrator.GetPlayerBoard();
+            var board = _orchestrator.GetCombatBoard();
             var rifle = _database.Pieces.First(p => p.id == "rifle_squad").ToCore();
-            var place = board.TryPlace(rifle, new Core.Common.GridCoord(5, 4), "rifle_1");
+            var place = board.TryPlace(rifle, new Core.Common.GridCoord(0, 0), "rifle_1");
             Assert.IsTrue(place.Success, place.Reason);
-            _orchestrator.SavePlayerBoard(board);
+            _orchestrator.SaveCombatBoard(board);
 
             int refund = rifle.GoldCost / 2;
             Assert.IsTrue(_orchestrator.TrySellPlacedPiece("rifle_1"));
             Assert.AreEqual(startingSupplies + refund, _orchestrator.State.Supplies);
-            Assert.AreEqual(1, _orchestrator.GetPlayerBoard().Pieces.Count);
-            Assert.IsTrue(_orchestrator.GetPlayerBoard().Pieces.All(p => PieceTagQueries.HasTag(p.Definition, GameTagIds.Hq)));
+            Assert.IsEmpty(_orchestrator.GetCombatBoard().Pieces);
         }
 
         [Test]

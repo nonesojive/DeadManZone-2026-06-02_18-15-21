@@ -26,7 +26,7 @@ namespace DeadManZone.Game
 
         private TickCombatRun _activeCombat;
         private CombatAdvanceResult _pendingCombatCompletion;
-        private BoardState _fightStartPlayerBoard;
+        private BoardState _fightStartCombatBoard;
 
         public RunState State { get; private set; }
         public FactionSO Faction { get; private set; }
@@ -44,14 +44,12 @@ namespace DeadManZone.Game
             if (loaded == null)
                 return false;
 
-            if (loaded.SaveSchemaVersion < 3 || loaded.Reserves == null)
+            if (loaded.SaveSchemaVersion < 8 || loaded.Reserves == null)
                 return false;
 
             State = loaded;
             Faction = _content.GetFaction(State.FactionId);
             RestoreActiveCombatFromSave();
-            if (State.SaveSchemaVersion < 6)
-                State.SaveSchemaVersion = 6;
             return Faction != null;
         }
 
@@ -69,30 +67,14 @@ namespace DeadManZone.Game
                 Faction.startingManpower,
                 Faction.startingAuthority,
                 Faction.startingMorale);
-            State.PlayerBoard = Faction.CreateEmptyBoardSnapshot();
+            State.CombatBoard = Faction.CreateEmptyCombatBoardSnapshot();
+            State.HqBoard = Faction.CreateEmptyHqBoardSnapshot();
             State.RerollCountThisRound = 0;
-            PlaceStartingHq();
             ApplyMuster();
             ResetAuthorityForBuildRound();
             ResetMetaForNewRun();
             RefreshShop();
             _activeCombat = null;
-            Persist();
-        }
-
-        public BoardState GetPlayerBoard()
-        {
-            if (Faction == null)
-                return new BoardState(BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>()));
-
-            return State.PlayerBoard == null
-                ? new BoardState(Faction.CreateBoardLayout())
-                : BoardSnapshotMapper.ToBoard(State.PlayerBoard, _registry);
-        }
-
-        public void SavePlayerBoard(BoardState board)
-        {
-            State.PlayerBoard = BoardSnapshotMapper.FromBoard(board, Faction.rearCols, Faction.supportCols);
             Persist();
         }
 
@@ -112,9 +94,9 @@ namespace DeadManZone.Game
 
         public bool CanStartBattle(out string failureReason)
         {
-            var playerBoard = GetPlayerBoard();
-            int upkeep = ManpowerCalculator.ComputeUpkeep(playerBoard, _registry);
-            if (ManpowerCalculator.CanStartBattle(playerBoard, State.Manpower, _registry))
+            var combatBoard = GetCombatBoard();
+            int upkeep = ManpowerCalculator.ComputeUpkeep(combatBoard, _registry);
+            if (ManpowerCalculator.CanStartBattle(combatBoard, State.Manpower, _registry))
             {
                 failureReason = null;
                 return true;
@@ -141,8 +123,8 @@ namespace DeadManZone.Game
             if (!CanStartBattle(out string failureReason))
                 throw new InvalidOperationException(failureReason);
 
-            var playerBoard = GetPlayerBoard();
-            _fightStartPlayerBoard = playerBoard;
+            var playerBoard = GetCombatBoard();
+            _fightStartCombatBoard = playerBoard;
             RecordCriticalMassIfTriggered();
 
             var enemyTemplate = _content.GetEnemyTemplate(State.FightIndex);
@@ -151,7 +133,8 @@ namespace DeadManZone.Game
 
             var enemyBoard = enemyTemplate.BuildBoard(Faction, _registry);
             ResetAuthorityForBuildRound();
-            var criticalMassSnapshot = CriticalMassEngine.Evaluate(playerBoard);
+            var buildBoards = GetBuildBoards();
+            var criticalMassSnapshot = CriticalMassEngine.Evaluate(buildBoards);
             if (criticalMassSnapshot.AuthorityBonus > 0)
                 State.Authority += criticalMassSnapshot.AuthorityBonus;
             if (criticalMassSnapshot.SuppliesFlatBonus > 0)
@@ -168,7 +151,7 @@ namespace DeadManZone.Game
             State.Combat = new CombatSaveState
             {
                 CombatSeed = combatSeed,
-                EnemyBoard = BoardSnapshotMapper.FromBoard(enemyBoard, Faction.rearCols, Faction.supportCols),
+                EnemyBoard = BoardSnapshotMapper.FromBoard(enemyBoard),
                 Requisition = State.Authority,
                 Authority = State.Authority,
                 SubmittedCommands = new List<PhaseCommand>(),
@@ -176,8 +159,8 @@ namespace DeadManZone.Game
             };
 
             _activeCombat = TickCombatRun.Start(playerBoard, enemyBoard, combatSeed, State.Authority);
-            State.Combat.AwaitingCommand = false;
-            State.Combat.CheckpointsFired = 0;
+            State.Combat.AwaitingCommand = _activeCombat.AwaitingCommand;
+            State.Combat.CheckpointsFired = _activeCombat.CheckpointsFired;
             State.Combat.GlobalTick = 0;
             State.Combat.LastSegmentIndex = 0;
             Persist();
@@ -209,7 +192,7 @@ namespace DeadManZone.Game
                 return Array.Empty<AvailableCommand>();
 
             return _commandProcessor.GetAvailableCommands(
-                GetPlayerBoard(),
+                GetCombatBoard(),
                 _activeCombat.Requisition,
                 _activeCombat.CurrentPauseIndex);
         }
@@ -217,7 +200,7 @@ namespace DeadManZone.Game
         public int GetPrimaryActionBudget()
         {
             int budget = 1;
-            if (_commandProcessor.GetBonusActionSlots(GetPlayerBoard()) > 0)
+            if (_commandProcessor.GetBonusActionSlots(GetBuildBoards().ToAggregateBoard()) > 0)
                 budget += 1;
             return budget;
         }
@@ -227,7 +210,7 @@ namespace DeadManZone.Game
             if (_activeCombat == null || State?.Combat == null || !_activeCombat.AwaitingCommand)
                 return null;
 
-            var board = GetPlayerBoard();
+            var board = GetBuildBoards().ToAggregateBoard();
             var abilities = GetAvailableCommands()
                 .Where(c => c.Type == CommandType.UseAbility)
                 .ToList();
@@ -238,7 +221,7 @@ namespace DeadManZone.Game
                 Trigger = _activeCombat.LastPauseTrigger,
                 Authority = _activeCombat.Requisition,
                 ActiveTactic = _activeCombat.PlayerTactic,
-                HqAlive = _activeCombat.IsPlayerHqAlive,
+                HqAlive = true,
                 HasCommandPiece = board.Pieces.Any(p =>
                     p.Definition.CommandActions.HasFlag(CommandActionFlags.ChangeStance)),
                 AvailableAbilities = abilities,
@@ -321,7 +304,7 @@ namespace DeadManZone.Game
 
         private int ComputeManpowerShortfallForNextFight()
         {
-            var board = GetPlayerBoard();
+            var board = GetCombatBoard();
             int upkeep = ManpowerCalculator.ComputeUpkeep(board, _registry);
             return Math.Max(0, upkeep - State.Manpower);
         }
@@ -349,12 +332,12 @@ namespace DeadManZone.Game
             if (State.Phase != RunPhase.Build)
                 return false;
 
-            var board = GetPlayerBoard();
-            if (!board.TryRemove(instanceId, out var removed))
+            if (!TryFindPlacedPiece(instanceId, out var board, out var removed)
+                || !board.TryRemove(instanceId, out removed))
                 return false;
 
             ApplySalvageRefund(removed.Definition);
-            SavePlayerBoard(board);
+            SaveBoardForPiece(removed.Definition, board);
             return true;
         }
 
@@ -375,12 +358,15 @@ namespace DeadManZone.Game
             if (State.Phase != RunPhase.Build)
                 return false;
 
-            var board = GetPlayerBoard();
+            if (!TryFindPlacedPiece(instanceId, out var board, out _))
+                return false;
+
             var result = board.TryRelocate(instanceId, newAnchor, rotation);
             if (!result.Success)
                 return false;
 
-            SavePlayerBoard(board);
+            var piece = board.Pieces.First(p => p.InstanceId == instanceId);
+            SaveBoardForPiece(piece.Definition, board);
             Persist();
             return true;
         }
@@ -493,7 +479,7 @@ namespace DeadManZone.Game
 
             State.LastEnemyFactionId = enemyTemplate.enemyFactionId;
 
-            var fightStartBoard = _fightStartPlayerBoard ?? GetPlayerBoard();
+            var fightStartBoard = _fightStartCombatBoard ?? GetCombatBoard();
             int boardBoost = SalvageBoardBoostAggregator.SumBoardBoost(fightStartBoard);
             var outcome = SalvageAftermathHelper.ResolveOutcome(result.PlayerWon, result.IsDraw);
             int destroyedUniqueTypes = SalvageAftermathHelper.CountDestroyedEnemyTypes(
@@ -507,25 +493,9 @@ namespace DeadManZone.Game
                 destroyedUniqueTypes);
         }
 
-        private void PlaceStartingHq()
-        {
-            var board = GetPlayerBoard();
-            var hq = _registry.GetById(Faction.hqPieceId);
-            if (hq == null)
-                throw new InvalidOperationException($"HQ piece '{Faction.hqPieceId}' not found.");
-
-            var anchor = new GridCoord(Faction.hqSpawnAnchor.x, Faction.hqSpawnAnchor.y);
-            var rotation = (PieceRotation)Faction.hqSpawnRotation;
-            var result = board.TryPlace(hq, anchor, instanceId: "hq_player", rotation);
-            if (!result.Success)
-                throw new InvalidOperationException($"Failed to spawn HQ: {result.Reason}");
-
-            SavePlayerBoard(board);
-        }
-
         private void ResetAuthorityForBuildRound()
         {
-            State.Authority = AuthorityCalculator.ComputeRoundPool(GetPlayerBoard());
+            State.Authority = AuthorityCalculator.ComputeRoundPool(GetBuildBoards());
         }
 
         private void SyncCombatFromRunner(CombatAdvanceResult step)
@@ -566,7 +536,7 @@ namespace DeadManZone.Game
                 State.Combat.AwaitingCommand = false;
             }
 
-            var playerBoard = GetPlayerBoard();
+            var playerBoard = GetCombatBoard();
             var enemyBoard = BoardSnapshotMapper.ToBoard(State.Combat.EnemyBoard, _registry);
             _activeCombat = TickCombatRun.Start(
                 playerBoard,

@@ -7,7 +7,7 @@ namespace DeadManZone.Data
     {
         [Header("Presentation mode")]
         [Tooltip("Legacy3D keeps Synty models and perspective camera. TopTroops2D uses ortho camera and sprite units.")]
-        public CombatArenaVisualMode visualMode = CombatArenaVisualMode.Legacy3D;
+        public CombatArenaVisualMode visualMode = CombatArenaVisualMode.TopTroops2D;
 
         [Header("Grid → world (meters)")]
         public float cellWidth = 1.8f;
