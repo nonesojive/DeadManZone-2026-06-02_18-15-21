@@ -9,7 +9,8 @@ namespace DeadManZone.Data.Editor
     /// "{pieceId}_{state}.png" under Animations/{pieceId}/.</summary>
     public static class Combat2DAnimationSetBuilder
     {
-        private const int FrameCount = 16;
+        private const int FrameCount = 49; // full 7x7 source grid
+        private const int Columns = 7;
         private const string AnimRoot = "Assets/_Project/Art/Combat2D/Units/Animations";
         private const string PieceRoot = "Assets/_Project/Data/Resources/DeadManZone/Pieces";
 
@@ -54,13 +55,14 @@ namespace DeadManZone.Data.Editor
                 AssetDatabase.CreateAsset(set, setPath);
             }
 
-            set.idle = Strip(dir, stripPrefix, "idle", 10f, true);
-            set.walk = Strip(dir, stripPrefix, "walk", 14f, true);
-            set.run = Strip(dir, stripPrefix, "run", 18f, true);
-            set.shoot = Strip(dir, stripPrefix, "shoot", 18f, false);
-            set.hurt = Strip(dir, stripPrefix, "hurt", 14f, false);
-            set.hitReact = Strip(dir, stripPrefix, "hit_react", 14f, false);
-            set.die = Strip(dir, stripPrefix, "die", 12f, false);
+            // FPS tuned for 49-frame cycles (~1.4-2.5s). Adjust to taste.
+            set.idle = Strip(dir, stripPrefix, "idle", 20f, true);
+            set.walk = Strip(dir, stripPrefix, "walk", 28f, true);
+            set.run = Strip(dir, stripPrefix, "run", 34f, true);
+            set.shoot = Strip(dir, stripPrefix, "shoot", 32f, false);
+            set.hurt = Strip(dir, stripPrefix, "hurt", 26f, false);
+            set.hitReact = Strip(dir, stripPrefix, "hit_react", 26f, false);
+            set.die = Strip(dir, stripPrefix, "die", 24f, false);
 
             if (!set.HasAny)
             {
@@ -91,6 +93,7 @@ namespace DeadManZone.Data.Editor
             {
                 sheet = sprite,
                 frameCount = FrameCount,
+                columns = Columns,
                 framesPerSecond = fps,
                 loop = loop
             };

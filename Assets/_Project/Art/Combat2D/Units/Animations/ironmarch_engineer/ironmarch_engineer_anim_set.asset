@@ -14,36 +14,43 @@ MonoBehaviour:
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatUnit2DAnimationSetSO
   idle:
     sheet: {fileID: 21300000, guid: 1ec07862d2ee4adea2b59fd5fe499600, type: 3}
-    frameCount: 16
-    framesPerSecond: 10
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 20
     loop: 1
   walk:
     sheet: {fileID: 21300000, guid: 74ad0708a0dc4e8889322f9c04358554, type: 3}
-    frameCount: 16
-    framesPerSecond: 14
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 28
     loop: 1
   run:
     sheet: {fileID: 21300000, guid: 7bf998c55beb4cd1b81880347a845fcc, type: 3}
-    frameCount: 16
-    framesPerSecond: 18
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 34
     loop: 1
   hurt:
     sheet: {fileID: 21300000, guid: 27ffa2ae720d42bb845e0f4fc691a137, type: 3}
-    frameCount: 16
-    framesPerSecond: 14
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 26
     loop: 0
   hitReact:
     sheet: {fileID: 21300000, guid: d62ab5278ef345b2a3ba553c2ae40b2b, type: 3}
-    frameCount: 16
-    framesPerSecond: 14
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 26
     loop: 0
   shoot:
     sheet: {fileID: 21300000, guid: 33c3f162fefd40dd9b97982ce0cf6237, type: 3}
-    frameCount: 16
-    framesPerSecond: 18
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 32
     loop: 0
   die:
     sheet: {fileID: 21300000, guid: 6825ea03e7ba441081789d6683194cf3, type: 3}
-    frameCount: 16
-    framesPerSecond: 12
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 24
     loop: 0

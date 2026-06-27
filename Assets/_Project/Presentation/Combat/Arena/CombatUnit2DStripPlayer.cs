@@ -129,22 +129,32 @@ namespace DeadManZone.Presentation.Combat.Arena
             return Mathf.Clamp(index, 0, strip.frameCount - 1);
         }
 
-        /// <summary>Slice a horizontal strip into per-frame sprites with a shared bottom-center pivot.</summary>
+        /// <summary>Slice a grid (or single-row) sheet into per-frame sprites with a shared
+        /// bottom-center pivot. Frames are row-major from the top-left, matching the source layout.</summary>
         internal static Sprite[] SliceUnitStrip(CombatUnit2DStrip strip)
         {
             if (!strip.IsValid || strip.sheet.texture == null)
                 return System.Array.Empty<Sprite>();
 
             var rect = strip.sheet.textureRect;
-            float frameWidth = rect.width / strip.frameCount;
+            int columns = Mathf.Max(1, strip.ColumnsOrDefault);
+            int rows = Mathf.CeilToInt(strip.frameCount / (float)columns);
+            float cellW = rect.width / columns;
+            float cellH = rect.height / rows;
             var pivot = new Vector2(FramePivotX, FramePivotY);
             float ppu = strip.sheet.pixelsPerUnit;
+
             var frames = new Sprite[strip.frameCount];
             for (int i = 0; i < strip.frameCount; i++)
             {
+                int col = i % columns;
+                int row = i / columns;
+                // Texture space is bottom-left origin; row 0 is the top of the sheet.
+                float x = rect.x + col * cellW;
+                float y = rect.y + rect.height - (row + 1) * cellH;
                 frames[i] = Sprite.Create(
                     strip.sheet.texture,
-                    new Rect(rect.x + frameWidth * i, rect.y, frameWidth, rect.height),
+                    new Rect(x, y, cellW, cellH),
                     pivot,
                     ppu);
             }

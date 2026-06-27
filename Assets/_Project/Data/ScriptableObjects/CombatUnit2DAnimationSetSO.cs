@@ -26,10 +26,15 @@ namespace DeadManZone.Data
     {
         public Sprite sheet;
         [Min(1)] public int frameCount;
+        [Tooltip("Frames per row for grid sheets. 0 or 1 row => single horizontal strip.")]
+        [Min(0)] public int columns;
         [Min(1f)] public float framesPerSecond;
         public bool loop;
 
         public bool IsValid => sheet != null && frameCount > 0;
+
+        /// <summary>Frames per row; falls back to a single horizontal row.</summary>
+        public int ColumnsOrDefault => columns > 0 ? columns : frameCount;
 
         public float DurationSeconds => frameCount > 0 && framesPerSecond > 0f
             ? frameCount / framesPerSecond

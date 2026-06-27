@@ -79,6 +79,37 @@ namespace DeadManZone.Presentation.Tests.EditMode
         }
 
         [Test]
+        public void SliceUnitStrip_GridIsRowMajorFromTopLeft()
+        {
+            // 2x2 grid in a 256x256 sheet; texture space is bottom-left origin,
+            // so frame 0 (top-left) must map to the upper rect (y = 128).
+            var gridTex = new Texture2D(256, 256, TextureFormat.RGBA32, false);
+            gridTex.Apply();
+            var gridSheet = Sprite.Create(gridTex, new Rect(0, 0, 256, 256), new Vector2(0.5f, 0f), 128f);
+
+            var strip = new CombatUnit2DStrip
+            {
+                sheet = gridSheet,
+                frameCount = 4,
+                columns = 2,
+                framesPerSecond = 4f,
+                loop = true
+            };
+
+            var frames = CombatUnit2DStripPlayer.SliceUnitStrip(strip);
+            Assert.That(frames.Length, Is.EqualTo(4));
+            Assert.That(frames[0].rect, Is.EqualTo(new Rect(0, 128, 128, 128)));   // top-left
+            Assert.That(frames[1].rect, Is.EqualTo(new Rect(128, 128, 128, 128))); // top-right
+            Assert.That(frames[2].rect, Is.EqualTo(new Rect(0, 0, 128, 128)));     // bottom-left
+            Assert.That(frames[3].rect, Is.EqualTo(new Rect(128, 0, 128, 128)));   // bottom-right
+
+            foreach (var f in frames)
+                Object.DestroyImmediate(f);
+            Object.DestroyImmediate(gridSheet);
+            Object.DestroyImmediate(gridTex);
+        }
+
+        [Test]
         public void ResolveSprite_UsesActiveStripFrame()
         {
             var set = ScriptableObject.CreateInstance<CombatUnit2DAnimationSetSO>();
