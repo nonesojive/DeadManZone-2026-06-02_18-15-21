@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4c0186fbc4806b4da4c818aa5dd1ea4, type: 3}
+  m_Name: ironmarch_breacher_anim_set
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatUnit2DAnimationSetSO
+  idle:
+    sheet: {fileID: 21300000, guid: 1c07676fa1c3473da9070e386e087f7b, type: 3}
+    frameCount: 16
+    framesPerSecond: 10
+    loop: 1
+  walk:
+    sheet: {fileID: 21300000, guid: 215f2172391d4cc299ab5d099d268e21, type: 3}
+    frameCount: 16
+    framesPerSecond: 14
+    loop: 1
+  run:
+    sheet: {fileID: 21300000, guid: 00e04321e0184e7e89e447231aaddd3c, type: 3}
+    frameCount: 16
+    framesPerSecond: 18
+    loop: 1
+  hurt:
+    sheet: {fileID: 21300000, guid: 2c17cdaae42840c8aedcd798219db4f4, type: 3}
+    frameCount: 16
+    framesPerSecond: 14
+    loop: 0
+  hitReact:
+    sheet: {fileID: 21300000, guid: fa680104c687444d931c9a09c4eb1afe, type: 3}
+    frameCount: 16
+    framesPerSecond: 14
+    loop: 0
+  shoot:
+    sheet: {fileID: 21300000, guid: f93bce01f0a4442582687bcca53d58a0, type: 3}
+    frameCount: 16
+    framesPerSecond: 18
+    loop: 0
+  die:
+    sheet: {fileID: 21300000, guid: d6ba47000b5a42009e4ccde12f2d93b4, type: 3}
+    frameCount: 16
+    framesPerSecond: 12
+    loop: 0

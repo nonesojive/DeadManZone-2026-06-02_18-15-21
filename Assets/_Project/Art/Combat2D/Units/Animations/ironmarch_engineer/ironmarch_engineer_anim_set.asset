@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4c0186fbc4806b4da4c818aa5dd1ea4, type: 3}
+  m_Name: ironmarch_engineer_anim_set
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatUnit2DAnimationSetSO
+  idle:
+    sheet: {fileID: 21300000, guid: 1ec07862d2ee4adea2b59fd5fe499600, type: 3}
+    frameCount: 16
+    framesPerSecond: 10
+    loop: 1
+  walk:
+    sheet: {fileID: 21300000, guid: 74ad0708a0dc4e8889322f9c04358554, type: 3}
+    frameCount: 16
+    framesPerSecond: 14
+    loop: 1
+  run:
+    sheet: {fileID: 21300000, guid: 7bf998c55beb4cd1b81880347a845fcc, type: 3}
+    frameCount: 16
+    framesPerSecond: 18
+    loop: 1
+  hurt:
+    sheet: {fileID: 21300000, guid: 27ffa2ae720d42bb845e0f4fc691a137, type: 3}
+    frameCount: 16
+    framesPerSecond: 14
+    loop: 0
+  hitReact:
+    sheet: {fileID: 21300000, guid: d62ab5278ef345b2a3ba553c2ae40b2b, type: 3}
+    frameCount: 16
+    framesPerSecond: 14
+    loop: 0
+  shoot:
+    sheet: {fileID: 21300000, guid: 33c3f162fefd40dd9b97982ce0cf6237, type: 3}
+    frameCount: 16
+    framesPerSecond: 18
+    loop: 0
+  die:
+    sheet: {fileID: 21300000, guid: 6825ea03e7ba441081789d6683194cf3, type: 3}
+    frameCount: 16
+    framesPerSecond: 12
+    loop: 0

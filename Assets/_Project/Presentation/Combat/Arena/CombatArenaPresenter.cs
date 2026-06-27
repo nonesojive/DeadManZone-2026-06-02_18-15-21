@@ -323,9 +323,12 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (!TryGetDamageTargetPosition(combatEvent, out var targetWorld))
                 return;
 
+            _actors.TryGetValue(combatEvent.TargetId, out var victim);
+
             if (!_actors.TryGetValue(combatEvent.ActorId, out var attacker))
             {
                 _activeVfx?.PlayDamage(targetWorld, combatEvent.Value);
+                victim?.PlayHurt();
                 return;
             }
 
@@ -336,7 +339,11 @@ namespace DeadManZone.Presentation.Combat.Arena
                 targetWorld,
                 profile,
                 muzzleWorld => PlayAttackMuzzleVfx(profile, muzzleWorld, targetWorld),
-                () => PlayAttackImpactVfx(profile, targetWorld, combatEvent.Value));
+                () =>
+                {
+                    PlayAttackImpactVfx(profile, targetWorld, combatEvent.Value);
+                    victim?.PlayHurt();
+                });
         }
 
         private void PlayMissEvent(CombatEvent combatEvent)

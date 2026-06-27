@@ -97,6 +97,46 @@ namespace DeadManZone.Presentation.Combat.Arena
             return quad;
         }
 
+        /// <summary>Swap the displayed animation frame on a built quad (UVs + texture only).</summary>
+        public static void SetFrame(GameObject root, Sprite frame)
+        {
+            if (root == null || frame == null)
+                return;
+
+            var quad = root.transform.Find("Quad");
+            if (quad == null)
+                return;
+
+            CombatArena2DSpriteMesh.UpdateUvs(quad.GetComponent<MeshFilter>(), frame);
+
+            var renderer = quad.GetComponent<Renderer>();
+            var material = renderer != null ? renderer.sharedMaterial : null;
+            if (material == null || material.mainTexture == frame.texture)
+                return;
+
+            material.mainTexture = frame.texture;
+            if (material.HasProperty("_BaseMap"))
+                material.SetTexture("_BaseMap", frame.texture);
+            if (material.HasProperty("_MainTex"))
+                material.SetTexture("_MainTex", frame.texture);
+        }
+
+        /// <summary>Mirror the figure horizontally (sprites are authored facing right).</summary>
+        public static void SetFlipX(GameObject root, bool flip)
+        {
+            if (root == null)
+                return;
+
+            var quad = root.transform.Find("Quad");
+            if (quad == null)
+                return;
+
+            var scale = quad.localScale;
+            float magnitude = Mathf.Abs(scale.x);
+            scale.x = flip ? -magnitude : magnitude;
+            quad.localScale = scale;
+        }
+
         public static void SetRenderQueue(GameObject root, int renderQueue)
         {
             if (root == null)

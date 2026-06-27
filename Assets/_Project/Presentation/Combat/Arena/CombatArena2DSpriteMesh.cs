@@ -32,6 +32,15 @@ namespace DeadManZone.Presentation.Combat.Arena
             meshFilter.sharedMesh = mesh;
         }
 
+        /// <summary>Repoint an existing quad mesh at another frame sprite (cheap; no mesh realloc).</summary>
+        public static void UpdateUvs(MeshFilter meshFilter, Sprite sprite)
+        {
+            if (meshFilter == null || meshFilter.sharedMesh == null || sprite == null)
+                return;
+
+            meshFilter.sharedMesh.uv = ResolveUnitUvs(sprite);
+        }
+
         /// <summary>Four corner UVs for a unit quad; tight sprite meshes can expose dozens of UVs.</summary>
         internal static Vector2[] ResolveUnitUvs(Sprite sprite)
         {

@@ -373,6 +373,15 @@ namespace DeadManZone.Presentation.Combat.Arena
                 BillboardAttackTimingRoutine(profile, onMuzzle, onImpact));
         }
 
+        public void PlayHurt()
+        {
+            if (_frozen || !IsAlive)
+                return;
+
+            if (_use2DVisual && _visual2D != null)
+                _visual2D.PlayHurt();
+        }
+
         public void PlayDeath(Action onComplete)
         {
             IsAlive = false;

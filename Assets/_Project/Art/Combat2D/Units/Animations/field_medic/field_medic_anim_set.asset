@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4c0186fbc4806b4da4c818aa5dd1ea4, type: 3}
+  m_Name: field_medic_anim_set
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatUnit2DAnimationSetSO
+  idle:
+    sheet: {fileID: 21300000, guid: 541ced286493478da7f726368c668549, type: 3}
+    frameCount: 16
+    framesPerSecond: 10
+    loop: 1
+  walk:
+    sheet: {fileID: 21300000, guid: 60a8e0eac8c54debaba431f6a314a569, type: 3}
+    frameCount: 16
+    framesPerSecond: 14
+    loop: 1
+  run:
+    sheet: {fileID: 21300000, guid: 3032cb99c66a4750b976c6be4118e598, type: 3}
+    frameCount: 16
+    framesPerSecond: 18
+    loop: 1
+  hurt:
+    sheet: {fileID: 21300000, guid: 7f1391c7ec854df79a1838afa4954203, type: 3}
+    frameCount: 16
+    framesPerSecond: 14
+    loop: 0
+  hitReact:
+    sheet: {fileID: 21300000, guid: ecc33351ce9d4b6f9bc1e1bb83beac0a, type: 3}
+    frameCount: 16
+    framesPerSecond: 14
+    loop: 0
+  shoot:
+    sheet: {fileID: 21300000, guid: 50c76176df6940a5b32e140e3af4e8d6, type: 3}
+    frameCount: 16
+    framesPerSecond: 18
+    loop: 0
+  die:
+    sheet: {fileID: 21300000, guid: f797559f65ac4cd9a560196b8311666e, type: 3}
+    frameCount: 16
+    framesPerSecond: 12
+    loop: 0

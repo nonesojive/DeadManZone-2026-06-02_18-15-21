@@ -12,6 +12,17 @@ namespace DeadManZone.Presentation.Tests.EditMode
     public sealed class CombatArena2DHelpersTests
     {
         [Test]
+        public void SpriteResolver_FieldMedic_UsesDedicatedCombatSprite()
+        {
+            var piece = Resources.Load<PieceDefinitionSO>("DeadManZone/Pieces/field_medic");
+            Assert.NotNull(piece, "field_medic piece asset missing from Resources");
+            Assert.NotNull(piece.combatArenaSprite, "field_medic should reference combat2d_unit_field_medic");
+
+            Assert.AreSame(piece.combatArenaSprite, CombatUnitSpriteResolver.Resolve(piece, CombatSide.Player));
+            Assert.AreEqual(Color.white, CombatUnitSpriteResolver.ResolveTint(piece, CombatSide.Player));
+        }
+
+        [Test]
         public void SortOrder_RenderQueue_BackRowStaysAboveGround()
         {
             int backRow = CombatArena2DSortOrder.RenderQueueFromWorldZ(7f);

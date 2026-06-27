@@ -42,6 +42,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (piece == null)
                 return Color.white;
 
+            if (piece.combatArenaSprite != null)
+                return Color.white;
+
             if (IsBuilding(piece))
             {
                 if (piece.categoryTint != Color.white)

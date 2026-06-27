@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4c0186fbc4806b4da4c818aa5dd1ea4, type: 3}
+  m_Name: marksman_squad_anim_set
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatUnit2DAnimationSetSO
+  idle:
+    sheet: {fileID: 21300000, guid: 9a6888680de240318933a7418c65d99a, type: 3}
+    frameCount: 16
+    framesPerSecond: 10
+    loop: 1
+  walk:
+    sheet: {fileID: 21300000, guid: 9c62f41835374feaaa2b90fce00f2c0b, type: 3}
+    frameCount: 16
+    framesPerSecond: 14
+    loop: 1
+  run:
+    sheet: {fileID: 21300000, guid: e8488a3452484951a4c566e544e3b798, type: 3}
+    frameCount: 16
+    framesPerSecond: 18
+    loop: 1
+  hurt:
+    sheet: {fileID: 21300000, guid: 50c67630fbaa4034b310fdb563362d45, type: 3}
+    frameCount: 16
+    framesPerSecond: 14
+    loop: 0
+  hitReact:
+    sheet: {fileID: 21300000, guid: cb4f7bbfa0884ba3b9a45532003a3f60, type: 3}
+    frameCount: 16
+    framesPerSecond: 14
+    loop: 0
+  shoot:
+    sheet: {fileID: 21300000, guid: ff5ac08e73f24e1283990d00177c368e, type: 3}
+    frameCount: 16
+    framesPerSecond: 18
+    loop: 0
+  die:
+    sheet: {fileID: 21300000, guid: 6b46054a73504ea58d44da1bea3796ca, type: 3}
+    frameCount: 16
+    framesPerSecond: 12
+    loop: 0
