@@ -307,9 +307,9 @@ namespace DeadManZone.Core.Tests.EditMode
 
             var fresh = new RunOrchestrator(_database);
             fresh.StartNewRun(FactionIds.IronVanguard, runSeed: seed);
-            var boards = VerticalSliceTestFixtures.BuildGauntletBoards(_database);
-            fresh.SaveCombatBoard(boards.Combat);
-            fresh.SaveHqBoard(boards.Hq);
+            var freshBoards = VerticalSliceTestFixtures.BuildGauntletBoards(_database);
+            fresh.SaveCombatBoard(freshBoards.Combat);
+            fresh.SaveHqBoard(freshBoards.Hq);
             fresh.BeginCombat();
             fresh.AdvanceCombat();
             fresh.SubmitCombatCommands(commands);
