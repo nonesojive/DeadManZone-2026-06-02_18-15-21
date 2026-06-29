@@ -18,7 +18,7 @@ namespace DeadManZone.PlayMode.Tests
             Assume.That(config, Is.Not.Null);
 
             string sceneName = GameScenes.ResolveCombatArenaScene(config);
-            Assume.That(sceneName, Is.EqualTo(GameScenes.CombatArena2D).Or.EqualTo(GameScenes.CombatArena));
+            Assume.That(sceneName, Is.EqualTo(GameScenes.CombatArena2D));
 
             if (SceneManager.GetSceneByName(sceneName).isLoaded)
             {

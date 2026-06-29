@@ -39,7 +39,7 @@ namespace DeadManZone.PlayMode.Tests
             if (_root != null)
                 Object.DestroyImmediate(_root);
 
-            var arenaScene = SceneManager.GetSceneByName(GameScenes.CombatArena);
+            var arenaScene = SceneManager.GetSceneByName(GameScenes.CombatArena2D);
             if (arenaScene.isLoaded)
                 SceneManager.UnloadSceneAsync(arenaScene);
 
@@ -194,7 +194,7 @@ namespace DeadManZone.PlayMode.Tests
             presenter.Configure(director, null);
             director.SetSecondsPerTickForTests(0f);
 
-            yield return SceneManager.LoadSceneAsync(GameScenes.CombatArena, LoadSceneMode.Additive);
+            yield return SceneManager.LoadSceneAsync(GameScenes.CombatArena2D, LoadSceneMode.Additive);
             yield return null;
 
             var start = new GridCoord(3, 2);

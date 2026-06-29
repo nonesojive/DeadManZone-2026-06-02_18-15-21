@@ -31,6 +31,9 @@ namespace DeadManZone.Presentation.Run
             if (buildPanel == null)
                 return;
 
+            if (RunUiAuthoringLock.ShouldPreserve(buildPanel))
+                return;
+
             if (boardView == null)
                 boardView = FindFirstObjectByType<BoardView>();
 
@@ -40,9 +43,6 @@ namespace DeadManZone.Presentation.Run
             EnsureBuildScreenHudController();
             UnitCardPanelBootstrap.EnsureOnBuildPanel(buildPanel);
             BuildUiChromeBootstrap.RemoveFromBuildPanel(buildPanel);
-
-            if (RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel))
-                return;
 
             RunHudResourcePanelStyling.EnsureBackground(buildPanel, UiThemeProvider.Current);
             ShopBackgroundBootstrap.ApplyToBuildPanel(buildPanel, UiThemeProvider.Current);

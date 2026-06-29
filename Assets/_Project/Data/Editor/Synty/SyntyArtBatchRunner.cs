@@ -16,7 +16,6 @@ namespace DeadManZone.Data.Editor
                     "URP is not assigned. Run DeadManZone → Rendering → Setup URP For Project first.");
             }
 
-            SyntyArenaPrefabGenerator.GenerateAll();
             SyntyArtCatalogFactory.CreateSyntySandboxArtCatalog();
             SandboxIconSnapshotter.SnapshotAllIconsFromPrefabs(forceResnapshot: true);
             SandboxArtAssigner.ApplySandboxArtPass();

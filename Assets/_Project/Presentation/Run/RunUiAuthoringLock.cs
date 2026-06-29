@@ -30,9 +30,10 @@ namespace DeadManZone.Presentation.Run
 
         public static bool ShouldSkipVisualMigration(Transform buildPanel, bool isPlaying)
         {
-            if (buildPanel == null || !isPlaying)
+            if (buildPanel == null)
                 return false;
 
+            // ponytail: preserveSceneAuthoring blocks migration in edit + play; isPlaying kept for callers/tests.
             return ShouldPreserve(buildPanel);
         }
 
@@ -56,6 +57,7 @@ namespace DeadManZone.Presentation.Run
             {
                 if (current.GetComponent<RunUiAuthoringLock>() != null ||
                     current.GetComponent<RunBuildUiBootstrap>() != null ||
+                    current.name == "ShopScene" ||
                     current.name == "BuildPanel")
                     return current;
 

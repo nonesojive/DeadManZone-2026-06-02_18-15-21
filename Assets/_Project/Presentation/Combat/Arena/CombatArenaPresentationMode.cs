@@ -4,7 +4,8 @@ namespace DeadManZone.Presentation.Combat.Arena
 {
     public static class CombatArenaPresentationMode
     {
-        public static bool IsTopTroops2D(CombatArenaConfigSO config) =>
-            config != null && config.visualMode == CombatArenaVisualMode.TopTroops2D;
+        // Project is locked to the 2D (Top Troops) combat presentation; the legacy
+        // 3D arena backend has been removed, so this is always true.
+        public static bool IsTopTroops2D(CombatArenaConfigSO config) => true;
     }
 }

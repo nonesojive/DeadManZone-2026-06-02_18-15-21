@@ -64,7 +64,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 {
                     var coord = new GridCoord(x, y);
                     Vector3 center = mapper.ToWorld(coord);
-                    Color cellColor = TopTroopsBattlefieldBuilder.ResolveCellColor(layout, x, y, palette);
+                    Color cellColor = palette.ResolveCellColor(layout, x, y);
                     float width = config.cellWidth * inset;
                     float depth = config.cellDepth * inset;
 

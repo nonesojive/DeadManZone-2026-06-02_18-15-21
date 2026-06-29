@@ -5,118 +5,12 @@ using UnityEngine;
 namespace DeadManZone.Presentation.Combat.Arena
 {
     /// <summary>
-    /// Positions the arena camera in a Top Troops-style oblique view:
-    /// board width fills the screen, player front line toward the bottom.
+    /// Camera-math helpers shared by the 2D orthographic framer: ground sampling, oblique orbit
+    /// placement, and viewport-span/center measurement for fit solving.
     /// </summary>
     public static class CombatArenaCameraFramer
     {
         private const int SolveIterations = 32;
-        private const float MinDistance = 2f;
-        private const float MaxDistance = 250f;
-
-        public static void Frame(Camera camera, BattlefieldLayout layout, CombatArenaConfigSO config)
-        {
-            if (camera == null || layout == null || config == null)
-                return;
-
-            camera.fieldOfView = config.fieldOfView;
-
-            if (config.useManualCameraPose)
-            {
-                if (config.manualCameraWorldPosition.sqrMagnitude > 0.01f)
-                {
-                    var manualPose = new CombatArenaCameraPose
-                    {
-                        WorldPosition = config.manualCameraWorldPosition,
-                        LookAt = config.lookAtWorld,
-                        FieldOfView = config.fieldOfView
-                    };
-                    manualPose.ApplyTo(camera);
-                }
-                else
-                {
-                    // Orbit params saved via asset/tuner before world position was added.
-                    ApplyOrbit(
-                        camera,
-                        config.lookAtWorld,
-                        config.cameraElevationDegrees,
-                        config.cameraAzimuthDegrees,
-                        config.cameraDistance);
-                }
-
-                return;
-            }
-
-            var samplePoints = GetGroundSamplePoints(layout, config.cellWidth, config.cellDepth);
-            var lookAt = new Vector3(0f, 0f, config.lookAtDepthOffset);
-
-            float distance = config.autoFrameWidth
-                ? SolveDistance(camera, lookAt, config, samplePoints)
-                : config.cameraDistance;
-
-            if (config.autoFrameVerticalPosition)
-            {
-                float halfDepth = layout.Height * config.cellDepth * 0.5f;
-                for (int pass = 0; pass < 3; pass++)
-                {
-                    lookAt.z = SolveLookAtDepth(
-                        camera,
-                        lookAt,
-                        config,
-                        samplePoints,
-                        distance,
-                        halfDepth);
-
-                    if (!config.autoFrameWidth)
-                        break;
-
-                    distance = SolveDistance(camera, lookAt, config, samplePoints);
-                }
-            }
-            else if (config.autoFrameWidth)
-            {
-                distance = SolveDistance(camera, lookAt, config, samplePoints);
-            }
-
-            float horizontalTargetSpan = 1f - (config.horizontalViewportPadding * 2f);
-            horizontalTargetSpan = Mathf.Clamp(horizontalTargetSpan, 0.5f, 1f);
-
-            float widthDistance = distance;
-            if (config.autoFrameVerticalFill)
-            {
-                float verticalDistance = SolveDistanceForVerticalFill(
-                    camera,
-                    lookAt,
-                    config,
-                    samplePoints,
-                    widthDistance);
-                ApplyOrbit(camera, lookAt, config.cameraElevationDegrees, config.cameraAzimuthDegrees, verticalDistance);
-                float horizontalSpan = MeasureHorizontalViewportSpan(camera, samplePoints);
-                if (horizontalSpan > 0f && horizontalSpan <= horizontalTargetSpan + 0.01f)
-                    distance = verticalDistance;
-                else
-                    distance = widthDistance;
-            }
-
-            distance *= Mathf.Clamp(config.cameraDistanceScale, 0.7f, 1.2f);
-            distance = EnsureHorizontalSpanFits(
-                camera,
-                lookAt,
-                config,
-                samplePoints,
-                distance,
-                horizontalTargetSpan);
-
-            ApplyOrbit(camera, lookAt, config.cameraElevationDegrees, config.cameraAzimuthDegrees, distance);
-        }
-
-        public static float MeasureVerticalViewportSpan(Camera camera, Vector3[] worldPoints)
-        {
-            if (!TryMeasureViewportBounds(camera, worldPoints, out _, out _, out float minY, out float maxY))
-                return 0f;
-
-            return maxY - minY;
-        }
 
         public static Vector3[] GetGroundSamplePoints(BattlefieldLayout layout, float cellWidth, float cellDepth)
         {
@@ -144,39 +38,20 @@ namespace DeadManZone.Presentation.Combat.Arena
             return maxX - minX;
         }
 
+        public static float MeasureVerticalViewportSpan(Camera camera, Vector3[] worldPoints)
+        {
+            if (!TryMeasureViewportBounds(camera, worldPoints, out _, out _, out float minY, out float maxY))
+                return 0f;
+
+            return maxY - minY;
+        }
+
         public static float MeasureVerticalViewportCenter(Camera camera, Vector3[] worldPoints)
         {
             if (!TryMeasureViewportBounds(camera, worldPoints, out _, out _, out float minY, out float maxY))
                 return 0.5f;
 
             return (minY + maxY) * 0.5f;
-        }
-
-        internal static float SolveDistance(
-            Camera camera,
-            Vector3 lookAt,
-            CombatArenaConfigSO config,
-            Vector3[] samplePoints)
-        {
-            float targetSpan = 1f - (config.horizontalViewportPadding * 2f);
-            targetSpan = Mathf.Clamp(targetSpan, 0.5f, 1f);
-
-            float low = MinDistance;
-            float high = MaxDistance;
-
-            for (int i = 0; i < SolveIterations; i++)
-            {
-                float mid = (low + high) * 0.5f;
-                ApplyOrbit(camera, lookAt, config.cameraElevationDegrees, config.cameraAzimuthDegrees, mid);
-                float span = MeasureHorizontalViewportSpan(camera, samplePoints);
-
-                if (span > targetSpan)
-                    low = mid;
-                else
-                    high = mid;
-            }
-
-            return (low + high) * 0.5f;
         }
 
         internal static float SolveLookAtDepth(
@@ -195,67 +70,10 @@ namespace DeadManZone.Presentation.Combat.Arena
             {
                 float mid = (low + high) * 0.5f;
                 var candidate = new Vector3(lookAt.x, lookAt.y, mid);
-                ApplyOrbit(camera, candidate, config.cameraElevationDegrees, config.cameraAzimuthDegrees, distance);
+                ApplyOrbit(camera, candidate, config.orthoCameraElevationDegrees, config.orthoCameraAzimuthDegrees, distance);
                 float centerY = MeasureVerticalViewportCenter(camera, samplePoints);
 
                 if (centerY > targetCenter)
-                    low = mid;
-                else
-                    high = mid;
-            }
-
-            return (low + high) * 0.5f;
-        }
-
-        internal static float SolveDistanceForVerticalFill(
-            Camera camera,
-            Vector3 lookAt,
-            CombatArenaConfigSO config,
-            Vector3[] samplePoints,
-            float widthDistance)
-        {
-            float targetSpan = Mathf.Clamp(config.verticalViewportFill, 0.45f, 0.85f);
-            float low = MinDistance;
-            float high = widthDistance;
-
-            for (int i = 0; i < SolveIterations; i++)
-            {
-                float mid = (low + high) * 0.5f;
-                ApplyOrbit(camera, lookAt, config.cameraElevationDegrees, config.cameraAzimuthDegrees, mid);
-                float span = MeasureVerticalViewportSpan(camera, samplePoints);
-
-                if (span < targetSpan)
-                    high = mid;
-                else
-                    low = mid;
-            }
-
-            return (low + high) * 0.5f;
-        }
-
-        internal static float EnsureHorizontalSpanFits(
-            Camera camera,
-            Vector3 lookAt,
-            CombatArenaConfigSO config,
-            Vector3[] samplePoints,
-            float distance,
-            float targetSpan)
-        {
-            ApplyOrbit(camera, lookAt, config.cameraElevationDegrees, config.cameraAzimuthDegrees, distance);
-            float currentSpan = MeasureHorizontalViewportSpan(camera, samplePoints);
-            if (currentSpan > 0f && currentSpan <= targetSpan + 0.01f)
-                return distance;
-
-            float low = distance;
-            float high = MaxDistance;
-
-            for (int i = 0; i < SolveIterations; i++)
-            {
-                float mid = (low + high) * 0.5f;
-                ApplyOrbit(camera, lookAt, config.cameraElevationDegrees, config.cameraAzimuthDegrees, mid);
-                float span = MeasureHorizontalViewportSpan(camera, samplePoints);
-
-                if (span > targetSpan)
                     low = mid;
                 else
                     high = mid;

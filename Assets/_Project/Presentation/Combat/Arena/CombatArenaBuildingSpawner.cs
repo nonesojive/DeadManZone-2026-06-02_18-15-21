@@ -81,69 +81,11 @@ namespace DeadManZone.Presentation.Combat.Arena
             CombatArenaConfigSO config)
         {
             var footprint = ComputeFootprintBounds(cell.Position, cell.Definition.Shape, mapper, DefaultBuildingHeight);
-            string objectName = $"Building_{cell.InstanceId}";
 
-            if (CombatArenaPresentationMode.IsTopTroops2D(config))
-            {
-                var building2D = CombatArena2DBuildingVisual.Spawn(cell.InstanceId, footprint.Center, source, cell.Side);
-                building2D.name = objectName;
-                building2D.transform.SetParent(buildingsRoot, false);
-                return building2D;
-            }
-
-            var prefab = CombatArenaPrefabResolver.ResolveBuildingPrefab(source, cell.Definition, config);
-            GameObject root = prefab != null
-                ? SpawnPrefabBuilding(source, prefab, footprint, objectName)
-                : SpawnPlaceholderBuilding(cell.Definition.Id, footprint, objectName);
-
-            if (root == null)
-                return null;
-
-            root.transform.SetParent(buildingsRoot, false);
-            return root;
-        }
-
-        private static GameObject SpawnPrefabBuilding(
-            PieceDefinitionSO source,
-            GameObject prefab,
-            FootprintBounds footprint,
-            string objectName)
-        {
-            var instance = UnityEngine.Object.Instantiate(prefab);
-            instance.name = objectName;
-
-            float scale = source != null && source.combatArenaModelScale > 0f ? source.combatArenaModelScale : 1f;
-            float height = source != null && source.combatArenaModelHeight > 0f
-                ? source.combatArenaModelHeight
-                : DefaultBuildingHeight;
-
-            CombatArenaVisualPlacement.PlaceOnGround(instance.transform, footprint.Center, height, scale);
-            CombatArenaFxCull.RemoveTransparentFxRenderers(instance);
-            return instance;
-        }
-
-        private static GameObject SpawnPlaceholderBuilding(
-            string pieceId,
-            FootprintBounds footprint,
-            string objectName)
-        {
-            var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube.name = objectName;
-
-            var renderer = cube.GetComponent<Renderer>();
-            if (renderer != null)
-            {
-                var material = new Material(CombatArenaMaterialUtility.ResolveGroundShader() ?? Shader.Find("Standard"));
-                CombatArenaMaterialUtility.ApplyColor(material, CombatArenaBuildingDefaults.ResolveColor(pieceId));
-                renderer.sharedMaterial = material;
-            }
-
-            var collider = cube.GetComponent<Collider>();
-            if (collider != null)
-                UnityEngine.Object.Destroy(collider);
-
-            CombatArenaVisualPlacement.PlaceOnGround(cube.transform, footprint.Center, DefaultBuildingHeight, 1f);
-            return cube;
+            var building2D = CombatArena2DBuildingVisual.Spawn(cell.InstanceId, footprint.Center, source, cell.Side);
+            building2D.name = $"Building_{cell.InstanceId}";
+            building2D.transform.SetParent(buildingsRoot, false);
+            return building2D;
         }
 
         private static FootprintBounds ComputeFootprintBounds(
@@ -193,24 +135,4 @@ namespace DeadManZone.Presentation.Combat.Arena
         }
     }
 
-    internal static class CombatArenaBuildingDefaults
-    {
-        public static Color ResolveColor(string pieceId)
-        {
-            if (string.IsNullOrEmpty(pieceId))
-                return new Color(0.45f, 0.42f, 0.38f);
-
-            if (pieceId.Contains("hq", StringComparison.OrdinalIgnoreCase))
-                return new Color(0.48f, 0.4f, 0.28f);
-
-            if (pieceId.Contains("supply", StringComparison.OrdinalIgnoreCase))
-                return new Color(0.34f, 0.42f, 0.28f);
-
-            if (pieceId.Contains("gun", StringComparison.OrdinalIgnoreCase)
-                || pieceId.Contains("artillery", StringComparison.OrdinalIgnoreCase))
-                return new Color(0.38f, 0.38f, 0.4f);
-
-            return new Color(0.42f, 0.4f, 0.36f);
-        }
-    }
 }

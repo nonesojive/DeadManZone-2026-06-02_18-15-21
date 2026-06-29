@@ -38,17 +38,17 @@ namespace DeadManZone.Presentation.Editor
 
             var controllerRoot = CreateRegion(canvas.transform, "RunScene", Vector2.zero, Vector2.one);
             var controller = controllerRoot.AddComponent<RunSceneController>();
-            var buildPanel = CreateRegion(controllerRoot.transform, "BuildPanel", Vector2.zero, Vector2.one);
-            var buildCanvasGroup = buildPanel.AddComponent<CanvasGroup>();
-            UiThemeSceneStyling.AddPanelBackground(buildPanel.transform, theme);
-            RunUiAuthoringLock.EnsureOn(buildPanel.transform);
-            RunBuildUiBootstrap.EnsureOnBuildPanel(buildPanel.transform, null);
+            var shopScene = CreateRegion(controllerRoot.transform, "ShopScene", Vector2.zero, Vector2.one);
+            var shopCanvasGroup = shopScene.AddComponent<CanvasGroup>();
+            UiThemeSceneStyling.AddPanelBackground(shopScene.transform, theme);
+            RunUiAuthoringLock.EnsureOn(shopScene.transform);
+            RunBuildUiBootstrap.EnsureOnBuildPanel(shopScene.transform, null);
 
-            var topBar = CreateRegion(buildPanel.transform, "TopBar", new Vector2(0f, 0.92f), Vector2.one);
+            var topBar = CreateRegion(shopScene.transform, "TopBar", new Vector2(0f, 0.92f), Vector2.one);
             UiThemeSceneStyling.AddSidebarBackground(topBar.transform, theme);
 
             var hud = topBar.AddComponent<RunHudView>();
-            var builtHud = RunHudPanelBuilder.Create(buildPanel.transform, theme);
+            var builtHud = RunHudPanelBuilder.Create(shopScene.transform, theme);
             RunHudPanelBuilder.WireRunHudView(hud, builtHud);
             hud.ApplyTheme(theme);
 
@@ -68,11 +68,11 @@ namespace DeadManZone.Presentation.Editor
                 topBar.transform, "MENU", new Vector2(0.94f, 0.5f), new Vector2(100f, 40f));
             UiThemeSceneStyling.StyleButton(menuBtn, theme);
 
-            var lastLogReview = CreateLastBattleLogReview(buildPanel.transform, theme);
+            var lastLogReview = CreateLastBattleLogReview(shopScene.transform, theme);
             CreateLastBattleLogButton(topBar.transform, theme, lastLogReview);
 
-            var mainRow = CreateRegion(buildPanel.transform, "MainRow", new Vector2(0f, 0.16f), new Vector2(1f, 0.92f));
-            var bottomBar = CreateRegion(buildPanel.transform, "BottomBar", Vector2.zero, new Vector2(1f, 0.16f));
+            var mainRow = CreateRegion(shopScene.transform, "MainRow", new Vector2(0f, 0.16f), new Vector2(1f, 0.92f));
+            var bottomBar = CreateRegion(shopScene.transform, "BottomBar", Vector2.zero, new Vector2(1f, 0.16f));
             UiThemeSceneStyling.AddSidebarBackground(bottomBar.transform, theme);
 
             var boardAreaGo = CreateRegion(mainRow.transform, "BoardArea", new Vector2(0f, 0f), new Vector2(BoardAreaAnchorMaxX, 1f));
@@ -106,8 +106,8 @@ namespace DeadManZone.Presentation.Editor
 
             var reservesView = CreateReservesSection(bottomBar.transform, theme);
             var sellZone = CreateSellZone(bottomBar.transform, theme, boardView, messagesView);
-            var pauseMenu = CreatePauseMenu(buildPanel.transform, theme);
-            var endOverlay = CreateRunEndOverlay(buildPanel.transform, theme);
+            var pauseMenu = CreatePauseMenu(shopScene.transform, theme);
+            var endOverlay = CreateRunEndOverlay(shopScene.transform, theme);
 
             var combatPanel = CreateRegion(controllerRoot.transform, "CombatPanel", Vector2.zero, Vector2.one);
             combatPanel.SetActive(false);
@@ -125,13 +125,13 @@ namespace DeadManZone.Presentation.Editor
             var healthBarPresenter = CreateArmyHealthBars(combatPanel.transform, theme);
 
             WireFlowPresenter(flowPresenter, combatDirector, tacticPanel, battleReport, loadingOverlay, loadingText, healthBarPresenter);
-            WireController(controller, buildPanel, buildCanvasGroup, combatPanel, boardAreaGo, shopAreaGo, bottomBar,
+            WireController(controller, shopScene, shopCanvasGroup, combatPanel, boardAreaGo, shopAreaGo, bottomBar,
                 boardView, shopView, reservesView, combatDirector, tacticPanel, hud, endOverlay, pauseMenu,
                 beginFight, menuBtn, rowLayout);
 
-            var hudController = buildPanel.AddComponent<BuildScreenHudController>();
+            var hudController = shopScene.AddComponent<BuildScreenHudController>();
             var hudControllerSerialized = new SerializedObject(hudController);
-            hudControllerSerialized.FindProperty("buildPanel").objectReferenceValue = buildPanel.transform;
+            hudControllerSerialized.FindProperty("buildPanel").objectReferenceValue = shopScene.transform;
             hudControllerSerialized.FindProperty("boardView").objectReferenceValue = boardView;
             hudControllerSerialized.FindProperty("unitCardPanel").objectReferenceValue = unitCardPanel;
             hudControllerSerialized.FindProperty("messagesView").objectReferenceValue = messagesView;
@@ -144,14 +144,14 @@ namespace DeadManZone.Presentation.Editor
             shopViewSerialized.ApplyModifiedPropertiesWithoutUndo();
 
             CenterColumnLayoutFitter.EnsureOnBuildPanel(
-                buildPanel.transform,
+                shopScene.transform,
                 messagesView.GetComponent<RectTransform>(),
                 buffStripRegion,
                 rowLayout);
-            ShopBackgroundBootstrap.ApplyToBuildPanel(buildPanel.transform, theme);
-            RunHudLayoutFitter.EnsureOnBuildPanel(buildPanel.transform, builtHud.Root, rowLayout);
+            ShopBackgroundBootstrap.ApplyToBuildPanel(shopScene.transform, theme);
+            RunHudLayoutFitter.EnsureOnBuildPanel(shopScene.transform, builtHud.Root, rowLayout);
             ReservesLayoutFitter.EnsureOnBuildPanel(
-                buildPanel.transform,
+                shopScene.transform,
                 bottomBar.GetComponent<RectTransform>(),
                 bottomBar.transform.Find("ReservesRegion") as RectTransform,
                 rowLayout,
@@ -1005,8 +1005,8 @@ namespace DeadManZone.Presentation.Editor
 
         private static void WireController(
             RunSceneController controller,
-            GameObject buildPanel,
-            CanvasGroup buildCanvasGroup,
+            GameObject shopScene,
+            CanvasGroup shopCanvasGroup,
             GameObject combatPanel,
             GameObject boardArea,
             GameObject shopArea,
@@ -1024,8 +1024,8 @@ namespace DeadManZone.Presentation.Editor
             BuildRowLayoutFitter mainRowLayout)
         {
             var serialized = new SerializedObject(controller);
-            serialized.FindProperty("buildPanel").objectReferenceValue = buildPanel;
-            serialized.FindProperty("buildPanelCanvasGroup").objectReferenceValue = buildCanvasGroup;
+            serialized.FindProperty("shopScene").objectReferenceValue = shopScene;
+            serialized.FindProperty("shopSceneCanvasGroup").objectReferenceValue = shopCanvasGroup;
             serialized.FindProperty("combatPanel").objectReferenceValue = combatPanel;
             serialized.FindProperty("boardArea").objectReferenceValue = boardArea.GetComponent<RectTransform>();
             serialized.FindProperty("shopArea").objectReferenceValue = shopArea;

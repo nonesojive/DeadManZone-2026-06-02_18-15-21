@@ -14,7 +14,6 @@ namespace DeadManZone.Presentation.Combat.Arena
     public sealed class CombatArenaPresenter : MonoBehaviour
     {
         [SerializeField] private CombatDirector combatDirector;
-        [SerializeField] private CombatArenaVfx vfx;
         [SerializeField] private CombatArena2DVfx vfx2D;
         [SerializeField] private CombatArenaAudioPresenter audio;
 
@@ -63,7 +62,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public IEnumerable<CombatUnitActor> GetActiveActors() => _actors.Values;
 
-        public void Configure(CombatDirector director, CombatArenaVfx arenaVfx, CombatArenaAudioPresenter arenaAudio = null)
+        public void Configure(CombatDirector director, CombatArenaAudioPresenter arenaAudio = null)
         {
             if (director != null)
             {
@@ -75,9 +74,6 @@ namespace DeadManZone.Presentation.Combat.Arena
                 if (isActiveAndEnabled)
                     combatDirector.EventReplayed += OnEventReplayed;
             }
-
-            if (arenaVfx != null)
-                vfx = arenaVfx;
 
             if (arenaAudio != null)
                 audio = arenaAudio;
@@ -148,25 +144,17 @@ namespace DeadManZone.Presentation.Combat.Arena
                 actor.Initialize(
                     cell.InstanceId,
                     cell.Definition.Id,
-                    source != null ? source.icon : null,
-                    CombatArenaPrefabResolver.ResolveUnitPrefab(source, config),
-                    CombatArenaPrefabResolver.ResolveUnitScale(source, config),
-                    CombatArenaPrefabResolver.ResolveUnitHeight(source, config),
                     _arenaCameraTransform,
                     _mapper,
                     cell.Position,
                     config.moveLerpSeconds,
                     moveSpeed,
                     config.moveMarchGraceSeconds,
-                    config.attackLungeSeconds,
-                    config.attackLungeDistance,
                     CombatAttackProfileResolver.Resolve(source),
                     source,
                     cell.Side,
-                    config.useProceduralUnitVisuals,
                     config.useTopTroopsFreeChaseMovement,
-                    config.topTroopsChaseMaxLeadCells,
-                    use2D);
+                    config.topTroopsChaseMaxLeadCells);
 
                 _actors[cell.InstanceId] = actor;
                 actor.SetFrozen(IsPresentationFrozen);
@@ -238,25 +226,17 @@ namespace DeadManZone.Presentation.Combat.Arena
                 actor.Initialize(
                     cell.InstanceId,
                     cell.Definition.Id,
-                    source != null ? source.icon : null,
-                    CombatArenaPrefabResolver.ResolveUnitPrefab(source, config),
-                    CombatArenaPrefabResolver.ResolveUnitScale(source, config),
-                    CombatArenaPrefabResolver.ResolveUnitHeight(source, config),
                     _arenaCameraTransform,
                     _mapper,
                     anchor,
                     config.moveLerpSeconds,
                     moveSpeed,
                     config.moveMarchGraceSeconds,
-                    config.attackLungeSeconds,
-                    config.attackLungeDistance,
                     CombatAttackProfileResolver.Resolve(source),
                     source,
                     cell.Side,
-                    config.useProceduralUnitVisuals,
                     config.useTopTroopsFreeChaseMovement,
-                    config.topTroopsChaseMaxLeadCells,
-                    use2D);
+                    config.topTroopsChaseMaxLeadCells);
 
                 _actors[cell.InstanceId] = actor;
                 actor.SetFrozen(IsPresentationFrozen);
@@ -522,9 +502,6 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (combatDirector == null)
                 combatDirector = GetComponent<CombatDirector>();
 
-            if (vfx == null)
-                vfx = GetComponent<CombatArenaVfx>();
-
             if (vfx2D == null)
                 vfx2D = GetComponent<CombatArena2DVfx>();
 
@@ -538,9 +515,9 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private ICombatArenaVfxPresenter ResolveVfxPresenter(bool use2D)
         {
-            if (use2D && vfx2D != null)
-                return vfx2D;
-            return vfx;
+            if (vfx2D == null)
+                vfx2D = GetComponent<CombatArena2DVfx>();
+            return vfx2D;
         }
 
         private void EnsureChaseController()

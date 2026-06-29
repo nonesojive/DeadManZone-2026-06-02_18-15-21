@@ -19,7 +19,6 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             RenderSettings.skybox = null;
             ClearLegacyBackdrop(arenaRoot);
-            CombatArenaAtmosphereController.Ensure(arenaRoot)?.ClearOwnedSceneObjects();
 
             if (config.useTopTroopsBrightSky)
             {

@@ -7,6 +7,7 @@ using DeadManZone.Presentation.Combat.Arena;
 using DeadManZone.Presentation.Reserves;
 using DeadManZone.Presentation.Shop;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace DeadManZone.Presentation.Run
@@ -14,9 +15,11 @@ namespace DeadManZone.Presentation.Run
     public sealed class RunSceneController : MonoBehaviour
     {
         [Header("Panels")]
-        [SerializeField] private GameObject buildPanel;
+        [FormerlySerializedAs("buildPanel")]
+        [SerializeField] private GameObject shopScene;
         [SerializeField] private GameObject combatPanel;
-        [SerializeField] private CanvasGroup buildPanelCanvasGroup;
+        [FormerlySerializedAs("buildPanelCanvasGroup")]
+        [SerializeField] private CanvasGroup shopSceneCanvasGroup;
         [SerializeField] private RectTransform boardArea;
         [SerializeField] private GameObject shopArea;
         [SerializeField] private GameObject bottomBar;
@@ -48,8 +51,8 @@ namespace DeadManZone.Presentation.Run
         {
             EnsureLayoutReferences();
             EnsureMainRowLayoutFitter();
-            if (buildPanel != null)
-                RunUiAuthoringLock.EnsureOn(buildPanel.transform);
+            if (shopScene != null)
+                RunUiAuthoringLock.EnsureOn(shopScene.transform);
             CaptureBuildLayout();
 
             if (beginFightButton != null)
@@ -71,9 +74,9 @@ namespace DeadManZone.Presentation.Run
                 ShopUiBootstrap.EnsureOnShopArea(shopArea.transform, boardView, shopView?.ModifiersTooltip);
             }
 
-            if (buildPanel != null)
+            if (shopScene != null)
             {
-                RunBuildUiBootstrap.EnsureOnBuildPanel(buildPanel.transform, boardView, mainRowLayout);
+                RunBuildUiBootstrap.EnsureOnBuildPanel(shopScene.transform, boardView, mainRowLayout);
                 EnsureBuildScreenHudController();
                 EnsureCenterColumnLayout();
                 RefreshBuildUiLayout();
@@ -115,8 +118,8 @@ namespace DeadManZone.Presentation.Run
                 runHudView?.Refresh(null);
                 runEndOverlay?.Hide();
                 pauseMenuView?.Hide();
-                if (buildPanel != null)
-                    buildPanel.SetActive(true);
+                if (shopScene != null)
+                    shopScene.SetActive(true);
                 if (combatPanel != null)
                     combatPanel.SetActive(false);
                 SetBuildPanelAlpha(1f);
@@ -129,10 +132,10 @@ namespace DeadManZone.Presentation.Run
             bool aftermath = state.Phase == RunPhase.Aftermath;
             bool runEnded = state.Phase == RunPhase.Victory || state.Phase == RunPhase.Defeat;
 
-            if (buildPanel != null)
+            if (shopScene != null)
             {
                 bool hideForArena = (inCombat || aftermath) && CombatArenaSession.IsActive;
-                buildPanel.SetActive(!hideForArena);
+                shopScene.SetActive(!hideForArena);
             }
 
             if (combatPanel != null)
@@ -189,64 +192,66 @@ namespace DeadManZone.Presentation.Run
 
         private void EnsureLayoutReferences()
         {
-            if (buildPanel == null)
+            if (shopScene == null)
                 return;
 
             if (boardArea == null)
             {
-                var board = buildPanel.transform.Find("MainRow/BoardArea");
+                var board = shopScene.transform.Find("MainRow/BoardArea");
                 if (board != null)
                     boardArea = board.GetComponent<RectTransform>();
             }
 
             if (shopArea == null)
             {
-                var shop = buildPanel.transform.Find("MainRow/ShopArea");
+                var shop = shopScene.transform.Find("MainRow/ShopArea");
                 if (shop != null)
                     shopArea = shop.gameObject;
             }
 
             if (bottomBar == null)
             {
-                var bottom = buildPanel.transform.Find("BottomBar");
+                var bottom = shopScene.transform.Find("BottomBar");
                 if (bottom != null)
                     bottomBar = bottom.gameObject;
             }
 
             if (_topBar == null)
             {
-                var top = buildPanel.transform.Find("TopBar");
+                var top = shopScene.transform.Find("TopBar");
                 if (top != null)
                     _topBar = top.gameObject;
             }
 
             if (_mainRow == null)
             {
-                var mainRow = buildPanel.transform.Find("MainRow");
+                var mainRow = shopScene.transform.Find("MainRow");
                 if (mainRow != null)
                     _mainRow = mainRow.gameObject;
             }
 
             if (_runHudPanel == null)
             {
-                var hudPanel = buildPanel.transform.Find(RunHudPanelBuilder.PanelName);
+                var hudPanel = shopScene.transform.Find(RunHudPanelBuilder.PanelName);
                 if (hudPanel == null)
-                    hudPanel = buildPanel.transform.Find("TopBar/" + RunHudPanelBuilder.PanelName);
+                    hudPanel = shopScene.transform.Find("TopBar/" + RunHudPanelBuilder.PanelName);
 
                 _runHudPanel = hudPanel != null ? hudPanel.gameObject : null;
             }
         }
 
-        internal Transform BuildPanelTransform => buildPanel != null ? buildPanel.transform : null;
+        internal Transform ShopSceneTransform => shopScene != null ? shopScene.transform : null;
+
+        internal Transform BuildPanelTransform => ShopSceneTransform;
 
         private void EnsureMainRowLayoutFitter()
         {
-            if (buildPanel == null || boardArea == null || shopArea == null || boardView == null)
+            if (shopScene == null || boardArea == null || shopArea == null || boardView == null)
                 return;
 
             if (mainRowLayout == null)
             {
-                var mainRow = buildPanel.transform.Find("MainRow");
+                var mainRow = shopScene.transform.Find("MainRow");
                 if (mainRow == null)
                     return;
 
@@ -256,39 +261,39 @@ namespace DeadManZone.Presentation.Run
             }
 
             var shopRect = shopArea.GetComponent<RectTransform>();
-            var centerRect = buildPanel.transform.Find("MainRow/CenterColumn") as RectTransform;
+            var centerRect = shopScene.transform.Find("MainRow/CenterColumn") as RectTransform;
             if (shopRect != null)
                 mainRowLayout.Configure(boardArea, centerRect, shopRect, boardView);
         }
 
         private void EnsureBuildScreenHudController()
         {
-            if (buildPanel == null)
+            if (shopScene == null)
                 return;
 
-            var controller = buildPanel.GetComponent<BuildScreenHudController>();
+            var controller = shopScene.GetComponent<BuildScreenHudController>();
             if (controller == null)
-                controller = buildPanel.gameObject.AddComponent<BuildScreenHudController>();
+                controller = shopScene.gameObject.AddComponent<BuildScreenHudController>();
             controller.Configure(
-                buildPanel.transform,
+                shopScene.transform,
                 boardView,
-                buildPanel.GetComponentInChildren<UnitCardPanelView>(true),
-                buildPanel.GetComponentInChildren<BuildMessagesView>(true),
-                buildPanel.GetComponentInChildren<BuffIconStripView>(true));
+                shopScene.GetComponentInChildren<UnitCardPanelView>(true),
+                shopScene.GetComponentInChildren<BuildMessagesView>(true),
+                shopScene.GetComponentInChildren<BuffIconStripView>(true));
         }
 
         private void EnsureCenterColumnLayout()
         {
-            if (buildPanel == null || mainRowLayout == null)
+            if (shopScene == null || mainRowLayout == null)
                 return;
 
-            var messages = buildPanel.GetComponentInChildren<BuildMessagesView>(true);
-            var buffStrip = buildPanel.transform.Find("BottomBar/BuffStripRegion") as RectTransform;
+            var messages = shopScene.GetComponentInChildren<BuildMessagesView>(true);
+            var buffStrip = shopScene.transform.Find("BottomBar/BuffStripRegion") as RectTransform;
             if (buffStrip == null)
-                buffStrip = buildPanel.GetComponentInChildren<BuffIconStripView>(true)?.GetComponent<RectTransform>();
+                buffStrip = shopScene.GetComponentInChildren<BuffIconStripView>(true)?.GetComponent<RectTransform>();
 
             CenterColumnLayoutFitter.EnsureOnBuildPanel(
-                buildPanel.transform,
+                shopScene.transform,
                 messages != null ? messages.GetComponent<RectTransform>() : null,
                 buffStrip,
                 mainRowLayout);
@@ -301,7 +306,7 @@ namespace DeadManZone.Presentation.Run
 
             if (mainRowLayout != null)
             {
-                if (buildPanel != null && RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel.transform))
+                if (shopScene != null && RunUiAuthoringLock.ShouldSkipVisualMigration(shopScene.transform))
                     mainRowLayout.CacheAuthoringMetricsFromScene();
                 else
                     mainRowLayout.ApplyLayout();
@@ -335,14 +340,14 @@ namespace DeadManZone.Presentation.Run
             if (combatActive)
             {
                 SetBuildPanelAlpha(0f);
-                if (CombatArenaSession.IsActive && buildPanel != null)
-                    buildPanel.SetActive(false);
+                if (CombatArenaSession.IsActive && shopScene != null)
+                    shopScene.SetActive(false);
             }
             else
             {
                 SetBuildPanelAlpha(1f);
-                if (buildPanel != null)
-                    buildPanel.SetActive(true);
+                if (shopScene != null)
+                    shopScene.SetActive(true);
             }
 
             if (boardArea == null)
@@ -355,10 +360,16 @@ namespace DeadManZone.Presentation.Run
             }
 
             boardArea.gameObject.SetActive(true);
-            boardArea.anchorMin = Vector2.zero;
-            boardArea.anchorMax = _buildBoardAnchorMax;
-            boardArea.offsetMin = Vector2.zero;
-            boardArea.offsetMax = Vector2.zero;
+
+            // Honor scene-authored board layout: only re-stretch the board area when the
+            // authoring lock is absent. When locked, the designer's anchors/offsets are kept as-is.
+            if (shopScene == null || !RunUiAuthoringLock.ShouldSkipVisualMigration(shopScene.transform))
+            {
+                boardArea.anchorMin = Vector2.zero;
+                boardArea.anchorMax = _buildBoardAnchorMax;
+                boardArea.offsetMin = Vector2.zero;
+                boardArea.offsetMax = Vector2.zero;
+            }
 
             RefreshBuildUiLayoutDeferred();
         }
@@ -367,7 +378,7 @@ namespace DeadManZone.Presentation.Run
         {
             Canvas.ForceUpdateCanvases();
 
-            if (buildPanel != null && RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel.transform))
+            if (shopScene != null && RunUiAuthoringLock.ShouldSkipVisualMigration(shopScene.transform))
             {
                 mainRowLayout?.CacheAuthoringMetricsFromScene();
                 return;
@@ -395,12 +406,12 @@ namespace DeadManZone.Presentation.Run
 
         private void SetBuildPanelAlpha(float alpha)
         {
-            if (buildPanelCanvasGroup == null)
+            if (shopSceneCanvasGroup == null)
                 return;
 
-            buildPanelCanvasGroup.alpha = alpha;
-            buildPanelCanvasGroup.interactable = alpha > 0.9f;
-            buildPanelCanvasGroup.blocksRaycasts = alpha > 0.9f;
+            shopSceneCanvasGroup.alpha = alpha;
+            shopSceneCanvasGroup.interactable = alpha > 0.9f;
+            shopSceneCanvasGroup.blocksRaycasts = alpha > 0.9f;
         }
 
         private void OnEmergencyDraft()

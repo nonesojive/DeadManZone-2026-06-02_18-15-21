@@ -36,9 +36,11 @@ namespace DeadManZone.Presentation.Run
             if (boardView == null)
                 boardView = FindFirstObjectByType<BoardView>();
 
-            var buildPanel = shopArea.parent?.parent;
-            if (buildPanel != null && RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel))
+            var runUiRoot = RunUiAuthoringLock.FindBuildPanel(shopArea);
+            if (runUiRoot != null && RunUiAuthoringLock.ShouldPreserve(runUiRoot))
                 return;
+
+            var buildPanel = runUiRoot ?? shopArea.parent?.parent;
 
             if (buildPanel != null)
                 ShopBackgroundBootstrap.ApplyToBuildPanel(buildPanel, UiThemeProvider.Current);

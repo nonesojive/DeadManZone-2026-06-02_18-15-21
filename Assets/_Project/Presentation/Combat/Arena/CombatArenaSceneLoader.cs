@@ -61,10 +61,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             CombatArenaUiController.ExitArenaMode(runSceneController?.BuildPanelTransform);
             GetComponent<CombatArenaPresenter>()?.OnArenaUnloaded();
 
-            string sceneToUnload = SceneManager.GetSceneByName(GameScenes.CombatArena2D).isLoaded
-                ? GameScenes.CombatArena2D
-                : GameScenes.CombatArena;
-            var op = SceneManager.UnloadSceneAsync(sceneToUnload);
+            var op = SceneManager.UnloadSceneAsync(GameScenes.CombatArena2D);
             while (op != null && !op.isDone)
                 yield return null;
 

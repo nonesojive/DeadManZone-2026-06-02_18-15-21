@@ -56,18 +56,35 @@ namespace DeadManZone.Presentation.Tests.EditMode
         }
 
         [Test]
-        public void ShouldSkipVisualMigration_ReturnsFalse_InEditMode()
+        public void ShouldSkipVisualMigration_ReturnsTrue_InEditMode_WhenLockEnabled()
         {
             var buildPanel = new GameObject("BuildPanel");
             buildPanel.AddComponent<RunUiAuthoringLock>();
 
             try
             {
-                Assert.IsFalse(RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel.transform, isPlaying: false));
+                Assert.IsTrue(RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel.transform, isPlaying: false));
             }
             finally
             {
                 Object.DestroyImmediate(buildPanel);
+            }
+        }
+
+        [Test]
+        public void FindBuildPanel_ReturnsShopScene_WhenDescendantOfShopScene()
+        {
+            var shopScene = new GameObject("ShopScene");
+            var child = new GameObject("MainRow");
+            child.transform.SetParent(shopScene.transform, false);
+
+            try
+            {
+                Assert.AreSame(shopScene.transform, RunUiAuthoringLock.FindBuildPanel(child.transform));
+            }
+            finally
+            {
+                Object.DestroyImmediate(shopScene);
             }
         }
 

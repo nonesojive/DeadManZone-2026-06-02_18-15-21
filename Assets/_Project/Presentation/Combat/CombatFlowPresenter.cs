@@ -211,9 +211,9 @@ namespace DeadManZone.Presentation.Combat
                 gameObject.AddComponent<CombatArenaCameraTuner>();
 #endif
 
-            var arenaVfx = GetComponent<CombatArenaVfx>();
+            var arenaVfx = GetComponent<CombatArena2DVfx>();
             if (arenaVfx == null)
-                arenaVfx = gameObject.AddComponent<CombatArenaVfx>();
+                arenaVfx = gameObject.AddComponent<CombatArena2DVfx>();
 
             var arenaAudio = GetComponent<CombatArenaAudioPresenter>();
             if (arenaAudio == null)
@@ -221,7 +221,7 @@ namespace DeadManZone.Presentation.Combat
 
             EnsureHealthBarPresenter();
 
-            arenaPresenter?.Configure(combatDirector, arenaVfx, arenaAudio);
+            arenaPresenter?.Configure(combatDirector, arenaAudio);
             freezeController?.Configure(combatDirector, arenaPresenter);
             arenaVfx?.Configure(freezeController);
         }

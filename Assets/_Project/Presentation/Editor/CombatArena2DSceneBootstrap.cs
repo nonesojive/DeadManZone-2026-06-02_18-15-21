@@ -39,19 +39,6 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log("Top Troops 2D mode enabled on CombatArenaConfig. Combat fights load CombatArena2D scene.");
         }
 
-        [MenuItem("DeadManZone/Combat Arena/Restore Legacy 3D Arena Mode")]
-        public static void RestoreLegacy3DMode()
-        {
-            var config = AssetDatabase.LoadAssetAtPath<CombatArenaConfigSO>(ConfigPath);
-            if (config == null)
-                return;
-
-            config.visualMode = CombatArenaVisualMode.Legacy3D;
-            EditorUtility.SetDirty(config);
-            AssetDatabase.SaveAssets();
-            Debug.Log("Legacy 3D arena mode restored.");
-        }
-
         [MenuItem("DeadManZone/Combat Arena/Wire 2D Environment Art")]
         public static void Wire2DEnvironmentArt()
         {
