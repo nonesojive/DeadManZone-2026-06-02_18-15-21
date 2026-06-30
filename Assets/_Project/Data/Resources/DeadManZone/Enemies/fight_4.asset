@@ -18,8 +18,8 @@ MonoBehaviour:
   enemyFactionId: neutral
   placements:
   - piece: {fileID: 11400000, guid: f4a5b6c7d8e9508899aabbccddeeff04, type: 2}
-    anchor: {x: 6, y: 4}
+    anchor: {x: 3, y: 4}
     instanceId: 
   - piece: {fileID: 11400000, guid: f5a6b7c8d9ea518899aabbccddeeff05, type: 2}
-    anchor: {x: 4, y: 1}
+    anchor: {x: 1, y: 1}
     instanceId: 

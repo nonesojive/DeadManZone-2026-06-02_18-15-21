@@ -18,8 +18,8 @@ namespace DeadManZone.Data
         public Vector2Int[] combatSpecialTileCoords = System.Array.Empty<Vector2Int>();
 
         [Header("HQ board")]
-        public int hqBoardWidth = 6;
-        public int hqBoardHeight = 3;
+        public int hqBoardWidth = 3;
+        public int hqBoardHeight = 6;
         public Vector2Int[] hqBlockedCells = System.Array.Empty<Vector2Int>();
         public Vector2Int[] hqSpecialTileCoords = System.Array.Empty<Vector2Int>();
 

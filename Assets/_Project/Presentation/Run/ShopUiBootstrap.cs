@@ -72,8 +72,8 @@ namespace DeadManZone.Presentation.Run
             if (offersGrid == null)
                 return;
 
-            offersGrid.anchorMin = new Vector2(0.04f, 0.08f);
-            offersGrid.anchorMax = new Vector2(0.96f, 0.92f);
+            offersGrid.anchorMin = new Vector2(0.04f, 0.02f);
+            offersGrid.anchorMax = new Vector2(0.96f, 0.96f);
             offersGrid.offsetMin = Vector2.zero;
             offersGrid.offsetMax = Vector2.zero;
         }

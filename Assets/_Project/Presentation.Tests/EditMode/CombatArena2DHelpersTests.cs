@@ -75,6 +75,16 @@ namespace DeadManZone.Presentation.Tests.EditMode
         }
 
         [Test]
+        public void PlaceholderSprites_WhitePixel_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                var sprite = CombatArena2DPlaceholderSprites.WhitePixel;
+                Assert.NotNull(sprite);
+            });
+        }
+
+        [Test]
         public void OrthographicFramer_SetsOrthographicSizeFromLayout()
         {
             var camGo = new GameObject("TestCam");

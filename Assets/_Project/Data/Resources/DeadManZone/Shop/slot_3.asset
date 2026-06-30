@@ -13,13 +13,14 @@ MonoBehaviour:
   m_Name: slot_3
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.ShopSlotProfileSO
   slotIndex: 3
-  slotKind: 0
-  poolBias: 0
+  slotKind: 1
+  poolBias: 1
   neutralPercent: 10
   factionPercent: 80
   salvagePercent: 10
   preferredRoleWeight: 2
   preferredCombatRoles:
-  - assault
-  - sniper
-  - tank
+  - support
+  - utility
+  - defender
+  - headquarters

@@ -59,8 +59,8 @@ namespace DeadManZone.Core.Tests
             state.HqBoard = new BoardSnapshot
             {
                 BoardKind = BoardKind.Hq.ToString(),
-                Width = 6,
-                Height = 3
+                Width = 3,
+                Height = 6
             };
 
             var loaded = RunSaveSerializer.FromJson(RunSaveSerializer.ToJson(state));
@@ -68,7 +68,8 @@ namespace DeadManZone.Core.Tests
             Assert.NotNull(loaded.CombatBoard);
             Assert.NotNull(loaded.HqBoard);
             Assert.AreEqual(6, loaded.CombatBoard.Width);
-            Assert.AreEqual(3, loaded.HqBoard.Height);
+            Assert.AreEqual(3, loaded.HqBoard.Width);
+            Assert.AreEqual(6, loaded.HqBoard.Height);
         }
 
         [Test]

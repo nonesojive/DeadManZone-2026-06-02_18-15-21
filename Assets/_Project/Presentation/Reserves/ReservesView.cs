@@ -72,7 +72,7 @@ namespace DeadManZone.Presentation.Reserves
             Canvas.ForceUpdateCanvases();
 
             var hoverController = ResolvePieceHoverCardController();
-            var boardView = FindFirstObjectByType<BoardView>();
+            var boardView = BoardView.FindCombatBoard();
 
             foreach (var piece in reserves.Pieces)
             {
@@ -167,7 +167,7 @@ namespace DeadManZone.Presentation.Reserves
             if (gridLayout == null)
                 return;
 
-            var boardView = FindFirstObjectByType<BoardView>();
+            var boardView = BoardView.FindCombatBoard();
             var boardGrid = boardView?.GridLayout;
             if (boardGrid == null)
                 return;

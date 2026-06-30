@@ -1,5 +1,5 @@
 using System.Collections;
-using System.Linq;
+using System.Collections.Generic;
 using System.Text;
 using DeadManZone.Core.Shop;
 using DeadManZone.Game;
@@ -32,6 +32,11 @@ namespace DeadManZone.Presentation.Shop
         [SerializeField] private BoardView boardView;
 
         private Coroutine _deferredRefresh;
+        private ShopOfferView[] _slotViews;
+        private bool[] _lockHandlersAttached;
+        private bool _legacyOfferChildrenPurged;
+
+        private const string SlotNamePrefix = "OfferSlot_";
 
         public TMP_Text ModifiersTooltip => modifiersTooltipText;
 
@@ -104,30 +109,35 @@ namespace DeadManZone.Presentation.Shop
                 return;
 
             int offerCount = state.Offers?.Count ?? 0;
+            int layoutOfferCount = Mathf.Max(offerCount, ShopSlotLayoutResolver.VisibleOfferSlotCount);
             var (gridWidth, gridHeight) = gridRoot is RectTransform gridRect
                 ? ShopLayoutMetrics.ResolveOffersMetrics(gridRect)
                 : (400f, 300f);
 
-            ConfigureOffersGrid(gridRoot, offerCount, cellSize, spacing, gridWidth, gridHeight);
+            ConfigureOffersGrid(gridRoot, layoutOfferCount, cellSize, spacing, gridWidth, gridHeight);
 
-            ClearChildren(gridRoot);
-            var offers = state.Offers.OrderBy(o => o.SlotIndex);
-            foreach (var offer in offers)
+            if (!_legacyOfferChildrenPurged)
             {
-                var cardObject = Instantiate(offerCardPrefab, gridRoot);
-                cardObject.SetActive(true);
-                var card = cardObject.GetComponent<ShopOfferView>();
-                if (card == null)
+                PurgeLegacyOfferChildren(gridRoot);
+                _legacyOfferChildrenPurged = true;
+            }
+
+            EnsureSlotViews(gridRoot, layoutOfferCount, cellSize, spacing, gridWidth, gridHeight);
+
+            var offersBySlot = BuildOffersBySlot(state.Offers);
+            for (int slot = 0; slot < ShopSlotLayoutResolver.VisibleOfferSlotCount; slot++)
+            {
+                var card = _slotViews[slot];
+                if (offersBySlot.TryGetValue(slot, out var offer))
                 {
-                    Debug.LogError(
-                        $"Shop offer card prefab '{offerCardPrefab.name}' is missing ShopOfferView. Add it on the prefab — runtime AddComponent is disabled to protect authored layout.");
-                    Object.Destroy(cardObject);
-                    continue;
+                    bool isLocked = RunManager.Instance is { HasActiveRun: true } manager &&
+                        manager.Orchestrator.IsOfferLocked(offer);
+                    card.Bind(offer, isLocked, cellSize, spacing, gridWidth, gridHeight, layoutOfferCount);
                 }
-                bool isLocked = RunManager.Instance is { HasActiveRun: true } manager &&
-                    manager.Orchestrator.IsOfferLocked(offer);
-                card.Bind(offer, isLocked, cellSize, spacing, gridWidth, gridHeight, offerCount);
-                card.LockToggled += OnLockToggled;
+                else
+                {
+                    card.ShowEmpty(cellSize, spacing, gridWidth, gridHeight, layoutOfferCount);
+                }
             }
 
             if (gridRoot is RectTransform offersRect)
@@ -209,8 +219,8 @@ namespace DeadManZone.Presentation.Shop
             if (gridRoot is not RectTransform grid)
                 return;
 
-            grid.anchorMin = new Vector2(0.04f, 0.08f);
-            grid.anchorMax = new Vector2(0.96f, 0.92f);
+            grid.anchorMin = new Vector2(0.04f, 0.02f);
+            grid.anchorMax = new Vector2(0.96f, 0.96f);
             grid.offsetMin = Vector2.zero;
             grid.offsetMax = Vector2.zero;
 
@@ -223,12 +233,11 @@ namespace DeadManZone.Presentation.Shop
                 gridLayout = grid.gameObject.AddComponent<GridLayoutGroup>();
 
             int count = Mathf.Max(offerCount, 1);
-            var (columns, rows) = ShopLayoutMetrics.GetGridShape(count);
             var cardSize = ShopLayoutMetrics.OfferCardSize(
                 cellSize, spacing, gridWidth, gridHeight, count);
 
             gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            gridLayout.constraintCount = columns;
+            gridLayout.constraintCount = ShopSlotLayoutResolver.GridColumns;
             gridLayout.startCorner = GridLayoutGroup.Corner.UpperLeft;
             gridLayout.startAxis = GridLayoutGroup.Axis.Horizontal;
             gridLayout.childAlignment = TextAnchor.UpperCenter;
@@ -288,10 +297,79 @@ namespace DeadManZone.Presentation.Shop
                 : sb.ToString().TrimEnd();
         }
 
-        private static void ClearChildren(Transform root)
+        private static Dictionary<int, ShopOffer> BuildOffersBySlot(IReadOnlyList<ShopOffer> offers)
         {
-            for (int i = root.childCount - 1; i >= 0; i--)
-                Destroy(root.GetChild(i).gameObject);
+            var offersBySlot = new Dictionary<int, ShopOffer>();
+            if (offers == null)
+                return offersBySlot;
+
+            foreach (var offer in offers)
+            {
+                if (offer == null || offer.SlotIndex < 0 || offer.SlotIndex >= ShopSlotLayoutResolver.VisibleOfferSlotCount)
+                    continue;
+
+                offersBySlot[offer.SlotIndex] = offer;
+            }
+
+            return offersBySlot;
+        }
+
+        private void EnsureSlotViews(
+            Transform gridRoot,
+            int layoutOfferCount,
+            float cellSize,
+            float spacing,
+            float gridWidth,
+            float gridHeight)
+        {
+            int slotCount = ShopSlotLayoutResolver.VisibleOfferSlotCount;
+            if (_slotViews == null || _slotViews.Length != slotCount)
+                _slotViews = new ShopOfferView[slotCount];
+
+            if (_lockHandlersAttached == null || _lockHandlersAttached.Length != slotCount)
+                _lockHandlersAttached = new bool[slotCount];
+
+            for (int slot = 0; slot < slotCount; slot++)
+            {
+                string slotName = $"{SlotNamePrefix}{slot}";
+                var slotTransform = gridRoot.Find(slotName);
+                ShopOfferView view = slotTransform != null ? slotTransform.GetComponent<ShopOfferView>() : null;
+
+                if (view == null)
+                {
+                    var cardObject = Instantiate(offerCardPrefab, gridRoot);
+                    cardObject.name = slotName;
+                    cardObject.SetActive(true);
+                    view = cardObject.GetComponent<ShopOfferView>();
+                    if (view == null)
+                    {
+                        Debug.LogError(
+                            $"Shop offer card prefab '{offerCardPrefab.name}' is missing ShopOfferView. Add it on the prefab — runtime AddComponent is disabled to protect authored layout.");
+                        Destroy(cardObject);
+                        continue;
+                    }
+                }
+
+                view.transform.SetSiblingIndex(slot);
+                view.ConfigureLayout(cellSize, spacing, gridWidth, gridHeight, layoutOfferCount);
+                _slotViews[slot] = view;
+
+                if (!_lockHandlersAttached[slot])
+                {
+                    view.LockToggled += OnLockToggled;
+                    _lockHandlersAttached[slot] = true;
+                }
+            }
+        }
+
+        private static void PurgeLegacyOfferChildren(Transform gridRoot)
+        {
+            for (int i = gridRoot.childCount - 1; i >= 0; i--)
+            {
+                var child = gridRoot.GetChild(i);
+                if (!child.name.StartsWith(SlotNamePrefix))
+                    Destroy(child.gameObject);
+            }
         }
     }
 }

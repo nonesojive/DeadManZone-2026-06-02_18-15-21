@@ -89,12 +89,14 @@ namespace DeadManZone.Presentation.Combat
 
         private IEnumerator LoadingThenPresent()
         {
-            freezeController?.Resume();
+            // Hold arena presentation until opening tactics continue or combat playback starts.
+            freezeController?.Freeze();
 
             if (arenaLoader != null)
                 yield return arenaLoader.LoadAsync();
 
             InitializeArenaFromRunState();
+            freezeController?.Freeze();
 
             if (loadingDurationSeconds > 0f)
                 yield return new WaitForSeconds(loadingDurationSeconds);
@@ -103,20 +105,25 @@ namespace DeadManZone.Presentation.Combat
 
             HideLoadingOverlay();
             var combat = RunManager.Instance?.State?.Combat;
-            if (combat is { AwaitingCommand: true, GlobalTick: 0 }
-                && (combat.EventLog == null || combat.EventLog.Count == 0))
+            if (IsOpeningTacticsPause(combat))
             {
+                freezeController?.Freeze();
                 var context = RunManager.Instance.Orchestrator?.GetCombatPauseContext();
                 if (tacticPausePanel != null && context != null)
                     tacticPausePanel.ShowPause(context);
             }
             else
             {
+                freezeController?.Resume();
                 combatDirector?.PresentCombatAfterLoading();
             }
 
             _loadingRoutine = null;
         }
+
+        private static bool IsOpeningTacticsPause(CombatSaveState combat) =>
+            combat is { AwaitingCommand: true, GlobalTick: 0 }
+            && (combat.EventLog == null || combat.EventLog.Count == 0);
 
         private void OnRunStateChanged(RunState state)
         {

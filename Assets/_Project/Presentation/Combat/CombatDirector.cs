@@ -24,6 +24,7 @@ namespace DeadManZone.Presentation.Combat
         public event Action<CombatEvent> EventReplayed;
         public event Action<PauseTriggerContext> PausedForCommands;
         public event Action CombatPresentationCompleted;
+        public event Action SegmentPlaybackFinished;
         public event Action SegmentPlaybackStarting;
 
         private void OnEnable()
@@ -157,6 +158,8 @@ namespace DeadManZone.Presentation.Combat
 
         private void FinishPlayback()
         {
+            SegmentPlaybackFinished?.Invoke();
+
             if (_continueAfterPlayback)
             {
                 _continueAfterPlayback = false;

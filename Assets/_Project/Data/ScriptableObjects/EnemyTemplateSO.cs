@@ -25,7 +25,7 @@ namespace DeadManZone.Data
         public string enemyFactionId = "crimson_legion";
         public EnemyPiecePlacement[] placements;
 
-        public BoardSnapshot ToBoardSnapshot()
+        public BoardSnapshot ToBoardSnapshot(int boardSize = 6)
         {
             if (placements == null || placements.Length == 0)
                 throw new InvalidOperationException($"Enemy template '{name}' has no placements.");
@@ -33,8 +33,8 @@ namespace DeadManZone.Data
             var snapshot = new BoardSnapshot
             {
                 BoardKind = BoardKind.Combat.ToString(),
-                Width = 6,
-                Height = 6,
+                Width = boardSize,
+                Height = boardSize,
                 SpecialTiles = new System.Collections.Generic.List<GridCoordRecord>()
             };
 
@@ -43,14 +43,19 @@ namespace DeadManZone.Data
                 if (placement.piece == null)
                     continue;
 
+                var anchor = EnemyPlacementLayout.RemapLegacyAnchor(
+                    placement.anchor.x,
+                    placement.anchor.y,
+                    boardSize);
+
                 snapshot.Pieces.Add(new PlacedPieceRecord
                 {
                     InstanceId = string.IsNullOrEmpty(placement.instanceId)
-                        ? $"enemy_{placement.piece.id}_{placement.anchor.x}_{placement.anchor.y}"
+                        ? $"enemy_{placement.piece.id}_{anchor.X}_{anchor.Y}"
                         : placement.instanceId,
                     PieceId = placement.piece.id,
-                    AnchorX = placement.anchor.x,
-                    AnchorY = placement.anchor.y
+                    AnchorX = anchor.X,
+                    AnchorY = anchor.Y
                 });
             }
 
@@ -59,10 +64,8 @@ namespace DeadManZone.Data
 
         public BoardState BuildBoard(FactionSO faction, ContentRegistry registry)
         {
-            var snapshot = ToBoardSnapshot();
-            snapshot.Width = faction.combatBoardSize;
-            snapshot.Height = faction.combatBoardSize;
-            return BoardSnapshotMapper.ToBoard(snapshot, registry);
+            int boardSize = faction != null ? faction.combatBoardSize : 6;
+            return BoardSnapshotMapper.ToBoard(ToBoardSnapshot(boardSize), registry);
         }
     }
 }

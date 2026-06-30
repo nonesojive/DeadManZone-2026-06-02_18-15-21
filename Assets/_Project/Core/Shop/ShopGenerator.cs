@@ -159,6 +159,9 @@ namespace DeadManZone.Core.Shop
 
             foreach (var profile in slotLayout)
             {
+                if (!ShopSlotLayoutResolver.RollsOffers(profile))
+                    continue;
+
                 if (fixedSlots.TryGetValue(profile.SlotIndex, out var fixedOffer))
                 {
                     offers.Add(CopyFixedOffer(fixedOffer, profile));

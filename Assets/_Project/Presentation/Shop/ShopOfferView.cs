@@ -35,6 +35,7 @@ namespace DeadManZone.Presentation.Shop
         private float _spacing;
         private float _laneInnerWidth;
         private float _laneInnerHeight;
+        private int _layoutOfferCount = ShopSlotLayoutResolver.VisibleOfferSlotCount;
 
         public string OfferId => _offer?.OfferId;
         public ShopLane Lane => _offer?.Lane ?? ShopLane.Offensive;
@@ -121,6 +122,46 @@ namespace DeadManZone.Presentation.Shop
             }
         }
 
+        public void ShowEmpty(float cellSize, float spacing, float laneInnerWidth, float laneInnerHeight, int offerCount = 6)
+        {
+            _offer = null;
+            _isLocked = false;
+            _cellSize = cellSize;
+            _spacing = spacing;
+            _laneInnerWidth = laneInnerWidth;
+            _laneInnerHeight = laneInnerHeight;
+            _layoutOfferCount = offerCount;
+
+            gameObject.SetActive(true);
+            ConfigureLayout(cellSize, spacing, laneInnerWidth, laneInnerHeight, offerCount);
+
+            if (cardBackground != null)
+                UiThemeApplicator.ApplyCard(cardBackground);
+
+            piecePreview?.Clear();
+            SetPreviewVisible(true);
+
+            if (pieceIdText != null)
+                pieceIdText.text = string.Empty;
+
+            if (priceBadgeText != null)
+                priceBadgeText.text = string.Empty;
+
+            if (priceBadgeBackground != null)
+                priceBadgeBackground.gameObject.SetActive(false);
+
+            if (salvagedBadgeText != null)
+                salvagedBadgeText.gameObject.SetActive(false);
+
+            if (lockedIndicator != null)
+                lockedIndicator.enabled = false;
+
+            if (lockIconButton != null)
+                lockIconButton.gameObject.SetActive(false);
+
+            dragSource?.SetOffer(null);
+        }
+
         public void Bind(ShopOffer offer, bool isLocked, float cellSize, float spacing, float laneInnerWidth, float laneInnerHeight, int offerCount = 6)
         {
             _offer = offer;
@@ -129,8 +170,16 @@ namespace DeadManZone.Presentation.Shop
             _spacing = spacing;
             _laneInnerWidth = laneInnerWidth;
             _laneInnerHeight = laneInnerHeight;
+            _layoutOfferCount = offerCount;
 
+            gameObject.SetActive(true);
             ConfigureLayout(cellSize, spacing, laneInnerWidth, laneInnerHeight, offerCount);
+
+            if (lockIconButton != null)
+                lockIconButton.gameObject.SetActive(true);
+
+            if (priceBadgeBackground != null)
+                priceBadgeBackground.gameObject.SetActive(true);
 
             EnsurePiecePreview();
 
@@ -267,7 +316,7 @@ namespace DeadManZone.Presentation.Shop
                 ? lockIconButton.GetComponentInChildren<TMP_Text>()
                 : null;
             if (lockLabel != null)
-                lockLabel.text = isLocked ? "\u2713" : "\u25CB";
+                lockLabel.text = isLocked ? "L" : "o";
         }
 
         private static string BuildPriceLabel(ShopOffer offer)
@@ -286,7 +335,7 @@ namespace DeadManZone.Presentation.Shop
 
             _isLocked = !_isLocked;
             LockToggled?.Invoke(_offer, _isLocked);
-            Bind(_offer, _isLocked, _cellSize, _spacing, _laneInnerWidth, _laneInnerHeight);
+            Bind(_offer, _isLocked, _cellSize, _spacing, _laneInnerWidth, _laneInnerHeight, _layoutOfferCount);
         }
 
         private static void ApplyLayoutElement(GameObject target, float width, float height)

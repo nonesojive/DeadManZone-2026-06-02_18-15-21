@@ -124,8 +124,8 @@ namespace DeadManZone.Data.Editor
             asset.factionId = id;
             asset.displayName = displayName;
             asset.combatBoardSize = 6;
-            asset.hqBoardWidth = 6;
-            asset.hqBoardHeight = 3;
+            asset.hqBoardWidth = 3;
+            asset.hqBoardHeight = 6;
             asset.startingSupplies = startingSupplies;
             asset.startingManpower = startingManpower;
             asset.baseMusterPerShop = baseMusterPerShop;

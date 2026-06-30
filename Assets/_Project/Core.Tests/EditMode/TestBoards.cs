@@ -10,8 +10,8 @@ namespace DeadManZone.Core.Tests
         public const int DefaultRearCols = 4;
         public const int DefaultSupportCols = 3;
         public const int CombatBoardSize = 6;
-        public const int IronMarchHqWidth = 6;
-        public const int IronMarchHqHeight = 3;
+        public const int IronMarchHqWidth = 3;
+        public const int IronMarchHqHeight = 6;
 
         public static BoardLayout CombatLayout =>
             BoardLayout.CreateCombatBoard(CombatBoardSize);

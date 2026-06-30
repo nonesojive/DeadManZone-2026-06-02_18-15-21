@@ -14,12 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.ShopSlotProfileSO
   slotIndex: 8
   slotKind: 2
-  poolBias: 0
+  poolBias: 1
   neutralPercent: 10
   factionPercent: 80
   salvagePercent: 10
   preferredRoleWeight: 2
-  preferredCombatRoles:
-  - assault
-  - sniper
-  - tank
+  preferredCombatRoles: []

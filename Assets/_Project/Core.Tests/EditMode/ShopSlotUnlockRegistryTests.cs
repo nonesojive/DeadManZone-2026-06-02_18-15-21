@@ -22,12 +22,12 @@ namespace DeadManZone.Core.Tests
         public void UnlockProvider_AddsBonusSlot()
         {
             var config = ShopConfig.CreateDefault();
-            var bonusProfile = config.GetBonusProfile(8);
+            var bonusProfile = config.GetBonusProfile(9);
             var registry = new ShopSlotUnlockRegistry(new IShopSlotUnlockProvider[]
             {
                 new TestUnlockProvider(new[]
                 {
-                    new ShopSlotUnlock { SlotIndex = 8, Profile = bonusProfile }
+                    new ShopSlotUnlock { SlotIndex = 9, Profile = bonusProfile }
                 })
             });
 
@@ -41,8 +41,8 @@ namespace DeadManZone.Core.Tests
 
             var layout = ShopSlotProfileResolver.ResolveActiveSlots(config, registry, context);
 
-            Assert.AreEqual(9, layout.Count);
-            Assert.IsTrue(layout.Any(p => p.SlotIndex == 8));
+            Assert.AreEqual(10, layout.Count);
+            Assert.IsTrue(layout.Any(p => p.SlotIndex == 9));
         }
     }
 }

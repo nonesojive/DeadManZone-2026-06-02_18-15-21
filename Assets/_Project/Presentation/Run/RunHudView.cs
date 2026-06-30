@@ -2,7 +2,6 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Run;
 using DeadManZone.Data;
-using DeadManZone.Game;
 using DeadManZone.Presentation.Visual;
 using TMPro;
 using UnityEngine;
@@ -22,6 +21,9 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private MatchupStrengthView matchupStrengthView;
 
         private ContentDatabase _database;
+        private bool _hudTextsWired;
+
+        private void Awake() => EnsureHudTextsWired();
 
         public void Configure(
             TMP_Text fightTitle,
@@ -67,11 +69,13 @@ namespace DeadManZone.Presentation.Run
             if (state == null)
                 return;
 
+            EnsureHudTextsWired();
+
             if (fightTitleText != null)
                 fightTitleText.text = "Fight";
 
             if (fightIndexText != null)
-                fightIndexText.text = $"{state.FightIndex}/{RunOrchestrator.MaxFights}";
+                fightIndexText.text = state.FightIndex.ToString();
 
             if (suppliesValueText != null)
                 suppliesValueText.text = state.Supplies.ToString();
@@ -137,6 +141,67 @@ namespace DeadManZone.Presentation.Run
         {
             if (label != null)
                 UiThemeApplicator.ApplyLabel(label, secondary, theme);
+        }
+
+        private void EnsureHudTextsWired()
+        {
+            if (_hudTextsWired &&
+                fightIndexText != null &&
+                suppliesValueText != null &&
+                manpowerValueText != null &&
+                authorityValueText != null &&
+                moraleValueText != null)
+            {
+                return;
+            }
+
+            var searchRoot = ResolveHudSearchRoot();
+            fightIndexText ??= FindNamedText(searchRoot, "FightNumber", "FightIndex");
+            fightTitleText ??= FindNamedText(searchRoot, "FightTitle", "FightLabel");
+            suppliesValueText ??= FindNamedText(searchRoot, "SuppliesNumber");
+            manpowerValueText ??= FindNamedText(searchRoot, "ManpowerNumber");
+            authorityValueText ??= FindNamedText(searchRoot, "AuthorityNumber");
+            moraleValueText ??= FindNamedText(searchRoot, "MoraleNumber", "MoralNumber");
+
+            _hudTextsWired = fightIndexText != null ||
+                suppliesValueText != null ||
+                manpowerValueText != null ||
+                authorityValueText != null ||
+                moraleValueText != null;
+        }
+
+        private Transform ResolveHudSearchRoot()
+        {
+            var topResourcePanel = transform.Find("TopResourcePanel");
+            if (topResourcePanel != null)
+                return topResourcePanel;
+
+            var shopScene = transform.parent;
+            if (shopScene != null)
+            {
+                var nestedPanel = shopScene.Find("TopBar/TopResourcePanel");
+                if (nestedPanel != null)
+                    return nestedPanel;
+            }
+
+            return transform;
+        }
+
+        private static TMP_Text FindNamedText(Transform root, params string[] names)
+        {
+            if (root == null || names == null || names.Length == 0)
+                return null;
+
+            foreach (var text in root.GetComponentsInChildren<TMP_Text>(true))
+            {
+                for (int i = 0; i < names.Length; i++)
+                {
+                    if (text.name == names[i])
+                        return text;
+                }
+            }
+
+            return null;
         }
     }
 }

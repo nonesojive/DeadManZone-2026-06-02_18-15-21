@@ -39,6 +39,8 @@ namespace DeadManZone.Presentation.Combat.Arena
                 RunManager.Instance.CombatAdvanced -= OnCombatAdvanced;
         }
 
+        public void Freeze() => SetFrozen(true);
+
         public void Resume() => SetFrozen(false);
 
         public void Configure(CombatDirector director, CombatArenaPresenter presenter)

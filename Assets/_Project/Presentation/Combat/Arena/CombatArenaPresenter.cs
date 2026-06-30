@@ -51,13 +51,19 @@ namespace DeadManZone.Presentation.Combat.Arena
             EnsureReferences();
 
             if (combatDirector != null)
+            {
                 combatDirector.EventReplayed += OnEventReplayed;
+                combatDirector.SegmentPlaybackFinished += SnapAllActorsToReplayAnchors;
+            }
         }
 
         private void OnDisable()
         {
             if (combatDirector != null)
+            {
                 combatDirector.EventReplayed -= OnEventReplayed;
+                combatDirector.SegmentPlaybackFinished -= SnapAllActorsToReplayAnchors;
+            }
         }
 
         public IEnumerable<CombatUnitActor> GetActiveActors() => _actors.Values;
@@ -72,11 +78,26 @@ namespace DeadManZone.Presentation.Combat.Arena
                 combatDirector = director;
 
                 if (isActiveAndEnabled)
+                {
                     combatDirector.EventReplayed += OnEventReplayed;
+                    combatDirector.SegmentPlaybackFinished += SnapAllActorsToReplayAnchors;
+                }
             }
 
             if (arenaAudio != null)
                 audio = arenaAudio;
+        }
+
+        public void SnapAllActorsToReplayAnchors()
+        {
+            foreach (var pair in _replayState.Anchors)
+            {
+                if (!_actors.TryGetValue(pair.Key, out var actor))
+                    continue;
+
+                actor.ClearChaseTarget();
+                actor.SnapToAnchor(pair.Value);
+            }
         }
 
         /// <summary>Called when the additive arena scene unloads so pooled actors are not reused.</summary>
@@ -121,7 +142,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _arenaCameraTransform = bootstrap.ArenaCamera != null ? bootstrap.ArenaCamera.transform : null;
 
             EnsureChaseController();
-            _chaseController.Configure(this, _replayState, _mapper, _battlefield, config);
+            _chaseController.Configure(this, _replayState, _mapper, _battlefield, config, combatDirector);
 
             Transform poolRoot = bootstrap.UnitsRoot != null ? bootstrap.UnitsRoot : transform;
             ResetArenaActors(poolRoot);

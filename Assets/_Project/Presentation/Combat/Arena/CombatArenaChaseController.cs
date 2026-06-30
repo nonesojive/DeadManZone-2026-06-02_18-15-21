@@ -2,6 +2,7 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Data;
+using DeadManZone.Presentation.Combat;
 using UnityEngine;
 
 namespace DeadManZone.Presentation.Combat.Arena
@@ -18,19 +19,22 @@ namespace DeadManZone.Presentation.Combat.Arena
         private CombatGridMapper _mapper;
         private BattlefieldState _battlefield;
         private CombatArenaConfigSO _config;
+        private CombatDirector _combatDirector;
 
         public void Configure(
             CombatArenaPresenter presenter,
             CombatReplayState replayState,
             CombatGridMapper mapper,
             BattlefieldState battlefield,
-            CombatArenaConfigSO config)
+            CombatArenaConfigSO config,
+            CombatDirector combatDirector = null)
         {
             _presenter = presenter;
             _replayState = replayState;
             _mapper = mapper;
             _battlefield = battlefield;
             _config = config;
+            _combatDirector = combatDirector;
         }
 
         public void Clear()
@@ -40,6 +44,13 @@ namespace DeadManZone.Presentation.Combat.Arena
             _mapper = null;
             _battlefield = null;
             _config = null;
+            _combatDirector = null;
+        }
+
+        private void Awake()
+        {
+            if (_combatDirector == null)
+                _combatDirector = GetComponent<CombatDirector>();
         }
 
         private void Update()
@@ -54,6 +65,12 @@ namespace DeadManZone.Presentation.Combat.Arena
             {
                 return;
             }
+
+            if (_combatDirector == null)
+                _combatDirector = GetComponent<CombatDirector>();
+
+            if (_combatDirector != null && !_combatDirector.IsPlaying)
+                return;
 
             var anchors = _replayState.Anchors;
             var cells = _battlefield.Cells;

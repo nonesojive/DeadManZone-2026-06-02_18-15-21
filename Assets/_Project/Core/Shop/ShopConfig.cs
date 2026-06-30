@@ -34,7 +34,7 @@ namespace DeadManZone.Core.Shop
         public static ShopConfig CreateDefault()
         {
             var baseline = new List<ShopSlotProfile>(ShopSlotLayoutResolver.BaselineSlotCount);
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
             {
                 baseline.Add(new ShopSlotProfile
                 {
@@ -45,12 +45,25 @@ namespace DeadManZone.Core.Shop
                 });
             }
 
-            for (int i = 4; i < ShopSlotLayoutResolver.BaselineSlotCount; i++)
+            for (int i = 3; i < ShopSlotLayoutResolver.ReservedSlotStartIndex; i++)
             {
                 baseline.Add(new ShopSlotProfile
                 {
                     SlotIndex = i,
                     Kind = ShopSlotKind.BaselineDefensive,
+                    PoolBias = ShopPoolBias.Defensive,
+                    PreferredCombatRoles = DefensiveRoles
+                });
+            }
+
+            for (int i = ShopSlotLayoutResolver.ReservedSlotStartIndex;
+                 i < ShopSlotLayoutResolver.BaselineSlotCount;
+                 i++)
+            {
+                baseline.Add(new ShopSlotProfile
+                {
+                    SlotIndex = i,
+                    Kind = ShopSlotKind.ReservedAbility,
                     PoolBias = ShopPoolBias.Defensive,
                     PreferredCombatRoles = DefensiveRoles
                 });

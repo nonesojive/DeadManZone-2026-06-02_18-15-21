@@ -47,6 +47,7 @@ namespace DeadManZone.Presentation.Run
             RunHudResourcePanelStyling.EnsureBackground(buildPanel, UiThemeProvider.Current);
             ShopBackgroundBootstrap.ApplyToBuildPanel(buildPanel, UiThemeProvider.Current);
             MoveLastLogToTopBar();
+            HideLegacyLastLogButton();
             ApplyRunHudPanel();
             ApplyReservesLayout();
             ApplySellZoneSize();
@@ -153,6 +154,20 @@ namespace DeadManZone.Presentation.Run
             {
                 text.enableWordWrapping = false;
                 text.overflowMode = TextOverflowModes.Ellipsis;
+            }
+        }
+
+        private void HideLegacyLastLogButton()
+        {
+            var topBar = buildPanel.Find("TopBar");
+            if (topBar == null)
+                return;
+
+            foreach (var button in topBar.GetComponentsInChildren<Button>(true))
+            {
+                var label = button.GetComponentInChildren<TMP_Text>();
+                if (label != null && label.text.Contains("Last Log"))
+                    button.gameObject.SetActive(false);
             }
         }
 

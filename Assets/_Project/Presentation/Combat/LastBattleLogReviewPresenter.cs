@@ -31,7 +31,7 @@ namespace DeadManZone.Presentation.Combat
                 string log = RunManager.Instance?.State?.LastCombatLogText;
                 logText.overflowMode = TextOverflowModes.Overflow;
                 logText.text = string.IsNullOrWhiteSpace(log)
-                    ? "No combat log saved yet.\n\nFinish a fight to capture the log here."
+                    ? "No battle report saved yet.\n\nFinish a fight to capture it here."
                     : log;
             }
 

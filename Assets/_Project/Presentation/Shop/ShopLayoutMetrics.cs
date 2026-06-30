@@ -11,7 +11,7 @@ namespace DeadManZone.Presentation.Shop
     {
         public const int ViewportCells = 3;
         public const int MaxOffersPerLane = 5;
-        public const int MaxGridSlots = 12;
+        public const int MaxGridSlots = ShopSlotLayoutResolver.MaxSlotCount;
         public const float GridSpacing = 8f;
         public const float NameStripHeight = 22f;
         public const float CardPadding = 8f;
@@ -55,7 +55,7 @@ namespace DeadManZone.Presentation.Shop
         }
 
         public static (int columns, int rows) GetGridShape(int offerCount) =>
-            ShopSlotLayoutResolver.GetGridShape(Mathf.Clamp(offerCount, 1, MaxGridSlots));
+            ShopSlotLayoutResolver.GetVisibleGridShape(Mathf.Clamp(offerCount, 1, MaxGridSlots));
 
         public static Vector2 OfferCardSize(
             float cellSize,

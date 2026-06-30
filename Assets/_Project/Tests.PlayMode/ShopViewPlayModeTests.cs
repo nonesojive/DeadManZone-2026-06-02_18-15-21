@@ -62,7 +62,7 @@ namespace DeadManZone.PlayMode.Tests
             view.Render(state, "Armored");
             yield return null;
 
-            Assert.AreEqual(3, gridRoot.childCount);
+            Assert.AreEqual(ShopSlotLayoutResolver.VisibleOfferSlotCount, gridRoot.childCount);
             StringAssert.Contains("10% gold discount", tooltip.text);
             StringAssert.Contains("extra shop slot", tooltip.text.ToLowerInvariant());
             StringAssert.Contains("Armored", tooltip.text);

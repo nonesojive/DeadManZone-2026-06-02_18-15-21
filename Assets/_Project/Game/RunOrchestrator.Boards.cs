@@ -27,7 +27,7 @@ namespace DeadManZone.Game
         public BoardState GetHqBoard()
         {
             if (Faction == null)
-                return new BoardState(BoardLayout.CreateHqBoard(6, 3));
+                return new BoardState(BoardLayout.CreateHqBoard(3, 6));
 
             return State.HqBoard == null
                 ? new BoardState(Faction.CreateHqBoardLayout())

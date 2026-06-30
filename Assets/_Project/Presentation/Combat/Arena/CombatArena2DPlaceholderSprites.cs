@@ -55,8 +55,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             bool wide = false,
             bool tall = false)
         {
-            int w = wide ? size + 16 : size;
-            int h = tall ? size + 12 : size - 8;
+            int w = Mathf.Max(1, wide ? size + 16 : size);
+            int h = Mathf.Max(1, tall ? size + 12 : size - 8);
             var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
             tex.filterMode = FilterMode.Bilinear;
             var fill = new Color(r, g, b, alpha);

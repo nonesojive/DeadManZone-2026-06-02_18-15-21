@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   factionId: iron_vanguard
   displayName: IronMarch Union
+  combatBoardSize: 6
+  hqBoardWidth: 3
+  hqBoardHeight: 6
   boardWidth: 9
   boardHeight: 10
   rearCols: 4

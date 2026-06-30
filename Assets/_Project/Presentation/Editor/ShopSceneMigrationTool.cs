@@ -95,9 +95,10 @@ namespace DeadManZone.Presentation.Editor
                 cso.ApplyModifiedPropertiesWithoutUndo();
             }
 
-            var lastLogBtn = shop.transform.Find("TopBar/TopInfoPanel/Last LogButton");
-            if (lastLogBtn != null && lastLogBtn.GetComponent<LastBattleLogReviewButton>() == null)
-                lastLogBtn.gameObject.AddComponent<LastBattleLogReviewButton>();
+            var lastLogBtn = shop.transform.Find("TopBar/TopInfoPanel/Last LogButton")
+                ?? shop.transform.Find("TopBar/Last LogButton");
+            if (lastLogBtn != null)
+                lastLogBtn.gameObject.SetActive(false);
 
             Object.DestroyImmediate(build);
             EditorUtility.SetDirty(shop);

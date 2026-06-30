@@ -12,6 +12,13 @@ namespace DeadManZone.Presentation.Run
             if (combatBoardView == null || boardArea == null)
                 return null;
 
+            var editorHq = boardArea.Find("HqBoardSection/HqBoard");
+            if (editorHq != null && editorHq.TryGetComponent<BoardView>(out var editorView))
+            {
+                editorView.SetBoardBinding(BoardKind.Hq);
+                return editorView;
+            }
+
             var existing = boardArea.Find("HqBoardView");
             if (existing != null && existing.TryGetComponent<BoardView>(out var hqView))
             {

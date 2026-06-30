@@ -383,8 +383,11 @@ namespace DeadManZone.Core.Combat
             return true;
         }
 
-        private void LogDestroyed(int segment, string victimId, string sourceId) =>
+        private void LogDestroyed(int segment, string victimId, string sourceId)
+        {
+            _occupancyGrid.Remove(victimId);
             _log.Append(segment, GlobalTick, victimId, "destroyed", sourceId, 0);
+        }
 
         private CombatAdvanceResult AwaitingResult(int segment) =>
             new CombatAdvanceResult

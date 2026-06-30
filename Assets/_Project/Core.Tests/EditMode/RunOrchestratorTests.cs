@@ -44,7 +44,8 @@ namespace DeadManZone.Core.Tests
             Assert.IsEmpty(_orchestrator.GetCombatBoard().Pieces);
             Assert.IsEmpty(_orchestrator.GetHqBoard().Pieces);
             Assert.AreEqual(6, _orchestrator.GetCombatBoard().Layout.Width);
-            Assert.AreEqual(3, _orchestrator.GetHqBoard().Layout.Height);
+            Assert.AreEqual(3, _orchestrator.GetHqBoard().Layout.Width);
+            Assert.AreEqual(6, _orchestrator.GetHqBoard().Layout.Height);
         }
 
         [Test]

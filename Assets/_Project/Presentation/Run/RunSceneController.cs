@@ -31,6 +31,7 @@ namespace DeadManZone.Presentation.Run
 
         [Header("Views")]
         [SerializeField] private BoardView boardView;
+        [SerializeField] private BoardView hqBoardView;
         [SerializeField] private ShopView shopView;
         [SerializeField] private ReservesView reservesView;
         [SerializeField] private CombatDirector combatDirector;
@@ -154,8 +155,16 @@ namespace DeadManZone.Presentation.Run
                 runHudView?.Refresh(state, failureReason);
                 if (boardView != null)
                 {
-                    var enemyBoard = RunManager.Instance.Orchestrator.GetUpcomingEnemyBoard();
-                    runHudView?.RefreshMatchupFromBoards(boardView.GetBoardState(), enemyBoard);
+                    try
+                    {
+                        var enemyBoard = RunManager.Instance.Orchestrator.GetUpcomingEnemyBoard();
+                        runHudView?.RefreshMatchupFromBoards(boardView.GetBoardState(), enemyBoard);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.LogError($"Failed to build upcoming enemy preview: {ex.Message}");
+                        runHudView?.RefreshMatchup(null);
+                    }
                 }
             }
             else
@@ -176,10 +185,12 @@ namespace DeadManZone.Presentation.Run
             if (inBuild)
             {
                 boardView?.RefreshFromRunManager();
+                hqBoardView?.RefreshFromRunManager();
                 RefreshBuildUiLayout();
                 if (mainRowLayout != null)
                     _buildBoardAnchorMax = mainRowLayout.BoardAnchorMax;
                 boardView?.SyncLayoutFromBoard();
+                hqBoardView?.SyncLayoutFromBoard();
                 reservesView?.Refresh();
                 shopView?.RefreshFromRunManager();
                 tacticPausePanel?.Hide();
@@ -237,6 +248,27 @@ namespace DeadManZone.Presentation.Run
                     hudPanel = shopScene.transform.Find("TopBar/" + RunHudPanelBuilder.PanelName);
 
                 _runHudPanel = hudPanel != null ? hudPanel.gameObject : null;
+            }
+
+            if (boardView == null)
+            {
+                var combat = shopScene.transform.Find("MainRow/BoardArea/CombatBoardSection/CombatBoard");
+                if (combat != null)
+                    boardView = combat.GetComponent<BoardView>();
+            }
+
+            if (hqBoardView == null)
+            {
+                var hq = shopScene.transform.Find("MainRow/BoardArea/HqBoardSection/HqBoard");
+                if (hq != null)
+                    hqBoardView = hq.GetComponent<BoardView>();
+            }
+
+            if (reservesView == null)
+            {
+                var reserves = shopScene.transform.Find("MainRow/BoardArea/ReservesSection/ReservesRegion");
+                if (reserves != null)
+                    reservesView = reserves.GetComponent<ReservesView>();
             }
         }
 
@@ -401,6 +433,7 @@ namespace DeadManZone.Presentation.Run
             if (mainRowLayout != null)
                 _buildBoardAnchorMax = mainRowLayout.BoardAnchorMax;
             boardView?.SyncLayoutFromBoard();
+            hqBoardView?.SyncLayoutFromBoard();
             reservesView?.Refresh();
         }
 

@@ -69,7 +69,6 @@ namespace DeadManZone.Presentation.Editor
             UiThemeSceneStyling.StyleButton(menuBtn, theme);
 
             var lastLogReview = CreateLastBattleLogReview(shopScene.transform, theme);
-            CreateLastBattleLogButton(topBar.transform, theme, lastLogReview);
 
             var mainRow = CreateRegion(shopScene.transform, "MainRow", new Vector2(0f, 0.16f), new Vector2(1f, 0.92f));
             var bottomBar = CreateRegion(shopScene.transform, "BottomBar", Vector2.zero, new Vector2(1f, 0.16f));
@@ -106,7 +105,7 @@ namespace DeadManZone.Presentation.Editor
 
             var reservesView = CreateReservesSection(bottomBar.transform, theme);
             var sellZone = CreateSellZone(bottomBar.transform, theme, boardView, messagesView);
-            var pauseMenu = CreatePauseMenu(shopScene.transform, theme);
+            var pauseMenu = CreatePauseMenu(shopScene.transform, theme, lastLogReview);
             var endOverlay = CreateRunEndOverlay(shopScene.transform, theme);
 
             var combatPanel = CreateRegion(controllerRoot.transform, "CombatPanel", Vector2.zero, Vector2.one);
@@ -643,7 +642,10 @@ namespace DeadManZone.Presentation.Editor
             return tile;
         }
 
-        private static PauseMenuView CreatePauseMenu(Transform buildPanel, UiThemeSO theme)
+        private static PauseMenuView CreatePauseMenu(
+            Transform buildPanel,
+            UiThemeSO theme,
+            LastBattleLogReviewPresenter battleReportReview)
         {
             var root = CreateRegion(buildPanel, "PauseMenu", Vector2.zero, Vector2.one);
             root.SetActive(false);
@@ -663,12 +665,15 @@ namespace DeadManZone.Presentation.Editor
                 mainCard.transform, "Resume", new Vector2(0.5f, 0.58f), new Vector2(220f, 44f));
             var options = MenuSceneSetup.CreateSmallButtonPublic(
                 mainCard.transform, "Options", new Vector2(0.5f, 0.44f), new Vector2(220f, 44f));
+            var battleReport = MenuSceneSetup.CreateSmallButtonPublic(
+                mainCard.transform, "Battle Report", new Vector2(0.5f, 0.37f), new Vector2(220f, 44f));
             var mainMenu = MenuSceneSetup.CreateSmallButtonPublic(
-                mainCard.transform, "Main Menu", new Vector2(0.5f, 0.30f), new Vector2(220f, 44f));
+                mainCard.transform, "Main Menu", new Vector2(0.5f, 0.24f), new Vector2(220f, 44f));
             var exit = MenuSceneSetup.CreateSmallButtonPublic(
-                mainCard.transform, "Exit", new Vector2(0.5f, 0.16f), new Vector2(220f, 44f));
+                mainCard.transform, "Exit", new Vector2(0.5f, 0.10f), new Vector2(220f, 44f));
             UiThemeSceneStyling.StyleButton(resume, theme, accent: true);
             UiThemeSceneStyling.StyleButton(options, theme);
+            UiThemeSceneStyling.StyleButton(battleReport, theme);
             UiThemeSceneStyling.StyleButton(mainMenu, theme);
             UiThemeSceneStyling.StyleButton(exit, theme);
 
@@ -688,6 +693,8 @@ namespace DeadManZone.Presentation.Editor
             serialized.FindProperty("optionsPanel").objectReferenceValue = optionsCard;
             serialized.FindProperty("resumeButton").objectReferenceValue = resume;
             serialized.FindProperty("optionsButton").objectReferenceValue = options;
+            serialized.FindProperty("battleReportButton").objectReferenceValue = battleReport;
+            serialized.FindProperty("battleReportReview").objectReferenceValue = battleReportReview;
             serialized.FindProperty("mainMenuButton").objectReferenceValue = mainMenu;
             serialized.FindProperty("exitButton").objectReferenceValue = exit;
             serialized.FindProperty("optionsBackButton").objectReferenceValue = optionsBack;
@@ -706,34 +713,6 @@ namespace DeadManZone.Presentation.Editor
             return card;
         }
 
-        private static Button CreateLastBattleLogButton(
-            Transform topBar,
-            UiThemeSO theme,
-            LastBattleLogReviewPresenter reviewPresenter)
-        {
-            var button = MenuSceneSetup.CreateSmallButtonPublic(
-                topBar, "Last Log", new Vector2(0.895f, 0.5f), new Vector2(124f, 40f));
-            var rect = button.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.895f, 0.5f);
-            rect.anchorMax = new Vector2(0.895f, 0.5f);
-            rect.pivot = new Vector2(1f, 0.5f);
-            rect.anchoredPosition = Vector2.zero;
-            UiThemeSceneStyling.StyleButton(button, theme);
-
-            var label = button.GetComponentInChildren<TMP_Text>();
-            if (label != null)
-            {
-                label.enableWordWrapping = false;
-                label.overflowMode = TextOverflowModes.Ellipsis;
-            }
-
-            var bridge = button.gameObject.AddComponent<LastBattleLogReviewButton>();
-            var serialized = new SerializedObject(bridge);
-            serialized.FindProperty("reviewPresenter").objectReferenceValue = reviewPresenter;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
-            return button;
-        }
-
         private static LastBattleLogReviewPresenter CreateLastBattleLogReview(Transform buildPanel, UiThemeSO theme)
         {
             var root = CreateRegion(buildPanel, "LastBattleLogReview", Vector2.zero, Vector2.one);
@@ -746,7 +725,7 @@ namespace DeadManZone.Presentation.Editor
             UiThemeApplicator.ApplyModalFrame(sheetBg, theme);
 
             var title = MenuSceneSetup.CreateLabelPublic(
-                sheet.transform, "Previous Battle Log (dev)", 22, FontStyles.Bold,
+                sheet.transform, "Battle Report", 22, FontStyles.Bold,
                 new Vector2(0.5f, 0.94f), new Vector2(520f, 32f));
             UiThemeSceneStyling.StyleLabel(title, theme);
 

@@ -52,6 +52,19 @@ private PieceDefinition _selectedPiece;
 
         public BoardKind BoardBinding => boardBinding;
 
+        public static BoardView FindByBinding(BoardKind kind)
+        {
+            foreach (var view in FindObjectsByType<BoardView>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (view.BoardBinding == kind)
+                    return view;
+            }
+
+            return null;
+        }
+
+        public static BoardView FindCombatBoard() => FindByBinding(BoardKind.Combat);
+
         public void SetBoardBinding(BoardKind kind)
         {
             boardBinding = kind;
@@ -149,6 +162,10 @@ private PieceDefinition _selectedPiece;
             if (RunManager.Instance == null)
                 return false;
 
+            if (!TryResolveReservesPiece(instanceId, out var piece)
+                || !BoardPlacementRules.IsAllowedForBoard(piece, boardBinding))
+                return false;
+
             bool placed = RunManager.Instance.TryPlaceFromReserves(instanceId, anchor, rotation);
             if (placed)
                 RefreshFromRunManager();
@@ -160,6 +177,10 @@ private PieceDefinition _selectedPiece;
             if (RunManager.Instance == null)
                 return false;
 
+            if (!TryResolveOfferPiece(offerId, out var piece)
+                || !BoardPlacementRules.IsAllowedForBoard(piece, boardBinding))
+                return false;
+
             bool placed = RunManager.Instance.TryAcquireOfferToBoard(offerId, anchor, rotation);
             if (placed)
                 RefreshFromRunManager();
@@ -168,13 +189,49 @@ private PieceDefinition _selectedPiece;
 
         public bool TryMovePlacedPiece(string instanceId, GridCoord anchor, PieceRotation rotation)
         {
-            if (RunManager.Instance == null)
+            if (RunManager.Instance == null || _boardState == null)
+                return false;
+
+            var local = _boardState.Pieces.FirstOrDefault(p => p.InstanceId == instanceId);
+            if (local == null
+                || !BoardPlacementRules.IsAllowedForBoard(local.Definition, boardBinding))
                 return false;
 
             bool moved = RunManager.Instance.TryMovePlacedPiece(instanceId, anchor, rotation);
             if (moved)
                 RefreshFromRunManager();
             return moved;
+        }
+
+        private static bool TryResolveOfferPiece(string offerId, out PieceDefinition piece)
+        {
+            piece = null;
+            var state = RunManager.Instance?.State;
+            var offer = state?.Shop?.Offers?.FirstOrDefault(o => o.OfferId == offerId);
+            if (offer == null)
+                return false;
+
+            var database = ContentDatabase.Load();
+            if (database == null)
+                return false;
+
+            piece = ContentRegistryProvider.Build(database)?.GetById(offer.PieceId);
+            return piece != null;
+        }
+
+        private static bool TryResolveReservesPiece(string instanceId, out PieceDefinition piece)
+        {
+            piece = null;
+            var orchestrator = RunManager.Instance?.Orchestrator;
+            if (orchestrator == null)
+                return false;
+
+            var match = orchestrator.GetReserves().Pieces.FirstOrDefault(p => p.InstanceId == instanceId);
+            if (match == null)
+                return false;
+
+            piece = match.Definition;
+            return piece != null;
         }
 
         public void LoadSnapshot(BoardSnapshot snapshot, ContentRegistry registry)
@@ -184,33 +241,11 @@ private PieceDefinition _selectedPiece;
             if (registry == null)
                 throw new ArgumentNullException(nameof(registry));
 
-            var specialTiles = snapshot.SpecialTiles.Select(s => new GridCoord(s.X, s.Y)).ToArray();
-            var layout = snapshot.RearCols > 0 || snapshot.SupportCols > 0
-                ? BoardLayout.CreateHorizontalZones(
-                    snapshot.Width,
-                    snapshot.Height,
-                    snapshot.RearCols,
-                    snapshot.SupportCols,
-                    specialTiles)
-                : BoardLayout.CreateStandard(
-                    snapshot.Width,
-                    snapshot.Height,
-                    snapshot.RearRows,
-                    snapshot.SupportRows,
-                    specialTiles);
-
-            BuildBoard(layout);
-
-            foreach (var record in snapshot.Pieces)
-            {
-                var definition = registry.GetById(record.PieceId);
-                var rotation = RotationFromDegrees(record.RotationDegrees);
-                _boardState.TryPlace(
-                    definition,
-                    new GridCoord(record.AnchorX, record.AnchorY),
-                    record.InstanceId,
-                    rotation);
-            }
+            var board = BoardSnapshotMapper.ToBoard(snapshot, registry);
+            BuildBoard(board.Layout);
+            _boardState = board;
+            SyncPiecesOverlay();
+            RefreshOccupancyVisuals();
         }
 
         public void RefreshFromRunManager()

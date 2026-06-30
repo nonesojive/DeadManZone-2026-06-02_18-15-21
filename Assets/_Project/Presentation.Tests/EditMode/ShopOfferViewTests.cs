@@ -38,5 +38,22 @@ namespace DeadManZone.Presentation.Tests.EditMode
                 Object.DestroyImmediate(root);
             }
         }
+
+        [Test]
+        public void ShowEmpty_ClearsBoundOffer()
+        {
+            var root = new GameObject("ShopOfferCard", typeof(RectTransform));
+            try
+            {
+                var view = root.AddComponent<ShopOfferView>();
+                view.ShowEmpty(24f, 2f, 400f, 300f, 6);
+
+                Assert.IsNull(view.OfferId);
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
     }
 }

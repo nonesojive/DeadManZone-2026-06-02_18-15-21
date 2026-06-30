@@ -18,11 +18,11 @@ MonoBehaviour:
   enemyFactionId: ash_wraiths
   placements:
   - piece: {fileID: 11400000, guid: 21b91e5e648d6184b84cc8bc0b3727cd, type: 2}
-    anchor: {x: 6, y: 4}
+    anchor: {x: 3, y: 4}
     instanceId: 
   - piece: {fileID: 11400000, guid: 21b91e5e648d6184b84cc8bc0b3727cd, type: 2}
     anchor: {x: 4, y: 4}
     instanceId: 
   - piece: {fileID: 11400000, guid: 2bac63a69be7d37419e8dfa995588d3e, type: 2}
-    anchor: {x: 8, y: 4}
+    anchor: {x: 5, y: 4}
     instanceId: 

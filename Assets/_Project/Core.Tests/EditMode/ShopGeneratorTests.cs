@@ -21,7 +21,7 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
-        public void DefaultBoard_GeneratesEightOffers()
+        public void DefaultBoard_GeneratesSixVisibleOffers()
         {
             var board = new BoardState(DefaultLayout());
             var registry = CreateRoleTestRegistry();
@@ -29,7 +29,7 @@ namespace DeadManZone.Core.Tests
 
             var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 42);
 
-            Assert.AreEqual(8, shop.Offers.Count);
+            Assert.AreEqual(ShopSlotLayoutResolver.VisibleOfferSlotCount, shop.Offers.Count);
         }
 
         [Test]
@@ -71,7 +71,7 @@ namespace DeadManZone.Core.Tests
             var generator = new ShopGenerator(registry);
             var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 100);
 
-            Assert.AreEqual(8, shop.Offers.Count);
+            Assert.AreEqual(ShopSlotLayoutResolver.VisibleOfferSlotCount, shop.Offers.Count);
             Assert.That(shop.Modifiers.ExtraGeneralSlots, Is.EqualTo(1));
         }
 
@@ -129,7 +129,7 @@ namespace DeadManZone.Core.Tests
             var generator = new ShopGenerator(registry);
             var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 7);
 
-            var offensiveOffers = shop.Offers.Where(o => o.SlotIndex < 4).ToList();
+            var offensiveOffers = shop.Offers.Where(o => o.SlotIndex < 3).ToList();
             Assert.That(offensiveOffers, Is.Not.Empty);
             Assert.IsTrue(offensiveOffers.All(o =>
                 registry.GetById(o.PieceId).CombatRole == GameTagIds.Assault));
@@ -143,7 +143,7 @@ namespace DeadManZone.Core.Tests
             var generator = new ShopGenerator(registry);
             var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 7);
 
-            var defensiveOffers = shop.Offers.Where(o => o.SlotIndex >= 4).ToList();
+            var defensiveOffers = shop.Offers.Where(o => o.SlotIndex >= 3 && o.SlotIndex < 6).ToList();
             Assert.That(defensiveOffers, Is.Not.Empty);
             Assert.IsTrue(defensiveOffers.All(o =>
                 registry.GetById(o.PieceId).CombatRole == GameTagIds.Support));

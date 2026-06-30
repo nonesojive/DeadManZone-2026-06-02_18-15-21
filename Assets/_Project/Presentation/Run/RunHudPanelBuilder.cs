@@ -67,7 +67,7 @@ namespace DeadManZone.Presentation.Run
                 new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f),
                 new Vector2(10f, 0f), new Vector2(120f, 32f), TextAlignmentOptions.MidlineLeft, theme);
 
-            var fightIndex = CreateHudLabel(header.transform, "1/10", 20, FontStyles.Bold,
+            var fightIndex = CreateHudLabel(header.transform, "1", 20, FontStyles.Bold,
                 new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
                 new Vector2(-10f, 0f), new Vector2(72f, 32f), TextAlignmentOptions.MidlineRight, theme);
 
@@ -248,14 +248,5 @@ namespace DeadManZone.Presentation.Run
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
         }
-    }
-
-    public sealed class RunHudPanelVersion : MonoBehaviour
-    {
-        [SerializeField] private int version = RunHudPanelBuilder.PanelVersion;
-
-        public int Version => version;
-
-        public void SetVersion(int value) => version = value;
     }
 }

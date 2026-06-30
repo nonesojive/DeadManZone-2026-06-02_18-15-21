@@ -72,5 +72,24 @@ namespace DeadManZone.Core.Tests.EditMode
                 Assert.AreEqual(hq.InstanceId, snapshot[cell]);
             }
         }
+
+        [Test]
+        public void DestroyedUnit_ReleasesOccupancyGrid()
+        {
+            var player = new BoardState(TestBoards.Layout);
+            player.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(), "player_rifle");
+            player.TryPlace(TestPieces.RifleSquad(), new GridCoord(7, 4), "player_rifle_2");
+
+            var enemy = new BoardState(TestBoards.Layout);
+            enemy.TryPlace(TestPieces.WeakConscript(), TestBoards.FrontLineAnchor(), "enemy_weak");
+
+            var run = TickCombatRun.Start(player, enemy, seed: 7);
+            run.Continue(System.Array.Empty<PhaseCommand>());
+            run.Continue(System.Array.Empty<PhaseCommand>());
+
+            Assert.IsTrue(run.IsFightOver);
+            var snapshot = run.OccupancySnapshotForTests;
+            Assert.IsFalse(snapshot.Values.Contains("enemy_weak"));
+        }
     }
 }

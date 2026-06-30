@@ -19,15 +19,35 @@ namespace DeadManZone.Data.Editor
             var baseline = new ShopSlotProfileSO[ShopSlotLayoutResolver.BaselineSlotCount];
             for (int i = 0; i < baseline.Length; i++)
             {
-                bool offensive = i < 4;
+                ShopSlotKind kind;
+                ShopPoolBias bias;
+                string[] preferredRoles;
+
+                if (i < 3)
+                {
+                    kind = ShopSlotKind.BaselineOffensive;
+                    bias = ShopPoolBias.Offensive;
+                    preferredRoles = new[] { GameTagIds.Assault, GameTagIds.Sniper, GameTagIds.Tank };
+                }
+                else if (i < ShopSlotLayoutResolver.ReservedSlotStartIndex)
+                {
+                    kind = ShopSlotKind.BaselineDefensive;
+                    bias = ShopPoolBias.Defensive;
+                    preferredRoles = new[] { GameTagIds.Support, GameTagIds.Utility, GameTagIds.Defender, GameTagIds.Headquarters };
+                }
+                else
+                {
+                    kind = ShopSlotKind.ReservedAbility;
+                    bias = ShopPoolBias.Defensive;
+                    preferredRoles = System.Array.Empty<string>();
+                }
+
                 baseline[i] = CreateProfileAsset(
                     $"{Root}/slot_{i}.asset",
                     i,
-                    offensive ? ShopSlotKind.BaselineOffensive : ShopSlotKind.BaselineDefensive,
-                    offensive ? ShopPoolBias.Offensive : ShopPoolBias.Defensive,
-                    offensive
-                        ? new[] { GameTagIds.Assault, GameTagIds.Sniper, GameTagIds.Tank }
-                        : new[] { GameTagIds.Support, GameTagIds.Utility, GameTagIds.Defender, GameTagIds.Headquarters });
+                    kind,
+                    bias,
+                    preferredRoles);
             }
 
             var bonus = new ShopSlotProfileSO[ShopSlotLayoutResolver.BonusSlotCount];
