@@ -118,6 +118,26 @@ namespace DeadManZone.Core.Tests
             CommandActions = CommandActionFlags.SpendRequisitionBuff
         };
 
+        public static PieceDefinition CommandOutpost() => new()
+        {
+            Id = "command_outpost",
+            DisplayName = "Command Outpost",
+            Category = PieceCategory.Building,
+            Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
+            MaxHp = 40,
+            GoldCost = 8
+        };
+
+        public static PieceDefinition OfficerQuarters() => new()
+        {
+            Id = "officer_quarters",
+            DisplayName = "Officer Quarters",
+            Category = PieceCategory.Building,
+            Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
+            MaxHp = 35,
+            GoldCost = 7
+        };
+
         public static PieceDefinition FieldWorkshop() => new()
         {
             Id = "field_workshop",

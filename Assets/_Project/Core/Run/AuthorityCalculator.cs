@@ -19,6 +19,6 @@ namespace DeadManZone.Core.Run
         }
 
         public static int ComputeRoundPool(BuildBoardSet boards) =>
-            ComputeRoundPool(boards?.ToAggregateBoard());
+            BaseAuthority + BuildingIncomeRules.SumAuthorityFromBuildings(boards);
     }
 }

@@ -43,7 +43,7 @@ namespace DeadManZone.Core.Run
             int percentBonus = baseSupplies > 0
                 ? (int)Math.Round(baseSupplies * (snapshot.SuppliesPercentBonus / 100f))
                 : 0;
-            return snapshot.SuppliesFlatBonus + percentBonus;
+            return snapshot.SuppliesFlatBonus + percentBonus + BuildingIncomeRules.SumSuppliesFlatBonus(boards);
         }
 
         public static int ComputeManpowerIncome(int baseMusterPerShop, BuildBoardSet boards) =>
