@@ -179,6 +179,17 @@ namespace DeadManZone.Core.Tests
                 ManpowerCost = 1
             };
 
+        public static PieceDefinition WithTags(bool command = false, bool building = false) => new()
+        {
+            Id = building ? "tagged_building" : "tagged_piece",
+            DisplayName = building ? "Tagged Building" : "Tagged Piece",
+            Category = building ? PieceCategory.Building : PieceCategory.Unit,
+            Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
+            SynergyTags = command ? new[] { GameTagIds.Command } : System.Array.Empty<string>(),
+            MaxHp = 10,
+            ManpowerCost = building ? 0 : 1
+        };
+
         public static PieceDefinition WeakConscript() => new()
         {
             Id = "weak_conscript",

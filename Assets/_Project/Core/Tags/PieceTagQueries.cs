@@ -29,6 +29,20 @@ namespace DeadManZone.Core.Tags
                 || ContainsTag(piece.Tags, targetKey);
         }
 
+        public static bool HasAnyTag(PieceDefinition piece, string tagId)
+        {
+            string targetKey = NormalizeTagKey(tagId);
+            if (piece == null || targetKey.Length == 0)
+                return false;
+
+            return MatchesTag(piece.Primary, targetKey)
+                || MatchesTag(piece.CombatRole, targetKey)
+                || MatchesTag(piece.SystemTag, targetKey)
+                || ContainsTag(piece.SynergyTags, targetKey)
+                || ContainsTag(piece.AbilityTags, targetKey)
+                || ContainsTag(piece.FlavorTags, targetKey);
+        }
+
         public static bool HasPrimaryTag(PieceDefinition piece, string tagId)
         {
             string targetKey = NormalizeTagKey(tagId);
