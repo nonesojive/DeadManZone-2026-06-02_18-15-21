@@ -1,6 +1,7 @@
 using System.Linq;
 using DeadManZone.Core;
 using DeadManZone.Core.Board;
+using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Run;
 using UnityEngine;
@@ -45,6 +46,14 @@ namespace DeadManZone.Data
         public int baseMusterPerShop = 12;
         public int startingAuthority = 2;
         public int startingMorale = 100;
+
+        [Header("Tactics")]
+        public TacticType[] startingTactics =
+        {
+            TacticType.StandGround,
+            TacticType.Advance,
+            TacticType.DisciplinedFire
+        };
 
         [Header("Salvage")]
         [Range(0, 50)]

@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Run;
+using DeadManZone.Data;
 using DeadManZone.Game;
 using DeadManZone.Presentation.Visual;
 using TMPro;
@@ -153,14 +155,27 @@ namespace DeadManZone.Presentation.Combat
             {
                 (TacticType.DisciplinedFire, "Disciplined Fire"),
                 (TacticType.Advance, "Advance"),
-                (TacticType.StandGround, "Stand Ground"),
+                (TacticType.StandGround, "Hold the Line"),
                 (TacticType.ProtectSupport, "Protect Support")
             };
 
-            for (int i = 0; i < options.Length; i++)
+            var visible = options
+                .Where(o => TacticUnlockRules.IsUnlockedForList(_context?.StartingTactics, o.Item1))
+                .ToList();
+
+            if (visible.Count == 0)
+                visible.Add(options[0]);
+
+            if (!visible.Any(o => o.Item1 == _selectedTactic))
+                _selectedTactic = visible[0].Item1;
+
+            for (int i = 0; i < visible.Count; i++)
             {
-                var (tactic, label) = options[i];
-                float x = 0.12f + i * 0.22f;
+                var (tactic, label) = visible[i];
+                float x = 0.12f + i * (0.76f / Mathf.Max(1, visible.Count - 1));
+                if (visible.Count == 1)
+                    x = 0.5f;
+
                 var toggle = CreateToggle(tacticRow, label, new Vector2(x, 0.5f));
                 toggle.isOn = tactic == _selectedTactic;
                 var captured = tactic;
@@ -233,7 +248,8 @@ namespace DeadManZone.Presentation.Combat
                 _context.CheckpointIndex,
                 _context.Authority,
                 selectedAbilities,
-                out var reason);
+                out var reason,
+                _context.StartingTactics);
 
             if (reasonText != null)
                 reasonText.text = valid ? string.Empty : reason;

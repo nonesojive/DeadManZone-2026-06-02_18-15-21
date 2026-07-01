@@ -139,6 +139,7 @@ namespace DeadManZone.Game
                 State.Authority += criticalMassSnapshot.AuthorityBonus;
 
             int combatSeed = State.RunSeed + State.FightIndex * 1000;
+            var defaultTactic = ResolveDefaultPlayerTactic(Faction);
 
             State.Phase = RunPhase.Combat;
             State.Combat = new CombatSaveState
@@ -147,11 +148,19 @@ namespace DeadManZone.Game
                 EnemyBoard = BoardSnapshotMapper.FromBoard(enemyBoard),
                 Requisition = State.Authority,
                 Authority = State.Authority,
+                PlayerTactic = defaultTactic,
                 SubmittedCommands = new List<PhaseCommand>(),
                 EventLog = new List<CombatEventRecord>()
             };
 
-            _activeCombat = TickCombatRun.Start(playerBoard, enemyBoard, combatSeed, State.Authority, buildBoards);
+            _activeCombat = TickCombatRun.Start(
+                playerBoard,
+                enemyBoard,
+                combatSeed,
+                State.Authority,
+                buildBoards,
+                Faction.startingTactics);
+            _activeCombat.SetPlayerTactic(defaultTactic);
             State.Combat.AwaitingCommand = _activeCombat.AwaitingCommand;
             State.Combat.CheckpointsFired = _activeCombat.CheckpointsFired;
             State.Combat.GlobalTick = 0;
@@ -218,7 +227,8 @@ namespace DeadManZone.Game
                     p.Definition.CommandActions.HasFlag(CommandActionFlags.ChangeStance)),
                 AvailableAbilities = abilities,
                 PendingSelectedTactic = State.Combat.PendingSelectedTactic,
-                PendingSelectedAbilities = State.Combat.PendingSelectedAbilities
+                PendingSelectedAbilities = State.Combat.PendingSelectedAbilities,
+                StartingTactics = Faction?.startingTactics
             };
         }
 
@@ -518,14 +528,34 @@ namespace DeadManZone.Game
                 enemyBoard,
                 State.Combat.CombatSeed,
                 State.Combat.Authority > 0 ? State.Combat.Authority : State.Combat.Requisition,
-                buildBoards);
+                buildBoards,
+                Faction?.startingTactics);
 
             _activeCombat.FastForwardToCheckpoint(
                 State.Combat.CheckpointsFired,
                 State.Combat.SubmittedCommands);
 
-            if (State.Combat.PlayerTactic != default)
-                _activeCombat.SetPlayerTactic(State.Combat.PlayerTactic);
+            var playerTactic = State.Combat.PlayerTactic;
+            if (!TacticUnlockRules.IsUnlocked(Faction, playerTactic))
+                playerTactic = ResolveDefaultPlayerTactic(Faction);
+
+            if (playerTactic != default)
+            {
+                _activeCombat.SetPlayerTactic(playerTactic);
+                State.Combat.PlayerTactic = playerTactic;
+            }
+        }
+
+        private static TacticType ResolveDefaultPlayerTactic(FactionSO faction)
+        {
+            const TacticType preferred = TacticType.DisciplinedFire;
+            if (TacticUnlockRules.IsUnlocked(faction, preferred))
+                return preferred;
+
+            if (faction?.startingTactics != null && faction.startingTactics.Length > 0)
+                return faction.startingTactics[0];
+
+            return preferred;
         }
 
         private void Persist() => SaveManager.Save(State);

@@ -72,7 +72,8 @@ namespace DeadManZone.Core.Combat
             IList<CombatantState> enemyCombatants,
             CombatEventLog log,
             int checkpointIndex,
-            int globalTick)
+            int globalTick,
+            TacticType[] startingTactics = null)
         {
             int logSegment = checkpointIndex + 1;
             int authoritySnapshot = authority;
@@ -90,7 +91,8 @@ namespace DeadManZone.Core.Combat
                         hasCommand,
                         checkpointIndex,
                         ref authority,
-                        out var reason))
+                        out var reason,
+                        startingTactics))
                 {
                     authority = authoritySnapshot;
                     return CommandResult.Fail(reason);
@@ -190,7 +192,8 @@ namespace DeadManZone.Core.Combat
                 enemyCombatants,
                 log,
                 checkpointIndex,
-                globalTick);
+                globalTick,
+                startingTactics: null);
         }
 
         private CommandResult TryApplyLegacy(

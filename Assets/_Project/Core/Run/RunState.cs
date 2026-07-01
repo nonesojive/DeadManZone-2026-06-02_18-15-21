@@ -15,6 +15,7 @@ namespace DeadManZone.Core.Run
         public IReadOnlyList<AvailableCommand> AvailableAbilities { get; init; }
         public TacticType? PendingSelectedTactic { get; init; }
         public IReadOnlyList<GrantedAbility> PendingSelectedAbilities { get; init; }
+        public TacticType[] StartingTactics { get; init; }
     }
 
     public sealed class CombatSaveState

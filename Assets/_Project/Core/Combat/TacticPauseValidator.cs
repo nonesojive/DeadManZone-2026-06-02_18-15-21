@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using DeadManZone.Core.Board;
 
@@ -11,9 +12,16 @@ namespace DeadManZone.Core.Combat
             bool hasCommandPiece,
             int checkpointIndex,
             ref int authority,
-            out string reason)
+            out string reason,
+            TacticType[] startingTactics = null)
         {
             reason = null;
+
+            if (!IsTacticUnlocked(startingTactics, selected))
+            {
+                reason = "Tactic not unlocked";
+                return false;
+            }
 
             if (selected == TacticType.ProtectSupport && !hasCommandPiece)
             {
@@ -64,9 +72,16 @@ namespace DeadManZone.Core.Combat
             int checkpointIndex,
             int authority,
             IEnumerable<GrantedAbility> abilities,
-            out string reason)
+            out string reason,
+            TacticType[] startingTactics = null)
         {
             reason = null;
+
+            if (!IsTacticUnlocked(startingTactics, selected))
+            {
+                reason = "Tactic not unlocked";
+                return false;
+            }
 
             if (selected == TacticType.ProtectSupport && !hasCommandPiece)
             {
@@ -82,6 +97,13 @@ namespace DeadManZone.Core.Combat
             }
 
             return true;
+        }
+
+        private static bool IsTacticUnlocked(TacticType[] startingTactics, TacticType tactic)
+        {
+            if (startingTactics == null || startingTactics.Length == 0)
+                return true; // ponytail: no list = all unlocked
+            return Array.IndexOf(startingTactics, tactic) >= 0;
         }
     }
 }

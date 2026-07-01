@@ -32,4 +32,8 @@ MonoBehaviour:
   startingAuthority: 2
   startingMorale: 100
   baseSalvageChancePercent: 1
+  startingTactics:
+  - 2
+  - 1
+  - 0
   tokenBackgroundColor: {r: 0.22, g: 0.28, b: 0.38, a: 0.45}
