@@ -15,8 +15,11 @@ MonoBehaviour:
   factionId: ironmarch_union
   displayName: IronMarch Union
   combatBoardSize: 6
+  combatSpecialTileCoords: []
   hqBoardWidth: 3
   hqBoardHeight: 6
+  hqBlockedCells: []
+  hqSpecialTileCoords: []
   boardWidth: 9
   boardHeight: 10
   rearCols: 4
@@ -31,9 +34,7 @@ MonoBehaviour:
   baseMusterPerShop: 1
   startingAuthority: 2
   startingMorale: 100
+  startingTactics: 020000000100000000000000
   baseSalvageChancePercent: 1
-  startingTactics:
-  - 2
-  - 1
-  - 0
+  shopOverride: {fileID: 0}
   tokenBackgroundColor: {r: 0.22, g: 0.28, b: 0.38, a: 0.45}

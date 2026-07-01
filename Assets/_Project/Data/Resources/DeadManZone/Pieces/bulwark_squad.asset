@@ -10,28 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
-  m_Name: conscript_rifleman
+  m_Name: bulwark_squad
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
-  id: conscript_rifleman
-  displayName: Conscript Rifleman
+  id: bulwark_squad
+  displayName: Bulwark Squad
   category: 1
   shapeCells:
   - {x: 0, y: 0}
   tags:
   - Infantry
   - Assault
-  - Small Arms
+  - Phalanx
+  - Veteran
   primary: infantry
   combatRole: assault
   systemTag: 
-  synergyTags: []
+  synergyTags:
+  - phalanx
   abilityTags: []
   flavorTags:
-  - small_arms
-  maxHp: 50
-  baseDamage: 5
+  - veteran
+  maxHp: 55
+  baseDamage: 3
   cooldownTicks: 3
-  goldCost: 12
+  goldCost: 18
   requisitionCost: 0
   manpowerCost: 1
   musterPerShop: 0
@@ -41,18 +43,46 @@ MonoBehaviour:
   includeInShopPool: 1
   salvageChanceBonus: 0
   attackSpeed: 0
-  attackRange: 2
-  movementSpeed: 2
-  armorType: 1
+  attackRange: 1
+  movementSpeed: 3
+  armorType: 2
   attackType: 1
   grantedAbility: 0
   accuracyOverride: 0
-  factionId: neutral
+  factionId: ironmarch_union
   icon: {fileID: 0}
   categoryTint: {r: 1, g: 1, b: 1, a: 1}
   cellSprites: []
   catalogAbilities: []
-  customAbilities: []
+  customAbilities:
+  - id: bulwark_adjacent_phalanx_damage
+    cardDescription: 
+    trigger: 0
+    neighborFilter:
+      PrimaryTagId: 
+      CombatRoleTagId: 
+      SystemTagId: 
+      SynergyTagId: phalanx
+      AbilityTagId: 
+    stat: 0
+    modType: 0
+    magnitude: 1
+    countTagId: 
+    applyToSelf: 1
+  - id: bulwark_adjacent_phalanx_hp
+    cardDescription: 
+    trigger: 0
+    neighborFilter:
+      PrimaryTagId: 
+      CombatRoleTagId: 
+      SystemTagId: 
+      SynergyTagId: phalanx
+      AbilityTagId: 
+    stat: 6
+    modType: 0
+    magnitude: 5
+    countTagId: 
+    applyToSelf: 1
   combatArenaSprite: {fileID: 0}
   combatArena2DAnimations: {fileID: 0}
   combatArenaPrefab: {fileID: 0}

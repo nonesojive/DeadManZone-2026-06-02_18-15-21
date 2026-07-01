@@ -10,44 +10,49 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
-  m_Name: conscript_rifleman
+  m_Name: ironclad_mortars
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
-  id: conscript_rifleman
-  displayName: Conscript Rifleman
+  id: ironclad_mortars
+  displayName: Ironclad Mortars
   category: 1
   shapeCells:
   - {x: 0, y: 0}
+  - {x: 0, y: 1}
   tags:
   - Infantry
-  - Assault
-  - Small Arms
+  - Artillery
+  - Ironclad
+  - Shells
+  - Siege
   primary: infantry
-  combatRole: assault
+  combatRole: artillery
   systemTag: 
   synergyTags: []
-  abilityTags: []
+  abilityTags:
+  - ironclad
   flavorTags:
-  - small_arms
-  maxHp: 50
-  baseDamage: 5
+  - shells
+  - siege
+  maxHp: 25
+  baseDamage: 8
   cooldownTicks: 3
-  goldCost: 12
+  goldCost: 20
   requisitionCost: 0
-  manpowerCost: 1
+  manpowerCost: 3
   musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
-  shopLane: 0
+  shopLane: 2
   includeInShopPool: 1
   salvageChanceBonus: 0
   attackSpeed: 0
-  attackRange: 2
-  movementSpeed: 2
+  attackRange: 3
+  movementSpeed: 1
   armorType: 1
-  attackType: 1
+  attackType: 3
   grantedAbility: 0
   accuracyOverride: 0
-  factionId: neutral
+  factionId: ironmarch_union
   icon: {fileID: 0}
   categoryTint: {r: 1, g: 1, b: 1, a: 1}
   cellSprites: []

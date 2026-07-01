@@ -10,30 +10,37 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
-  m_Name: conscript_rifleman
+  m_Name: ironmarch_iron_horse
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
-  id: conscript_rifleman
-  displayName: Conscript Rifleman
+  id: ironmarch_iron_horse
+  displayName: Ironmarch Iron Horse
   category: 1
   shapeCells:
   - {x: 0, y: 0}
+  - {x: 1, y: 0}
+  - {x: 2, y: 0}
+  - {x: 0, y: 1}
+  - {x: 1, y: 1}
+  - {x: 2, y: 1}
   tags:
-  - Infantry
-  - Assault
-  - Small Arms
-  primary: infantry
-  combatRole: assault
+  - Vehicle
+  - Tank
+  - Ironclad
+  - Shells
+  primary: vehicle
+  combatRole: tank
   systemTag: 
   synergyTags: []
-  abilityTags: []
+  abilityTags:
+  - ironclad
   flavorTags:
-  - small_arms
-  maxHp: 50
-  baseDamage: 5
+  - shells
+  maxHp: 75
+  baseDamage: 6
   cooldownTicks: 3
-  goldCost: 12
+  goldCost: 24
   requisitionCost: 0
-  manpowerCost: 1
+  manpowerCost: 4
   musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
@@ -43,16 +50,30 @@ MonoBehaviour:
   attackSpeed: 0
   attackRange: 2
   movementSpeed: 2
-  armorType: 1
-  attackType: 1
+  armorType: 2
+  attackType: 3
   grantedAbility: 0
   accuracyOverride: 0
-  factionId: neutral
+  factionId: ironmarch_union
   icon: {fileID: 0}
   categoryTint: {r: 1, g: 1, b: 1, a: 1}
   cellSprites: []
   catalogAbilities: []
-  customAbilities: []
+  customAbilities:
+  - id: iron_horse_adjacent_infantry_hp
+    cardDescription: 
+    trigger: 0
+    neighborFilter:
+      PrimaryTagId: infantry
+      CombatRoleTagId: 
+      SystemTagId: 
+      SynergyTagId: 
+      AbilityTagId: 
+    stat: 6
+    modType: 0
+    magnitude: 10
+    countTagId: 
+    applyToSelf: 1
   combatArenaSprite: {fileID: 0}
   combatArena2DAnimations: {fileID: 0}
   combatArenaPrefab: {fileID: 0}

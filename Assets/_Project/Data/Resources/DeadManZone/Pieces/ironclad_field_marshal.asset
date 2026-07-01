@@ -10,49 +10,81 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
-  m_Name: conscript_rifleman
+  m_Name: ironclad_field_marshal
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
-  id: conscript_rifleman
-  displayName: Conscript Rifleman
+  id: ironclad_field_marshal
+  displayName: IronClad Field Marshal
   category: 1
   shapeCells:
   - {x: 0, y: 0}
   tags:
   - Infantry
-  - Assault
-  - Small Arms
+  - Utility
+  - Command
+  - Ironclad
+  - Inspiring
   primary: infantry
-  combatRole: assault
+  combatRole: utility
   systemTag: 
-  synergyTags: []
-  abilityTags: []
+  synergyTags:
+  - command
+  abilityTags:
+  - ironclad
   flavorTags:
-  - small_arms
+  - inspiring
   maxHp: 50
-  baseDamage: 5
+  baseDamage: 3
   cooldownTicks: 3
-  goldCost: 12
+  goldCost: 30
   requisitionCost: 0
-  manpowerCost: 1
+  manpowerCost: 2
   musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
-  shopLane: 0
+  shopLane: 1
   includeInShopPool: 1
   salvageChanceBonus: 0
-  attackSpeed: 0
-  attackRange: 2
-  movementSpeed: 2
-  armorType: 1
+  attackSpeed: 1
+  attackRange: 1
+  movementSpeed: 3
+  armorType: 2
   attackType: 1
   grantedAbility: 0
   accuracyOverride: 0
-  factionId: neutral
+  factionId: ironmarch_union
   icon: {fileID: 0}
   categoryTint: {r: 1, g: 1, b: 1, a: 1}
   cellSprites: []
   catalogAbilities: []
-  customAbilities: []
+  customAbilities:
+  - id: field_marshal_adjacent_infantry_hp
+    cardDescription: 
+    trigger: 0
+    neighborFilter:
+      PrimaryTagId: infantry
+      CombatRoleTagId: 
+      SystemTagId: 
+      SynergyTagId: 
+      AbilityTagId: 
+    stat: 6
+    modType: 0
+    magnitude: 5
+    countTagId: 
+    applyToSelf: 0
+  - id: field_marshal_adjacent_infantry_movement
+    cardDescription: 
+    trigger: 0
+    neighborFilter:
+      PrimaryTagId: infantry
+      CombatRoleTagId: 
+      SystemTagId: 
+      SynergyTagId: 
+      AbilityTagId: 
+    stat: 3
+    modType: 0
+    magnitude: 1
+    countTagId: 
+    applyToSelf: 0
   combatArenaSprite: {fileID: 0}
   combatArena2DAnimations: {fileID: 0}
   combatArenaPrefab: {fileID: 0}

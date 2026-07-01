@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
   m_Name: armored_transport
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
   id: armored_transport
   displayName: Armored Transport
   category: 1
@@ -21,35 +21,44 @@ MonoBehaviour:
   - {x: 1, y: 1}
   tags:
   - Vehicle
-  - Tank
+  - Defender
+  - Convoy
+  - Support
   primary: vehicle
-  combatRole: tank
+  combatRole: defender
   systemTag: 
-  synergyTags: []
+  synergyTags:
+  - convoy
   abilityTags: []
-  flavorTags: []
-  maxHp: 120
-  baseDamage: 8
+  flavorTags:
+  - support
+  maxHp: 75
+  baseDamage: 2
   cooldownTicks: 3
-  goldCost: 8
+  goldCost: 18
   requisitionCost: 0
-  manpowerCost: 8
+  manpowerCost: 3
   musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
-  shopLane: 0
+  shopLane: 1
   includeInShopPool: 1
   salvageChanceBonus: 0
-  attackSpeed: 1
+  attackSpeed: 0
   attackRange: 1
-  movementSpeed: 2
-  armorType: 2
+  movementSpeed: 4
+  armorType: 1
   attackType: 1
-  grantedAbility: 2
+  grantedAbility: 0
+  accuracyOverride: 0
   factionId: neutral
-  icon: {fileID: 21300000, guid: 5ef0edfc4802be44d859f0adff2fbdee, type: 3}
-  categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  icon: {fileID: 0}
+  categoryTint: {r: 1, g: 1, b: 1, a: 1}
   cellSprites: []
-  combatArenaPrefab: {fileID: 3687980465075744175, guid: 981d441b067947b4aa921413c69d791a, type: 3}
-  combatArenaModelScale: 0.85
-  combatArenaModelHeight: 1.2
+  catalogAbilities: []
+  customAbilities: []
+  combatArenaSprite: {fileID: 0}
+  combatArena2DAnimations: {fileID: 0}
+  combatArenaPrefab: {fileID: 0}
+  combatArenaModelScale: 1
+  combatArenaModelHeight: 0

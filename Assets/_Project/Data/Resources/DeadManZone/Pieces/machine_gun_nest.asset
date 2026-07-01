@@ -10,41 +10,44 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
-  m_Name: conscript_rifleman
+  m_Name: machine_gun_nest
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
-  id: conscript_rifleman
-  displayName: Conscript Rifleman
-  category: 1
+  id: machine_gun_nest
+  displayName: Machine Gun Nest
+  category: 0
   shapeCells:
   - {x: 0, y: 0}
+  - {x: 1, y: 0}
   tags:
-  - Infantry
-  - Assault
-  - Small Arms
-  primary: infantry
-  combatRole: assault
+  - Structure
+  - Utility
+  - Entrenched
+  - Fortification
+  primary: structure
+  combatRole: utility
   systemTag: 
-  synergyTags: []
+  synergyTags:
+  - entrenched
   abilityTags: []
   flavorTags:
-  - small_arms
-  maxHp: 50
-  baseDamage: 5
+  - fortification
+  maxHp: 100
+  baseDamage: 2
   cooldownTicks: 3
-  goldCost: 12
+  goldCost: 20
   requisitionCost: 0
-  manpowerCost: 1
+  manpowerCost: 2
   musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
-  shopLane: 0
+  shopLane: 1
   includeInShopPool: 1
   salvageChanceBonus: 0
-  attackSpeed: 0
+  attackSpeed: 1
   attackRange: 2
-  movementSpeed: 2
-  armorType: 1
-  attackType: 1
+  movementSpeed: 0
+  armorType: 3
+  attackType: 4
   grantedAbility: 0
   accuracyOverride: 0
   factionId: neutral

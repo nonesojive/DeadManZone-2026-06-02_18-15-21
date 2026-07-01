@@ -10,41 +10,41 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
-  m_Name: conscript_rifleman
+  m_Name: recruitment_office
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
-  id: conscript_rifleman
-  displayName: Conscript Rifleman
-  category: 1
+  id: recruitment_office
+  displayName: Recruitment Office
+  category: 0
   shapeCells:
   - {x: 0, y: 0}
   tags:
-  - Infantry
-  - Assault
-  - Small Arms
-  primary: infantry
-  combatRole: assault
+  - Building
+  - Utility
+  - Logistics
+  primary: building
+  combatRole: utility
   systemTag: 
   synergyTags: []
   abilityTags: []
   flavorTags:
-  - small_arms
-  maxHp: 50
-  baseDamage: 5
+  - logistics
+  maxHp: 35
+  baseDamage: 0
   cooldownTicks: 3
-  goldCost: 12
+  goldCost: 15
   requisitionCost: 0
-  manpowerCost: 1
-  musterPerShop: 0
+  manpowerCost: 0
+  musterPerShop: 1
   shopModifiers: 0
   commandActions: 0
-  shopLane: 0
+  shopLane: 1
   includeInShopPool: 1
   salvageChanceBonus: 0
   attackSpeed: 0
-  attackRange: 2
-  movementSpeed: 2
+  attackRange: 1
+  movementSpeed: 0
   armorType: 1
-  attackType: 1
+  attackType: 0
   grantedAbility: 0
   accuracyOverride: 0
   factionId: neutral

@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
   m_Name: field_medic
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
   id: field_medic
   displayName: Field Medic
   category: 1
@@ -21,43 +21,56 @@ MonoBehaviour:
   - Infantry
   - Support
   - Medic
+  - Small Arms
   primary: infantry
   combatRole: support
   systemTag: 
   synergyTags:
   - medic
   abilityTags: []
-  flavorTags: []
-  maxHp: 40
-  baseDamage: 0
+  flavorTags:
+  - small_arms
+  maxHp: 30
+  baseDamage: 3
   cooldownTicks: 3
-  goldCost: 5
+  goldCost: 10
   requisitionCost: 0
-  manpowerCost: 4
+  manpowerCost: 1
   musterPerShop: 0
   shopModifiers: 0
   commandActions: 0
   shopLane: 1
   includeInShopPool: 1
   salvageChanceBonus: 0
-  attackSpeed: 1
+  attackSpeed: 0
   attackRange: 1
   movementSpeed: 2
   armorType: 1
-  attackType: 0
+  attackType: 1
   grantedAbility: 0
   accuracyOverride: 0
   factionId: neutral
-  icon: {fileID: 21300000, guid: 6eedc15a5670fda4b92f2cc7256a997c, type: 3}
-  categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
-  cellSprites:
-  - localCell: {x: 0, y: 0}
-    sprite: {fileID: 21300000, guid: c193afcbacff0dc48b3c0ab34ae48caa, type: 3}
-  catalogAbilities:
-  - {fileID: 11400000, guid: d14af38329b6dea498a1b7c00fe3324a, type: 2}
-  customAbilities: []
-  combatArenaSprite: {fileID: 21300000, guid: d95c4fc0ad814e70a3299d64a18c3a54, type: 3}
-  combatArena2DAnimations: {fileID: 11400000, guid: 41d1709fd5ff7cc459f1e9f08fb90bb0, type: 2}
-  combatArenaPrefab: {fileID: 4616222028175202714, guid: 571120330eb9a124081e5ae29142e543, type: 3}
+  icon: {fileID: 0}
+  categoryTint: {r: 1, g: 1, b: 1, a: 1}
+  cellSprites: []
+  catalogAbilities: []
+  customAbilities:
+  - id: field_medic_adjacent_infantry_hp
+    cardDescription: 
+    trigger: 0
+    neighborFilter:
+      PrimaryTagId: infantry
+      CombatRoleTagId: 
+      SystemTagId: 
+      SynergyTagId: 
+      AbilityTagId: 
+    stat: 6
+    modType: 0
+    magnitude: 10
+    countTagId: 
+    applyToSelf: 0
+  combatArenaSprite: {fileID: 0}
+  combatArena2DAnimations: {fileID: 0}
+  combatArenaPrefab: {fileID: 0}
   combatArenaModelScale: 1
-  combatArenaModelHeight: 1.6
+  combatArenaModelHeight: 0
