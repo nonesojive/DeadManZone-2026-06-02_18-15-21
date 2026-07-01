@@ -43,7 +43,7 @@ namespace DeadManZone.Core.Tests
             {
                 Id = "salvage_booster",
                 DisplayName = "Salvage Booster",
-                Category = PieceCategory.Building,
+                Category = PieceCategory.Unit,
                 Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
                 SalvageChanceBonus = 3,
                 ShopModifiers = ShopModifierFlags.SalvageChanceBoost5

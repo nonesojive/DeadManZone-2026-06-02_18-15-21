@@ -158,8 +158,7 @@ namespace DeadManZone.Game
                 enemyBoard,
                 combatSeed,
                 State.Authority,
-                buildBoards,
-                Faction.startingTactics);
+                buildBoards);
             _activeCombat.SetPlayerTactic(defaultTactic);
             State.Combat.AwaitingCommand = _activeCombat.AwaitingCommand;
             State.Combat.CheckpointsFired = _activeCombat.CheckpointsFired;
@@ -528,8 +527,7 @@ namespace DeadManZone.Game
                 enemyBoard,
                 State.Combat.CombatSeed,
                 State.Combat.Authority > 0 ? State.Combat.Authority : State.Combat.Requisition,
-                buildBoards,
-                Faction?.startingTactics);
+                buildBoards);
 
             _activeCombat.FastForwardToCheckpoint(
                 State.Combat.CheckpointsFired,

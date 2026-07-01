@@ -23,16 +23,16 @@ namespace DeadManZone.Core.Tests
             Assert.NotNull(faction, "ironmarch_union faction required for regression tests.");
 
             var combat = new BoardState(faction.CreateCombatBoardLayout());
-            Place(combat, database, "mobile_cannon", new GridCoord(0, 0), "cannon_1");
-            Place(combat, database, "grenade_thrower", new GridCoord(3, 0), "grenade_1");
+            Place(combat, database, "ironclad_mortars", new GridCoord(0, 0), "mortars_1");
+            Place(combat, database, "enlisted_rifleman", new GridCoord(3, 0), "enlisted_1");
             Place(combat, database, "armored_transport", new GridCoord(4, 2), "transport_1");
             Place(combat, database, "field_medic", new GridCoord(4, 5), "medic_1");
             Place(combat, database, "conscript_rifleman", new GridCoord(5, 4), "conscript_1");
-            Place(combat, database, "diesel_walker", new GridCoord(0, 3), "walker_1");
-            Place(combat, database, "rifle_squad", new GridCoord(5, 0), "rifle_1");
+            Place(combat, database, "ironmarch_iron_horse", new GridCoord(0, 3), "horse_1");
+            Place(combat, database, "bulwark_squad", new GridCoord(5, 0), "bulwark_1");
 
             var hq = new BoardState(faction.CreateHqBoardLayout());
-            Place(hq, database, "radio_array", new GridCoord(1, 0), "radio_1");
+            Place(hq, database, "command_outpost", new GridCoord(1, 0), "outpost_1");
 
             return new BuildBoardSet { Combat = combat, Hq = hq };
         }
@@ -51,26 +51,22 @@ namespace DeadManZone.Core.Tests
         public static List<PhaseCommand> BuildAggressiveCommands(BoardState board)
         {
             var commands = new List<PhaseCommand>();
-            string radioId = board.Pieces.FirstOrDefault(p => p.Definition.Id == "radio_array")?.InstanceId;
+            string commandId = board.Pieces.FirstOrDefault(p => p.Definition.Id == "command_outpost")?.InstanceId;
 
             commands.Add(new PhaseCommand
             {
                 AfterCheckpoint = 0,
                 Type = CommandType.SetTactic,
                 Tactic = TacticType.Advance,
-                SourcePieceId = radioId ?? "player_tactic"
+                SourcePieceId = commandId ?? "player_tactic"
             });
             commands.Add(new PhaseCommand
             {
                 AfterCheckpoint = 1,
                 Type = CommandType.SetTactic,
                 Tactic = TacticType.Advance,
-                SourcePieceId = radioId ?? "player_tactic"
+                SourcePieceId = commandId ?? "player_tactic"
             });
-
-            TryAddAbility(commands, board, "grenade_thrower", GrantedAbility.GrenadeLob, checkpointIndex: 0);
-            TryAddAbility(commands, board, "armored_transport", GrantedAbility.ShieldAllies, checkpointIndex: 0);
-            TryAddAbility(commands, board, "mobile_cannon", GrantedAbility.CannonBlast, checkpointIndex: 1);
 
             return commands;
         }

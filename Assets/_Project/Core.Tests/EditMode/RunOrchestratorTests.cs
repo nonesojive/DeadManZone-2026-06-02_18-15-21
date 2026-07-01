@@ -94,7 +94,7 @@ namespace DeadManZone.Core.Tests
             int startingSupplies = _orchestrator.State.Supplies;
 
             var board = _orchestrator.GetCombatBoard();
-            var rifle = _database.Pieces.First(p => p.id == "rifle_squad").ToCore();
+            var rifle = _database.Pieces.First(p => p.id == "conscript_rifleman").ToCore();
             var place = board.TryPlace(rifle, new Core.Common.GridCoord(0, 0), "rifle_1");
             Assert.IsTrue(place.Success, place.Reason);
             _orchestrator.SaveCombatBoard(board);
@@ -197,7 +197,7 @@ namespace DeadManZone.Core.Tests
         {
             _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 505);
             var board = _orchestrator.GetHqBoard();
-            var radio = GetPiece("radio_array");
+            var radio = GetPiece("command_outpost");
             Assert.IsTrue(board.TryPlace(radio, new Core.Common.GridCoord(1, 0), "radio_1").Success);
             _orchestrator.SaveHqBoard(board);
 
@@ -214,7 +214,7 @@ namespace DeadManZone.Core.Tests
         {
             _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 606);
             var board = _orchestrator.GetHqBoard();
-            var radio = GetPiece("radio_array");
+            var radio = GetPiece("command_outpost");
             Assert.IsTrue(board.TryPlace(radio, new Core.Common.GridCoord(1, 0), "radio_1").Success);
             _orchestrator.SaveHqBoard(board);
 

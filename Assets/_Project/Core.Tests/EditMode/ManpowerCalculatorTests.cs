@@ -21,14 +21,14 @@ namespace DeadManZone.Core.Tests
         public void CanStartBattle_FalseWhenFieldingExceedsManpower()
         {
             var board = TestBoards.WithBuildingAndRifle();
-            Assert.IsFalse(ManpowerCalculator.CanStartBattle(board, manpower: 17, Registry));
+            Assert.IsFalse(ManpowerCalculator.CanStartBattle(board, manpower: 9, Registry));
         }
 
         [Test]
         public void CanStartBattle_TrueWhenManpowerMeetsFielding()
         {
             var board = TestBoards.WithBuildingAndRifle();
-            Assert.IsTrue(ManpowerCalculator.CanStartBattle(board, manpower: 18, Registry));
+            Assert.IsTrue(ManpowerCalculator.CanStartBattle(board, manpower: 10, Registry));
         }
 
         [Test]
@@ -36,14 +36,14 @@ namespace DeadManZone.Core.Tests
         {
             var board = TestBoards.WithCommandBunker();
             int upkeep = ManpowerCalculator.ComputeUpkeep(board, Registry);
-            Assert.AreEqual(18, upkeep);
+            Assert.AreEqual(10, upkeep);
         }
 
         [Test]
         public void ComputeFieldingRequirement_IncludesHqManpowerCost()
         {
             var board = TestBoards.WithBuildingAndRifle();
-            Assert.AreEqual(18, ManpowerCalculator.ComputeFieldingRequirement(board, Registry));
+            Assert.AreEqual(10, ManpowerCalculator.ComputeFieldingRequirement(board, Registry));
         }
 
         [Test]

@@ -10,8 +10,8 @@ namespace DeadManZone.Core.Tests
     {
         public static PieceDefinition RifleSquadTenMan() => new()
         {
-            Id = "rifle_squad",
-            DisplayName = "Rifle Squad",
+            Id = "conscript_rifleman",
+            DisplayName = "Conscript Rifleman",
             Category = PieceCategory.Unit,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
             MaxHp = 100,
@@ -35,8 +35,8 @@ namespace DeadManZone.Core.Tests
 
         public static PieceDefinition RifleSquad() => new()
         {
-            Id = "rifle_squad",
-            DisplayName = "Rifle Squad",
+            Id = "conscript_rifleman",
+            DisplayName = "Conscript Rifleman",
             Category = PieceCategory.Unit,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
             Tags = new[] { GameTagIds.Infantry },
@@ -95,8 +95,8 @@ namespace DeadManZone.Core.Tests
 
         public static PieceDefinition CommandBunker() => new()
         {
-            Id = "command_bunker",
-            DisplayName = "Command Bunker",
+            Id = "command_outpost",
+            DisplayName = "Command Outpost",
             Category = PieceCategory.Building,
             Shape = MultiCellHorizontalPairShape(),
             MaxHp = 20,
@@ -141,8 +141,8 @@ namespace DeadManZone.Core.Tests
 
         public static PieceDefinition FieldWorkshop() => new()
         {
-            Id = "field_workshop",
-            DisplayName = "Field Workshop",
+            Id = "recruitment_office",
+            DisplayName = "Recruitment Office",
             Category = PieceCategory.Building,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
             MaxHp = 120,

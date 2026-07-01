@@ -27,16 +27,16 @@ namespace DeadManZone.Core.Tests
         {
             var hq = new BoardState(TestBoards.IronMarchHqLayout);
             hq.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0));
-            var radio = new PieceDefinition
+            var outpost = new PieceDefinition
             {
-                Id = "radio_array",
-                DisplayName = "Radio Array",
+                Id = "officer_quarters",
+                DisplayName = "Officer Quarters",
                 Category = PieceCategory.Building,
                 Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
                 CommandActions = CommandActionFlags.ChangeStance,
                 MaxHp = 12
             };
-            hq.TryPlace(radio, new GridCoord(0, 2), "radio_1");
+            hq.TryPlace(outpost, new GridCoord(0, 2), "outpost_1");
             var board = new BuildBoardSet
             {
                 Combat = new BoardState(TestBoards.Layout),

@@ -91,7 +91,7 @@ namespace DeadManZone.Core.Tests
                         {
                             OfferId = "general_rifle_0",
                             Lane = ShopLane.Offensive,
-                            PieceId = "rifle_squad",
+                            PieceId = "conscript_rifleman",
                             GoldPrice = 10,
                             RequisitionPrice = 0
                         }
@@ -104,7 +104,7 @@ namespace DeadManZone.Core.Tests
 
             Assert.AreEqual(42, loaded.Shop.Seed);
             Assert.AreEqual(1, loaded.Shop.Offers.Count);
-            Assert.AreEqual("rifle_squad", loaded.Shop.Offers.First().PieceId);
+            Assert.AreEqual("conscript_rifleman", loaded.Shop.Offers.First().PieceId);
             Assert.AreEqual("general_rifle_0", loaded.FrozenOfferId);
         }
 
@@ -176,7 +176,7 @@ namespace DeadManZone.Core.Tests
             var restored = BoardSnapshotMapper.ToBoard(snapshot, registry);
 
             Assert.AreEqual(source.Pieces.Count, restored.Pieces.Count);
-            Assert.IsTrue(restored.Pieces.Any(p => p.Definition.Id == "command_bunker"));
+            Assert.IsTrue(restored.Pieces.Any(p => p.Definition.Id == "command_outpost"));
         }
 
         [Test]

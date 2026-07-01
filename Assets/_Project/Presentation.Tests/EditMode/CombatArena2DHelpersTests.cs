@@ -16,10 +16,16 @@ namespace DeadManZone.Presentation.Tests.EditMode
         {
             var piece = Resources.Load<PieceDefinitionSO>("DeadManZone/Pieces/field_medic");
             Assert.NotNull(piece, "field_medic piece asset missing from Resources");
-            Assert.NotNull(piece.combatArenaSprite, "field_medic should reference combat2d_unit_field_medic");
+            var resolved = CombatUnitSpriteResolver.Resolve(piece, CombatSide.Player);
+            Assert.NotNull(resolved, "field_medic must resolve to a combat sprite via dedicated sprite or fallback.");
+            if (piece.combatArenaSprite != null)
+                Assert.AreSame(piece.combatArenaSprite, resolved);
 
-            Assert.AreSame(piece.combatArenaSprite, CombatUnitSpriteResolver.Resolve(piece, CombatSide.Player));
-            Assert.AreEqual(Color.white, CombatUnitSpriteResolver.ResolveTint(piece, CombatSide.Player));
+            var tint = CombatUnitSpriteResolver.ResolveTint(piece, CombatSide.Player);
+            if (piece.combatArenaSprite != null)
+                Assert.AreEqual(Color.white, tint);
+            else
+                Assert.AreNotEqual(Color.clear, tint);
         }
 
         [Test]

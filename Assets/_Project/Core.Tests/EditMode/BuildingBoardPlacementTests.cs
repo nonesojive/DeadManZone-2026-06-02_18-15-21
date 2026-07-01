@@ -39,9 +39,9 @@ namespace DeadManZone.Core.Tests.EditMode
             var orchestrator = new RunOrchestrator(database);
             orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 1);
             var buildingBoard = orchestrator.GetHqBoard();
-            var radio = database.Pieces.First(p => p.id == "radio_array").ToCore();
-            Assert.IsTrue(buildingBoard.TryPlace(radio, new Core.Common.GridCoord(1, 0), "radio_test").Success);
-            Assert.IsFalse(orchestrator.GetCombatBoard().TryPlace(radio, new Core.Common.GridCoord(1, 0), "radio_fail").Success);
+            var outpost = database.Pieces.First(p => p.id == "command_outpost").ToCore();
+            Assert.IsTrue(buildingBoard.TryPlace(outpost, new Core.Common.GridCoord(1, 0), "outpost_test").Success);
+            Assert.IsFalse(orchestrator.GetCombatBoard().TryPlace(outpost, new Core.Common.GridCoord(1, 0), "outpost_fail").Success);
         }
     }
 }

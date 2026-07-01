@@ -48,9 +48,9 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
-        public void CommandBunker_HasPositiveRating()
+        public void CombatUnit_HasPositiveRating()
         {
-            Assert.Greater(PieceCombatRating.ComputeBase(TestPieces.CommandBunker()), 0);
+            Assert.Greater(PieceCombatRating.ComputeBase(TestPieces.BulwarkSquad()), 0);
         }
 
         [Test]

@@ -48,7 +48,7 @@ namespace DeadManZone.Core.Tests.EditMode
             var enemy = TestBoards.WeakEnemyOnly();
             var run = TickCombatRun.Start(player, enemy, seed: 7);
 
-            var rifle = run.PlayerCombatantsForTests.Single(c => c.InstanceId == "player_rifle");
+            var rifle = run.PlayerCombatantsForTests.Single(c => c.InstanceId == "player_rifle_1");
 
             Assert.AreEqual(1, rifle.OccupiedCells.Count);
             Assert.AreEqual(rifle.AnchorPosition, rifle.OccupiedCells[0]);

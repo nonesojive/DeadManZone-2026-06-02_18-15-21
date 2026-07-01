@@ -37,18 +37,19 @@ namespace DeadManZone.Core.Tests
         {
             _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 777);
             var board = _orchestrator.GetPlayerBoard();
-            var rifle = _database.Pieces.First(p => p.id == "rifle_squad").ToCore();
+            var rifle = _database.Pieces.First(p => p.id == "conscript_rifleman").ToCore();
             Assert.IsTrue(board.TryPlace(rifle, TestBoards.CombatBoardAnchor(5, 3), "rifle_1").Success);
             _orchestrator.SaveCombatBoard(board);
 
             var registry = ContentRegistryProvider.Build(_database);
             int upkeep = ManpowerCalculator.ComputeUpkeep(_orchestrator.GetPlayerBoard(), registry);
-            _orchestrator.State.Manpower = 5;
-            int expectedShortfall = upkeep - 5;
+            int startingManpower = System.Math.Max(0, upkeep - 1);
+            _orchestrator.State.Manpower = startingManpower;
+            int expectedShortfall = upkeep - startingManpower;
 
             Assert.IsFalse(_orchestrator.CanStartBattle(out _));
             Assert.IsTrue(_orchestrator.TryEmergencyDraft());
-            Assert.AreEqual(5 + expectedShortfall, _orchestrator.State.Manpower);
+            Assert.AreEqual(startingManpower + expectedShortfall, _orchestrator.State.Manpower);
             Assert.AreEqual(upkeep, _orchestrator.State.Manpower);
             Assert.IsTrue(_orchestrator.State.EmergencyDraftUsed);
             Assert.IsTrue(_orchestrator.CanStartBattle(out _));

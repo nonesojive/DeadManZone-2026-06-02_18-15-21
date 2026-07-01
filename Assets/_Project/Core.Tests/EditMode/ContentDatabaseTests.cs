@@ -12,8 +12,8 @@ namespace DeadManZone.Core.Tests
         public void PieceDefinitionSO_ToCore_MapsFields()
         {
             var piece = ScriptableObject.CreateInstance<Data.PieceDefinitionSO>();
-            piece.id = "rifle_squad";
-            piece.displayName = "Rifle Squad";
+            piece.id = "conscript_rifleman";
+            piece.displayName = "Conscript Rifleman";
             piece.category = PieceCategory.Unit;
             piece.shapeCells = new[] { Vector2Int.zero };
             piece.tags = new[] { "Infantry" };
@@ -24,7 +24,7 @@ namespace DeadManZone.Core.Tests
 
             var core = piece.ToCore();
 
-            Assert.AreEqual("rifle_squad", core.Id);
+            Assert.AreEqual("conscript_rifleman", core.Id);
             Assert.AreEqual(PieceCategory.Unit, core.Category);
             Assert.AreEqual(10, core.MaxHp);
             Assert.AreEqual(2, core.BaseDamage);
@@ -37,16 +37,16 @@ namespace DeadManZone.Core.Tests
         {
             var database = ScriptableObject.CreateInstance<Data.ContentDatabase>();
             var rifle = ScriptableObject.CreateInstance<Data.PieceDefinitionSO>();
-            rifle.id = "rifle_squad";
-            rifle.displayName = "Rifle Squad";
+            rifle.id = "conscript_rifleman";
+            rifle.displayName = "Conscript Rifleman";
             rifle.category = PieceCategory.Unit;
             rifle.shapeCells = new[] { Vector2Int.zero };
             rifle.combatRole = GameTagIds.Assault;
             rifle.includeInShopPool = true;
 
             var radio = ScriptableObject.CreateInstance<Data.PieceDefinitionSO>();
-            radio.id = "radio_array";
-            radio.displayName = "Radio Array";
+            radio.id = "command_outpost";
+            radio.displayName = "Command Outpost";
             radio.category = PieceCategory.Building;
             radio.shapeCells = new[] { Vector2Int.zero, Vector2Int.up };
             radio.combatRole = GameTagIds.Utility;
@@ -58,7 +58,7 @@ namespace DeadManZone.Core.Tests
 
             var registry = database.BuildRegistry();
 
-            Assert.AreEqual("rifle_squad", registry.GetById("rifle_squad").Id);
+            Assert.AreEqual("conscript_rifleman", registry.GetById("conscript_rifleman").Id);
             Assert.AreEqual(1, registry.GetPool(ShopLane.Defensive).Count);
 
             Object.DestroyImmediate(rifle);
