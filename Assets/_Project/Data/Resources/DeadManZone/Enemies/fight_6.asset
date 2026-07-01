@@ -13,16 +13,29 @@ MonoBehaviour:
   m_Name: fight_6
   m_EditorClassIdentifier: 
   fightNumber: 6
-  displayName: Ash Phantoms
-  previewTag: Stealth
-  enemyFactionId: ash_wraiths
+  displayName: Bulwark Advance
+  previewTag: Mechanical
+  enemyFactionId: ironmarch_union
   placements:
-  - piece: {fileID: 11400000, guid: 21b91e5e648d6184b84cc8bc0b3727cd, type: 2}
+  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
     anchor: {x: 3, y: 4}
     instanceId: 
-  - piece: {fileID: 11400000, guid: 21b91e5e648d6184b84cc8bc0b3727cd, type: 2}
+  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
     anchor: {x: 4, y: 4}
     instanceId: 
-  - piece: {fileID: 11400000, guid: 2bac63a69be7d37419e8dfa995588d3e, type: 2}
+  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
     anchor: {x: 5, y: 4}
     instanceId: 
+  - piece: {fileID: 11400000, guid: f3a4b5c6d7e8498899aabbccddeeff03, type: 2}
+    anchor: {x: 4, y: 5}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: e10a0eb33766a3647af92eddfc733c09, type: 2}
+    anchor: {x: 0, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 6af7cb41902c7194a9529edab7e0b137, type: 2}
+    anchor: {x: 3, y: 5}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 1a5806fd52cd96847aee87be5a566886, type: 2}
+    anchor: {x: 5, y: 5}
+    instanceId: 
+

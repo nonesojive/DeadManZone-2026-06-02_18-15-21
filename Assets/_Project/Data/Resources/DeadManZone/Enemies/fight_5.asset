@@ -13,16 +13,26 @@ MonoBehaviour:
   m_Name: fight_5
   m_EditorClassIdentifier: 
   fightNumber: 5
-  displayName: Crimson Assault
-  previewTag: Boss
-  enemyFactionId: crimson_legion
+  displayName: Union Phalanx
+  previewTag: Infantry
+  enemyFactionId: ironmarch_union
   placements:
-  - piece: {fileID: 11400000, guid: b5d7e19665a70ef4bbab877f0c8cd433, type: 2}
+  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
     anchor: {x: 4, y: 4}
     instanceId: 
-  - piece: {fileID: 11400000, guid: 299685d2f5635104d9c4fdf290754b75, type: 2}
+  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
     anchor: {x: 5, y: 4}
     instanceId: 
-  - piece: {fileID: 11400000, guid: 011d8d022159d10439665c0ec0108fd8, type: 2}
-    anchor: {x: 0, y: 0}
+  - piece: {fileID: 11400000, guid: f3a4b5c6d7e8498899aabbccddeeff03, type: 2}
+    anchor: {x: 4, y: 5}
     instanceId: 
+  - piece: {fileID: 11400000, guid: e10a0eb33766a3647af92eddfc733c09, type: 2}
+    anchor: {x: 0, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 6af7cb41902c7194a9529edab7e0b137, type: 2}
+    anchor: {x: 3, y: 5}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 1a5806fd52cd96847aee87be5a566886, type: 2}
+    anchor: {x: 5, y: 5}
+    instanceId: 
+

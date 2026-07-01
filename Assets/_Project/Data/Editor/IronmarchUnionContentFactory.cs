@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using DeadManZone.Core;
 using DeadManZone.Core.Board;
@@ -52,7 +51,7 @@ namespace DeadManZone.Data.Editor
             var pieces = CreatePieces();
             ValidatePieceRoster(pieces);
             var faction = SaveIronmarchFaction();
-            var enemies = LoadEnemyTemplates();
+            var enemies = IronmarchEnemyFactory.CreateAll(pieces);
 
             DemoContentDatabaseWriter.Write(pieces, new[] { faction }, enemies);
 
@@ -195,21 +194,6 @@ namespace DeadManZone.Data.Editor
             };
             EditorUtility.SetDirty(faction);
             return faction;
-        }
-
-        private static EnemyTemplateSO[] LoadEnemyTemplates()
-        {
-            string[] guids = AssetDatabase.FindAssets("t:EnemyTemplateSO", new[] { EnemiesRoot });
-            var list = new List<EnemyTemplateSO>(guids.Length);
-            for (int i = 0; i < guids.Length; i++)
-            {
-                var enemy = AssetDatabase.LoadAssetAtPath<EnemyTemplateSO>(AssetDatabase.GUIDToAssetPath(guids[i]));
-                if (enemy != null)
-                    list.Add(enemy);
-            }
-
-            list.Sort((left, right) => left.fightNumber.CompareTo(right.fightNumber));
-            return list.ToArray();
         }
 
         private static void EnsureFolder(string path)
