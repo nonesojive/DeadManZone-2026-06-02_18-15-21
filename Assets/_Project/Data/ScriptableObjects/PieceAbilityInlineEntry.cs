@@ -14,6 +14,7 @@ namespace DeadManZone.Data
         public SynergyModType modType;
         public int magnitude;
         public string countTagId;
+        public bool applyToSelf;
 
         public PieceAbilityDefinition ToCore() => new()
         {
@@ -24,7 +25,8 @@ namespace DeadManZone.Data
             Stat = stat,
             ModType = modType,
             Magnitude = magnitude,
-            CountTagId = countTagId
+            CountTagId = countTagId,
+            ApplyToSelf = applyToSelf
         };
     }
 }

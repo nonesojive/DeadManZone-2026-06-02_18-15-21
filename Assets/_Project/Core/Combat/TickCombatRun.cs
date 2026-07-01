@@ -215,13 +215,13 @@ namespace DeadManZone.Core.Combat
             if (aliveTargets.Count == 0)
                 return;
 
-            foreach (var mover in movers.Where(m => m.IsAlive && m.Definition.MovementSpeed != 0).OrderBy(m => m.InstanceId))
+            foreach (var mover in movers.Where(m => m.IsAlive && m.EffectiveMovementSpeed != 0).OrderBy(m => m.InstanceId))
             {
-                if (mover.Definition.MovementSpeed == 0)
+                if (mover.EffectiveMovementSpeed == 0)
                     continue;
 
                 int moveChargePerTick = CombatMovementSpeed.GetChargePerTick(
-                    mover.Definition.MovementSpeed,
+                    mover.EffectiveMovementSpeed,
                     mover.Side == CombatSide.Player ? _tactics.PlayerTactic : _tactics.EnemyTactic);
                 if (mover.MoveChargePercentBonus != 0)
                 {

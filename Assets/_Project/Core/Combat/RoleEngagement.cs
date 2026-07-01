@@ -83,7 +83,7 @@ namespace DeadManZone.Core.Combat
 
         private static bool IsMovableCombatant(CombatantState combatant) =>
             combatant?.Definition != null
-            && combatant.Definition.MovementSpeed != 0;
+            && combatant.EffectiveMovementSpeed != 0;
 
         private static bool IsFrontlineRole(CombatantState combatant)
         {

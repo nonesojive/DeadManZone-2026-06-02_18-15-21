@@ -17,7 +17,7 @@ namespace DeadManZone.Core.Combat
             GridCoord engagementGoal) =>
             mover.IsAlive
             && PieceCombatRules.ParticipatesInCombat(mover.Definition)
-            && mover.Definition.MovementSpeed != 0
+            && mover.EffectiveMovementSpeed != 0
             && !mover.AnchorPosition.Equals(engagementGoal);
 
         public static bool HasEnemyInRange(CombatantState mover, IReadOnlyList<CombatantState> enemies)

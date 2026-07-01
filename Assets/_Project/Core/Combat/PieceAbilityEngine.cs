@@ -14,6 +14,8 @@ namespace DeadManZone.Core.Combat
             public int MoveChargeBonus { get; init; }
             public int MaxHpFlat { get; init; }
             public int MaxHpPercent { get; init; }
+            public int AttackSpeedSteps { get; init; }
+            public int MovementSpeedBonus { get; init; }
         }
 
         public readonly struct SynergyLink
@@ -96,6 +98,8 @@ namespace DeadManZone.Core.Combat
                 combatant.DamageBonus += bonuses.DamageBonus;
                 combatant.ArmorBuffSteps += bonuses.ArmorBuffSteps;
                 combatant.MoveCharge += bonuses.MoveChargeBonus;
+                combatant.AttackSpeedSteps += bonuses.AttackSpeedSteps;
+                combatant.MovementSpeedBonus += bonuses.MovementSpeedBonus;
 
                 if (bonuses.MaxHpFlat == 0 && bonuses.MaxHpPercent == 0)
                     continue;
@@ -136,7 +140,8 @@ namespace DeadManZone.Core.Combat
                         if (!ability.NeighborFilter.Matches(adjacentPiece.Definition))
                             continue;
 
-                        ApplyEffect(source.InstanceId, adjacentPiece.InstanceId, ability, resultsById, links);
+                        string targetId = ability.ApplyToSelf ? source.InstanceId : adjacentPiece.InstanceId;
+                        ApplyEffect(source.InstanceId, targetId, ability, resultsById, links);
                     }
                 }
             }
@@ -274,7 +279,9 @@ namespace DeadManZone.Core.Combat
                         ArmorBuffSteps = result.ArmorBuffSteps,
                         MoveChargeBonus = result.MoveChargeBonus,
                         MaxHpFlat = result.MaxHpFlat,
-                        MaxHpPercent = result.MaxHpPercent
+                        MaxHpPercent = result.MaxHpPercent,
+                        AttackSpeedSteps = result.AttackSpeedSteps,
+                        MovementSpeedBonus = result.MovementSpeedBonus
                     };
                     break;
                 case SynergyStat.ArmorType:
@@ -284,7 +291,9 @@ namespace DeadManZone.Core.Combat
                         ArmorBuffSteps = result.ArmorBuffSteps + amount,
                         MoveChargeBonus = result.MoveChargeBonus,
                         MaxHpFlat = result.MaxHpFlat,
-                        MaxHpPercent = result.MaxHpPercent
+                        MaxHpPercent = result.MaxHpPercent,
+                        AttackSpeedSteps = result.AttackSpeedSteps,
+                        MovementSpeedBonus = result.MovementSpeedBonus
                     };
                     break;
                 case SynergyStat.MoveChargePercent:
@@ -294,7 +303,9 @@ namespace DeadManZone.Core.Combat
                         ArmorBuffSteps = result.ArmorBuffSteps,
                         MoveChargeBonus = result.MoveChargeBonus + amount,
                         MaxHpFlat = result.MaxHpFlat,
-                        MaxHpPercent = result.MaxHpPercent
+                        MaxHpPercent = result.MaxHpPercent,
+                        AttackSpeedSteps = result.AttackSpeedSteps,
+                        MovementSpeedBonus = result.MovementSpeedBonus
                     };
                     break;
                 case SynergyStat.MaxHp:
@@ -306,7 +317,9 @@ namespace DeadManZone.Core.Combat
                             ArmorBuffSteps = result.ArmorBuffSteps,
                             MoveChargeBonus = result.MoveChargeBonus,
                             MaxHpFlat = result.MaxHpFlat,
-                            MaxHpPercent = result.MaxHpPercent + amount
+                            MaxHpPercent = result.MaxHpPercent + amount,
+                            AttackSpeedSteps = result.AttackSpeedSteps,
+                            MovementSpeedBonus = result.MovementSpeedBonus
                         };
                     }
                     else
@@ -317,13 +330,38 @@ namespace DeadManZone.Core.Combat
                             ArmorBuffSteps = result.ArmorBuffSteps,
                             MoveChargeBonus = result.MoveChargeBonus,
                             MaxHpFlat = result.MaxHpFlat + amount,
-                            MaxHpPercent = result.MaxHpPercent
+                            MaxHpPercent = result.MaxHpPercent,
+                            AttackSpeedSteps = result.AttackSpeedSteps,
+                            MovementSpeedBonus = result.MovementSpeedBonus
                         };
                     }
 
                     break;
-                case SynergyStat.AttackRange:
+                case SynergyStat.AttackSpeedSteps:
+                    result = new SynergyResult
+                    {
+                        DamageBonus = result.DamageBonus,
+                        ArmorBuffSteps = result.ArmorBuffSteps,
+                        MoveChargeBonus = result.MoveChargeBonus,
+                        MaxHpFlat = result.MaxHpFlat,
+                        MaxHpPercent = result.MaxHpPercent,
+                        AttackSpeedSteps = result.AttackSpeedSteps + amount,
+                        MovementSpeedBonus = result.MovementSpeedBonus
+                    };
+                    break;
                 case SynergyStat.MovementSpeed:
+                    result = new SynergyResult
+                    {
+                        DamageBonus = result.DamageBonus,
+                        ArmorBuffSteps = result.ArmorBuffSteps,
+                        MoveChargeBonus = result.MoveChargeBonus,
+                        MaxHpFlat = result.MaxHpFlat,
+                        MaxHpPercent = result.MaxHpPercent,
+                        AttackSpeedSteps = result.AttackSpeedSteps,
+                        MovementSpeedBonus = result.MovementSpeedBonus + amount
+                    };
+                    break;
+                case SynergyStat.AttackRange:
                 default:
                     return;
             }

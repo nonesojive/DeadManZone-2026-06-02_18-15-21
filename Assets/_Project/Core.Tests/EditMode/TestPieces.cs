@@ -51,6 +51,7 @@ namespace DeadManZone.Core.Tests
         public static PieceDefinition With(
             PieceDefinition source,
             int? baseDamage = null,
+            int? maxHp = null,
             AttackType? attackType = null,
             ArmorType? armorType = null,
             AttackRangeTier? attackRange = null,
@@ -74,7 +75,7 @@ namespace DeadManZone.Core.Tests
                 FlavorTags = source.FlavorTags,
                 Tags = source.Tags,
                 Abilities = abilities ?? source.Abilities,
-                MaxHp = source.MaxHp,
+                MaxHp = maxHp ?? source.MaxHp,
                 BaseDamage = baseDamage ?? source.BaseDamage,
                 CooldownTicks = cooldownTicks ?? source.CooldownTicks,
                 GoldCost = source.GoldCost,
@@ -222,5 +223,138 @@ namespace DeadManZone.Core.Tests
             CooldownTicks = 4,
             ManpowerCost = 1
         };
+
+        public static PieceDefinition FieldMedic() => With(
+            CreateUnit(
+                "field_medic",
+                primary: GameTagIds.Infantry,
+                combatRole: GameTagIds.Support,
+                synergyTags: new[] { GameTagIds.Medic }),
+            maxHp: 30,
+            baseDamage: 3,
+            movementSpeed: 2,
+            abilities: new[]
+            {
+                new PieceAbilityDefinition
+                {
+                    Id = "field_medic_adjacent_infantry_hp",
+                    Trigger = PieceAbilityTrigger.AdjacentAura,
+                    NeighborFilter = new NeighborFilter { PrimaryTagId = GameTagIds.Infantry },
+                    Stat = SynergyStat.MaxHp,
+                    ModType = SynergyModType.Flat,
+                    Magnitude = 10
+                }
+            });
+
+        public static PieceDefinition BulwarkSquad() => With(
+            CreateUnit(
+                "bulwark_squad",
+                primary: GameTagIds.Infantry,
+                combatRole: GameTagIds.Assault,
+                synergyTags: new[] { GameTagIds.Phalanx, GameTagIds.Veteran }),
+            maxHp: 55,
+            baseDamage: 3,
+            movementSpeed: 3,
+            abilities: new[]
+            {
+                new PieceAbilityDefinition
+                {
+                    Id = "bulwark_adjacent_phalanx_damage",
+                    Trigger = PieceAbilityTrigger.AdjacentAura,
+                    NeighborFilter = new NeighborFilter { SynergyTagId = GameTagIds.Phalanx },
+                    Stat = SynergyStat.Damage,
+                    ModType = SynergyModType.Flat,
+                    Magnitude = 1,
+                    ApplyToSelf = true
+                },
+                new PieceAbilityDefinition
+                {
+                    Id = "bulwark_adjacent_phalanx_hp",
+                    Trigger = PieceAbilityTrigger.AdjacentAura,
+                    NeighborFilter = new NeighborFilter { SynergyTagId = GameTagIds.Phalanx },
+                    Stat = SynergyStat.MaxHp,
+                    ModType = SynergyModType.Flat,
+                    Magnitude = 5,
+                    ApplyToSelf = true
+                }
+            });
+
+        public static PieceDefinition EnlistedRifleman() => With(
+            CreateUnit(
+                "enlisted_rifleman",
+                primary: GameTagIds.Infantry,
+                combatRole: GameTagIds.Assault,
+                synergyTags: new[] { GameTagIds.SmallArms }),
+            maxHp: 55,
+            baseDamage: 6,
+            movementSpeed: 2,
+            abilities: new[]
+            {
+                new PieceAbilityDefinition
+                {
+                    Id = "enlisted_rifleman_adjacent_command_attack_speed",
+                    Trigger = PieceAbilityTrigger.AdjacentAura,
+                    NeighborFilter = new NeighborFilter { SynergyTagId = GameTagIds.Command },
+                    Stat = SynergyStat.AttackSpeedSteps,
+                    ModType = SynergyModType.TierStep,
+                    Magnitude = 1,
+                    ApplyToSelf = true
+                }
+            });
+
+        public static PieceDefinition IronmarchIronHorse() => With(
+            CreateUnit(
+                "ironmarch_iron_horse",
+                primary: GameTagIds.Vehicle,
+                combatRole: GameTagIds.Tank,
+                synergyTags: new[] { GameTagIds.Ironclad }),
+            maxHp: 75,
+            baseDamage: 6,
+            movementSpeed: 2,
+            abilities: new[]
+            {
+                new PieceAbilityDefinition
+                {
+                    Id = "iron_horse_adjacent_infantry_hp",
+                    Trigger = PieceAbilityTrigger.AdjacentAura,
+                    NeighborFilter = new NeighborFilter { PrimaryTagId = GameTagIds.Infantry },
+                    Stat = SynergyStat.MaxHp,
+                    ModType = SynergyModType.Flat,
+                    Magnitude = 10,
+                    ApplyToSelf = true
+                }
+            });
+
+        public static PieceDefinition IroncladFieldMarshal() => With(
+            CreateUnit(
+                "ironclad_field_marshal",
+                primary: GameTagIds.Infantry,
+                combatRole: GameTagIds.Utility,
+                synergyTags: new[] { GameTagIds.Command, GameTagIds.Ironclad, GameTagIds.Inspiring }),
+            maxHp: 50,
+            baseDamage: 3,
+            movementSpeed: 3,
+            attackSpeed: AttackSpeedTier.Medium,
+            abilities: new[]
+            {
+                new PieceAbilityDefinition
+                {
+                    Id = "field_marshal_adjacent_infantry_hp",
+                    Trigger = PieceAbilityTrigger.AdjacentAura,
+                    NeighborFilter = new NeighborFilter { PrimaryTagId = GameTagIds.Infantry },
+                    Stat = SynergyStat.MaxHp,
+                    ModType = SynergyModType.Flat,
+                    Magnitude = 5
+                },
+                new PieceAbilityDefinition
+                {
+                    Id = "field_marshal_adjacent_infantry_movement",
+                    Trigger = PieceAbilityTrigger.AdjacentAura,
+                    NeighborFilter = new NeighborFilter { PrimaryTagId = GameTagIds.Infantry },
+                    Stat = SynergyStat.MovementSpeed,
+                    ModType = SynergyModType.Flat,
+                    Magnitude = 1
+                }
+            });
     }
 }

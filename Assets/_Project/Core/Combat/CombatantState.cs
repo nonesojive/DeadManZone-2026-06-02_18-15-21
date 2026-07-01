@@ -25,6 +25,7 @@ namespace DeadManZone.Core.Combat
         public int DamagePercentBonus { get; set; }
         public int AccuracyPercentBonus { get; set; }
         public int AttackSpeedSteps { get; set; }
+        public int MovementSpeedBonus { get; set; }
         public int AttackRangeSteps { get; set; }
         public int ArmorBuffSteps { get; set; }
         public int DamageDealtThisFight { get; set; }
@@ -35,6 +36,9 @@ namespace DeadManZone.Core.Combat
         public IReadOnlyList<GridCoord> OccupiedCells { get; private set; }
 
         public bool IsAlive => CurrentHp > 0;
+
+        public int EffectiveMovementSpeed =>
+            System.Math.Max(0, Definition.MovementSpeed + MovementSpeedBonus);
 
         public bool HasTag(string tag) => PieceTagQueries.HasTag(Definition, tag);
 

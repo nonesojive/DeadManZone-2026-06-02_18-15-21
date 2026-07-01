@@ -4,6 +4,7 @@ namespace DeadManZone.Core.Tags
     {
         Damage,
         AttackRange,
+        AttackSpeedSteps,
         MovementSpeed,
         ArmorType,
         MoveChargePercent,
