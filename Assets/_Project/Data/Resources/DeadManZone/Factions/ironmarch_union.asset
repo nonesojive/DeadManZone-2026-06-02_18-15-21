@@ -25,10 +25,11 @@ MonoBehaviour:
   - {x: 1, y: 4}
   - {x: 4, y: 4}
   - {x: 7, y: 4}
-  startingSupplies: 125
-  startingManpower: 100
-  baseMusterPerShop: 12
+  startingSupplies: 50
+  startingManpower: 15
+  baseSuppliesPerRound: 10
+  baseMusterPerShop: 1
   startingAuthority: 2
   startingMorale: 100
-  baseSalvageChancePercent: 10
+  baseSalvageChancePercent: 1
   tokenBackgroundColor: {r: 0.22, g: 0.28, b: 0.38, a: 0.45}

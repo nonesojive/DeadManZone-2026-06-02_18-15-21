@@ -28,13 +28,13 @@ namespace DeadManZone.Core.Run
     /// <summary>Post-combat income from faction baseline plus board bonuses.</summary>
     public static class RoundIncomeCalculator
     {
-        public static int ComputeSuppliesIncome(int baseSupplies, BuildBoardSet boards)
+        public static int ComputeSuppliesIncome(
+            int fightRewardSupplies,
+            int factionBaselineSupplies,
+            BuildBoardSet boards)
         {
-            if (baseSupplies <= 0)
-                return Math.Max(0, ComputeBoardSuppliesBonus(0, boards));
-
-            int boardBonus = ComputeBoardSuppliesBonus(baseSupplies, boards);
-            return baseSupplies + boardBonus;
+            int boardBonus = ComputeBoardSuppliesBonus(fightRewardSupplies, boards);
+            return fightRewardSupplies + factionBaselineSupplies + boardBonus;
         }
 
         public static int ComputeBoardSuppliesBonus(int baseSupplies, BuildBoardSet boards)
@@ -59,13 +59,14 @@ namespace DeadManZone.Core.Run
         }
 
         public static RoundIncomePreview ComputePreview(
-            int baseSupplies,
+            int fightRewardSupplies,
+            int factionBaselineSupplies,
             int baseMusterPerShop,
             int baseSalvagePercent,
             BuildBoardSet boards,
             BoardState combatBoard) =>
             new(
-                ComputeSuppliesIncome(baseSupplies, boards),
+                ComputeSuppliesIncome(fightRewardSupplies, factionBaselineSupplies, boards),
                 ComputeManpowerIncome(baseMusterPerShop, boards),
                 ComputeAuthorityPool(boards),
                 ComputeSalvageChancePreview(baseSalvagePercent, combatBoard));

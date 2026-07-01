@@ -38,6 +38,9 @@ namespace DeadManZone.Data
         public int startingSupplies = 100;
         public int startingManpower = 100;
 
+        [Header("Income")]
+        public int baseSuppliesPerRound;
+
         [Header("Manpower")]
         public int baseMusterPerShop = 12;
         public int startingAuthority = 2;

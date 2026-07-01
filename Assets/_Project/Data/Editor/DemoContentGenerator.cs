@@ -114,6 +114,7 @@ namespace DeadManZone.Data.Editor
             string displayName,
             int startingSupplies = 100,
             int startingManpower = 100,
+            int baseSuppliesPerRound = 0,
             int baseMusterPerShop = 12,
             int startingAuthority = 2,
             int startingMorale = 100,
@@ -128,6 +129,7 @@ namespace DeadManZone.Data.Editor
             asset.hqBoardHeight = 6;
             asset.startingSupplies = startingSupplies;
             asset.startingManpower = startingManpower;
+            asset.baseSuppliesPerRound = baseSuppliesPerRound;
             asset.baseMusterPerShop = baseMusterPerShop;
             asset.startingAuthority = startingAuthority;
             asset.startingMorale = startingMorale;

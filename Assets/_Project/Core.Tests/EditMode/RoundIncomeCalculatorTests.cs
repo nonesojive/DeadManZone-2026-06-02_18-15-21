@@ -14,7 +14,7 @@ namespace DeadManZone.Core.Tests
         public void ComputeSuppliesIncome_ReturnsBaseWhenBoardEmpty()
         {
             var boards = BoardsFrom(TestBoards.EmptyBuildingBoard());
-            Assert.AreEqual(10, RoundIncomeCalculator.ComputeSuppliesIncome(10, boards));
+            Assert.AreEqual(10, RoundIncomeCalculator.ComputeSuppliesIncome(10, 0, boards));
         }
 
         [Test]
