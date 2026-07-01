@@ -33,7 +33,7 @@ MonoBehaviour:
   baseSuppliesPerRound: 10
   baseMusterPerShop: 1
   startingAuthority: 2
-  startingMorale: 100
+  startingMorale: 30
   startingTactics: 020000000100000000000000
   baseSalvageChancePercent: 1
   shopOverride: {fileID: 0}

@@ -22,12 +22,18 @@ namespace DeadManZone.Presentation.DragDrop
         private void Awake()
         {
             _database = ContentDatabase.Load();
-            _hoverCardController = FindFirstObjectByType<PieceHoverCardController>();
+            ResolveHoverController();
         }
+
+        private void OnEnable() => ResolveHoverController();
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (_offer == null || _hoverCardController == null)
+            if (_offer == null)
+                return;
+
+            ResolveHoverController();
+            if (_hoverCardController == null)
                 return;
 
             var registry = ContentRegistryProvider.Build(_database ?? ContentDatabase.Load());
@@ -35,11 +41,19 @@ namespace DeadManZone.Presentation.DragDrop
                 return;
 
             var context = BuildShopContext();
-            _hoverCardController.Show(definition, eventData.position, context);
+            _hoverCardController.NotifyPieceHoverEnter(_offer.OfferId, definition, context);
         }
 
-        public void OnPointerExit(PointerEventData eventData) =>
-            _hoverCardController?.Hide();
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (_offer == null)
+            {
+                _hoverCardController?.Hide();
+                return;
+            }
+
+            _hoverCardController?.NotifyPieceHoverExit(_offer.OfferId);
+        }
 
         private void OnDisable() => _hoverCardController?.Hide();
 
@@ -128,6 +142,14 @@ namespace DeadManZone.Presentation.DragDrop
             return faction != null && !string.IsNullOrEmpty(faction.displayName)
                 ? faction.displayName
                 : factionId;
+        }
+
+        private void ResolveHoverController()
+        {
+            if (_hoverCardController != null)
+                return;
+
+            _hoverCardController = FindFirstObjectByType<PieceHoverCardController>();
         }
     }
 }

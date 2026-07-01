@@ -1,3 +1,5 @@
+> **Superseded (2026-07-01):** Draw fight rewards via `FightRewardTable` removed. See `2026-07-01-build-hud-economy-design.md`.
+
 # DeadManZone Combat & Units Demo Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

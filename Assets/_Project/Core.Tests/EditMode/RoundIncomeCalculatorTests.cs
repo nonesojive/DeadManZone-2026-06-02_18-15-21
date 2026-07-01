@@ -11,10 +11,10 @@ namespace DeadManZone.Core.Tests
     public sealed class RoundIncomeCalculatorTests
     {
         [Test]
-        public void ComputeSuppliesIncome_ReturnsBaseWhenBoardEmpty()
+        public void ComputeSuppliesIncome_ReturnsBaselineWhenBoardEmpty()
         {
             var boards = BoardsFrom(TestBoards.EmptyBuildingBoard());
-            Assert.AreEqual(10, RoundIncomeCalculator.ComputeSuppliesIncome(10, 0, boards));
+            Assert.AreEqual(10, RoundIncomeCalculator.ComputeSuppliesIncome(10, boards));
         }
 
         [Test]

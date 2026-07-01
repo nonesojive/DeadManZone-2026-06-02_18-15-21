@@ -224,14 +224,10 @@ git commit -am "feat(combat): replace movement tier enum with numeric speed 0-4"
 
 ```csharp
 [Test]
-public void ComputeSuppliesIncome_IncludesFactionBaselinePlusFightReward()
+public void ComputeSuppliesIncome_EmptyBoard_IsFactionBaselineOnly()
 {
-    var boards = new BuildBoardSet { Hq = new BoardState(TestBoards.IronMarchHqLayout()) };
-    int income = RoundIncomeCalculator.ComputeSuppliesIncome(
-        baseSupplies: 10,          // fight reward
-        factionBaseline: 10,       // new param
-        boards);
-    Assert.AreEqual(20, income);  // no board bonuses yet
+    var boards = new BuildBoardSet { Hq = TestBoards.EmptyBuildingBoard() };
+    Assert.AreEqual(10, RoundIncomeCalculator.ComputeSuppliesIncome(10, boards));
 }
 ```
 
@@ -247,14 +243,14 @@ public int baseSuppliesPerRound;
 Update `RoundIncomeCalculator.ComputeSuppliesIncome`:
 
 ```csharp
-public static int ComputeSuppliesIncome(int fightRewardSupplies, int factionBaselineSupplies, BuildBoardSet boards)
+public static int ComputeSuppliesIncome(int factionBaselineSupplies, BuildBoardSet boards)
 {
-    int boardBonus = ComputeBoardSuppliesBonus(fightRewardSupplies, boards);
-    return fightRewardSupplies + factionBaselineSupplies + boardBonus;
+    int boardBonus = ComputeBoardSuppliesBonus(factionBaselineSupplies, boards);
+    return factionBaselineSupplies + boardBonus;
 }
 ```
 
-`RunOrchestrator.Income.cs` — pass `Faction.baseSuppliesPerRound` into preview and `ApplyPostCombatIncome`.
+`RunOrchestrator.Income.cs` — pass `Faction.baseSuppliesPerRound` only (no `FightRewardTable`).
 
 - [ ] **Step 4: Run test — expect PASS**
 

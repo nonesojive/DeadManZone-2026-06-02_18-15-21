@@ -8,17 +8,26 @@ namespace DeadManZone.Core.Tests.EditMode
     public sealed class IronmarchUnionFactionTests
     {
         [Test]
-        public void ComputeSuppliesIncome_IncludesFightRewardFactionBaselineAndBoardBonus()
+        public void ComputeSuppliesIncome_EmptyBoard_IsFactionBaselineOnly()
         {
-            const int fightRewardSupplies = 20;
+            var boards = new BuildBoardSet { Hq = TestBoards.EmptyBuildingBoard() };
+
+            Assert.AreEqual(
+                10,
+                RoundIncomeCalculator.ComputeSuppliesIncome(factionBaselineSupplies: 10, boards));
+        }
+
+        [Test]
+        public void ComputeSuppliesIncome_IncludesFactionBaselineAndBoardBonus()
+        {
             const int factionBaselineSupplies = 10;
             var boards = new BuildBoardSet { Hq = TestBoards.EmptyBuildingBoard() };
-            int boardBonus = RoundIncomeCalculator.ComputeBoardSuppliesBonus(fightRewardSupplies, boards);
-            int expected = fightRewardSupplies + factionBaselineSupplies + boardBonus;
+            int boardBonus = RoundIncomeCalculator.ComputeBoardSuppliesBonus(factionBaselineSupplies, boards);
+            int expected = factionBaselineSupplies + boardBonus;
 
             Assert.AreEqual(
                 expected,
-                RoundIncomeCalculator.ComputeSuppliesIncome(fightRewardSupplies, factionBaselineSupplies, boards));
+                RoundIncomeCalculator.ComputeSuppliesIncome(factionBaselineSupplies, boards));
         }
     }
 }

@@ -108,6 +108,7 @@ namespace DeadManZone.Data.Editor
             AttackRangeTier attackRange,
             int movementSpeed,
             int musterPerShop = 0,
+            int requisitionCost = 0,
             string[] synergyTags = null,
             string[] abilityTags = null,
             string[] flavorTags = null,
@@ -129,6 +130,7 @@ namespace DeadManZone.Data.Editor
                 cooldownTicks: 3,
                 goldCost: goldCost,
                 manpowerCost: manpowerCost,
+                requisitionCost: requisitionCost,
                 musterPerShop: musterPerShop,
                 attackType: attackType,
                 armorType: armorType,
@@ -184,7 +186,7 @@ namespace DeadManZone.Data.Editor
                 baseSuppliesPerRound: 10,
                 baseMusterPerShop: 1,
                 startingAuthority: 2,
-                startingMorale: 100,
+                startingMorale: 30,
                 baseSalvageChancePercent: 1);
 
             faction.startingTactics = new[]

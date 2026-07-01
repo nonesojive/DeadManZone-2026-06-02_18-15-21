@@ -12,6 +12,8 @@ namespace DeadManZone.Core.Tags
         public int MovementSpeed { get; init; }
         public AttackSpeedTier AttackSpeed { get; init; } = AttackSpeedTier.Medium;
         public int AttackSpeedValue { get; init; }
+        public AttackRangeTier AttackRange { get; init; } = AttackRangeTier.Medium;
+        public int AttackRangeValue { get; init; }
         public int MovementSpeedValue { get; init; }
         public AttackType AttackType { get; init; } = AttackType.None;
         public ArmorType ArmorType { get; init; } = ArmorType.None;
@@ -31,5 +33,7 @@ namespace DeadManZone.Core.Tags
         public string ArmorTypeTooltip { get; init; } = string.Empty;
         public IReadOnlyList<string> AbilityLines { get; init; } = Array.Empty<string>();
         public string AbilityText { get; init; } = string.Empty;
+        /// <summary>False for HQ-board pieces (income/utility only; no combat stat row).</summary>
+        public bool ShowCombatStats { get; init; } = true;
     }
 }

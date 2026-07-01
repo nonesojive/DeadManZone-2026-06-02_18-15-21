@@ -56,7 +56,7 @@ namespace DeadManZone.Core.Tags
                 [GameTagIds.Tank] = Create(GameTagIds.Tank, "Tank", TagCategory.CombatRole, "Durable role focused on soaking damage.", 78),
                 [GameTagIds.Artillery] = Create(GameTagIds.Artillery, "Artillery", TagCategory.CombatRole, "Long-range fire support specialist.", 76),
                 [GameTagIds.Support] = Create(GameTagIds.Support, "Support", TagCategory.CombatRole, "Role that buffs and stabilizes allies.", 74),
-                [GameTagIds.Utility] = Create(GameTagIds.Utility, "Utility", TagCategory.CombatRole, "Tactical role focused on control and tools.", 72),
+                [GameTagIds.Utility] = Create(GameTagIds.Utility, "Utility", TagCategory.CombatRole, "Command and tool units; engages the front line when armed.", 72),
                 [GameTagIds.Sniper] = Create(GameTagIds.Sniper, "Sniper", TagCategory.CombatRole, "Precision ranged eliminator role.", 68),
                 [GameTagIds.Defender] = Create(GameTagIds.Defender, "Defender", TagCategory.CombatRole, "Frontline bulwark role focused on holding ground.", 66),
 

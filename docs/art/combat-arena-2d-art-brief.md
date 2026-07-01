@@ -129,24 +129,20 @@ Structures use the **same sprite resolver** as units (`CombatArena2DBuildingVisu
 
 ---
 
-### E. Unit combat sprites (46 pieces)
+### E. Unit combat sprites (17 pieces — IronMarch Union content pass)
 
-See CSV for per-piece rows. Summary by priority:
+See CSV for per-piece rows. Current vertical slice roster only (`ironmarch_union` + neutral shop pieces).
 
-#### P0 — No shop icon (21 pieces) — must ship unique or archetype art
+#### P0 — Ship unique or archetype art first
 
 | Faction | Pieces |
 |---------|--------|
-| **iron_vanguard** | ironmarch_rifle |
-| **crimson_legion** | crimson_elite, crimson_tank, crimson_artillery |
-| **dust_scourge** | sand_raider, scrap_rig, toxin_launcher, dust_hq |
-| **cartel_of_echoes** | phantom_agent, resonance_cannon, echo_hq, signal_relay |
-| **ash_wraiths** | wraith_stalker, wraith_phantom, wraith_bombard |
-| **neutral** | armored_sapper, command_bunker, gas_drone, mortar_crew, trench_raider, weak_conscript |
+| **ironmarch_union** | enlisted_rifleman, ironmarch_iron_horse, officer_quarters, command_outpost |
+| **neutral** | supply_depot, field_hospital, machine_gun_nest |
 
-#### P1 — Has icon; upgrade to dedicated combat sprite
+#### P1 — Has shop icon; upgrade to dedicated combat sprite
 
-All remaining pieces with `has_shop_icon=yes` in CSV (25 pieces). Verify icon ≥48px in Unity; if smaller, treat as P0.
+All remaining pieces with `has_shop_icon=yes` in CSV (13 pieces). Verify icon ≥48px in Unity; if smaller, treat as P0.
 
 #### Shared archetypes (save production time)
 

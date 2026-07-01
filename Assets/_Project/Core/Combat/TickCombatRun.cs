@@ -126,6 +126,27 @@ namespace DeadManZone.Core.Combat
                 Continue(FilterCommands(submittedCommands, CurrentPauseIndex));
         }
 
+        /// <summary>Replays saved pause commands until the sim matches a persisted mid-fight snapshot.</summary>
+        public void FastForwardFromSave(
+            int checkpointsFired,
+            bool savedAwaitingCommand,
+            IReadOnlyList<PhaseCommand> submittedCommands)
+        {
+            FastForwardToCheckpoint(checkpointsFired, submittedCommands);
+
+            while (!IsFightOver && !savedAwaitingCommand && AwaitingCommand)
+            {
+                var commands = FilterCommands(submittedCommands, CurrentPauseIndex);
+                if (commands.Count == 0)
+                    break;
+
+                Continue(commands);
+            }
+        }
+
+        public CombatAdvanceResult BuildCompletionResultIfOver() =>
+            IsFightOver ? CompleteResult() : null;
+
         private void RunUntilPauseOrEnd(int segment)
         {
             while (!IsFightOver)

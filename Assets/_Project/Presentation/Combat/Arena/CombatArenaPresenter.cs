@@ -52,7 +52,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (combatDirector != null)
             {
                 combatDirector.EventReplayed += OnEventReplayed;
-                combatDirector.SegmentPlaybackFinished += SnapAllActorsToReplayAnchors;
+                combatDirector.SegmentPlaybackFinished += OnSegmentPlaybackFinished;
             }
         }
 
@@ -61,7 +61,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (combatDirector != null)
             {
                 combatDirector.EventReplayed -= OnEventReplayed;
-                combatDirector.SegmentPlaybackFinished -= SnapAllActorsToReplayAnchors;
+                combatDirector.SegmentPlaybackFinished -= OnSegmentPlaybackFinished;
             }
         }
 
@@ -79,7 +79,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 if (isActiveAndEnabled)
                 {
                     combatDirector.EventReplayed += OnEventReplayed;
-                    combatDirector.SegmentPlaybackFinished += SnapAllActorsToReplayAnchors;
+                    combatDirector.SegmentPlaybackFinished += OnSegmentPlaybackFinished;
                 }
             }
 
@@ -97,6 +97,21 @@ namespace DeadManZone.Presentation.Combat.Arena
                 actor.ClearChaseTarget();
                 actor.SnapToAnchor(pair.Value);
             }
+        }
+
+        private void OnSegmentPlaybackFinished()
+        {
+            // Top Troops chase moves actors ahead of grid anchors; snapping on pause looks like a rewind.
+            if (UsesFreeChaseMovement())
+                return;
+
+            SnapAllActorsToReplayAnchors();
+        }
+
+        private bool UsesFreeChaseMovement()
+        {
+            var config = CombatArenaBootstrap.Instance?.Config;
+            return config != null && config.useTopTroopsFreeChaseMovement;
         }
 
         /// <summary>Called when the additive arena scene unloads so pooled actors are not reused.</summary>

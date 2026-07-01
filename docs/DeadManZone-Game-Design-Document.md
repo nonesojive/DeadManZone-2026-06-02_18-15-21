@@ -176,16 +176,30 @@ Main Menu
 
 **Dust Scourge bonus:** +25% supplies from **sell refunds** (not salvage shop chance).
 
-### Post-combat income (v3.1)
+### Post-combat income (v3.2)
 
 After **every** fight (win, loss, or draw):
 
 | Resource | Gain |
 |----------|------|
-| **Supplies** | Fight-index baseline (`FightRewardTable`) + critical-mass supplies bonuses from aggregate board |
-| **Manpower** | Muster income: faction `baseMusterPerShop` + piece/building muster + supply adjacency synergy |
+| **Supplies** | Faction `baseSuppliesPerRound` + building flat bonuses (e.g. Supply Depot +5) + critical-mass supplies bonuses from aggregate HQ+combat board |
+| **Manpower** | Muster income: faction `baseMusterPerShop` + piece/building `musterPerShop` + supply adjacency synergy |
 
 Top bar **income labels** (`SuppliesIncome`, `ManpowerIncome`) preview these values during build. See `docs/superpowers/specs/2026-07-01-build-hud-economy-design.md`.
+
+**Removed (2026-07-01 content pass):** `FightRewardTable` — no per-fight-index supply ladder; win/loss/draw do not change supplies or manpower grants.
+
+### IronMarch Union economy (current vertical slice)
+
+| Field | Value |
+|-------|-------|
+| Run start supplies | 50 |
+| Run start manpower | 15 |
+| Supplies per fight (empty board) | +10 (`baseSuppliesPerRound`) |
+| Manpower per shop (empty board) | +1 (`baseMusterPerShop`) |
+| Salvage chance base | 1% |
+
+Board pieces add on top (Supply Depot +5 supplies/round, Recruitment Office +1 manpower/round, Officer Quarters authority scaling, etc.).
 
 ### Salvage shop chance (v3.1)
 
@@ -197,19 +211,7 @@ min(50%, faction.baseSalvageChancePercent + combatBoardSalvageBoost)
 
 Board boost from pieces on the **combat board** (`SalvageChanceBonus`, +5% flag). **Not** modified by win/loss, destroyed enemies, or victory bonus. HUD field: `SalvageNumber`.
 
-### Tutorial economy (fights 1–3)
-
-Post-combat supplies **baseline** (before board bonuses); granted after every fight:
-
-| Moment | Supplies (baseline) |
-|--------|---------------------|
-| Run start | 125 |
-| After fight 1 | +100 |
-| After fight 2 | +105 |
-| After fight 3 | +110 |
-| Fights 4+ | Escalating curve |
-
-**Principle:** Tutorial softness from **enemy composition only** — no hidden player combat nerfs.
+**Tutorial softness:** Enemy template progression only (fights 1–3 use lighter compositions). No hidden combat nerfs and no per-fight supply ladder.
 
 ---
 
@@ -356,7 +358,7 @@ Tags = **identity layer**. Stats/enums = **numbers layer**. One unified tag regi
 | Primary | exactly 1 | `infantry`, `vehicle`, `building`, `structure` |
 | Combat role | exactly 1 | `assault`, `tank`, `artillery`, `support`, `headquarters` |
 | System | exactly 1 | `combatant`, `noncombatant`, `hq` |
-| Faction | exactly 1 | `neutral`, `iron_vanguard`, `dust_scourge` |
+| Faction | exactly 1 | `neutral`, `ironmarch_union`, `dust_scourge` |
 | Synergy | 0–4 | `medic`, `command`, `echo`, `inspiring`, `stealth`, … |
 
 Full 25-keyword encyclopedia UI is **post-demo**; expanded vocabulary exists in data for future mechanics.
@@ -448,9 +450,9 @@ Some offers appear as **Salvaged** (discounted/recycled pool) with distinct card
 
 | Faction | ID | Display name | Hook |
 |---------|-----|--------------|------|
-| IronMarch Union | `iron_vanguard` | IronMarch Union | Command, heavy armor, default unlocked |
-| Dust Scourge | `dust_scourge` | Dust Scourge | Gas, salvage bonus, +12 Manpower |
-| Cartel of Echoes | `cartel_of_echoes` | Cartel of Echoes | Stealth/echo synergies, +3 Authority |
+| IronMarch Union | `ironmarch_union` | IronMarch Union | Command, heavy armor; **only playable faction** in current vertical slice |
+| Dust Scourge | `dust_scourge` | Dust Scourge | Gas, salvage bonus (hidden in faction select until content pass) |
+| Cartel of Echoes | `cartel_of_echoes` | Cartel of Echoes | Stealth/echo synergies (hidden in faction select until content pass) |
 
 ### Enemy pools (demo)
 
@@ -460,18 +462,15 @@ Some offers appear as **Salvaged** (discounted/recycled pool) with distinct card
 | Crimson Legion | `crimson_legion` | Heavy assault |
 | Ash Wraiths | `ash_wraiths` | Gas, stealth ambush |
 
-### Content counts (repo, June 2026)
+### Content counts (repo, July 2026 content pass)
 
 | Category | Count | Notes |
 |----------|-------|-------|
-| Generated piece definitions | 38 | `DemoPieceFactory.CreateAll()` |
-| Piece assets on disk | 46 | Includes legacy/extra variants |
-| Synty sandbox art roster | 25 | `SandboxArtRoster` — full icon + arena coverage gate |
-| Enemy templates | 10 | `fight_1` … `fight_10` |
-| HQ pieces | 3 | `ironmarch_hq`, `dust_hq`, `echo_hq` |
-| Demo abilities | 3 | Grenade / Shield / Cannon |
-| Tactics | 4 | See §7 |
-| Achievements | 10 | Local meta |
+| Piece definitions | 17 | IronMarch Union content pass roster (`IronmarchUnionContentFactory`) |
+| Enemy templates | 10 | `fight_1` … `fight_10` — new pool only |
+| Playable factions | 1 | `ironmarch_union` |
+| Tactics (starting) | 3 | Hold the Line, Advance, Disciplined Fire |
+| Tactics (locked) | 1 | Protect Support |
 
 ### Core neutral roster (shop highlights)
 
@@ -778,12 +777,12 @@ All gameplay content ships as **ScriptableObjects** validated at import. Code de
 | Manpower | Hard gate + draft + shop relief | Attrition without per-unit HP tracking |
 | Morale | Loss severity × fight index | Run arc wears down |
 | Card prefabs | Manual authoring + bake guard | Prevents tooling from wiping designer layout |
-| Post-combat income (v3.1) | Supplies + manpower every fight; board bonuses | Predictable economy; HUD previews match grants |
+| Post-combat income (v3.2) | Faction baseline + board bonuses every fight | No `FightRewardTable`; HUD previews match grants |
 | Salvage chance (v3.1) | Faction base + combat board only | No win/loss or kill bonuses |
 | Runtime card mutation | Allowed in Play on instances | Reverts on Stop; only asset writes are blocked |
 | Art stack | Synty POLYGON on URP | Cohesive style, subscription assets |
 | Content | ScriptableObject-first | Designers ship pieces without code |
-| Faction naming | **IronMarch Union** (`iron_vanguard`) | Single display name across GDD + demo guide |
+| Faction naming | **IronMarch Union** (`ironmarch_union`) | Single display name; no "Vanguard" |
 
 ---
 
@@ -800,7 +799,7 @@ All gameplay content ships as **ScriptableObjects** validated at import. Code de
 ## Appendix B — Stat tier reference
 
 **Attack speed:** Slow ×1.5, Medium ×1.0, Fast ×0.75  
-**Movement (ticks):** None ∞, Low 3, Medium 2, High 1  
+**Movement speed:** Integer **0–4** on piece data (0 = immobile; higher = faster). Charge-per-tick: `speed == 0 ? 0 : speed + 1`.  
 **Range (Manhattan):** Melee 1, Short 3, Medium 5, Long 8  
 
 **Accuracy defaults (before distance falloff):** Melee 92, Ballistic 78, Piercing 80, Explosive 72, Shredding 68, Sniper role 88, Artillery role 72+. Per-piece override optional.
@@ -813,7 +812,7 @@ All gameplay content ships as **ScriptableObjects** validated at import. Code de
 |-----------|---------------------|
 | Supplies | `goldCost`, `GoldPrice` |
 | Authority | `RequisitionPrice`, Requisition (combat UI) |
-| IronMarch Union | `iron_vanguard` faction id |
+| IronMarch Union | `ironmarch_union` faction id |
 
 ---
 

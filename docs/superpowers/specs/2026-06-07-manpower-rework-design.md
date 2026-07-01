@@ -1,3 +1,5 @@
+> **Superseded (2026-07-01):** `FightRewardTable` removed; manpower no longer from fight rewards. See `2026-07-01-build-hud-economy-design.md`.
+
 # DeadManZone — Manpower Rework Design Spec
 
 **Date:** 2026-06-07  

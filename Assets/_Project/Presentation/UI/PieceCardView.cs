@@ -22,6 +22,7 @@ namespace DeadManZone.Presentation.UI
         [SerializeField] private TMP_Text damageText;
         [SerializeField] private TMP_Text movementSpeedText;
         [SerializeField] private TMP_Text attackSpeedText;
+        [SerializeField] private TMP_Text attackRangeText;
         [SerializeField] private Image armorIcon;
         [SerializeField] private Image attackTypeIcon;
         [SerializeField] private Image combatRoleIcon;
@@ -103,6 +104,7 @@ namespace DeadManZone.Presentation.UI
             TMP_Text damage = null,
             TMP_Text movementSpeed = null,
             TMP_Text attackSpeed = null,
+            TMP_Text attackRange = null,
             Image armor = null,
             Image attackType = null,
             Image combatRole = null,
@@ -127,6 +129,7 @@ namespace DeadManZone.Presentation.UI
             damageText = damage;
             movementSpeedText = movementSpeed;
             attackSpeedText = attackSpeed;
+            attackRangeText = attackRange;
             armorIcon = armor;
             attackTypeIcon = attackType;
             combatRoleIcon = combatRole;
@@ -151,6 +154,7 @@ namespace DeadManZone.Presentation.UI
         public string DamageTextForTests => damageText?.text;
         public string MovementSpeedTextForTests => movementSpeedText?.text;
         public string AttackSpeedTextForTests => attackSpeedText?.text;
+        public string AttackRangeTextForTests => attackRangeText?.text;
         public string PrimaryTagTextForTests => primaryTagText?.text;
         public Sprite ArmorIconSpriteForTests => armorIcon?.sprite;
         public Sprite AttackTypeIconSpriteForTests => attackTypeIcon?.sprite;
@@ -162,6 +166,7 @@ namespace DeadManZone.Presentation.UI
         private void ResolveAuthoredRefsIfNeeded()
         {
             abilityText ??= FindAuthoredText("AbilityText_UnitCard");
+            attackRangeText ??= FindAuthoredText("AttackRange_UnitCard");
         }
 
         private TMP_Text FindAuthoredText(string objectName)
@@ -204,6 +209,7 @@ namespace DeadManZone.Presentation.UI
             damageText ??= CreateLabel("Damage", 13f, FontStyles.Normal, true);
             movementSpeedText ??= CreateLabel("MovementSpeed", 12f, FontStyles.Normal, true);
             attackSpeedText ??= CreateLabel("AttackSpeed", 12f, FontStyles.Normal, true);
+            attackRangeText ??= CreateLabel("AttackRange", 12f, FontStyles.Normal, true);
             attackTypeText ??= CreateLabel("AttackType", 12f, FontStyles.Normal, true);
             armorTypeText ??= CreateLabel("ArmorType", 12f, FontStyles.Normal, true);
             synergyText ??= CreateLabel("SynergyBonus", 12f, FontStyles.Bold, false);

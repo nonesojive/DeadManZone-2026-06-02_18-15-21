@@ -18,7 +18,7 @@
 | Abilities | **Full implementation** of bespoke building and unit effects |
 | Accuracy | **Engine defaults only** — no per-piece `accuracyOverride` |
 | Movement | **Numbered 0–4** (higher = faster); replaces tier enum for authoring |
-| Balancing | Remove/ignore `CombatContentBalancePass` heuristics and legacy balance goals |
+| Balancing | Remove/ignore `CombatContentBalancePass` heuristics, legacy balance goals, and `FightRewardTable` |
 | Implementation | **Approach 1:** content factory editor script + focused engine deltas |
 
 ---
@@ -45,7 +45,7 @@
 | `baseMusterPerShop` | **1** |
 | `baseSalvageChancePercent` | 1 |
 
-`RoundIncomeCalculator` adds `FactionSO.baseSuppliesPerRound` to post-fight supplies income (on top of fight rewards and board bonuses).
+`RoundIncomeCalculator.ComputeSuppliesIncome` uses `FactionSO.baseSuppliesPerRound` plus board bonuses only (`BuildingIncomeRules`, critical mass). No per-fight reward table.
 
 ### 2.3 Playable factions
 
@@ -174,6 +174,7 @@ Rewrite `EnemyTemplateSO` assets to reference only new piece ids. Progressive di
 - Dust Scourge / Cartel faction content
 - New art assets (reuse placeholders / existing Synty mappings where possible)
 - `CombatContentBalancePass` auto-tuning
+- `FightRewardTable` (per-fight supply ladder — removed)
 - Protect Support unlock progression (locked only; no unlock path this pass)
 - Save migration from `iron_vanguard` saves (breaking rename accepted)
 

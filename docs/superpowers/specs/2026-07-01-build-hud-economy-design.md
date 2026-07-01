@@ -35,10 +35,10 @@ Applied after **every** fight (win, loss, or draw):
 
 | Resource | Formula |
 |----------|---------|
-| **Supplies** | `FightRewardTable` base for current fight index + critical-mass supplies bonuses (flat + % of base from aggregate combat+HQ board) |
+| **Supplies** | `FactionSO.baseSuppliesPerRound` + `BuildingIncomeRules` flat bonuses (e.g. Supply Depot +5) + critical-mass supplies bonuses (flat + % of faction baseline from aggregate HQ+combat board) |
 | **Manpower** | `MusterCalculator` (faction `baseMusterPerShop` + piece `musterPerShop` + supply adjacency synergy on aggregate board) |
 
-**Removed:** Win-only supplies; draw penalty on supplies; fight-reward `BonusAuthority` (authority pool already resets from board).
+**Removed:** `FightRewardTable` (deleted); win-only supplies; draw penalty on supplies; per-fight-index supply ladder; fight-reward `BonusAuthority` / `BonusManpower`.
 
 Critical-mass **supplies** bonuses apply at **post-combat income**, not at fight start. Critical-mass **authority** bonus still applies at fight start for combat spending.
 

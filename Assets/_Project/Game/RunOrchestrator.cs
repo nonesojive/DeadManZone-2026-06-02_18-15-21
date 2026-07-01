@@ -506,6 +506,7 @@ namespace DeadManZone.Game
         private void RestoreActiveCombatFromSave()
         {
             _activeCombat = null;
+            _pendingCombatCompletion = null;
             if (State.Phase != RunPhase.Combat || State.Combat == null)
                 return;
 
@@ -529,10 +530,6 @@ namespace DeadManZone.Game
                 State.Combat.Authority > 0 ? State.Combat.Authority : State.Combat.Requisition,
                 buildBoards);
 
-            _activeCombat.FastForwardToCheckpoint(
-                State.Combat.CheckpointsFired,
-                State.Combat.SubmittedCommands);
-
             var playerTactic = State.Combat.PlayerTactic;
             if (!TacticUnlockRules.IsUnlocked(Faction, playerTactic))
                 playerTactic = ResolveDefaultPlayerTactic(Faction);
@@ -542,6 +539,13 @@ namespace DeadManZone.Game
                 _activeCombat.SetPlayerTactic(playerTactic);
                 State.Combat.PlayerTactic = playerTactic;
             }
+
+            _activeCombat.FastForwardFromSave(
+                State.Combat.CheckpointsFired,
+                State.Combat.AwaitingCommand,
+                State.Combat.SubmittedCommands);
+
+            _pendingCombatCompletion = _activeCombat.BuildCompletionResultIfOver();
         }
 
         private static TacticType ResolveDefaultPlayerTactic(FactionSO faction)

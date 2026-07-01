@@ -23,7 +23,8 @@ namespace DeadManZone.Core.Tags
                 [GameTagIds.Artillery] = CombatRoleTargetingBias.Furthest,
                 [GameTagIds.Support] = CombatRoleTargetingBias.LowestMaxHpRearPreferred,
                 [GameTagIds.Sniper] = CombatRoleTargetingBias.HighestHp,
-                [GameTagIds.Utility] = CombatRoleTargetingBias.NoAttack
+                // Command pieces, nests, etc.: engage the front but are not pure damage dealers.
+                [GameTagIds.Utility] = CombatRoleTargetingBias.NearestFront
             };
 
         public static CombatRoleTargetingBias ResolveBias(string combatRole)

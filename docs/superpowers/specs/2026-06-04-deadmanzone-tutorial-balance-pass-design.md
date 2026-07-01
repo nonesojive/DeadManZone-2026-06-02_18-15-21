@@ -1,3 +1,5 @@
+> **Superseded (2026-07-01):** Per-fight supply rewards via `FightRewardTable` were removed. Post-combat supplies use `FactionSO.baseSuppliesPerRound` + board bonuses only. See `docs/superpowers/specs/2026-07-01-ironmarch-union-content-pass-design.md`.
+
 # DeadManZone — Tutorial Balance Pass Design Spec
 
 **Date:** 2026-06-04  

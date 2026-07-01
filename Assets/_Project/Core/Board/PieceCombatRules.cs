@@ -1,5 +1,4 @@
 using DeadManZone.Core.Combat;
-using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Board
 {
@@ -28,7 +27,7 @@ namespace DeadManZone.Core.Board
             if (definition.Category == PieceCategory.Building && definition.BaseDamage <= 0)
                 return true;
 
-            return CombatRoleProfile.ResolveBias(definition.CombatRole) == CombatRoleTargetingBias.NoAttack;
+            return definition.BaseDamage <= 0;
         }
     }
 }

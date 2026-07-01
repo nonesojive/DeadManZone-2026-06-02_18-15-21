@@ -20,6 +20,7 @@ namespace DeadManZone.Core.Tags
             return new PieceCardViewModel
             {
                 DisplayName = piece.DisplayName ?? string.Empty,
+                ShowCombatStats = BoardPlacementRules.ResolveTargetBoard(piece) != BoardKind.Hq,
                 Hp = piece.MaxHp,
                 BaseDamage = piece.BaseDamage,
                 MovementSpeed = piece.MovementSpeed,
@@ -28,6 +29,8 @@ namespace DeadManZone.Core.Tags
                 AttackSpeedValue = CombatAttackSpeed.GetEffectiveCooldown(
                     piece.CooldownTicks,
                     piece.AttackSpeed),
+                AttackRange = piece.AttackRange,
+                AttackRangeValue = CombatRange.GetRangeCells(piece.AttackRange),
                 AttackType = piece.AttackType,
                 ArmorType = piece.ArmorType,
                 PrimaryTag = PieceCardTagLayout.ResolvePrimaryTag(visibleTags),

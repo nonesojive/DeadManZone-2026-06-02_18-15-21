@@ -28,20 +28,17 @@ namespace DeadManZone.Core.Run
     /// <summary>Post-combat income from faction baseline plus board bonuses.</summary>
     public static class RoundIncomeCalculator
     {
-        public static int ComputeSuppliesIncome(
-            int fightRewardSupplies,
-            int factionBaselineSupplies,
-            BuildBoardSet boards)
+        public static int ComputeSuppliesIncome(int factionBaselineSupplies, BuildBoardSet boards)
         {
-            int boardBonus = ComputeBoardSuppliesBonus(fightRewardSupplies, boards);
-            return fightRewardSupplies + factionBaselineSupplies + boardBonus;
+            int boardBonus = ComputeBoardSuppliesBonus(factionBaselineSupplies, boards);
+            return factionBaselineSupplies + boardBonus;
         }
 
-        public static int ComputeBoardSuppliesBonus(int baseSupplies, BuildBoardSet boards)
+        public static int ComputeBoardSuppliesBonus(int factionBaselineSupplies, BuildBoardSet boards)
         {
             var snapshot = CriticalMassEngine.Evaluate(boards);
-            int percentBonus = baseSupplies > 0
-                ? (int)Math.Round(baseSupplies * (snapshot.SuppliesPercentBonus / 100f))
+            int percentBonus = factionBaselineSupplies > 0
+                ? (int)Math.Round(factionBaselineSupplies * (snapshot.SuppliesPercentBonus / 100f))
                 : 0;
             return snapshot.SuppliesFlatBonus + percentBonus + BuildingIncomeRules.SumSuppliesFlatBonus(boards);
         }
@@ -59,14 +56,13 @@ namespace DeadManZone.Core.Run
         }
 
         public static RoundIncomePreview ComputePreview(
-            int fightRewardSupplies,
             int factionBaselineSupplies,
             int baseMusterPerShop,
             int baseSalvagePercent,
             BuildBoardSet boards,
             BoardState combatBoard) =>
             new(
-                ComputeSuppliesIncome(fightRewardSupplies, factionBaselineSupplies, boards),
+                ComputeSuppliesIncome(factionBaselineSupplies, boards),
                 ComputeManpowerIncome(baseMusterPerShop, boards),
                 ComputeAuthorityPool(boards),
                 ComputeSalvageChancePreview(baseSalvagePercent, combatBoard));

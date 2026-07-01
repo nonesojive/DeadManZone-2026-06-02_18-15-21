@@ -384,6 +384,48 @@ namespace DeadManZone.Core.Tests
                 reloadedStep.EventLog.Events.Count);
         }
 
+        [Test]
+        public void TryLoadSavedRun_CompletedFight_SetsPendingCompletion()
+        {
+            _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 187463421);
+            var board = _orchestrator.GetCombatBoard();
+            Assert.IsTrue(board.TryPlace(
+                TestPieces.IroncladFieldMarshal(),
+                TestBoards.CombatBoardAnchor(1, 3),
+                "marshal_1").Success);
+            _orchestrator.SaveCombatBoard(board);
+
+            _orchestrator.BeginCombat();
+            while (_orchestrator.State.Phase == RunPhase.Combat
+                   && !_orchestrator.HasPendingCombatCompletion)
+            {
+                if (_orchestrator.State.Combat.AwaitingCommand)
+                {
+                    int pauseIndex = _orchestrator.State.Combat.CheckpointsFired == 0 ? 0 : 1;
+                    _orchestrator.SubmitCombatCommands(new[]
+                    {
+                        new PhaseCommand
+                        {
+                            AfterCheckpoint = pauseIndex,
+                            Type = CommandType.SetTactic,
+                            Tactic = TacticType.Advance,
+                            SourcePieceId = "player_tactic"
+                        }
+                    });
+                }
+
+                _orchestrator.AdvanceCombat();
+            }
+
+            Assert.IsTrue(_orchestrator.HasPendingCombatCompletion);
+            _orchestrator.SaveAndExit();
+
+            var reloaded = new RunOrchestrator(_database);
+            Assert.IsTrue(reloaded.TryLoadSavedRun());
+            Assert.IsTrue(reloaded.HasPendingCombatCompletion);
+            Assert.AreEqual(RunPhase.Combat, reloaded.State.Phase);
+        }
+
         private Core.Board.PieceDefinition GetPiece(string pieceId) =>
             _database.Pieces.First(p => p.id == pieceId).ToCore();
 

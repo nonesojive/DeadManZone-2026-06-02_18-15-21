@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
   id: machine_gun_nest
   displayName: Machine Gun Nest
-  category: 0
+  category: 1
   shapeCells:
   - {x: 0, y: 0}
   - {x: 1, y: 0}

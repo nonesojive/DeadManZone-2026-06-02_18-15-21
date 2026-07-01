@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace DeadManZone.Presentation.Run
 {
-    /// <summary>Fixed center-column detail panel; picks unit or building card layout by piece category.</summary>
+    /// <summary>Fixed center-column detail panel; HQ pieces use building layout, combat pieces use unit layout.</summary>
     public sealed class UnitCardPanelView : MonoBehaviour
     {
         public const string UnitDetailCardName = "UnitDetailCard";
@@ -24,7 +24,7 @@ namespace DeadManZone.Presentation.Run
         public PieceCardView CardView { get; private set; }
 
         public static bool UsesBuildingCard(PieceDefinition definition) =>
-            definition != null && definition.Category == PieceCategory.Building;
+            definition != null && BoardPlacementRules.ResolveTargetBoard(definition) == BoardKind.Hq;
 
         /// <summary>Wires scene/prefab instances. Never writes to authored card prefab assets.</summary>
         public void EnsureCardView()

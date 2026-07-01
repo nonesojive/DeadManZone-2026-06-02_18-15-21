@@ -45,14 +45,45 @@ namespace DeadManZone.Presentation.Combat
                 return;
 
             var combat = RunManager.Instance.State.Combat;
-            if (combat.CheckpointsFired == 0 && !combat.AwaitingCommand)
+            var orchestrator = RunManager.Instance.Orchestrator;
+
+            if (orchestrator != null && orchestrator.HasPendingCombatCompletion)
+            {
+                PlaySegmentFromSave(ResolveLastPlaybackSegment(combat), CombatAdvanceStatus.Completed);
+                return;
+            }
+
+            if (combat.CheckpointsFired == 0
+                && !combat.AwaitingCommand
+                && (combat.EventLog == null || combat.EventLog.Count == 0))
             {
                 AdvanceCombatNow();
                 return;
             }
 
             if (combat.AwaitingCommand)
+            {
                 PlaySegmentFromSave(combat.LastSegmentIndex, CombatAdvanceStatus.AwaitingCommand);
+                return;
+            }
+
+            AdvanceCombatNow();
+        }
+
+        private static int ResolveLastPlaybackSegment(CombatSaveState combat)
+        {
+            if (combat?.EventLog == null || combat.EventLog.Count == 0)
+                return combat?.LastSegmentIndex ?? 0;
+
+            int maxSegment = combat.LastSegmentIndex;
+            for (int i = 0; i < combat.EventLog.Count; i++)
+            {
+                int segment = combat.EventLog[i].Segment;
+                if (segment > maxSegment)
+                    maxSegment = segment;
+            }
+
+            return maxSegment;
         }
 
         public void PlayLog(CombatEventLog eventLog, int segment)
@@ -126,12 +157,22 @@ namespace DeadManZone.Presentation.Combat
             int lastTick = CombatSegmentPlayback.ResolveLastTick(segment, events);
             if (segmentEndsFight && lastTick < 0)
                 lastTick = 0;
+
+            if (firstTick < 0)
+            {
+                _playbackRoutine = null;
+                FinishPlayback();
+                yield break;
+            }
+
             bool fightEnded = false;
 
-            for (int tick = System.Math.Max(0, firstTick); tick <= lastTick && !fightEnded; tick++)
+            for (int tick = firstTick; tick <= lastTick && !fightEnded; tick++)
             {
+                bool hadEvents = false;
                 if (eventsByTick.TryGetValue(tick, out var tickEvents))
                 {
+                    hadEvents = true;
                     foreach (var combatEvent in tickEvents)
                     {
                         EventReplayed?.Invoke(combatEvent);
@@ -146,10 +187,9 @@ namespace DeadManZone.Presentation.Combat
                 if (fightEnded)
                     break;
 
-                if (_secondsPerTick > 0f)
+                // ponytail: sim advances every tick; presentation only paces ticks that produced visible events
+                if (hadEvents && _secondsPerTick > 0f)
                     yield return new WaitForSeconds(_secondsPerTick);
-                else
-                    yield return null;
             }
 
             _playbackRoutine = null;

@@ -8,10 +8,8 @@ namespace DeadManZone.Game
     {
         public RoundIncomePreview GetNextCombatIncomePreview()
         {
-            int fightRewardSupplies = FightRewardTable.GetReward(State.FightIndex).Supplies;
             var boards = GetBuildBoards();
             return RoundIncomeCalculator.ComputePreview(
-                fightRewardSupplies,
                 Faction.baseSuppliesPerRound,
                 Faction.baseMusterPerShop,
                 Faction.baseSalvageChancePercent,
@@ -31,9 +29,7 @@ namespace DeadManZone.Game
 
         private int ApplyPostCombatIncome()
         {
-            int fightRewardSupplies = FightRewardTable.GetReward(State.FightIndex).Supplies;
             int suppliesIncome = RoundIncomeCalculator.ComputeSuppliesIncome(
-                fightRewardSupplies,
                 Faction.baseSuppliesPerRound,
                 GetBuildBoards());
             State.Supplies += suppliesIncome;

@@ -32,7 +32,7 @@ namespace DeadManZone.Data.Editor
                 }),
             SavePiece("officer_quarters", "Officer Quarters", PieceCategory.Building, DemoSandboxShapes.Square2x2,
                 GameTagIds.Building, GameTagIds.Utility, FactionIds.IronmarchUnion, 25, 45, 0, 0, AttackType.None, ArmorType.Light,
-                AttackSpeedTier.Slow, AttackRangeTier.Short, 0, synergyTags: new[] { GameTagIds.Command }),
+                AttackSpeedTier.Slow, AttackRangeTier.Short, 0, requisitionCost: 1, synergyTags: new[] { GameTagIds.Command }),
             SavePiece("command_outpost", "Command Outpost", PieceCategory.Building, DemoSandboxShapes.HorizontalPair,
                 GameTagIds.Building, GameTagIds.Support, FactionIds.IronmarchUnion, 15, 40, 0, 0, AttackType.None, ArmorType.Light,
                 AttackSpeedTier.Slow, AttackRangeTier.Short, 0, synergyTags: new[] { GameTagIds.Command }),
@@ -104,7 +104,7 @@ namespace DeadManZone.Data.Editor
                 AttackSpeedTier.Slow, AttackRangeTier.Long, 3, abilityTags: new[] { GameTagIds.Ironclad, GameTagIds.Stealth }),
             SavePiece("ironclad_field_marshal", "IronClad Field Marshal", PieceCategory.Unit, DemoSandboxShapes.Single,
                 GameTagIds.Infantry, GameTagIds.Utility, FactionIds.IronmarchUnion, 30, 50, 3, 2, AttackType.Ballistic, ArmorType.Medium,
-                AttackSpeedTier.Medium, AttackRangeTier.Short, 3, abilityTags: new[] { GameTagIds.Ironclad }, synergyTags: new[] { GameTagIds.Command }, flavorTags: new[] { GameTagIds.Inspiring },
+                AttackSpeedTier.Medium, AttackRangeTier.Short, 3, requisitionCost: 1, abilityTags: new[] { GameTagIds.Ironclad }, synergyTags: new[] { GameTagIds.Command }, flavorTags: new[] { GameTagIds.Inspiring },
                 customAbilities: new[]
                 {
                     Ability("field_marshal_adjacent_infantry_hp", PieceAbilityTrigger.AdjacentAura, SynergyStat.MaxHp, SynergyModType.Flat, 5,
@@ -112,7 +112,7 @@ namespace DeadManZone.Data.Editor
                     Ability("field_marshal_adjacent_infantry_movement", PieceAbilityTrigger.AdjacentAura, SynergyStat.MovementSpeed, SynergyModType.Flat, 1,
                         neighborFilter: new NeighborFilter { PrimaryTagId = GameTagIds.Infantry })
                 }),
-            SavePiece("machine_gun_nest", "Machine Gun Nest", PieceCategory.Building, DemoSandboxShapes.HorizontalPair,
+            SavePiece("machine_gun_nest", "Machine Gun Nest", PieceCategory.Unit, DemoSandboxShapes.HorizontalPair,
                 GameTagIds.Structure, GameTagIds.Utility, "neutral", 20, 100, 2, 2, AttackType.Shredding, ArmorType.Heavy,
                 AttackSpeedTier.Medium, AttackRangeTier.Medium, 0, synergyTags: new[] { GameTagIds.Entrenched }, flavorTags: new[] { GameTagIds.Fortification })
         };

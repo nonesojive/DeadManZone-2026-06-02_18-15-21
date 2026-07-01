@@ -36,7 +36,7 @@ MonoBehaviour:
   baseDamage: 3
   cooldownTicks: 3
   goldCost: 30
-  requisitionCost: 0
+  requisitionCost: 1
   manpowerCost: 2
   musterPerShop: 0
   shopModifiers: 0

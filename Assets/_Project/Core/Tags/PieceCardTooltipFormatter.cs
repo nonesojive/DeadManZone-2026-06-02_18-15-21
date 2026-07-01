@@ -75,17 +75,47 @@ namespace DeadManZone.Core.Tags
             {
                 for (int i = 0; i < piece.Abilities.Count; i++)
                 {
-                    string description = piece.Abilities[i].CardDescription;
+                    var ability = piece.Abilities[i];
+                    string description = !string.IsNullOrWhiteSpace(ability.CardDescription)
+                        ? ability.CardDescription.Trim()
+                        : PieceAbilityCardDescriptionFormatter.Format(ability);
                     if (!string.IsNullOrWhiteSpace(description))
-                        lines.Add(description.Trim());
+                        lines.Add(description);
                 }
             }
+
+            AppendPassiveEffectLines(piece, lines);
 
             string grantedText = BuildAbilityText(piece.GrantedAbility);
             if (!string.IsNullOrWhiteSpace(grantedText))
                 lines.Add(grantedText);
 
             return lines;
+        }
+
+        private static void AppendPassiveEffectLines(PieceDefinition piece, List<string> lines)
+        {
+            if (piece == null || lines == null)
+                return;
+
+            switch (piece.Id)
+            {
+                case "supply_depot":
+                    lines.Add("+5 supplies income per round.");
+                    break;
+                case "command_outpost":
+                    lines.Add("+1 Authority per round.");
+                    break;
+                case "officer_quarters":
+                    lines.Add("+1 Authority per Command tag on your boards.");
+                    break;
+                case "ironclad_marksman":
+                    lines.Add("Untargetable until after the 2nd tactics checkpoint.");
+                    break;
+            }
+
+            if (piece.MusterPerShop > 0)
+                lines.Add($"+{piece.MusterPerShop} manpower per shop phase.");
         }
 
         private static string FormatSynergyStatLine(PieceAbilityEngine.SynergyLink link, PlacedPiece sourcePiece)

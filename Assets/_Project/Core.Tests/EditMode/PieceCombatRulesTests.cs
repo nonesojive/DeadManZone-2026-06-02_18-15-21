@@ -1,4 +1,5 @@
 using DeadManZone.Core.Board;
+using DeadManZone.Core.Tags;
 using NUnit.Framework;
 
 namespace DeadManZone.Core.Tests.EditMode
@@ -29,12 +30,26 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
-        public void IsDeprioritizedTarget_NonDamagingBuildings()
+        public void IsDeprioritizedTarget_NonDamagingPieces()
         {
             Assert.IsTrue(PieceCombatRules.IsDeprioritizedTarget(new PieceDefinition
             {
                 Category = PieceCategory.Building,
                 BaseDamage = 0
+            }));
+
+            Assert.IsTrue(PieceCombatRules.IsDeprioritizedTarget(new PieceDefinition
+            {
+                CombatRole = GameTagIds.Utility,
+                BaseDamage = 0,
+                Category = PieceCategory.Unit
+            }));
+
+            Assert.IsFalse(PieceCombatRules.IsDeprioritizedTarget(new PieceDefinition
+            {
+                CombatRole = GameTagIds.Utility,
+                BaseDamage = 3,
+                Category = PieceCategory.Unit
             }));
         }
     }

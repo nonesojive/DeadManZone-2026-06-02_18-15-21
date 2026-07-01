@@ -17,7 +17,7 @@ The audit examined the post-iteration architecture using direct list_dir, grep (
 **Layered structure (signs of evolution observed)**:
 - **Core** (DeadManZone.Core.asmdef, pure logic + Newtonsoft only): Board (State/Layout/Snapshot/Zone rules), Combat (TickCombatRun + resolvers + CriticalMass + Tactic*), Run (State/Phase/Snapshots/Serializer + calculators), Shop (generators/pools/calculators), Tags (registries/rules/synergies + partial Generated catalog). Snapshots for serialization, extracted calculators.
 - **Data** (depends on Core): ContentDatabase (hard-coded PlayableFactionIds + DemoShopPieceIds, string GetFaction, BuildRegistry, Load fallbacks), FactionSO + Enemy/Piece/Shop/CriticalMass/CombatArena SOs (many defaults + layout data), Editor generators (VerticalSlice* + Demo* + menu items), Resources.
-- **Game** (Core+Data): RunManager (MB singleton), RunOrchestrator (sealed partial across 3 files), SaveManager, FightRewardTable, GameScenes, GamePlayBootstrap (static RuntimeInitializeOnLoad), RunSaveBootstrap (MB + delegate, comment "until RunManager owns save triggers").
+- **Game** (Core+Data): RunManager (MB singleton), RunOrchestrator (sealed partial across 3 files), SaveManager, GameScenes, GamePlayBootstrap (static RuntimeInitializeOnLoad), RunSaveBootstrap (MB + delegate, comment "until RunManager owns save triggers").
 - **Presentation** (all layers + Unity): Heavy MBs (BoardView, ShopView, RunSceneController, Combat*Presenter/Director/Actor, many layout fitters), *Bootstrap proliferation (8+ in Run/ + Combat/), event wiring to RunManager.Instance, Visual/SO themes.
 
 **Visible signs of multiple iterations**:

@@ -28,6 +28,7 @@ namespace DeadManZone.Presentation.UI
             SetColor(damageText, secondary);
             SetColor(movementSpeedText, secondary);
             SetColor(attackSpeedText, secondary);
+            SetColor(attackRangeText, secondary);
             SetColor(attackTypeText, secondary);
             SetColor(armorTypeText, secondary);
             SetColor(primaryTagText, secondary);
@@ -41,15 +42,72 @@ namespace DeadManZone.Presentation.UI
         private void BindMainStats(PieceCardViewModel model)
         {
             SetText(nameText, model.DisplayName);
+
+            if (!model.ShowCombatStats)
+            {
+                SetCombatStatTextInactive();
+                return;
+            }
+
+            SetCombatStatTextActive();
             SetText(hpText, model.Hp.ToString());
             SetText(damageText, model.BaseDamage.ToString());
             SetText(movementSpeedText, model.MovementSpeedValue.ToString());
             SetText(attackSpeedText, model.AttackSpeedValue.ToString());
+            BindAttackRange(model);
+        }
+
+        private void SetCombatStatTextInactive()
+        {
+            if (hpText != null)
+                hpText.gameObject.SetActive(false);
+            if (damageText != null)
+                damageText.gameObject.SetActive(false);
+            if (movementSpeedText != null)
+                movementSpeedText.gameObject.SetActive(false);
+            if (attackSpeedText != null)
+                attackSpeedText.gameObject.SetActive(false);
+            if (attackRangeText != null)
+                attackRangeText.gameObject.SetActive(false);
+        }
+
+        private void SetCombatStatTextActive()
+        {
+            if (hpText != null)
+                hpText.gameObject.SetActive(true);
+            if (damageText != null)
+                damageText.gameObject.SetActive(true);
+            if (movementSpeedText != null)
+                movementSpeedText.gameObject.SetActive(true);
+            if (attackSpeedText != null)
+                attackSpeedText.gameObject.SetActive(true);
+        }
+
+        private void BindAttackRange(PieceCardViewModel model)
+        {
+            if (attackRangeText == null)
+                return;
+
+            attackRangeText.gameObject.SetActive(true);
+            attackRangeText.text = model.AttackRangeValue.ToString();
         }
 
         private void BindDedicatedSlots(PieceCardViewModel model)
         {
             BindPrimaryTag(model);
+
+            if (!model.ShowCombatStats)
+            {
+                if (armorIcon != null)
+                    armorIcon.gameObject.SetActive(false);
+                if (attackTypeIcon != null)
+                    attackTypeIcon.gameObject.SetActive(false);
+                if (combatRoleIcon != null)
+                    combatRoleIcon.gameObject.SetActive(false);
+                BindUnitImage();
+                return;
+            }
+
             BindArmorIcon(model);
             BindAttackTypeIcon(model);
             BindCombatRoleIcon(model);
