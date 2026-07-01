@@ -73,5 +73,7 @@ namespace DeadManZone.Core.Tags
         public const string Airstrip = "airstrip";
         public const string GasMask = "gas_mask";
         public const string Bastion = "bastion";
+        public const string SmallArms = "small_arms";
+        public const string Shells = "shells";
     }
 }

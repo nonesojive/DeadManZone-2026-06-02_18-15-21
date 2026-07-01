@@ -64,7 +64,9 @@ namespace DeadManZone.Core.Tags
             Entry(GameTagIds.Bomber, "Bomber", TagCategory.Flavor, "Bomber specialization.", 34),
             Entry(GameTagIds.Airstrip, "Airstrip", TagCategory.Flavor, "Airfield support.", 32),
             Entry(GameTagIds.GasMask, "Gas Mask", TagCategory.Flavor, "Resistance to Gas.", 30),
-            Entry(GameTagIds.Bastion, "Bastion", TagCategory.Flavor, "Defensive bulwark.", 28)
+            Entry(GameTagIds.Bastion, "Bastion", TagCategory.Flavor, "Defensive bulwark.", 28),
+            Entry(GameTagIds.SmallArms, "Small Arms", TagCategory.Flavor, "Standard infantry small arms.", 26),
+            Entry(GameTagIds.Shells, "Shells", TagCategory.Flavor, "Explosive shell armament.", 24)
         };
 
         public static IReadOnlyList<KeywordTagEntry> All { get; } = Entries;
