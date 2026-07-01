@@ -148,11 +148,11 @@ namespace DeadManZone.Core.Combat
                         return;
                 }
 
-                ResolveAttacks(_playerCombatants, _enemyCombatants, _tactics.PlayerTactic, _tactics.PlayerDamageBuff, segment);
+                ResolveAttacks(_playerCombatants, _enemyCombatants, _tactics.PlayerTactic, _tactics.PlayerDamageBuff, segment, CheckpointsFired);
                 if (TryEndFight(segment))
                     return;
 
-                ResolveAttacks(_enemyCombatants, _playerCombatants, _tactics.EnemyTactic, _tactics.EnemyDamageBuff, segment);
+                ResolveAttacks(_enemyCombatants, _playerCombatants, _tactics.EnemyTactic, _tactics.EnemyDamageBuff, segment, CheckpointsFired);
                 if (TryEndFight(segment))
                     return;
 
@@ -291,7 +291,8 @@ namespace DeadManZone.Core.Combat
             IList<CombatantState> defenders,
             TacticType tactic,
             int damageBuff,
-            int segment)
+            int segment,
+            int tacticsCheckpointIndex)
         {
             foreach (var actor in attackers.Where(a => a.IsAlive && a.CanAttack).OrderBy(a => a.InstanceId))
             {
@@ -301,7 +302,7 @@ namespace DeadManZone.Core.Combat
                     continue;
                 }
 
-                var target = TacticTargeting.SelectTarget(actor, defenders.ToList(), tactic);
+                var target = TacticTargeting.SelectTarget(actor, defenders.ToList(), tactic, tacticsCheckpointIndex);
                 if (target == null)
                     continue;
 

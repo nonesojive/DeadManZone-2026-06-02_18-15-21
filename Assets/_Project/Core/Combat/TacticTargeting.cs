@@ -9,12 +9,15 @@ namespace DeadManZone.Core.Combat
         public static CombatantState SelectTarget(
             CombatantState attacker,
             IReadOnlyList<CombatantState> enemies,
-            TacticType tactic)
+            TacticType tactic,
+            int tacticsCheckpointIndex = 0)
         {
             if (attacker == null || attacker.Definition == null || enemies == null || enemies.Count == 0)
                 return null;
 
-            var alive = enemies.Where(e => e != null && e.IsAlive).ToList();
+            var alive = enemies
+                .Where(e => e != null && e.IsAlive && CombatStealthRules.IsTargetableByEnemies(e, tacticsCheckpointIndex))
+                .ToList();
             if (alive.Count == 0)
                 return null;
 
