@@ -44,7 +44,7 @@ namespace DeadManZone.Data.UnitCreation
         public CommandActionFlags commandActions;
         public AttackSpeedTier attackSpeed = AttackSpeedTier.Medium;
         public AttackRangeTier attackRange = AttackRangeTier.Medium;
-        public MovementSpeedTier movementSpeed = MovementSpeedTier.Medium;
+        public int movementSpeed = 2;
         public ArmorType armorType = ArmorType.Light;
         public AttackType attackType = AttackType.Ballistic;
         public GrantedAbility grantedAbility = GrantedAbility.None;

@@ -213,9 +213,9 @@ namespace DeadManZone.Core.Combat
             if (aliveTargets.Count == 0)
                 return;
 
-            foreach (var mover in movers.Where(m => m.IsAlive && m.Definition.MovementSpeed != MovementSpeedTier.None).OrderBy(m => m.InstanceId))
+            foreach (var mover in movers.Where(m => m.IsAlive && m.Definition.MovementSpeed != 0).OrderBy(m => m.InstanceId))
             {
-                if (mover.Definition.MovementSpeed == MovementSpeedTier.None)
+                if (mover.Definition.MovementSpeed == 0)
                     continue;
 
                 int moveChargePerTick = CombatMovementSpeed.GetChargePerTick(

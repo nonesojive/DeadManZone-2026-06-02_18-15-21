@@ -54,7 +54,7 @@ namespace DeadManZone.Core.Tests
             AttackType? attackType = null,
             ArmorType? armorType = null,
             AttackRangeTier? attackRange = null,
-            MovementSpeedTier? movementSpeed = null,
+            int? movementSpeed = null,
             AttackSpeedTier? attackSpeed = null,
             GrantedAbility? grantedAbility = null,
             int? accuracyOverride = null,

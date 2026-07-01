@@ -58,7 +58,7 @@ namespace DeadManZone.Data.Editor
             ArmorType armorType = ArmorType.Light,
             AttackSpeedTier attackSpeed = AttackSpeedTier.Medium,
             AttackRangeTier attackRange = AttackRangeTier.Medium,
-            MovementSpeedTier movementSpeed = MovementSpeedTier.Medium)
+            int movementSpeed = 2)
         {
             var path = $"{Root}/Pieces/{id}.asset";
             var asset = LoadOrCreate<PieceDefinitionSO>(path);

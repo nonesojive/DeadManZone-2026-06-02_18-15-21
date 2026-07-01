@@ -9,7 +9,7 @@ namespace DeadManZone.Core.Tags
         public string DisplayName { get; init; } = string.Empty;
         public int Hp { get; init; }
         public int BaseDamage { get; init; }
-        public MovementSpeedTier MovementSpeed { get; init; } = MovementSpeedTier.None;
+        public int MovementSpeed { get; init; }
         public AttackSpeedTier AttackSpeed { get; init; } = AttackSpeedTier.Medium;
         public int AttackSpeedValue { get; init; }
         public int MovementSpeedValue { get; init; }

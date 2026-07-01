@@ -30,7 +30,7 @@ namespace DeadManZone.Core.Board
         public CommandActionFlags CommandActions { get; init; }
         public AttackSpeedTier AttackSpeed { get; init; } = AttackSpeedTier.Medium;
         public AttackRangeTier AttackRange { get; init; } = AttackRangeTier.Medium;
-        public MovementSpeedTier MovementSpeed { get; init; } = MovementSpeedTier.Medium;
+        public int MovementSpeed { get; init; } = 2;
         public ArmorType ArmorType { get; init; } = ArmorType.Light;
         public AttackType AttackType { get; init; } = AttackType.Ballistic;
         public GrantedAbility GrantedAbility { get; init; } = GrantedAbility.None;

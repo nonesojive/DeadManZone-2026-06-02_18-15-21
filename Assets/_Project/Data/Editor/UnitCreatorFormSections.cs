@@ -48,7 +48,7 @@ namespace DeadManZone.Data.Editor
             draft.musterPerShop = EditorGUILayout.IntField("Muster Per Shop", draft.musterPerShop);
             draft.attackSpeed = (AttackSpeedTier)EditorGUILayout.EnumPopup("Attack Speed", draft.attackSpeed);
             draft.attackRange = (AttackRangeTier)EditorGUILayout.EnumPopup("Attack Range", draft.attackRange);
-            draft.movementSpeed = (MovementSpeedTier)EditorGUILayout.EnumPopup("Movement Speed", draft.movementSpeed);
+            draft.movementSpeed = EditorGUILayout.IntSlider("Movement Speed", draft.movementSpeed, 0, 4);
             draft.armorType = (ArmorType)EditorGUILayout.EnumPopup("Armor Type", draft.armorType);
             draft.attackType = (AttackType)EditorGUILayout.EnumPopup("Attack Type", draft.attackType);
             draft.grantedAbility = (GrantedAbility)EditorGUILayout.EnumPopup("Granted Ability", draft.grantedAbility);

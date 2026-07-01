@@ -44,7 +44,8 @@ namespace DeadManZone.Data
         [Header("Combat Stats")]
         public AttackSpeedTier attackSpeed = AttackSpeedTier.Medium;
         public AttackRangeTier attackRange = AttackRangeTier.Medium;
-        public MovementSpeedTier movementSpeed = MovementSpeedTier.Medium;
+        [Range(0, 4)]
+        public int movementSpeed = 2;
         public ArmorType armorType = ArmorType.Light;
         public AttackType attackType = AttackType.Ballistic;
         public GrantedAbility grantedAbility = GrantedAbility.None;
