@@ -13,6 +13,7 @@ namespace DeadManZone.Data
         public SynergyStat stat;
         public SynergyModType modType;
         public int magnitude;
+        public string countTagId;
 
         public PieceAbilityDefinition ToCore() => new()
         {
@@ -22,7 +23,8 @@ namespace DeadManZone.Data
             NeighborFilter = neighborFilter,
             Stat = stat,
             ModType = modType,
-            Magnitude = magnitude
+            Magnitude = magnitude,
+            CountTagId = countTagId
         };
     }
 }

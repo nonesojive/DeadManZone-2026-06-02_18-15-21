@@ -9,5 +9,6 @@ namespace DeadManZone.Core.Tags
         public SynergyStat Stat { get; init; }
         public SynergyModType ModType { get; init; }
         public int Magnitude { get; init; }
+        public string CountTagId { get; init; }
     }
 }

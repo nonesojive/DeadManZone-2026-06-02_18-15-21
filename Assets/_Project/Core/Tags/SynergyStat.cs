@@ -6,6 +6,7 @@ namespace DeadManZone.Core.Tags
         AttackRange,
         MovementSpeed,
         ArmorType,
-        MoveChargePercent
+        MoveChargePercent,
+        MaxHp
     }
 }

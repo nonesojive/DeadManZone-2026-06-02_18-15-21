@@ -4,7 +4,7 @@ using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
 {
-    /// <summary>Applies piece-owned adjacency aura buffs from a fight-start snapshot.</summary>
+    /// <summary>Applies piece-owned fight-start buffs from a combat-board snapshot.</summary>
     public static class PieceAbilityEngine
     {
         public readonly struct SynergyResult
@@ -12,6 +12,8 @@ namespace DeadManZone.Core.Combat
             public int DamageBonus { get; init; }
             public int ArmorBuffSteps { get; init; }
             public int MoveChargeBonus { get; init; }
+            public int MaxHpFlat { get; init; }
+            public int MaxHpPercent { get; init; }
         }
 
         public readonly struct SynergyLink
@@ -52,21 +54,66 @@ namespace DeadManZone.Core.Combat
             }
         }
 
-        public static FightStartSynergySnapshot EvaluateFightStart(BoardState board)
+        public static FightStartSynergySnapshot EvaluateFightStart(BoardState combatBoard) =>
+            EvaluateFightStart(combatBoard, buildBoards: null);
+
+        public static FightStartSynergySnapshot EvaluateFightStart(
+            BoardState combatBoard,
+            BuildBoardSet buildBoards)
         {
-            if (board == null)
+            if (combatBoard == null)
                 return FightStartSynergySnapshot.Empty;
 
             var piecesById = new Dictionary<string, PlacedPiece>(System.StringComparer.Ordinal);
             var resultsById = new Dictionary<string, SynergyResult>(System.StringComparer.Ordinal);
             var links = new List<SynergyLink>();
 
-            foreach (var piece in board.Pieces)
+            foreach (var piece in combatBoard.Pieces)
             {
                 piecesById[piece.InstanceId] = piece;
                 resultsById[piece.InstanceId] = default;
             }
 
+            ApplyAdjacentAuras(combatBoard, piecesById, resultsById, links);
+            ApplyBoardPerTagCount(combatBoard, buildBoards, piecesById, resultsById, links);
+            ApplyFightStartGlobals(combatBoard, buildBoards, piecesById, resultsById, links);
+
+            return new FightStartSynergySnapshot(resultsById, links);
+        }
+
+        public static void ApplyToCombatants(
+            FightStartSynergySnapshot snapshot,
+            IList<CombatantState> combatants)
+        {
+            if (snapshot == null || combatants == null)
+                return;
+
+            foreach (var combatant in combatants)
+            {
+                if (!snapshot.TryGet(combatant.InstanceId, out var bonuses))
+                    continue;
+
+                combatant.DamageBonus += bonuses.DamageBonus;
+                combatant.ArmorBuffSteps += bonuses.ArmorBuffSteps;
+                combatant.MoveCharge += bonuses.MoveChargeBonus;
+
+                if (bonuses.MaxHpFlat == 0 && bonuses.MaxHpPercent == 0)
+                    continue;
+
+                int maxHp = combatant.CurrentHp + bonuses.MaxHpFlat;
+                if (bonuses.MaxHpPercent != 0)
+                    maxHp += (int)System.Math.Round(maxHp * (bonuses.MaxHpPercent / 100f));
+
+                combatant.CurrentHp = maxHp;
+            }
+        }
+
+        private static void ApplyAdjacentAuras(
+            BoardState board,
+            IReadOnlyDictionary<string, PlacedPiece> piecesById,
+            Dictionary<string, SynergyResult> resultsById,
+            List<SynergyLink> links)
+        {
             foreach (var source in piecesById.Values)
             {
                 var abilities = source.Definition.Abilities;
@@ -93,25 +140,80 @@ namespace DeadManZone.Core.Combat
                     }
                 }
             }
-
-            return new FightStartSynergySnapshot(resultsById, links);
         }
 
-        public static void ApplyToCombatants(
-            FightStartSynergySnapshot snapshot,
-            IList<CombatantState> combatants)
+        private static void ApplyBoardPerTagCount(
+            BoardState combatBoard,
+            BuildBoardSet buildBoards,
+            IReadOnlyDictionary<string, PlacedPiece> piecesById,
+            Dictionary<string, SynergyResult> resultsById,
+            List<SynergyLink> links)
         {
-            if (snapshot == null || combatants == null)
+            if (buildBoards == null)
                 return;
 
-            foreach (var combatant in combatants)
+            foreach (var source in piecesById.Values)
             {
-                if (!snapshot.TryGet(combatant.InstanceId, out var bonuses))
+                var abilities = source.Definition.Abilities;
+                if (abilities == null || abilities.Count == 0)
                     continue;
 
-                combatant.DamageBonus += bonuses.DamageBonus;
-                combatant.ArmorBuffSteps += bonuses.ArmorBuffSteps;
-                combatant.MoveCharge += bonuses.MoveChargeBonus;
+                for (int i = 0; i < abilities.Count; i++)
+                {
+                    var ability = abilities[i];
+                    if (ability.Trigger != PieceAbilityTrigger.BoardPerTagCount)
+                        continue;
+
+                    int count = BuildBoardTagCounter.Count(buildBoards, ability.CountTagId);
+                    if (count <= 0)
+                        continue;
+
+                    int amount = ResolveAmount(ability) * count;
+                    if (amount == 0)
+                        continue;
+
+                    foreach (var target in piecesById.Values)
+                    {
+                        if (!ability.NeighborFilter.Matches(target.Definition))
+                            continue;
+
+                        ApplyEffect(source.InstanceId, target.InstanceId, ability, amount, resultsById, links);
+                    }
+                }
+            }
+        }
+
+        private static void ApplyFightStartGlobals(
+            BoardState combatBoard,
+            BuildBoardSet buildBoards,
+            IReadOnlyDictionary<string, PlacedPiece> piecesById,
+            Dictionary<string, SynergyResult> resultsById,
+            List<SynergyLink> links)
+        {
+            IEnumerable<PlacedPiece> sources = buildBoards != null
+                ? buildBoards.AllPieces
+                : combatBoard.Pieces;
+
+            foreach (var source in sources)
+            {
+                var abilities = source.Definition.Abilities;
+                if (abilities == null || abilities.Count == 0)
+                    continue;
+
+                for (int i = 0; i < abilities.Count; i++)
+                {
+                    var ability = abilities[i];
+                    if (ability.Trigger != PieceAbilityTrigger.FightStart)
+                        continue;
+
+                    foreach (var target in piecesById.Values)
+                    {
+                        if (!ability.NeighborFilter.Matches(target.Definition))
+                            continue;
+
+                        ApplyEffect(source.InstanceId, target.InstanceId, ability, resultsById, links);
+                    }
+                }
             }
         }
 
@@ -138,12 +240,20 @@ namespace DeadManZone.Core.Combat
             string targetInstanceId,
             PieceAbilityDefinition ability,
             Dictionary<string, SynergyResult> resultsById,
+            List<SynergyLink> links) =>
+            ApplyEffect(sourceInstanceId, targetInstanceId, ability, ResolveAmount(ability), resultsById, links);
+
+        private static void ApplyEffect(
+            string sourceInstanceId,
+            string targetInstanceId,
+            PieceAbilityDefinition ability,
+            int amount,
+            Dictionary<string, SynergyResult> resultsById,
             List<SynergyLink> links)
         {
             if (!resultsById.TryGetValue(targetInstanceId, out var result))
                 result = default;
 
-            int amount = ResolveAmount(ability);
             if (amount == 0)
                 return;
 
@@ -162,7 +272,9 @@ namespace DeadManZone.Core.Combat
                     {
                         DamageBonus = result.DamageBonus + amount,
                         ArmorBuffSteps = result.ArmorBuffSteps,
-                        MoveChargeBonus = result.MoveChargeBonus
+                        MoveChargeBonus = result.MoveChargeBonus,
+                        MaxHpFlat = result.MaxHpFlat,
+                        MaxHpPercent = result.MaxHpPercent
                     };
                     break;
                 case SynergyStat.ArmorType:
@@ -170,7 +282,9 @@ namespace DeadManZone.Core.Combat
                     {
                         DamageBonus = result.DamageBonus,
                         ArmorBuffSteps = result.ArmorBuffSteps + amount,
-                        MoveChargeBonus = result.MoveChargeBonus
+                        MoveChargeBonus = result.MoveChargeBonus,
+                        MaxHpFlat = result.MaxHpFlat,
+                        MaxHpPercent = result.MaxHpPercent
                     };
                     break;
                 case SynergyStat.MoveChargePercent:
@@ -178,8 +292,35 @@ namespace DeadManZone.Core.Combat
                     {
                         DamageBonus = result.DamageBonus,
                         ArmorBuffSteps = result.ArmorBuffSteps,
-                        MoveChargeBonus = result.MoveChargeBonus + amount
+                        MoveChargeBonus = result.MoveChargeBonus + amount,
+                        MaxHpFlat = result.MaxHpFlat,
+                        MaxHpPercent = result.MaxHpPercent
                     };
+                    break;
+                case SynergyStat.MaxHp:
+                    if (ability.ModType == SynergyModType.Percent)
+                    {
+                        result = new SynergyResult
+                        {
+                            DamageBonus = result.DamageBonus,
+                            ArmorBuffSteps = result.ArmorBuffSteps,
+                            MoveChargeBonus = result.MoveChargeBonus,
+                            MaxHpFlat = result.MaxHpFlat,
+                            MaxHpPercent = result.MaxHpPercent + amount
+                        };
+                    }
+                    else
+                    {
+                        result = new SynergyResult
+                        {
+                            DamageBonus = result.DamageBonus,
+                            ArmorBuffSteps = result.ArmorBuffSteps,
+                            MoveChargeBonus = result.MoveChargeBonus,
+                            MaxHpFlat = result.MaxHpFlat + amount,
+                            MaxHpPercent = result.MaxHpPercent
+                        };
+                    }
+
                     break;
                 case SynergyStat.AttackRange:
                 case SynergyStat.MovementSpeed:

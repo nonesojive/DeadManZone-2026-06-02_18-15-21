@@ -51,7 +51,8 @@ namespace DeadManZone.Core.Combat
             BoardState playerBoard,
             BoardState enemyBoard,
             int seed,
-            int authority)
+            int authority,
+            BuildBoardSet playerBuildBoards)
         {
             _playerBoard = playerBoard;
             _battlefield = BattlefieldState.FromBoards(playerBoard, enemyBoard);
@@ -60,14 +61,14 @@ namespace DeadManZone.Core.Combat
             Authority = authority;
             _playerCombatants = SpawnCombatants(playerBoard, CombatSide.Player, 0);
             _enemyCombatants = SpawnCombatants(enemyBoard, CombatSide.Enemy, _layout.EnemyOriginX);
-            var playerSynergySnapshot = PieceAbilityEngine.EvaluateFightStart(playerBoard);
+            var playerSynergySnapshot = PieceAbilityEngine.EvaluateFightStart(playerBoard, playerBuildBoards);
             var enemySynergySnapshot = PieceAbilityEngine.EvaluateFightStart(enemyBoard);
             var playerCriticalMassSnapshot = CriticalMassEngine.Evaluate(playerBoard);
             var enemyCriticalMassSnapshot = CriticalMassEngine.Evaluate(enemyBoard);
-            PieceAbilityEngine.ApplyToCombatants(playerSynergySnapshot, _playerCombatants);
-            PieceAbilityEngine.ApplyToCombatants(enemySynergySnapshot, _enemyCombatants);
             CriticalMassEngine.ApplyToCombatants(playerCriticalMassSnapshot, _playerCombatants);
             CriticalMassEngine.ApplyToCombatants(enemyCriticalMassSnapshot, _enemyCombatants);
+            PieceAbilityEngine.ApplyToCombatants(playerSynergySnapshot, _playerCombatants);
+            PieceAbilityEngine.ApplyToCombatants(enemySynergySnapshot, _enemyCombatants);
             ApplyTacticDamageBuffs();
             _awaitingOpeningCommand = true;
             _awaitingCommand = true;
@@ -83,8 +84,9 @@ namespace DeadManZone.Core.Combat
             BoardState playerBoard,
             BoardState enemyBoard,
             int seed,
-            int authority = 0) =>
-            new TickCombatRun(playerBoard, enemyBoard, seed, authority);
+            int authority = 0,
+            BuildBoardSet playerBuildBoards = null) =>
+            new TickCombatRun(playerBoard, enemyBoard, seed, authority, playerBuildBoards);
 
         public CombatAdvanceResult Continue(IReadOnlyList<PhaseCommand> commands)
         {

@@ -151,7 +151,7 @@ namespace DeadManZone.Game
                 EventLog = new List<CombatEventRecord>()
             };
 
-            _activeCombat = TickCombatRun.Start(playerBoard, enemyBoard, combatSeed, State.Authority);
+            _activeCombat = TickCombatRun.Start(playerBoard, enemyBoard, combatSeed, State.Authority, buildBoards);
             State.Combat.AwaitingCommand = _activeCombat.AwaitingCommand;
             State.Combat.CheckpointsFired = _activeCombat.CheckpointsFired;
             State.Combat.GlobalTick = 0;
@@ -512,11 +512,13 @@ namespace DeadManZone.Game
 
             var playerBoard = GetCombatBoard();
             var enemyBoard = BoardSnapshotMapper.ToBoard(State.Combat.EnemyBoard, _registry);
+            var buildBoards = GetBuildBoards();
             _activeCombat = TickCombatRun.Start(
                 playerBoard,
                 enemyBoard,
                 State.Combat.CombatSeed,
-                State.Combat.Authority > 0 ? State.Combat.Authority : State.Combat.Requisition);
+                State.Combat.Authority > 0 ? State.Combat.Authority : State.Combat.Requisition,
+                buildBoards);
 
             _activeCombat.FastForwardToCheckpoint(
                 State.Combat.CheckpointsFired,
