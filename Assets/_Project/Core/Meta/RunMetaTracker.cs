@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using DeadManZone.Core;
 
 namespace DeadManZone.Core.Meta
@@ -9,24 +7,18 @@ namespace DeadManZone.Core.Meta
     {
         public int SalvageSuppliesThisRun { get; private set; }
         public int CriticalMassTriggersThisRun { get; private set; }
-        public bool HqDamagedThisFight { get; private set; }
         public int FightsCompletedThisRun { get; private set; }
 
         public void RecordSalvage(int supplies) => SalvageSuppliesThisRun += supplies;
 
         public void RecordCriticalMassTrigger() => CriticalMassTriggersThisRun++;
 
-        public void RecordHqDamaged() => HqDamagedThisFight = true;
-
         public void RecordFightCompleted() => FightsCompletedThisRun++;
-
-        public void ResetFightFlags() => HqDamagedThisFight = false;
 
         public void ResetRun()
         {
             SalvageSuppliesThisRun = 0;
             CriticalMassTriggersThisRun = 0;
-            HqDamagedThisFight = false;
             FightsCompletedThisRun = 0;
         }
 
@@ -64,12 +56,6 @@ namespace DeadManZone.Core.Meta
                     yield return AchievementIds.WinCartel;
                     break;
             }
-        }
-
-        public IEnumerable<string> EvaluateFightEndAchievements(bool playerWon)
-        {
-            if (playerWon && !HqDamagedThisFight)
-                yield return AchievementIds.WinNoHqDamage;
         }
     }
 }

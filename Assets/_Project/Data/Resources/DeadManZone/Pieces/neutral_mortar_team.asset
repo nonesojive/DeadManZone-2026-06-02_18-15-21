@@ -21,10 +21,9 @@ MonoBehaviour:
   tags:
   - Infantry
   - Artillery
-  - Combatant
   primary: infantry
   combatRole: artillery
-  systemTag: combatant
+  systemTag: 
   synergyTags: []
   abilityTags: []
   flavorTags: []

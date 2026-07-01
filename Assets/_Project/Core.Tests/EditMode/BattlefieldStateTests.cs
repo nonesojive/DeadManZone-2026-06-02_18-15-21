@@ -1,6 +1,7 @@
 using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
+using DeadManZone.Core.Tests;
 using NUnit.Framework;
 
 namespace DeadManZone.Core.Tests.EditMode
@@ -24,18 +25,18 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
-        public void FromBoards_MirrorsEnemyHqToFarRear()
+        public void FromBoards_MirrorsEnemyRearBlockerToFarRear()
         {
             var player = new BoardState(TestBoards.Layout);
             var enemy = new BoardState(TestBoards.Layout);
-            enemy.TryPlace(TestPieces.CombatFieldHq(), new GridCoord(0, 4), instanceId: "enemy_hq");
+            enemy.TryPlace(TestPieces.MultiCellRearBlocker(), new GridCoord(0, 4), instanceId: "enemy_blocker");
 
             var battlefield = BattlefieldState.FromBoards(player, enemy);
-            var hqCell = battlefield.FindCell("enemy_hq");
+            var blockerCell = battlefield.FindCell("enemy_blocker");
 
-            Assert.AreEqual(battlefield.Layout.EnemyOriginX + 7, hqCell.Position.X);
+            Assert.AreEqual(battlefield.Layout.EnemyOriginX + 7, blockerCell.Position.X);
 
-            foreach (var cell in TestPieces.HqPiece().Shape.GetCells(hqCell.Position))
+            foreach (var cell in TestPieces.MultiCellHorizontalPairShape().GetCells(blockerCell.Position))
                 Assert.Less(cell.X, battlefield.Layout.TotalWidth);
         }
 

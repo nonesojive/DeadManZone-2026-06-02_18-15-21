@@ -73,12 +73,6 @@ MonoBehaviour:
     combatArenaModelScale: 1
     combatArenaModelHeight: 1.6
     snapshotIconFromPrefab: 1
-  - pieceId: ironmarch_hq
-    iconAssetPath: Assets/_Project/Art/Synty/Icons/ironmarch_hq_icon.png
-    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_Hq.prefab
-    combatArenaModelScale: 1
-    combatArenaModelHeight: 0
-    snapshotIconFromPrefab: 1
   - pieceId: rifle_squad
     iconAssetPath: Assets/_Project/Art/Synty/Icons/rifle_squad_icon.png
     combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Rifle.prefab
@@ -234,18 +228,6 @@ MonoBehaviour:
     combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Rifle.prefab
     combatArenaModelScale: 0.93
     combatArenaModelHeight: 1.53
-    snapshotIconFromPrefab: 1
-  - pieceId: dust_hq
-    iconAssetPath: Assets/_Project/Art/Synty/Icons/dust_hq_icon.png
-    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_Hq.prefab
-    combatArenaModelScale: 1
-    combatArenaModelHeight: 0
-    snapshotIconFromPrefab: 1
-  - pieceId: echo_hq
-    iconAssetPath: Assets/_Project/Art/Synty/Icons/echo_hq_icon.png
-    combatArenaPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_Hq.prefab
-    combatArenaModelScale: 1
-    combatArenaModelHeight: 0
     snapshotIconFromPrefab: 1
   - pieceId: signal_relay
     iconAssetPath: Assets/_Project/Art/Synty/Icons/signal_relay_icon.png

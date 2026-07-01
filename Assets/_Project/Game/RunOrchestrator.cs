@@ -137,13 +137,6 @@ namespace DeadManZone.Game
             var criticalMassSnapshot = CriticalMassEngine.Evaluate(buildBoards);
             if (criticalMassSnapshot.AuthorityBonus > 0)
                 State.Authority += criticalMassSnapshot.AuthorityBonus;
-            if (criticalMassSnapshot.SuppliesFlatBonus > 0)
-                State.Supplies += criticalMassSnapshot.SuppliesFlatBonus;
-            if (criticalMassSnapshot.SuppliesPercentBonus > 0)
-            {
-                State.Supplies += (int)System.Math.Round(
-                    State.Supplies * (criticalMassSnapshot.SuppliesPercentBonus / 100f));
-            }
 
             int combatSeed = State.RunSeed + State.FightIndex * 1000;
 
@@ -221,7 +214,6 @@ namespace DeadManZone.Game
                 Trigger = _activeCombat.LastPauseTrigger,
                 Authority = _activeCombat.Requisition,
                 ActiveTactic = _activeCombat.PlayerTactic,
-                HqAlive = true,
                 HasCommandPiece = board.Pieces.Any(p =>
                     p.Definition.CommandActions.HasFlag(CommandActionFlags.ChangeStance)),
                 AvailableAbilities = abilities,
@@ -383,30 +375,29 @@ namespace DeadManZone.Game
         {
             State.LastCombatLogText = CombatLogFormatter.FormatAll(result.EventLog?.Events);
             _activeCombat = null;
-            var enemyBoardAtFightEnd = State.Combat?.EnemyBoard;
             bool playerWon = result.PlayerWon;
             bool isDraw = result.IsDraw;
             var playerCombatants = result.PlayerCombatantsAtEnd ?? Array.Empty<CombatantState>();
             int casualties = ManpowerCalculator.ComputeCasualties(playerCombatants);
             State.Manpower = Math.Max(0, State.Manpower - casualties);
+            int suppliesIncome = ApplyPostCombatIncome();
 
             if (!playerWon)
             {
                 int moraleLoss = MoraleCalculator.ComputeLoss(
                     State.FightIndex,
                     result.PlayerCombatantsLost,
-                    result.PlayerCombatantsTotal,
-                    result.PlayerHqDamaged);
+                    result.PlayerCombatantsTotal);
                 State.Morale -= moraleLoss;
-                ProcessFightEndMeta(playerWon: false, result.PlayerHqDamaged);
+                ProcessFightEndMeta();
                 State.LastBattleReport = BattleReportBuilder.Build(
                     System.Array.Empty<CombatantState>(),
                     playerWon,
                     isDraw,
                     casualties,
-                    suppliesEarned: 0,
+                    suppliesIncome,
                     moraleDelta: -moraleLoss);
-                ApplySalvageAftermath(result, enemyBoardAtFightEnd);
+                ApplySalvageAftermath();
                 State.Combat = null;
 
                 if (State.Morale <= 0)
@@ -420,22 +411,18 @@ namespace DeadManZone.Game
                 State.Phase = RunPhase.Aftermath;
                 State.RerollCountThisRound = 0;
                 ResetAuthorityForBuildRound();
-                ApplyMuster();
                 RefreshShop();
                 Persist();
                 return;
             }
 
-            var reward = FightRewardTable.GetReward(State.FightIndex, isDraw);
-            State.Supplies += reward.Supplies;
-            State.Authority += reward.BonusAuthority;
-            ProcessFightEndMeta(playerWon: true, result.PlayerHqDamaged);
+            ProcessFightEndMeta();
             State.LastBattleReport = BattleReportBuilder.Build(
                 System.Array.Empty<CombatantState>(),
                 playerWon,
                 isDraw,
                 casualties,
-                reward.Supplies,
+                suppliesIncome,
                 moraleDelta: 0);
             if (result.BattleReport != null)
             {
@@ -444,14 +431,14 @@ namespace DeadManZone.Game
                     PlayerWon = playerWon,
                     IsDraw = isDraw,
                     ManpowerCasualties = casualties,
-                    SuppliesEarned = reward.Supplies,
+                    SuppliesEarned = suppliesIncome,
                     MoraleDelta = 0,
                     TopDamageDealt = result.BattleReport.TopDamageDealt,
                     TopDamageTaken = result.BattleReport.TopDamageTaken
                 };
             }
 
-            ApplySalvageAftermath(result, enemyBoardAtFightEnd);
+            ApplySalvageAftermath();
             State.Combat = null;
 
             if (State.FightIndex >= MaxFights)
@@ -466,31 +453,18 @@ namespace DeadManZone.Game
             State.Phase = RunPhase.Aftermath;
             State.RerollCountThisRound = 0;
             ResetAuthorityForBuildRound();
-            ApplyMuster();
             RefreshShop();
             Persist();
         }
 
-        private void ApplySalvageAftermath(CombatAdvanceResult result, BoardSnapshot enemyBoard)
+        private void ApplySalvageAftermath()
         {
             var enemyTemplate = _content.GetEnemyTemplate(State.FightIndex);
             if (enemyTemplate == null)
                 return;
 
             State.LastEnemyFactionId = enemyTemplate.enemyFactionId;
-
-            var fightStartBoard = _fightStartCombatBoard ?? GetCombatBoard();
-            int boardBoost = SalvageBoardBoostAggregator.SumBoardBoost(fightStartBoard);
-            var outcome = SalvageAftermathHelper.ResolveOutcome(result.PlayerWon, result.IsDraw);
-            int destroyedUniqueTypes = SalvageAftermathHelper.CountDestroyedEnemyTypes(
-                result.EventLog,
-                enemyBoard);
-
-            State.SalvageChancePercent = SalvageChanceCalculator.Compute(
-                Faction.baseSalvageChancePercent,
-                boardBoost,
-                outcome,
-                destroyedUniqueTypes);
+            SyncSalvageChancePercent();
         }
 
         private void ResetAuthorityForBuildRound()

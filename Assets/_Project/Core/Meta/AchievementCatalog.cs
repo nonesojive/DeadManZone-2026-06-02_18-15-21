@@ -6,7 +6,6 @@ namespace DeadManZone.Core.Meta
     public static class AchievementIds
     {
         public const string ClearGauntlet = "clear_gauntlet";
-        public const string WinNoHqDamage = "win_no_hq_damage";
         public const string CriticalMassFive = "critical_mass_five";
         public const string SalvageHundred = "salvage_hundred";
         public const string EmergencyDraftUsed = "emergency_draft_used";
@@ -35,13 +34,6 @@ namespace DeadManZone.Core.Meta
                 DisplayName = "Gauntlet Cleared",
                 Description = "Win a full 10-fight campaign.",
                 SteamApiName = "ACH_CLEAR_GAUNTLET"
-            },
-            new AchievementDefinition
-            {
-                Id = AchievementIds.WinNoHqDamage,
-                DisplayName = "Untouched Command",
-                Description = "Win a fight without HQ taking damage.",
-                SteamApiName = "ACH_NO_HQ_DAMAGE"
             },
             new AchievementDefinition
             {

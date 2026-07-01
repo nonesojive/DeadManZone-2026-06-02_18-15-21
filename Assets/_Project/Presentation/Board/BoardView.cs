@@ -10,6 +10,7 @@ using DeadManZone.Data;
 using DeadManZone.Game;
 using DeadManZone.Game.Dev;
 using DeadManZone.Presentation.DragDrop;
+using DeadManZone.Presentation.Run;
 using DeadManZone.Presentation.Visual;
 using UnityEngine;
 using UnityEngine.UI;
@@ -322,6 +323,7 @@ private PieceDefinition _selectedPiece;
             if (result.Success)
             {
                 PersistBoundBoard();
+                BuildScreenHudController.RequestRefresh();
                 RefreshOccupancyVisuals();
                 _selectedPiece = null;
             }

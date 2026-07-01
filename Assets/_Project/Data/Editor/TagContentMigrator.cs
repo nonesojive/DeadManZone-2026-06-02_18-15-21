@@ -10,50 +10,50 @@ namespace DeadManZone.Data.Editor
     {
         private const string PieceRoot = "Assets/_Project/Data/Resources/DeadManZone/Pieces";
 
+        [MenuItem(DeadManZoneEditorMenus.Content + "Strip Obsolete Combat System Tags")]
+        public static void StripObsoleteCombatSystemTagsMenu() => StripObsoleteCombatSystemTags();
+
         private static readonly Dictionary<string, PieceTagMapping> PieceMappings =
             new(StringComparer.Ordinal)
             {
-                ["ironmarch_hq"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Headquarters, GameTagIds.Hq),
-                ["rifle_squad"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
-                ["diesel_walker"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, GameTagIds.Combatant),
-                ["radio_array"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant),
-                ["mg_team"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
-                ["field_gun_nest"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Artillery, GameTagIds.Combatant),
-                ["supply_depot"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant),
-                ["field_workshop"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant),
-                ["mobile_artillery"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant),
-                ["ironmarch_heavy_tank"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, GameTagIds.Combatant),
-                ["ironmarch_mortar"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Artillery, GameTagIds.Combatant),
-                ["ironmarch_engineer"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Support, GameTagIds.Combatant),
-                ["ironmarch_breacher"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
+                ["rifle_squad"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, string.Empty),
+                ["diesel_walker"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, string.Empty),
+                ["radio_array"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, string.Empty),
+                ["mg_team"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, string.Empty),
+                ["field_gun_nest"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Artillery, string.Empty),
+                ["supply_depot"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, string.Empty),
+                ["field_workshop"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, string.Empty),
+                ["mobile_artillery"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, string.Empty),
+                ["ironmarch_heavy_tank"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, string.Empty),
+                ["ironmarch_mortar"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Artillery, string.Empty),
+                ["ironmarch_engineer"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Support, string.Empty),
+                ["ironmarch_breacher"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, string.Empty),
 
-                ["conscript_rifleman"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
-                ["grenade_thrower"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Artillery, GameTagIds.Combatant),
-                ["field_medic"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Support, GameTagIds.Combatant,
+                ["conscript_rifleman"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, string.Empty),
+                ["grenade_thrower"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Artillery, string.Empty),
+                ["field_medic"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Support, string.Empty,
                     synergyTags: new[] { GameTagIds.Medic }),
-                ["armored_transport"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, GameTagIds.Combatant),
-                ["mobile_cannon"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant),
-                ["neutral_supply_depot"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant),
-                ["neutral_field_gun"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Artillery, GameTagIds.Combatant),
-                ["shock_trooper"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
+                ["armored_transport"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, string.Empty),
+                ["mobile_cannon"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, string.Empty),
+                ["neutral_supply_depot"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, string.Empty),
+                ["neutral_field_gun"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Artillery, string.Empty),
+                ["shock_trooper"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, string.Empty),
 
-                ["dust_hq"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Headquarters, GameTagIds.Hq),
-                ["sand_raider"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
-                ["scrap_rig"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, GameTagIds.Combatant),
-                ["toxin_launcher"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant),
+                ["sand_raider"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, string.Empty),
+                ["scrap_rig"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, string.Empty),
+                ["toxin_launcher"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, string.Empty),
 
-                ["echo_hq"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Headquarters, GameTagIds.Hq),
-                ["phantom_agent"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, GameTagIds.Combatant),
-                ["signal_relay"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, GameTagIds.NonCombatant),
-                ["resonance_cannon"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant),
+                ["phantom_agent"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty),
+                ["signal_relay"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Utility, string.Empty),
+                ["resonance_cannon"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, string.Empty),
 
-                ["crimson_elite"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
-                ["crimson_tank"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, GameTagIds.Combatant),
-                ["crimson_artillery"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Artillery, GameTagIds.Combatant),
+                ["crimson_elite"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, string.Empty),
+                ["crimson_tank"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Tank, string.Empty),
+                ["crimson_artillery"] = new PieceTagMapping(GameTagIds.Building, GameTagIds.Artillery, string.Empty),
 
-                ["wraith_stalker"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, GameTagIds.Combatant),
-                ["wraith_phantom"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, GameTagIds.Combatant),
-                ["wraith_bombard"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, GameTagIds.Combatant)
+                ["wraith_stalker"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty),
+                ["wraith_phantom"] = new PieceTagMapping(GameTagIds.Infantry, GameTagIds.Assault, string.Empty),
+                ["wraith_bombard"] = new PieceTagMapping(GameTagIds.Vehicle, GameTagIds.Artillery, string.Empty)
             };
 
         private static readonly HashSet<string> KnownLegacyTags = new(StringComparer.OrdinalIgnoreCase)
@@ -73,6 +73,31 @@ namespace DeadManZone.Data.Editor
             "Headquarters",
             "Sniper"
         };
+
+        public static void StripObsoleteCombatSystemTags()
+        {
+            string[] guids = AssetDatabase.FindAssets("t:PieceDefinitionSO", new[] { PieceRoot });
+            int updated = 0;
+
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                var piece = AssetDatabase.LoadAssetAtPath<PieceDefinitionSO>(path);
+                if (piece == null)
+                    continue;
+
+                if (!ApplyObsoleteSystemTagCleanup(piece))
+                    continue;
+
+                updated++;
+                EditorUtility.SetDirty(piece);
+            }
+
+            if (updated > 0)
+                AssetDatabase.SaveAssets();
+
+            Debug.Log($"[TagContentMigrator] Stripped obsolete combat system tags on {updated} pieces.");
+        }
 
         public static void MigratePieceTags()
         {
@@ -183,6 +208,36 @@ namespace DeadManZone.Data.Editor
             return warnings;
         }
 
+        private static bool ApplyObsoleteSystemTagCleanup(PieceDefinitionSO piece)
+        {
+            bool changed = false;
+
+            if (PieceTagQueries.IsObsoleteBoardSplitSystemTag(piece.systemTag))
+            {
+                piece.systemTag = string.Empty;
+                changed = true;
+            }
+
+            string[] rebuiltLegacyTags = PieceTagQueries.BuildLegacyTags(
+                piece.category,
+                piece.baseDamage,
+                piece.primary,
+                piece.combatRole,
+                piece.systemTag,
+                piece.synergyTags,
+                piece.abilityTags ?? Array.Empty<string>(),
+                piece.flavorTags ?? Array.Empty<string>(),
+                piece.tags ?? Array.Empty<string>());
+
+            if (!AreArraysEqual(piece.tags, rebuiltLegacyTags))
+            {
+                piece.tags = rebuiltLegacyTags;
+                changed = true;
+            }
+
+            return changed;
+        }
+
         private static bool ApplyMapping(PieceDefinitionSO piece, PieceTagMapping mapping)
         {
             bool changed = false;
@@ -204,21 +259,8 @@ namespace DeadManZone.Data.Editor
                 changed = true;
             }
 
-            string[] rebuiltLegacyTags = PieceTagQueries.BuildLegacyTags(
-                piece.category,
-                piece.baseDamage,
-                piece.primary,
-                piece.combatRole,
-                piece.systemTag,
-                piece.synergyTags,
-                piece.abilityTags ?? Array.Empty<string>(),
-                piece.flavorTags ?? Array.Empty<string>());
-
-            if (!AreArraysEqual(piece.tags, rebuiltLegacyTags))
-            {
-                piece.tags = rebuiltLegacyTags;
+            if (ApplyObsoleteSystemTagCleanup(piece))
                 changed = true;
-            }
 
             return changed;
         }

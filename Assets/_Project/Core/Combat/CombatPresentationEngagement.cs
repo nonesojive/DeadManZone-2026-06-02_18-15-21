@@ -69,7 +69,7 @@ namespace DeadManZone.Core.Combat
             if (unit?.Definition == null || layout == null)
                 return false;
 
-            if (!PieceTagQueries.HasTag(unit.Definition, GameTagIds.Combatant))
+            if (!PieceCombatRules.ParticipatesInCombat(unit.Definition))
                 return false;
 
             var combatant = ToCombatant(unit, unitAnchor);
@@ -137,7 +137,7 @@ namespace DeadManZone.Core.Combat
                 if (!aliveAnchors.TryGetValue(cell.InstanceId, out var anchor))
                     continue;
 
-                if (!PieceTagQueries.HasTag(cell.Definition, GameTagIds.Combatant))
+                if (!PieceCombatRules.ParticipatesInCombat(cell.Definition))
                     continue;
 
                 combatants.Add(ToCombatant(cell, anchor));

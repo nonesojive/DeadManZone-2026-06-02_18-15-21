@@ -57,14 +57,8 @@ namespace DeadManZone.Core.Tags
                 [GameTagIds.Artillery] = Create(GameTagIds.Artillery, "Artillery", TagCategory.CombatRole, "Long-range fire support specialist.", 76),
                 [GameTagIds.Support] = Create(GameTagIds.Support, "Support", TagCategory.CombatRole, "Role that buffs and stabilizes allies.", 74),
                 [GameTagIds.Utility] = Create(GameTagIds.Utility, "Utility", TagCategory.CombatRole, "Tactical role focused on control and tools.", 72),
-                [GameTagIds.Headquarters] = Create(GameTagIds.Headquarters, "Headquarters", TagCategory.CombatRole, "Command center role for strategic effects.", 70),
                 [GameTagIds.Sniper] = Create(GameTagIds.Sniper, "Sniper", TagCategory.CombatRole, "Precision ranged eliminator role.", 68),
                 [GameTagIds.Defender] = Create(GameTagIds.Defender, "Defender", TagCategory.CombatRole, "Frontline bulwark role focused on holding ground.", 66),
-
-                // System
-                [GameTagIds.Combatant] = Create(GameTagIds.Combatant, "Combatant", TagCategory.System, "System marker for units that can enter combat.", 0, false),
-                [GameTagIds.NonCombatant] = Create(GameTagIds.NonCombatant, "Non-Combatant", TagCategory.System, "System marker for units excluded from combat.", 0, false),
-                [GameTagIds.Hq] = Create(GameTagIds.Hq, "HQ", TagCategory.System, "System marker for headquarters win condition logic.", 0, false),
 
                 // Attack type
                 [GameTagIds.Ballistic] = CreateFromProfile(AttackType.Ballistic),

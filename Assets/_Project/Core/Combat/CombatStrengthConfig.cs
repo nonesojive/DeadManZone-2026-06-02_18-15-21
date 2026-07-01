@@ -9,8 +9,6 @@ namespace DeadManZone.Core.Combat
         public const float EffectiveFireRate = 0.75f;
 
         public const float Scale = 12f;
-        public const float HqSurvivabilityWeight = 1.5f;
-        public const float HqCommandBonus = 15f;
 
         public const float FavorableRatioThreshold = 1.15f;
         public const float DangerousRatioThreshold = 0.85f;

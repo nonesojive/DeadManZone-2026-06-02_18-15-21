@@ -11,7 +11,6 @@ namespace DeadManZone.Core.Run
         public PauseTriggerContext Trigger { get; init; }
         public int Authority { get; init; }
         public TacticType ActiveTactic { get; init; }
-        public bool HqAlive { get; init; }
         public bool HasCommandPiece { get; init; }
         public IReadOnlyList<AvailableCommand> AvailableAbilities { get; init; }
         public TacticType? PendingSelectedTactic { get; init; }

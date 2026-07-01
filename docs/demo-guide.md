@@ -19,12 +19,12 @@
 ## Core Systems
 
 - **10-fight gauntlet** with escalating enemy templates
-- **4 resources**: Supplies, Manpower, Authority, Morale
-- **Shop**: Unified 8–12 slot offer grid with salvage refunds (lane weighting in data)
+- **4 resources**: Supplies, Manpower, Authority, Morale — top bar shows **income previews** (`+N`) and **salvage %** from board + faction baseline
+- **Shop**: Unified 8–12 slot offer grid; salvage offers use faction base + combat-board boost (see `2026-07-01-build-hud-economy-design.md`)
 - **Combat**: Tick-based sim; HP-triggered pauses at 75%/30% army HP; gas ramp ~30s
 - **Synergies**: Medic→Infantry, Command→Artillery, Echo→Stealth ability, Inspiring→any
 - **Critical Mass**: 3+ Infantry, 2+ Vehicles, 2+ Artillery, 3+ Assault thresholds
-- **HUD**: Army strength / matchup preview vs next enemy
+- **HUD**: Army strength / matchup preview; supplies/manpower/authority income labels; salvage %; critical mass drawer tab; build messages in bottom **InfoMessageRegion**
 - **Meta**: Achievements, local leaderboard, faction unlocks (Steam stub ready)
 
 ## Setup

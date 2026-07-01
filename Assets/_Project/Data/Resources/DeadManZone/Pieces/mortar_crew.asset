@@ -20,7 +20,6 @@ MonoBehaviour:
   - {x: 1, y: 0}
   tags:
   - Artillery
-  - Combatant
   maxHp: 12
   baseDamage: 4
   cooldownTicks: 5

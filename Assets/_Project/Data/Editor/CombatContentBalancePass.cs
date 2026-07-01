@@ -60,8 +60,7 @@ namespace DeadManZone.Data.Editor
                 || piece.id != null && (piece.id.Contains("mg_") || piece.id.Contains("mortar")))
                 return AttackRangeTier.Medium;
 
-            if (piece.category == PieceCategory.Building
-                || piece.combatRole == GameTagIds.Headquarters)
+            if (piece.category == PieceCategory.Building)
                 return AttackRangeTier.Melee;
 
             if (piece.attackType == AttackType.Explosive

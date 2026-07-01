@@ -3,6 +3,7 @@ using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Tags;
 using DeadManZone.Presentation.Board;
+using DeadManZone.Presentation.DragDrop;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -41,9 +42,6 @@ namespace DeadManZone.Presentation.DragDrop
             _hoverCardController?.Hide();
 
             if (string.IsNullOrEmpty(instanceId) || DragDropController.Instance == null)
-                return;
-
-            if (PieceTagQueries.HasTag(_definition, GameTagIds.Hq))
                 return;
 
             var payload = new DragPayload

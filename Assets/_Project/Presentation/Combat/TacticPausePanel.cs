@@ -163,7 +163,6 @@ namespace DeadManZone.Presentation.Combat
                 float x = 0.12f + i * 0.22f;
                 var toggle = CreateToggle(tacticRow, label, new Vector2(x, 0.5f));
                 toggle.isOn = tactic == _selectedTactic;
-                toggle.interactable = tactic != TacticType.DisciplinedFire || _context.HqAlive;
                 var captured = tactic;
                 toggle.onValueChanged.AddListener(on =>
                 {
@@ -230,7 +229,6 @@ namespace DeadManZone.Presentation.Combat
             bool valid = _validator.ValidatePause(
                 _selectedTactic,
                 _context.ActiveTactic,
-                _context.HqAlive,
                 _context.HasCommandPiece,
                 _context.CheckpointIndex,
                 _context.Authority,

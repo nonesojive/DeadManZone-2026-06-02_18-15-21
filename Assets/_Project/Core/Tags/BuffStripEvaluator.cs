@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
@@ -14,13 +15,16 @@ namespace DeadManZone.Core.Tags
         public string DisplayName { get; init; } = string.Empty;
         public bool IsActive { get; init; }
         public int CurrentCount { get; init; }
-        public int ActiveThreshold { get; init; }
-        public int NextThreshold { get; init; }
+        public int ProgressThreshold { get; init; }
+        public bool IsAtMaxTier { get; init; }
         public string DetailText { get; init; } = string.Empty;
     }
 
     public static class BuffStripEvaluator
     {
+        public static List<BuffStripEntry> Evaluate(BuildBoardSet boards) =>
+            Evaluate(boards?.ToAggregateBoard());
+
         public static List<BuffStripEntry> Evaluate(BoardState board)
         {
             var entries = new List<BuffStripEntry>();
@@ -42,6 +46,7 @@ namespace DeadManZone.Core.Tags
                 if (!evaluated.IsActive && !isNearMiss)
                     continue;
 
+                ResolveProgress(evaluated, rule, out int progressThreshold, out bool isAtMaxTier);
                 string displayName = ResolveDisplayName(rule);
                 entries.Add(new BuffStripEntry
                 {
@@ -50,133 +55,98 @@ namespace DeadManZone.Core.Tags
                     DisplayName = displayName,
                     IsActive = evaluated.IsActive,
                     CurrentCount = evaluated.Count,
-                    ActiveThreshold = evaluated.IsActive ? evaluated.ActiveTier.Threshold : 0,
-                    NextThreshold = evaluated.IsActive ? 0 : firstThreshold,
-                    DetailText = BuildDetailText(displayName, evaluated)
+                    ProgressThreshold = progressThreshold,
+                    IsAtMaxTier = isAtMaxTier,
+                    DetailText = BuildDetailText(displayName, evaluated, progressThreshold, isAtMaxTier)
                 });
             }
 
-            AppendActiveAbilityAuras(board, entries);
             return entries;
         }
 
-        /// <summary>Card copy for an ability id on the board (not synergy tag display names).</summary>
-        public static string ResolveAbilityDescription(
-            BoardState board,
-            string abilityId,
-            string sourceInstanceId = null)
-        {
-            if (TryFindAbility(board, abilityId, sourceInstanceId, out var ability)
-                && !string.IsNullOrWhiteSpace(ability.CardDescription))
-            {
-                return ability.CardDescription.Trim();
-            }
+        public static int CountActive(BuildBoardSet boards) =>
+            Evaluate(boards).Count(entry => entry.IsActive);
 
-            return abilityId ?? string.Empty;
+        public static string FormatProgressLabel(BuffStripEntry entry)
+        {
+            if (entry == null)
+                return string.Empty;
+
+            if (entry.IsAtMaxTier)
+                return $"{entry.CurrentCount}/{entry.ProgressThreshold}";
+
+            if (entry.ProgressThreshold > 0)
+                return $"{entry.CurrentCount}/{entry.ProgressThreshold}";
+
+            return entry.CurrentCount.ToString();
         }
 
-        private static void AppendActiveAbilityAuras(BoardState board, List<BuffStripEntry> entries)
+        private static void ResolveProgress(
+            EvaluatedCriticalMassRule evaluated,
+            CriticalMassRuleDefinition rule,
+            out int progressThreshold,
+            out bool isAtMaxTier)
         {
-            var snapshot = PieceAbilityEngine.EvaluateFightStart(board);
-            var seenAbilityIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var entry in entries)
-                seenAbilityIds.Add(entry.TagId);
-
-            foreach (var link in snapshot.Links)
+            isAtMaxTier = false;
+            if (!evaluated.IsActive)
             {
-                string abilityId = GetSourceAbilityId(link);
-                if (string.IsNullOrWhiteSpace(abilityId) || seenAbilityIds.Contains(abilityId))
-                    continue;
-
-                seenAbilityIds.Add(abilityId);
-                string description = ResolveAbilityDescription(board, abilityId, link.SourceInstanceId);
-                entries.Add(new BuffStripEntry
-                {
-                    TagId = abilityId,
-                    RuleId = abilityId,
-                    DisplayName = description,
-                    IsActive = true,
-                    CurrentCount = 0,
-                    DetailText = $"Active ability: {description}"
-                });
+                progressThreshold = ResolveNextUnreachedThreshold(evaluated.Count, rule.Tiers);
+                return;
             }
+
+            int nextIndex = evaluated.ActiveTierIndex + 1;
+            if (nextIndex < rule.Tiers.Length)
+            {
+                progressThreshold = rule.Tiers[nextIndex].Threshold;
+                return;
+            }
+
+            isAtMaxTier = true;
+            progressThreshold = evaluated.ActiveTier.Threshold;
         }
 
-        private static string GetSourceAbilityId(PieceAbilityEngine.SynergyLink link) => link.SourceTagId;
-
-        private static bool TryFindAbility(
-            BoardState board,
-            string abilityId,
-            string sourceInstanceId,
-            out PieceAbilityDefinition ability)
+        private static int ResolveNextUnreachedThreshold(int count, CriticalMassTier[] tiers)
         {
-            ability = default;
-            if (board == null || string.IsNullOrWhiteSpace(abilityId))
-                return false;
-
-            if (!string.IsNullOrWhiteSpace(sourceInstanceId))
+            for (int i = 0; i < tiers.Length; i++)
             {
-                foreach (var piece in board.Pieces)
-                {
-                    if (!string.Equals(piece.InstanceId, sourceInstanceId, StringComparison.Ordinal))
-                        continue;
-
-                    if (TryFindOnPiece(piece, abilityId, out ability))
-                        return true;
-                }
+                if (count < tiers[i].Threshold)
+                    return tiers[i].Threshold;
             }
 
-            foreach (var piece in board.Pieces)
-            {
-                if (TryFindOnPiece(piece, abilityId, out ability))
-                    return true;
-            }
-
-            return false;
+            return tiers[^1].Threshold;
         }
 
-        private static bool TryFindOnPiece(PlacedPiece piece, string abilityId, out PieceAbilityDefinition ability)
-        {
-            ability = default;
-            var abilities = piece.Definition?.Abilities;
-            if (abilities == null)
-                return false;
-
-            for (int i = 0; i < abilities.Count; i++)
-            {
-                if (!string.Equals(abilities[i].Id, abilityId, StringComparison.Ordinal))
-                    continue;
-
-                ability = abilities[i];
-                return true;
-            }
-
-            return false;
-        }
-
-        private static string BuildDetailText(string displayName, EvaluatedCriticalMassRule evaluated)
+        private static string BuildDetailText(
+            string displayName,
+            EvaluatedCriticalMassRule evaluated,
+            int progressThreshold,
+            bool isAtMaxTier)
         {
             var rule = evaluated.Rule;
-            string bonus = FormatBonus(rule, evaluated.ActiveTier.Magnitude);
             if (evaluated.IsActive)
             {
+                string bonus = FormatBonus(rule, evaluated.ActiveTier.Magnitude);
+                string progress = isAtMaxTier
+                    ? $"{evaluated.Count}/{progressThreshold} (max)"
+                    : $"{evaluated.Count}/{progressThreshold}";
                 return string.IsNullOrEmpty(bonus)
-                    ? $"{displayName} critical mass active ({evaluated.Count}/{evaluated.ActiveTier.Threshold})"
-                    : $"{displayName} {evaluated.Count}/{evaluated.ActiveTier.Threshold}: {bonus}";
+                    ? $"{displayName} critical mass active ({progress})"
+                    : $"{displayName} {progress}: {bonus}";
             }
 
-            int nextThreshold = rule.Tiers[0].Threshold;
+            string nextBonus = FormatBonus(rule, ResolveTierMagnitude(rule, progressThreshold));
+            return $"{displayName} {evaluated.Count}/{progressThreshold} — {nextBonus}";
+        }
+
+        private static int ResolveTierMagnitude(CriticalMassRuleDefinition rule, int threshold)
+        {
             for (int i = 0; i < rule.Tiers.Length; i++)
             {
-                if (evaluated.Count < rule.Tiers[i].Threshold)
-                {
-                    nextThreshold = rule.Tiers[i].Threshold;
-                    bonus = FormatBonus(rule, rule.Tiers[i].Magnitude);
-                    break;
-                }
+                if (rule.Tiers[i].Threshold == threshold)
+                    return rule.Tiers[i].Magnitude;
             }
 
-            return $"{displayName} {evaluated.Count}/{nextThreshold} — {bonus}";
+            return rule.Tiers[0].Magnitude;
         }
 
         private static string FormatBonus(CriticalMassRuleDefinition rule, int magnitude)

@@ -65,7 +65,7 @@ namespace DeadManZone.Core.Tests.EditMode
         {
             var attacker = TestPieces.With(TestPieces.RifleSquad(), baseDamage: 100, attackType: AttackType.Explosive);
             var structure = TestPieces.With(
-                TestPieces.CreateUnit("nest", primary: GameTagIds.Structure, systemTag: GameTagIds.Combatant),
+                TestPieces.CreateUnit("nest", primary: GameTagIds.Structure),
                 armorType: ArmorType.Light);
             int damage = CombatDamageResolver.ComputeDamage(attacker, structure, 1f, 0);
             Assert.AreEqual(130, damage);
@@ -75,8 +75,8 @@ namespace DeadManZone.Core.Tests.EditMode
         public void Gas_StrongVsInfantry_WeakVsBuilding()
         {
             var attacker = TestPieces.With(TestPieces.RifleSquad(), baseDamage: 100, attackType: AttackType.Gas);
-            var infantry = TestPieces.CreateUnit("inf", primary: GameTagIds.Infantry, systemTag: GameTagIds.Combatant);
-            var building = TestPieces.CreateUnit("depot", primary: GameTagIds.Building, systemTag: GameTagIds.NonCombatant);
+            var infantry = TestPieces.CreateUnit("inf", primary: GameTagIds.Infantry);
+            var building = TestPieces.CreateUnit("depot", primary: GameTagIds.Building);
             Assert.AreEqual(125, CombatDamageResolver.ComputeDamage(attacker, infantry, 1f, 0));
             Assert.AreEqual(85, CombatDamageResolver.ComputeDamage(attacker, building, 1f, 0));
         }

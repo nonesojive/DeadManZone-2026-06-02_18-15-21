@@ -55,8 +55,7 @@ namespace DeadManZone.Core.Tests.EditMode
                     var defender = TestPieces.With(
                         TestPieces.CreateUnit(
                             "vehicle_target",
-                            primary: GameTagIds.Vehicle,
-                            systemTag: GameTagIds.Combatant),
+                            primary: GameTagIds.Vehicle),
                         armorType: armorType);
                     var attacker = TestPieces.With(
                         TestPieces.RifleSquad(),

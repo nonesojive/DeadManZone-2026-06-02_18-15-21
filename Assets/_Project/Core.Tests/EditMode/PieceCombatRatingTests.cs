@@ -15,7 +15,7 @@ namespace DeadManZone.Core.Tests.EditMode
             DisplayName = "Conscript",
             Category = PieceCategory.Unit,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
-            Tags = new[] { GameTagIds.Infantry, GameTagIds.Combatant },
+            Tags = new[] { GameTagIds.Infantry },
             MaxHp = 70,
             BaseDamage = 12,
             CooldownTicks = 4,
@@ -28,7 +28,7 @@ namespace DeadManZone.Core.Tests.EditMode
             DisplayName = "MG Team",
             Category = PieceCategory.Unit,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
-            Tags = new[] { GameTagIds.Infantry, GameTagIds.Combatant },
+            Tags = new[] { GameTagIds.Infantry },
             MaxHp = 120,
             BaseDamage = 24,
             CooldownTicks = 4,
@@ -48,9 +48,9 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
-        public void HqPiece_HasPositiveRating()
+        public void CommandBunker_HasPositiveRating()
         {
-            Assert.Greater(PieceCombatRating.ComputeBase(TestPieces.HqPiece()), 0);
+            Assert.Greater(PieceCombatRating.ComputeBase(TestPieces.CommandBunker()), 0);
         }
 
         [Test]

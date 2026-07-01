@@ -20,10 +20,9 @@ MonoBehaviour:
   tags:
   - Infantry
   - Sniper
-  - Combatant
   primary: infantry
   combatRole: sniper
-  systemTag: combatant
+  systemTag: 
   synergyTags: []
   abilityTags: []
   flavorTags: []

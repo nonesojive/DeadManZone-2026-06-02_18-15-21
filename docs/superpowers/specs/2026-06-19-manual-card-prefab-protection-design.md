@@ -2,7 +2,7 @@
 
 ## Goal
 
-`UnitDetailCard.prefab` and `ShopOfferCard.prefab` are manually authored. Only the user may permanently change the **prefab assets**. Runtime code may resize, recolor, and spawn children on **instances during Play** — those changes revert when Play mode ends unless the user explicitly applies overrides to the prefab.
+`UnitDetailCard.prefab`, `BuildingPrefab.prefab`, and `ShopOfferCard.prefab` are manually authored. Only the user may permanently change the **prefab assets**. Runtime code may resize, recolor, and spawn children on **instances during Play** — those changes revert when Play mode ends unless the user explicitly applies overrides to the prefab.
 
 ## What is protected (permanent)
 

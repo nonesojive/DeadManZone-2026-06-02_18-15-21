@@ -1,23 +1,24 @@
 using System.Collections.Generic;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
-using DeadManZone.Core.Tags;
 using NUnit.Framework;
 
 namespace DeadManZone.Core.Tests
 {
     public sealed class ArmyHealthTrackerTests
     {
-        private static CombatantState MakeCombatant(string id, int maxHp, int currentHp, bool combatant = true)
+        private static CombatantState MakeCombatant(string id, int maxHp, int currentHp, bool fightsInCombat = true)
         {
-            var tags = new List<string>();
-            if (combatant)
-                tags.Add(GameTagIds.Combatant);
-
             return new CombatantState
             {
                 InstanceId = id,
-                Definition = new PieceDefinition { Id = id, MaxHp = maxHp, Tags = tags },
+                Definition = new PieceDefinition
+                {
+                    Id = id,
+                    MaxHp = maxHp,
+                    Category = fightsInCombat ? PieceCategory.Unit : PieceCategory.Building,
+                    BaseDamage = fightsInCombat ? 1 : 0
+                },
                 CurrentHp = currentHp
             };
         }
@@ -29,7 +30,7 @@ namespace DeadManZone.Core.Tests
             {
                 MakeCombatant("a", 100, 60),
                 MakeCombatant("b", 50, 50),
-                MakeCombatant("hq", 200, 200, combatant: false)
+                MakeCombatant("hq", 200, 200, fightsInCombat: false)
             };
 
             var health = ArmyHealthTracker.Evaluate(army);

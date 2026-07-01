@@ -58,7 +58,6 @@ namespace DeadManZone.PlayMode.Tests
                 Authority = 0,
                 ActiveTactic = TacticType.DisciplinedFire,
                 PendingSelectedTactic = TacticType.Advance,
-                HqAlive = true,
                 HasCommandPiece = false,
                 AvailableAbilities = System.Array.Empty<AvailableCommand>()
             };
@@ -95,7 +94,6 @@ namespace DeadManZone.PlayMode.Tests
                 CheckpointIndex = 0,
                 Authority = 2,
                 ActiveTactic = TacticType.DisciplinedFire,
-                HqAlive = true,
                 HasCommandPiece = false,
                 AvailableAbilities = System.Array.Empty<AvailableCommand>()
             });

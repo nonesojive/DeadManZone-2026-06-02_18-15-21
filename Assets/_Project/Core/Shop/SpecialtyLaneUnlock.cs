@@ -17,7 +17,7 @@ namespace DeadManZone.Core.Shop
                 return true;
 
             if (factionId == FactionIds.IronVanguard &&
-                board.Pieces.Count(p => PieceTagQueries.HasTag(p.Definition, GameTagIds.Combatant)) >= 3)
+                board.Pieces.Count(p => BoardPlacementRules.ResolveTargetBoard(p.Definition) == BoardKind.Combat) >= 3)
                 return true;
 
             if (registry != null &&

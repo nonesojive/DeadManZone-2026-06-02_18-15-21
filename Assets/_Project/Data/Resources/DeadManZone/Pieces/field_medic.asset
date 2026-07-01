@@ -20,11 +20,10 @@ MonoBehaviour:
   tags:
   - Infantry
   - Support
-  - Combatant
   - Medic
   primary: infantry
   combatRole: support
-  systemTag: combatant
+  systemTag: 
   synergyTags:
   - medic
   abilityTags: []

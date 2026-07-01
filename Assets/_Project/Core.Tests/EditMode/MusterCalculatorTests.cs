@@ -11,7 +11,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void ComputeMuster_IncludesFactionBaseline()
         {
-            var board = TestBoards.HqOnly();
+            var board = TestBoards.EmptyBuildingBoard();
             int muster = MusterCalculator.Compute(board, baseMusterPerShop: 12);
             Assert.AreEqual(12, muster);
         }

@@ -92,7 +92,6 @@ namespace DeadManZone.Data.UnitCreation
             }
 
             WarnIfUnknown(draft.combatRole, "combat role", result);
-            WarnIfUnknown(draft.systemTag, "system tag", result);
             WarnTagList(draft.synergyTags, "synergy tag", result);
             WarnTagList(draft.abilityTags, "ability tag", result);
             WarnTagList(draft.flavorTags, "flavor tag", result);

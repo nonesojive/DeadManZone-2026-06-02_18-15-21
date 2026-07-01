@@ -17,6 +17,10 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private TMP_Text suppliesValueText;
         [SerializeField] private TMP_Text manpowerValueText;
         [SerializeField] private TMP_Text authorityValueText;
+        [SerializeField] private TMP_Text suppliesIncomeText;
+        [SerializeField] private TMP_Text manpowerIncomeText;
+        [SerializeField] private TMP_Text authorityIncomeText;
+        [SerializeField] private TMP_Text salvageNumberText;
         [SerializeField] private TMP_Text moraleValueText;
         [SerializeField] private TMP_Text strengthValueText;
         [SerializeField] private MatchupStrengthView matchupStrengthView;
@@ -124,7 +128,43 @@ namespace DeadManZone.Presentation.Run
             RefreshSalvageIndicator(state);
         }
 
-        private void RefreshSalvageIndicator(RunState state)
+        public void RefreshIncomePreview(RoundIncomePreview preview)
+        {
+            EnsureHudTextsWired();
+
+            if (suppliesIncomeText != null)
+                suppliesIncomeText.text = RoundIncomeCalculator.FormatIncomeLabel(preview.SuppliesIncome);
+
+            if (manpowerIncomeText != null)
+                manpowerIncomeText.text = RoundIncomeCalculator.FormatIncomeLabel(preview.ManpowerIncome);
+
+            if (authorityIncomeText != null)
+                authorityIncomeText.text = preview.AuthorityPool.ToString();
+
+            if (salvageNumberText != null)
+                salvageNumberText.text = FormatSalvageChance(preview.SalvageChancePercent);
+        }
+
+        public void ClearIncomePreview()
+        {
+            EnsureHudTextsWired();
+
+            if (suppliesIncomeText != null)
+                suppliesIncomeText.text = string.Empty;
+
+            if (manpowerIncomeText != null)
+                manpowerIncomeText.text = string.Empty;
+
+            if (authorityIncomeText != null)
+                authorityIncomeText.text = string.Empty;
+
+            if (salvageNumberText != null)
+                salvageNumberText.text = string.Empty;
+        }
+
+        private static string FormatSalvageChance(int percent) => $"{percent}%";
+
+        public void RefreshSalvageIndicator(RunState state)
         {
             if (salvageIndicatorText == null)
                 return;
@@ -142,7 +182,7 @@ namespace DeadManZone.Presentation.Run
                 : state.LastEnemyFactionId;
 
             salvageIndicatorText.gameObject.SetActive(true);
-            salvageIndicatorText.text = $"Salvage: {displayName} — {state.SalvageChancePercent}%";
+            salvageIndicatorText.text = $"Salvage: {displayName} — {FormatSalvageChance(state.SalvageChancePercent)}";
         }
 
         public void ApplyTheme(UiThemeSO theme)
@@ -157,6 +197,10 @@ namespace DeadManZone.Presentation.Run
             ApplyLabel(suppliesValueText, false, theme);
             ApplyLabel(manpowerValueText, false, theme);
             ApplyLabel(authorityValueText, false, theme);
+            ApplyLabel(suppliesIncomeText, true, theme);
+            ApplyLabel(manpowerIncomeText, true, theme);
+            ApplyLabel(authorityIncomeText, true, theme);
+            ApplyLabel(salvageNumberText, false, theme);
             ApplyLabel(moraleValueText, false, theme);
             ApplyLabel(strengthValueText, false, theme);
             matchupStrengthView?.ApplyTheme(theme);
@@ -181,6 +225,10 @@ namespace DeadManZone.Presentation.Run
             suppliesValueText ??= FindNamedText(searchRoot, "SuppliesNumber");
             manpowerValueText ??= FindNamedText(searchRoot, "ManpowerNumber");
             authorityValueText ??= FindNamedText(searchRoot, "AuthorityNumber");
+            suppliesIncomeText ??= FindNamedText(searchRoot, "SuppliesIncome");
+            manpowerIncomeText ??= FindNamedText(searchRoot, "ManpowerIncome");
+            authorityIncomeText ??= FindNamedText(searchRoot, "AuthorityIncome");
+            salvageNumberText ??= FindNamedText(searchRoot, "SalvageNumber");
             moraleValueText ??= FindNamedText(searchRoot, "MoraleNumber", "MoralNumber");
             strengthValueText ??= FindNamedText(searchRoot, "StrengthNumber");
 

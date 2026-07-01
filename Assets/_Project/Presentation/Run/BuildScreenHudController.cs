@@ -1,24 +1,25 @@
+using DeadManZone.Core.Board;
 using DeadManZone.Game;
 using DeadManZone.Presentation.Board;
 using UnityEngine;
 
 namespace DeadManZone.Presentation.Run
 {
-  /// <summary>Wires center-column HUD: unit card panel, messages, buff strip.</summary>
+  /// <summary>Wires center-column HUD: unit card panel, messages, critical mass drawer.</summary>
   public sealed class BuildScreenHudController : MonoBehaviour
   {
     [SerializeField] private Transform buildPanel;
     [SerializeField] private BoardView boardView;
     [SerializeField] private UnitCardPanelView unitCardPanel;
     [SerializeField] private BuildMessagesView messagesView;
-    [SerializeField] private BuffIconStripView buffIconStrip;
+    [SerializeField] private CriticalMassDrawerView criticalMassDrawer;
 
     private void OnEnable()
     {
       ResolveReferences();
       if (RunManager.Instance != null)
         RunManager.Instance.RunStateChanged += OnRunStateChanged;
-      RefreshBuffStrip();
+      RefreshCriticalMassDrawer();
     }
 
     private void OnDisable()
@@ -32,16 +33,16 @@ namespace DeadManZone.Presentation.Run
       BoardView board,
       UnitCardPanelView unitPanel = null,
       BuildMessagesView messages = null,
-      BuffIconStripView buffStrip = null)
+      CriticalMassDrawerView drawer = null)
     {
       buildPanel = panel;
       boardView = board;
       unitCardPanel = unitPanel;
       messagesView = messages;
-      buffIconStrip = buffStrip;
+      criticalMassDrawer = drawer;
       ResolveReferences();
       WireUnitCardPanel();
-      RefreshBuffStrip();
+      RefreshCriticalMassDrawer();
     }
 
     private void ResolveReferences()
@@ -58,8 +59,8 @@ namespace DeadManZone.Presentation.Run
       if (messagesView == null)
         messagesView = buildPanel.GetComponentInChildren<BuildMessagesView>(true);
 
-      if (buffIconStrip == null)
-        buffIconStrip = buildPanel.GetComponentInChildren<BuffIconStripView>(true);
+      if (criticalMassDrawer == null)
+        criticalMassDrawer = CriticalMassDrawerBootstrap.Ensure(buildPanel);
 
       WireUnitCardPanel();
     }
@@ -80,14 +81,42 @@ namespace DeadManZone.Presentation.Run
         hoverController?.SetMessagesView(messagesView);
     }
 
-    private void OnRunStateChanged(Core.Run.RunState _) => RefreshBuffStrip();
+    private void OnRunStateChanged(Core.Run.RunState _) => RefreshCriticalMassDrawer();
 
-    private void RefreshBuffStrip()
+    public static void RequestRefresh()
     {
-      if (buffIconStrip == null || boardView == null)
+        foreach (var controller in FindObjectsByType<BuildScreenHudController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            controller.RefreshCriticalMassDrawer();
+        RunHudIncomeRefresher.Refresh();
+    }
+
+    private void RefreshCriticalMassDrawer()
+    {
+      if (criticalMassDrawer == null)
         return;
 
-      buffIconStrip.Refresh(boardView.GetBoardState(), messagesView);
+      var boards = ResolveBuildBoards();
+      if (boards == null)
+        return;
+
+      criticalMassDrawer.Refresh(boards);
+    }
+
+    private static BuildBoardSet ResolveBuildBoards()
+    {
+      if (RunManager.Instance != null && RunManager.Instance.HasActiveRun)
+        return RunManager.Instance.Orchestrator.GetBuildBoards();
+
+      var combatView = BoardView.FindCombatBoard();
+      var hqView = BoardView.FindByBinding(BoardKind.Hq);
+      if (combatView == null && hqView == null)
+        return null;
+
+      return new BuildBoardSet
+      {
+        Combat = combatView != null ? combatView.GetBoardState() : null,
+        Hq = hqView != null ? hqView.GetBoardState() : null
+      };
     }
 
     public BuildMessagesView Messages => messagesView;

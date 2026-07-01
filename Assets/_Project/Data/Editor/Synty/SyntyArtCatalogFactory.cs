@@ -30,7 +30,6 @@ namespace DeadManZone.Data.Editor
                 Entry("shock_trooper", SyntyArtPaths.UnitOfficer, 1f, 1.6f),
                 Entry("neutral_mortar_team", SyntyArtPaths.UnitSupport, 1f, 1.6f),
                 Entry("marksman_squad", SyntyArtPaths.UnitSniper, 1f, 1.6f),
-                Entry("ironmarch_hq", SyntyArtPaths.BuildingHq, 1f, 0f),
                 Entry("rifle_squad", SyntyArtPaths.UnitRifle, 1f, 1.6f),
                 Entry("diesel_walker", SyntyArtPaths.VehicleMech, 0.75f, 1.4f),
                 Entry("radio_array", SyntyArtPaths.BuildingSupplyDepot, 1f, 0f),
@@ -57,8 +56,6 @@ namespace DeadManZone.Data.Editor
                 Entry("crimson_tank", SyntyArtPaths.VehicleTank, 0.9f, 1.5f),
                 Entry("crimson_artillery", SyntyArtPaths.BuildingFieldGun, 1f, 0f),
                 Entry("sand_raider", SyntyArtPaths.UnitRifle, 0.93f, 1.53f),
-                Entry("dust_hq", SyntyArtPaths.BuildingHq, 1f, 0f),
-                Entry("echo_hq", SyntyArtPaths.BuildingHq, 1f, 0f),
                 Entry("signal_relay", SyntyArtPaths.BuildingSupplyDepot, 1f, 0f)
             };
 

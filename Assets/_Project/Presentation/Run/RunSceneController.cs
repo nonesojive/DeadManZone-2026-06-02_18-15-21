@@ -117,6 +117,7 @@ namespace DeadManZone.Presentation.Run
             if (RunManager.Instance == null || !RunManager.Instance.HasActiveRun)
             {
                 runHudView?.Refresh(null);
+                runHudView?.ClearIncomePreview();
                 runEndOverlay?.Hide();
                 pauseMenuView?.Hide();
                 if (shopScene != null)
@@ -154,6 +155,7 @@ namespace DeadManZone.Presentation.Run
                     emergencyDraftButton.gameObject.SetActive(false);
                 boardView?.RefreshFromRunManager();
                 runHudView?.Refresh(state, failureReason);
+                RunHudIncomeRefresher.Refresh();
                 if (boardView != null)
                 {
                     try
@@ -171,6 +173,7 @@ namespace DeadManZone.Presentation.Run
             else
             {
                 runHudView?.Refresh(state);
+                runHudView?.ClearIncomePreview();
             }
 
             if (runEnded)
@@ -312,7 +315,7 @@ namespace DeadManZone.Presentation.Run
                 boardView,
                 shopScene.GetComponentInChildren<UnitCardPanelView>(true),
                 shopScene.GetComponentInChildren<BuildMessagesView>(true),
-                shopScene.GetComponentInChildren<BuffIconStripView>(true));
+                CriticalMassDrawerBootstrap.Ensure(shopScene.transform));
         }
 
         private void EnsureCenterColumnLayout()
@@ -320,16 +323,12 @@ namespace DeadManZone.Presentation.Run
             if (shopScene == null || mainRowLayout == null)
                 return;
 
-            var messages = shopScene.GetComponentInChildren<BuildMessagesView>(true);
-            var buffStrip = shopScene.transform.Find("BottomBar/BuffStripRegion") as RectTransform;
-            if (buffStrip == null)
-                buffStrip = shopScene.GetComponentInChildren<BuffIconStripView>(true)?.GetComponent<RectTransform>();
-
-            CenterColumnLayoutFitter.EnsureOnBuildPanel(
-                shopScene.transform,
-                messages != null ? messages.GetComponent<RectTransform>() : null,
-                buffStrip,
-                mainRowLayout);
+            var infoRegion = shopScene.transform.Find("BottomBar/InfoMessageRegion") as RectTransform;
+            if (infoRegion != null)
+                CenterColumnLayoutFitter.EnsureOnBuildPanel(
+                    shopScene.transform,
+                    infoRegion,
+                    mainRowLayout);
         }
 
         private void CaptureBuildLayout()

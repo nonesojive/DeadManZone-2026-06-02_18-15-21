@@ -18,7 +18,7 @@ Align the shop with the target model: **8 baseline slots** always visible, **slo
 
 | Topic | Decision |
 |-------|----------|
-| Salvage | 10% baseline per slot; `SalvageChanceCalculator` output **replaces** the salvage leg; neutral fixed at 10%; faction absorbs remainder |
+| Salvage | 10% baseline per slot; `SalvageChanceCalculator.Compute(base, boardBoost)` **replaces** the salvage leg; neutral fixed at 10%; faction absorbs remainder |
 | Specialty lane | Retired for shop gen; pieces route to Offensive/Defensive by combat role |
 | Neutral / faction (non-salvage) | Fixed **10 / 80** for the run; piece abilities patch weights later |
 | Extra slots | Indices 8–11; unlocked only via `IShopSlotUnlockProvider`; **zero providers ship in this milestone** |
@@ -68,7 +68,7 @@ public readonly struct ShopOfferWeights
 }
 ```
 
-**Renormalization rule:** After salvage leg is set from `SalvageChanceCalculator.Compute(...)`:
+**Renormalization rule:** After salvage leg is set from `SalvageChanceCalculator.Compute(baseSalvagePercent, boardBoost)` (faction base + combat-board boost, cap 50%):
 
 - `neutral = profile.NeutralPercent` (default 10, unchanged by fight aftermath)
 - `salvage = computed value` (0 if no `lastEnemyFactionId`)

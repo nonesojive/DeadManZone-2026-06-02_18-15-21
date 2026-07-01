@@ -9,6 +9,7 @@ namespace DeadManZone.Presentation.Editor
     {
         public static bool IsProtectedPath(string assetPath) =>
             assetPath == CardPrefabPaths.UnitDetailCard
+            || assetPath == CardPrefabPaths.BuildingPrefab
             || assetPath == CardPrefabPaths.ShopOfferCard;
 
         public static bool TrySavePrefab(GameObject root, string assetPath, out bool success)

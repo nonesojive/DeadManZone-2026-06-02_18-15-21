@@ -16,7 +16,7 @@ namespace DeadManZone.Core.Combat
             IReadOnlyList<CombatantState> enemies,
             GridCoord engagementGoal) =>
             mover.IsAlive
-            && mover.HasTag(GameTagIds.Combatant)
+            && PieceCombatRules.ParticipatesInCombat(mover.Definition)
             && mover.Definition.MovementSpeed != MovementSpeedTier.None
             && !mover.AnchorPosition.Equals(engagementGoal);
 

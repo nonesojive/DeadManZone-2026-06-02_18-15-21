@@ -25,10 +25,9 @@ MonoBehaviour:
   tags:
   - Vehicle
   - Artillery
-  - Combatant
   primary: vehicle
   combatRole: artillery
-  systemTag: combatant
+  systemTag: 
   synergyTags: []
   abilityTags: []
   flavorTags: []

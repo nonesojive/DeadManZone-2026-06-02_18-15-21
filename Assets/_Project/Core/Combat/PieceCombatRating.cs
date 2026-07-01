@@ -1,6 +1,5 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Run;
-using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
 {
@@ -20,13 +19,6 @@ namespace DeadManZone.Core.Combat
             var armor = CombatDamageResolver.StepArmor(piece.ArmorType, armorBuffSteps);
             float durabilityDivisor = CombatStrengthConfig.GetArmorDurabilityDivisor(armor);
             float ehp = piece.MaxHp / System.Math.Max(0.01f, durabilityDivisor);
-
-            if (PieceTagQueries.HasTag(piece, GameTagIds.Hq))
-            {
-                int hqRating = (int)System.Math.Round(
-                    ehp * CombatStrengthConfig.HqSurvivabilityWeight + CombatStrengthConfig.HqCommandBonus);
-                return System.Math.Max(1, hqRating);
-            }
 
             int cooldown = CombatAttackSpeed.GetEffectiveCooldown(piece.CooldownTicks, piece.AttackSpeed);
             cooldown = System.Math.Max(1, cooldown);

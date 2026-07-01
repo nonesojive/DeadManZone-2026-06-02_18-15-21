@@ -41,6 +41,7 @@ namespace DeadManZone.Presentation.Run
                 mainRowLayout = buildPanel.Find("MainRow")?.GetComponent<BuildRowLayoutFitter>();
 
             EnsureBuildScreenHudController();
+            CriticalMassDrawerBootstrap.Ensure(buildPanel);
             UnitCardPanelBootstrap.EnsureOnBuildPanel(buildPanel);
             BuildUiChromeBootstrap.RemoveFromBuildPanel(buildPanel);
 
@@ -58,17 +59,9 @@ namespace DeadManZone.Presentation.Run
 
         private void ApplyCenterColumnLayout()
         {
-            var messages = buildPanel.GetComponentInChildren<BuildMessagesView>(true);
-            var buffStrip = buildPanel.transform.Find("BottomBar/BuffStripRegion") as RectTransform;
-            if (buffStrip == null)
-                buffStrip = buildPanel.GetComponentInChildren<BuffIconStripView>(true)?.GetComponent<RectTransform>();
-
-            if (messages != null || buffStrip != null)
-                CenterColumnLayoutFitter.EnsureOnBuildPanel(
-                    buildPanel,
-                    messages != null ? messages.GetComponent<RectTransform>() : null,
-                    buffStrip,
-                    mainRowLayout);
+            var infoRegion = buildPanel.transform.Find("BottomBar/InfoMessageRegion") as RectTransform;
+            if (infoRegion != null)
+                CenterColumnLayoutFitter.EnsureOnBuildPanel(buildPanel, infoRegion, mainRowLayout);
         }
 
         private void ApplyCombatButtonLabel()
@@ -98,7 +91,7 @@ namespace DeadManZone.Presentation.Run
                 boardView,
                 buildPanel.GetComponentInChildren<UnitCardPanelView>(true),
                 buildPanel.GetComponentInChildren<BuildMessagesView>(true),
-                buildPanel.GetComponentInChildren<BuffIconStripView>(true));
+                CriticalMassDrawerBootstrap.Ensure(buildPanel));
         }
 
         private const float LastLogAnchorX = 0.895f;

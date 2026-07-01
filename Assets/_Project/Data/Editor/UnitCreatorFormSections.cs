@@ -31,11 +31,6 @@ namespace DeadManZone.Data.Editor
                 draft.combatRole,
                 TagRegistry.GetByCategory(TagCategory.CombatRole),
                 allowEmpty: true);
-            draft.systemTag = DrawTagPopup(
-                "System Tag",
-                draft.systemTag,
-                TagRegistry.GetByCategory(TagCategory.System),
-                allowEmpty: true);
             DrawCategoryChecklist("Synergy Tags", draft.synergyTags, TagRegistry.GetByCategory(TagCategory.Synergy));
             DrawCategoryChecklist("Ability Tags", draft.abilityTags, TagRegistry.GetByCategory(TagCategory.Ability));
             DrawCategoryChecklist("Flavor Tags", draft.flavorTags, TagRegistry.GetByCategory(TagCategory.Flavor));

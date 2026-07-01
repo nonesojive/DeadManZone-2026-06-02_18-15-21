@@ -22,7 +22,7 @@ namespace DeadManZone.Core.Tests.EditMode
         [Test]
         public void ComputeOccupiedCells_HorizontalTwoCellAtAnchor_ReturnsExpectedCells()
         {
-            var shape = TestPieces.FieldingHq().Shape;
+            var shape = TestPieces.MultiCellHorizontalPairShape();
             var offsets = CombatFootprint.ComputeOffsets(shape, rotation: 0);
             var anchor = new GridCoord(3, 4);
             var occupied = CombatFootprint.ComputeOccupiedCells(anchor, offsets);
@@ -41,13 +41,13 @@ namespace DeadManZone.Core.Tests.EditMode
             var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.Layout);
             var grid = new CombatOccupancyGrid();
             var rifleOffsets = CombatFootprint.ComputeOffsets(TestPieces.RifleSquad().Shape, rotation: 0);
-            var hqOffsets = CombatFootprint.ComputeOffsets(TestPieces.FieldingHq().Shape, rotation: 0);
+            var offsets = CombatFootprint.ComputeOffsets(TestPieces.MultiCellHorizontalPairShape(), rotation: 0);
 
             Assert.IsTrue(grid.CanPlace("rifle_1", new GridCoord(1, 1), rifleOffsets, layout));
             grid.Place("rifle_1", new GridCoord(1, 1), rifleOffsets);
 
-            Assert.IsTrue(grid.CanPlace("hq_1", new GridCoord(3, 1), hqOffsets, layout));
-            grid.Place("hq_1", new GridCoord(3, 1), hqOffsets);
+            Assert.IsTrue(grid.CanPlace("blocker_1", new GridCoord(3, 1), offsets, layout));
+            grid.Place("blocker_1", new GridCoord(3, 1), offsets);
 
             Assert.IsTrue(grid.IsOccupied(new GridCoord(1, 1)));
             Assert.IsTrue(grid.IsOccupied(new GridCoord(3, 1)));
@@ -59,11 +59,11 @@ namespace DeadManZone.Core.Tests.EditMode
         {
             var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.Layout);
             var grid = new CombatOccupancyGrid();
-            var hqOffsets = CombatFootprint.ComputeOffsets(TestPieces.FieldingHq().Shape, rotation: 0);
+            var offsets = CombatFootprint.ComputeOffsets(TestPieces.MultiCellHorizontalPairShape(), rotation: 0);
 
-            grid.Place("hq_1", new GridCoord(3, 4), hqOffsets);
+            grid.Place("blocker_1", new GridCoord(3, 4), offsets);
 
-            Assert.IsFalse(grid.CanPlace("hq_2", new GridCoord(4, 4), hqOffsets, layout));
+            Assert.IsFalse(grid.CanPlace("blocker_2", new GridCoord(4, 4), offsets, layout));
         }
 
         [Test]
@@ -71,28 +71,28 @@ namespace DeadManZone.Core.Tests.EditMode
         {
             var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.Layout);
             var grid = new CombatOccupancyGrid();
-            var hqOffsets = CombatFootprint.ComputeOffsets(TestPieces.FieldingHq().Shape, rotation: 0);
+            var offsets = CombatFootprint.ComputeOffsets(TestPieces.MultiCellHorizontalPairShape(), rotation: 0);
             var anchor = new GridCoord(3, 4);
 
-            grid.Place("hq_1", anchor, hqOffsets);
+            grid.Place("blocker_1", anchor, offsets);
             Assert.IsTrue(grid.IsOccupied(new GridCoord(3, 4)));
             Assert.IsTrue(grid.IsOccupied(new GridCoord(4, 4)));
 
-            grid.Remove("hq_1");
+            grid.Remove("blocker_1");
 
             Assert.IsFalse(grid.IsOccupied(new GridCoord(3, 4)));
             Assert.IsFalse(grid.IsOccupied(new GridCoord(4, 4)));
-            Assert.IsTrue(grid.CanPlace("hq_2", anchor, hqOffsets, layout));
+            Assert.IsTrue(grid.CanPlace("blocker_2", anchor, offsets, layout));
         }
 
         [Test]
         public void CombatantState_RecomputeOccupiedCells_UsesAnchorAndOffsets()
         {
-            var offsets = CombatFootprint.ComputeOffsets(TestPieces.FieldingHq().Shape, rotation: 0);
+            var offsets = CombatFootprint.ComputeOffsets(TestPieces.MultiCellHorizontalPairShape(), rotation: 0);
             var combatant = new CombatantState
             {
-                InstanceId = "hq_1",
-                Definition = TestPieces.FieldingHq(),
+                InstanceId = "blocker_1",
+                Definition = TestPieces.MultiCellRearBlocker(),
                 AnchorPosition = new GridCoord(3, 4),
                 ShapeOffsets = offsets
             };

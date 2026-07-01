@@ -8,45 +8,22 @@ namespace DeadManZone.Core.Tests
     public sealed class SalvageChanceCalculatorTests
     {
         [Test]
-        public void Defeat_ReturnsFactionBaseOnly()
+        public void Compute_ReturnsBasePlusBoardBoost()
         {
-            int chance = SalvageChanceCalculator.Compute(
-                baseSalvagePercent: 10,
-                boardBoost: 15,
-                outcome: FightOutcome.Defeat,
-                destroyedUniqueTypes: 3);
-
-            Assert.AreEqual(10, chance);
+            Assert.AreEqual(25, SalvageChanceCalculator.Compute(10, 15));
         }
 
         [Test]
-        public void Victory_IncludesBoardBoostAndWinBonus()
+        public void Compute_IsSameForAnyCombatOutcome()
         {
-            int chance = SalvageChanceCalculator.Compute(
-                baseSalvagePercent: 10,
-                boardBoost: 10,
-                outcome: FightOutcome.Victory,
-                destroyedUniqueTypes: 2);
-
-            // 10 base + 10 board + 10 win + 4 destroyed = 34
-            Assert.AreEqual(34, chance);
+            int chance = SalvageChanceCalculator.Compute(10, 5);
+            Assert.AreEqual(15, chance);
         }
 
         [Test]
-        public void Draw_TreatedSameAsVictory()
+        public void Compute_CappedAt50()
         {
-            int victory = SalvageChanceCalculator.Compute(10, 5, FightOutcome.Victory, 0);
-            int draw = SalvageChanceCalculator.Compute(10, 5, FightOutcome.Draw, 0);
-
-            Assert.AreEqual(victory, draw);
-        }
-
-        [Test]
-        public void Result_CappedAt50()
-        {
-            int chance = SalvageChanceCalculator.Compute(10, 40, FightOutcome.Victory, 5);
-
-            Assert.AreEqual(50, chance);
+            Assert.AreEqual(50, SalvageChanceCalculator.Compute(10, 40));
         }
 
         [Test]

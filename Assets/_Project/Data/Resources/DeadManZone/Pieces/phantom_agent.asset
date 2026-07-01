@@ -20,11 +20,10 @@ MonoBehaviour:
   tags:
   - Infantry
   - Sniper
-  - Combatant
   - Stealth
   primary: infantry
   combatRole: sniper
-  systemTag: combatant
+  systemTag: 
   synergyTags: []
   abilityTags:
   - stealth

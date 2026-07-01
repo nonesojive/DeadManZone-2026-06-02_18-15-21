@@ -52,18 +52,6 @@ namespace DeadManZone.Presentation.Editor
             RunHudPanelBuilder.WireRunHudView(hud, builtHud);
             hud.ApplyTheme(theme);
 
-            var tooltipGo = MenuSceneSetup.CreateLabelPublic(
-                topBar.transform, "", 16, FontStyles.Normal,
-                new Vector2(0.5f, 0.5f), new Vector2(360f, 56f));
-            tooltipGo.gameObject.name = "MessagesText";
-            var messagesView = tooltipGo.gameObject.AddComponent<BuildMessagesView>();
-            UiThemeSceneStyling.StyleLabel(tooltipGo, theme, secondary: true);
-            tooltipGo.alignment = TextAlignmentOptions.Center;
-
-            var messagesSerialized = new SerializedObject(messagesView);
-            messagesSerialized.FindProperty("messageText").objectReferenceValue = tooltipGo;
-            messagesSerialized.ApplyModifiedPropertiesWithoutUndo();
-
             var menuBtn = MenuSceneSetup.CreateSmallButtonPublic(
                 topBar.transform, "MENU", new Vector2(0.94f, 0.5f), new Vector2(100f, 40f));
             UiThemeSceneStyling.StyleButton(menuBtn, theme);
@@ -93,7 +81,8 @@ namespace DeadManZone.Presentation.Editor
             rowLayoutSerialized.FindProperty("boardView").objectReferenceValue = boardView;
             rowLayoutSerialized.ApplyModifiedPropertiesWithoutUndo();
 
-            var buffStripRegion = CreateBuffStripRegion(bottomBar.transform, theme);
+            var drawer = CriticalMassDrawerBootstrap.Ensure(shopScene.transform);
+            var (infoMessageRegion, messagesView) = CreateInfoMessageRegion(bottomBar.transform, theme);
             var rerollButton = CreateBottomBarRerollButton(bottomBar.transform, theme, boardView, messagesView);
             var beginFight = MenuSceneSetup.CreateSmallButtonPublic(
                 bottomBar.transform, "COMBAT",
@@ -134,8 +123,7 @@ namespace DeadManZone.Presentation.Editor
             hudControllerSerialized.FindProperty("boardView").objectReferenceValue = boardView;
             hudControllerSerialized.FindProperty("unitCardPanel").objectReferenceValue = unitCardPanel;
             hudControllerSerialized.FindProperty("messagesView").objectReferenceValue = messagesView;
-            hudControllerSerialized.FindProperty("buffIconStrip").objectReferenceValue =
-                buffStripRegion.GetComponent<BuffIconStripView>();
+            hudControllerSerialized.FindProperty("criticalMassDrawer").objectReferenceValue = drawer;
             hudControllerSerialized.ApplyModifiedPropertiesWithoutUndo();
 
             var shopViewSerialized = new SerializedObject(shopView);
@@ -144,8 +132,7 @@ namespace DeadManZone.Presentation.Editor
 
             CenterColumnLayoutFitter.EnsureOnBuildPanel(
                 shopScene.transform,
-                messagesView.GetComponent<RectTransform>(),
-                buffStripRegion,
+                infoMessageRegion,
                 rowLayout);
             ShopBackgroundBootstrap.ApplyToBuildPanel(shopScene.transform, theme);
             RunHudLayoutFitter.EnsureOnBuildPanel(shopScene.transform, builtHud.Root, rowLayout);
@@ -322,71 +309,47 @@ namespace DeadManZone.Presentation.Editor
             panelBg.raycastTarget = false;
             panelGo.SetActive(false);
 
-            var cardPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(CardPrefabPaths.UnitDetailCard);
-            PieceCardView cardView = null;
-            if (cardPrefab != null)
-            {
-                var cardGo = Object.Instantiate(cardPrefab, panelGo.transform);
-                cardGo.name = cardPrefab.name;
-                cardView = cardGo.GetComponent<PieceCardView>();
-                if (cardView == null)
-                    Debug.LogError($"Unit detail card prefab at '{CardPrefabPaths.UnitDetailCard}' is missing PieceCardView.");
-            }
-            else
-            {
-                Debug.LogError($"Unit detail card prefab not found at '{CardPrefabPaths.UnitDetailCard}'.");
-            }
+            var unitCardView = InstantiateDetailCard(panelGo.transform, CardPrefabPaths.UnitDetailCard, UnitCardPanelView.UnitDetailCardName);
+            var buildingCardView = InstantiateDetailCard(panelGo.transform, CardPrefabPaths.BuildingPrefab, UnitCardPanelView.BuildingCardName);
+            if (buildingCardView != null)
+                buildingCardView.gameObject.SetActive(false);
 
             var panelView = panelGo.AddComponent<UnitCardPanelView>();
             var panelSerialized = new SerializedObject(panelView);
             panelSerialized.FindProperty("panelRoot").objectReferenceValue = panelGo.GetComponent<RectTransform>();
-            panelSerialized.FindProperty("cardView").objectReferenceValue = cardView;
+            panelSerialized.FindProperty("unitCardView").objectReferenceValue = unitCardView;
+            panelSerialized.FindProperty("buildingCardView").objectReferenceValue = buildingCardView;
             panelSerialized.ApplyModifiedPropertiesWithoutUndo();
             return panelView;
         }
 
-        private static RectTransform CreateBuffStripRegion(Transform bottomBar, UiThemeSO theme)
+        private static (RectTransform region, BuildMessagesView messagesView) CreateInfoMessageRegion(
+            Transform bottomBar,
+            UiThemeSO theme)
         {
-            var region = CreateRegion(bottomBar, "BuffStripRegion", new Vector2(0.42f, 0f), new Vector2(0.66f, 1f));
+            var region = CreateRegion(bottomBar, "InfoMessageRegion", new Vector2(0.42f, 0f), new Vector2(0.66f, 1f));
 
-            var iconContainerGo = new GameObject("IconContainer", typeof(RectTransform));
-            iconContainerGo.transform.SetParent(region.transform, false);
-            var iconContainer = iconContainerGo.GetComponent<RectTransform>();
-            iconContainer.anchorMin = new Vector2(0.04f, 0.30f);
-            iconContainer.anchorMax = new Vector2(0.96f, 0.72f);
-            iconContainer.offsetMin = Vector2.zero;
-            iconContainer.offsetMax = Vector2.zero;
-            var layout = iconContainerGo.AddComponent<HorizontalLayoutGroup>();
-            layout.spacing = 6f;
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.childControlWidth = false;
-            layout.childControlHeight = false;
+            var labelGo = new GameObject("MessagesText", typeof(RectTransform));
+            labelGo.transform.SetParent(region.transform, false);
+            var labelRect = labelGo.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = new Vector2(8f, 8f);
+            labelRect.offsetMax = new Vector2(-8f, -8f);
 
-            var iconTemplateGo = new GameObject("BuffIconTemplate", typeof(RectTransform), typeof(Image));
-            iconTemplateGo.transform.SetParent(iconContainerGo.transform, false);
-            iconTemplateGo.SetActive(false);
-            var iconTemplateRect = iconTemplateGo.GetComponent<RectTransform>();
-            iconTemplateRect.sizeDelta = new Vector2(36f, 36f);
-            var iconTemplateImage = iconTemplateGo.GetComponent<Image>();
-            iconTemplateImage.raycastTarget = true;
-            UiThemeApplicator.ApplyCard(iconTemplateImage, theme);
+            var label = labelGo.AddComponent<TextMeshProUGUI>();
+            label.alignment = TextAlignmentOptions.Center;
+            label.fontSize = 16f;
+            label.enableWordWrapping = true;
+            label.raycastTarget = false;
+            UiThemeSceneStyling.StyleLabel(label, theme, secondary: true);
 
-            var detail = MenuSceneSetup.CreateLabelPublic(
-                region.transform, "", 11f, FontStyles.Normal,
-                new Vector2(0.5f, 0.12f), new Vector2(280f, 28f));
-            detail.alignment = TextAlignmentOptions.Center;
-            UiThemeSceneStyling.StyleLabel(detail, theme, secondary: true);
-            detail.gameObject.SetActive(false);
+            var messagesView = labelGo.AddComponent<BuildMessagesView>();
+            var messagesSerialized = new SerializedObject(messagesView);
+            messagesSerialized.FindProperty("messageText").objectReferenceValue = label;
+            messagesSerialized.ApplyModifiedPropertiesWithoutUndo();
 
-            var strip = region.AddComponent<BuffIconStripView>();
-            var stripSerialized = new SerializedObject(strip);
-            stripSerialized.FindProperty("iconContainer").objectReferenceValue = iconContainer;
-            stripSerialized.FindProperty("iconTemplate").objectReferenceValue = iconTemplateGo.GetComponent<Image>();
-            stripSerialized.FindProperty("hoverDetailText").objectReferenceValue = detail;
-            stripSerialized.FindProperty("theme").objectReferenceValue = theme;
-            stripSerialized.ApplyModifiedPropertiesWithoutUndo();
-
-            return region.GetComponent<RectTransform>();
+            return (region.GetComponent<RectTransform>(), messagesView);
         }
 
         private static Button CreateBottomBarRerollButton(
@@ -1033,6 +996,25 @@ namespace DeadManZone.Presentation.Editor
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
             return go;
+        }
+
+        private static PieceCardView InstantiateDetailCard(Transform parent, string prefabPath, string instanceName)
+        {
+            var cardPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            if (cardPrefab == null)
+            {
+                Debug.LogError($"Detail card prefab not found at '{prefabPath}'.");
+                return null;
+            }
+
+            var cardGo = Object.Instantiate(cardPrefab, parent);
+            cardGo.name = instanceName;
+            UnitCardPanelView.CenterCardInPanel(cardGo.GetComponent<RectTransform>());
+            var cardView = cardGo.GetComponent<PieceCardView>();
+            if (cardView == null)
+                Debug.LogError($"Detail card prefab at '{prefabPath}' is missing PieceCardView.");
+
+            return cardView;
         }
 
         private static void Stretch(RectTransform rect)

@@ -33,7 +33,6 @@ namespace DeadManZone.Core.Shop
             {
                 case GameTagIds.Support:
                 case GameTagIds.Utility:
-                case GameTagIds.Headquarters:
                 case GameTagIds.Defender:
                     return new ShopLaneResolveResult(ShopLane.Defensive, ShopLaneResolveConfidence.Mapped);
 

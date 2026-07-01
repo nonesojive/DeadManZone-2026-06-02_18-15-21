@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
-using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
 {
@@ -81,7 +80,6 @@ namespace DeadManZone.Core.Combat
                 c.Type == CommandType.SetTactic || c.Type == CommandType.ChangeStance);
             if (tacticCommand != null)
             {
-                bool hqAlive = playerCombatants.Any(c => c.HasTag(GameTagIds.Hq) && c.IsAlive);
                 bool hasCommand = board.Pieces.Any(p =>
                     p.Definition.CommandActions.HasFlag(CommandActionFlags.ChangeStance));
                 var previous = tactics.PlayerTactic;
@@ -89,7 +87,6 @@ namespace DeadManZone.Core.Combat
                 if (!_tacticValidator.CanContinue(
                         tacticCommand.Tactic,
                         previous,
-                        hqAlive,
                         hasCommand,
                         checkpointIndex,
                         ref authority,

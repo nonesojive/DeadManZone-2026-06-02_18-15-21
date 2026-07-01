@@ -23,7 +23,8 @@ Use it for onboarding, content authoring, prioritization, and playtest planning.
 | `docs/demo-guide.md` | Setup, factions, known issues |
 | `docs/superpowers/plans/2026-06-14-deadmanzone-greenfield-implementation.md` | Milestone roadmap (M0–M9) |
 | `docs/superpowers/specs/` | Subsystem drill-down specs (combat pauses, shop, UI kits, prefabs) |
-| `docs/superpowers/specs/2026-06-19-manual-card-prefab-protection-design.md` | Unit/shop card prefab authoring rules |
+| `docs/superpowers/specs/2026-07-01-build-hud-economy-design.md` | Round income, salvage chance, top-bar HUD fields |
+| `docs/superpowers/specs/2026-07-01-critical-mass-panel-design.md` | Critical mass drawer + InfoMessageRegion |
 
 ---
 
@@ -144,9 +145,9 @@ Main Menu
 
 ### Aftermath
 
-- Battle report: outcome, supplies, morale delta, manpower refund, top damage dealt/taken.
-- Authority resets next build round.
-- Shop refreshes with fight-index faction weighting.
+- Battle report: outcome, supplies earned (post-combat income), morale delta, manpower casualties, top damage dealt/taken.
+- Authority resets to board pool next build round (`AuthorityIncome` max).
+- Shop refreshes; salvage chance = faction base + combat-board boost (unchanged by fight outcome).
 
 ---
 
@@ -154,9 +155,9 @@ Main Menu
 
 | Resource | Role | Earned from | Spent on |
 |----------|------|-------------|----------|
-| **Supplies** | Shop currency (UI label; code may use `goldCost`) | Fight rewards, salvage (~50%) | Purchases, rerolls, relief items |
-| **Manpower** | Deploy gate — upkeep per `combatant` on board | HQ + buildings each build round; survivor refund | Implicit deploy cost |
-| **Authority** | Command currency; **resets each build round** | HQ, buildings, units | Tactics, pause abilities (combat UI may show as Requisition) |
+| **Supplies** | Shop currency (UI label; code may use `goldCost`) | **Post-combat income** (fight-index base + board bonuses); sell refunds (~50%) | Purchases, rerolls, relief items |
+| **Manpower** | Deploy gate — upkeep per `combatant` on board | **Post-combat muster** (faction base + buildings/synergies on aggregate board) | Implicit deploy cost |
+| **Authority** | Command currency; **resets each build round** to board pool max | HQ + command buildings (`AuthorityIncome` in HUD) | Tactics, pause abilities (combat UI may show as Requisition) |
 | **Morale** | Run health (**0 = run over**) | Rare pieces/effects | Loss severity × fight index; some buys |
 
 ### Manpower gate
@@ -173,16 +174,39 @@ Main Menu
 | Authority | 50% |
 | Manpower | 25% |
 
-**Dust Scourge bonus:** +25% supplies from salvage.
+**Dust Scourge bonus:** +25% supplies from **sell refunds** (not salvage shop chance).
+
+### Post-combat income (v3.1)
+
+After **every** fight (win, loss, or draw):
+
+| Resource | Gain |
+|----------|------|
+| **Supplies** | Fight-index baseline (`FightRewardTable`) + critical-mass supplies bonuses from aggregate board |
+| **Manpower** | Muster income: faction `baseMusterPerShop` + piece/building muster + supply adjacency synergy |
+
+Top bar **income labels** (`SuppliesIncome`, `ManpowerIncome`) preview these values during build. See `docs/superpowers/specs/2026-07-01-build-hud-economy-design.md`.
+
+### Salvage shop chance (v3.1)
+
+Per-offer-slot chance that a shop piece comes from the **last enemy faction** pool:
+
+```
+min(50%, faction.baseSalvageChancePercent + combatBoardSalvageBoost)
+```
+
+Board boost from pieces on the **combat board** (`SalvageChanceBonus`, +5% flag). **Not** modified by win/loss, destroyed enemies, or victory bonus. HUD field: `SalvageNumber`.
 
 ### Tutorial economy (fights 1–3)
 
-| Moment | Supplies |
-|--------|----------|
+Post-combat supplies **baseline** (before board bonuses); granted after every fight:
+
+| Moment | Supplies (baseline) |
+|--------|---------------------|
 | Run start | 125 |
-| Win fight 1 | +100 |
-| Win fight 2 | +105 |
-| Win fight 3 | +110 |
+| After fight 1 | +100 |
+| After fight 2 | +105 |
+| After fight 3 | +110 |
 | Fights 4+ | Escalating curve |
 
 **Principle:** Tutorial softness from **enemy composition only** — no hidden player combat nerfs.
@@ -520,11 +544,12 @@ Exit at any point; resume exactly where left off.
 
 | Element | Behavior |
 |---------|----------|
-| HUD | Fight N/10, four resources, reroll cost, **matchup strength** |
+| HUD | Fight N/10, four resources + **income/salvage previews**, reroll cost, **matchup strength**, build messages in bottom **InfoMessageRegion**, critical mass **drawer tab** |
 | Main board | Center 9×10; zone coloring; drag-drop + rotation |
 | Reserves | Bottom 2×9 grid |
 | Shop | Unified offer grid (8–12 cards) |
-| Unit detail | Fixed **UnitCardPanel** + hover routing; `UnitDetailCard.prefab` |
+| Unit detail | Fixed **UnitCardPanel** + hover routing; `UnitDetailCard.prefab` (units) |
+| Building detail | **`BuildingPrefab.prefab`** — fork of unit card for HQ/building-specific layout (authoring in progress) |
 | Sell zone | Drag to sell; salvage feedback |
 | Pause menu | Resume / Main Menu (auto-save) |
 
@@ -533,6 +558,7 @@ Exit at any point; resume exactly where left off.
 | Prefab | Path | Rules |
 |--------|------|-------|
 | Unit detail | `Assets/_Project/Presentation/UI/Prefabs/UnitDetailCard.prefab` | **Manual authoring only** — bake menus blocked |
+| Building detail | `Assets/_Project/Presentation/UI/Prefabs/BuildingPrefab.prefab` | Fork of unit card; **manual authoring** for building-specific fields |
 | Shop offer | `Assets/_Project/Presentation/UI/Prefabs/ShopOfferCard.prefab` | **Manual authoring only** |
 
 `PieceCardView` / `ShopOfferView` bind **text, preview, and state** at runtime. Layout resize and theme colors during **Play** are allowed on instances; changes **revert on Stop** unless the user explicitly **Applies** overrides to the prefab asset. `AuthoredCardPrefabGuard` blocks programmatic prefab overwrites.
@@ -752,6 +778,8 @@ All gameplay content ships as **ScriptableObjects** validated at import. Code de
 | Manpower | Hard gate + draft + shop relief | Attrition without per-unit HP tracking |
 | Morale | Loss severity × fight index | Run arc wears down |
 | Card prefabs | Manual authoring + bake guard | Prevents tooling from wiping designer layout |
+| Post-combat income (v3.1) | Supplies + manpower every fight; board bonuses | Predictable economy; HUD previews match grants |
+| Salvage chance (v3.1) | Faction base + combat board only | No win/loss or kill bonuses |
 | Runtime card mutation | Allowed in Play on instances | Reverts on Stop; only asset writes are blocked |
 | Art stack | Synty POLYGON on URP | Cohesive style, subscription assets |
 | Content | ScriptableObject-first | Designers ship pieces without code |

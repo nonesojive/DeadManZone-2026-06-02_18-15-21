@@ -110,17 +110,25 @@ namespace DeadManZone.Core.Tags
             AddLegacyTags(tags, seen, legacyTags);
             AddLegacyTag(tags, seen, primary);
             AddLegacyTag(tags, seen, combatRole);
-            AddLegacyTag(tags, seen, systemTag);
+
+            if (!string.IsNullOrWhiteSpace(systemTag) && !IsObsoleteBoardSplitSystemTag(systemTag))
+                AddLegacyTag(tags, seen, systemTag);
+
             AddLegacyTags(tags, seen, synergyTags);
             AddLegacyTags(tags, seen, abilityTags);
             AddLegacyTags(tags, seen, flavorTags);
 
-            if (string.IsNullOrWhiteSpace(systemTag) && ShouldAutoAddCombatant(category, baseDamage))
-            {
-                AddLegacyTag(tags, seen, GameTagIds.Combatant);
-            }
-
             return tags.ToArray();
+        }
+
+        /// <summary>Legacy system tags replaced by board split + <see cref="PieceCombatRules"/>.</summary>
+        public static bool IsObsoleteBoardSplitSystemTag(string tagId)
+        {
+            if (string.IsNullOrWhiteSpace(tagId))
+                return false;
+
+            string key = NormalizeTagKey(tagId);
+            return key is "combatant" or "noncombatant" or "hq";
         }
 
         public static PlayerVisibleTagsResult GetPlayerVisibleTags(PieceDefinition piece, int maxOptionalChips)
@@ -259,6 +267,12 @@ namespace DeadManZone.Core.Tags
             string fallbackTooltip,
             out TagDefinition tag)
         {
+            if (IsObsoleteBoardSplitSystemTag(tagId))
+            {
+                tag = null;
+                return false;
+            }
+
             if (TagRegistry.TryGet(tagId, out var registryTag))
             {
                 if (!registryTag.PlayerVisible || registryTag.Category == TagCategory.System)
@@ -354,7 +368,7 @@ namespace DeadManZone.Core.Tags
 
         private static void AddLegacyTag(List<string> tags, HashSet<string> seen, string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrWhiteSpace(value) || IsObsoleteBoardSplitSystemTag(value))
                 return;
 
             string legacyValue = ToLegacyDisplayTag(value.Trim());
@@ -370,12 +384,6 @@ namespace DeadManZone.Core.Tags
                 return registryTag.DisplayName;
 
             return HumanizeTag(tagId);
-        }
-
-        private static bool ShouldAutoAddCombatant(PieceCategory category, int baseDamage)
-        {
-            return category is PieceCategory.Unit or PieceCategory.Hybrid
-                || (category == PieceCategory.Building && baseDamage > 0);
         }
 
         private static string HumanizeTag(string value)

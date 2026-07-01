@@ -24,7 +24,7 @@ namespace DeadManZone.PlayMode.Tests
 
             var player = new BoardState(faction.CreateCombatBoardLayout());
             Place(player, database, "conscript_rifleman", new GridCoord(3, 2), "field_gun_1");
-            PlaceFieldHq(player, new GridCoord(0, 2), "hq_player");
+            PlaceRearBlocker(player, new GridCoord(0, 2), "player_blocker");
 
             var enemy = new BoardState(faction.CreateCombatBoardLayout());
             Place(enemy, database, "conscript_rifleman", new GridCoord(5, 3), "enemy_rifle_1");
@@ -32,10 +32,10 @@ namespace DeadManZone.PlayMode.Tests
             return BattlefieldState.FromBoards(player, enemy);
         }
 
-        private static void PlaceFieldHq(BoardState board, GridCoord anchor, string instanceId)
+        private static void PlaceRearBlocker(BoardState board, GridCoord anchor, string instanceId)
         {
-            var result = board.TryPlace(TestPieces.CombatFieldHq(), anchor, instanceId);
-            Assert.IsTrue(result.Success, $"Failed to place field HQ at {anchor}: {result.Reason}");
+            var result = board.TryPlace(TestPieces.MultiCellRearBlocker(), anchor, instanceId);
+            Assert.IsTrue(result.Success, $"Failed to place rear blocker at {anchor}: {result.Reason}");
         }
 
         private static void Place(

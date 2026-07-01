@@ -33,7 +33,7 @@ namespace DeadManZone.Data.Editor
                 {
                     kind = ShopSlotKind.BaselineDefensive;
                     bias = ShopPoolBias.Defensive;
-                    preferredRoles = new[] { GameTagIds.Support, GameTagIds.Utility, GameTagIds.Defender, GameTagIds.Headquarters };
+                    preferredRoles = new[] { GameTagIds.Support, GameTagIds.Utility, GameTagIds.Defender };
                 }
                 else
                 {
@@ -62,7 +62,7 @@ namespace DeadManZone.Data.Editor
                     offensive ? ShopPoolBias.Offensive : ShopPoolBias.Defensive,
                     offensive
                         ? new[] { GameTagIds.Assault, GameTagIds.Sniper, GameTagIds.Tank }
-                        : new[] { GameTagIds.Support, GameTagIds.Utility, GameTagIds.Defender, GameTagIds.Headquarters });
+                        : new[] { GameTagIds.Support, GameTagIds.Utility, GameTagIds.Defender });
             }
 
             var config = AssetDatabase.LoadAssetAtPath<ShopConfigSO>(ConfigPath);

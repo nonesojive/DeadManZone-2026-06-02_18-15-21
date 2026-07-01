@@ -79,11 +79,11 @@ namespace DeadManZone.Core.Tests
             inShop.includeInShopPool = true;
 
             var hidden = ScriptableObject.CreateInstance<Data.PieceDefinitionSO>();
-            hidden.id = "hidden_hq";
-            hidden.displayName = "Hidden HQ";
+            hidden.id = "hidden_building";
+            hidden.displayName = "Hidden Building";
             hidden.category = PieceCategory.Building;
             hidden.shapeCells = new[] { Vector2Int.zero };
-            hidden.combatRole = GameTagIds.Headquarters;
+            hidden.combatRole = GameTagIds.Utility;
             hidden.includeInShopPool = false;
 
             typeof(Data.ContentDatabase)
@@ -93,7 +93,7 @@ namespace DeadManZone.Core.Tests
             var registry = database.BuildRegistry();
 
             Assert.AreEqual(1, registry.GetPool(ShopLane.Offensive).Count);
-            Assert.IsTrue(registry.TryGetById("hidden_hq", out _));
+            Assert.IsTrue(registry.TryGetById("hidden_building", out _));
 
             Object.DestroyImmediate(inShop);
             Object.DestroyImmediate(hidden);

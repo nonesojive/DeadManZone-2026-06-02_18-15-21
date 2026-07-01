@@ -14,7 +14,6 @@ namespace DeadManZone.Core.Tests.EditMode
             {
                 Primary = GameTagIds.Infantry,
                 CombatRole = GameTagIds.Assault,
-                SystemTag = GameTagIds.Combatant,
                 SynergyTags = new[] { "future_trait" }
             };
 
@@ -30,14 +29,12 @@ namespace DeadManZone.Core.Tests.EditMode
             {
                 Primary = GameTagIds.Infantry,
                 CombatRole = GameTagIds.Assault,
-                SystemTag = GameTagIds.Combatant,
                 AttackType = AttackType.Piercing,
                 FactionId = "neutral"
             };
 
             var result = PieceTagQueries.GetPlayerVisibleTags(piece, maxOptionalChips: 4);
             Assert.IsTrue(result.IdentityTags.Any(t => t.Id == GameTagIds.Piercing));
-            Assert.IsFalse(result.IdentityTags.Any(t => t.Id == GameTagIds.Combatant));
         }
 
         [Test]
@@ -47,7 +44,6 @@ namespace DeadManZone.Core.Tests.EditMode
             {
                 Primary = GameTagIds.Infantry,
                 CombatRole = GameTagIds.Assault,
-                SystemTag = GameTagIds.Combatant,
                 SynergyTags = new[] { GameTagIds.Medic },
                 AbilityTags = new[] { GameTagIds.Stealth },
                 FlavorTags = new[] { GameTagIds.Veteran }
@@ -60,17 +56,48 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
-        public void GetPlayerVisibleTags_HidesSystemTags()
+        public void GetPlayerVisibleTags_FiltersObsoleteLegacyCombatantDisplayNames()
         {
             var piece = new PieceDefinition
             {
                 Primary = GameTagIds.Infantry,
                 CombatRole = GameTagIds.Assault,
-                SystemTag = GameTagIds.Combatant
+                Tags = new[] { "Combatant", "Infantry", "Non-Combatant" }
             };
 
             var result = PieceTagQueries.GetPlayerVisibleTags(piece, maxOptionalChips: 4);
-            Assert.IsFalse(result.VisibleTags.Any(t => t.Id == GameTagIds.Combatant));
+            Assert.IsFalse(result.VisibleTags.Any(t => t.DisplayName == "Combatant"));
+            Assert.IsFalse(result.VisibleTags.Any(t => t.DisplayName == "Non-Combatant"));
+        }
+
+        [Test]
+        public void BuildLegacyTags_OmitsObsoleteSystemTags()
+        {
+            var tags = PieceTagQueries.BuildLegacyTags(
+                PieceCategory.Unit,
+                baseDamage: 3,
+                primary: GameTagIds.Infantry,
+                combatRole: GameTagIds.Assault,
+                systemTag: "combatant",
+                synergyTags: System.Array.Empty<string>(),
+                abilityTags: System.Array.Empty<string>());
+
+            Assert.IsFalse(tags.Any(t => t == "Combatant" || t == "combatant" || t == "HQ" || t == "hq"));
+        }
+
+        [Test]
+        public void BuildLegacyTags_OmitsObsoleteHqSystemTag()
+        {
+            var tags = PieceTagQueries.BuildLegacyTags(
+                PieceCategory.Building,
+                baseDamage: 0,
+                primary: GameTagIds.Building,
+                combatRole: GameTagIds.Utility,
+                systemTag: "hq",
+                synergyTags: System.Array.Empty<string>(),
+                abilityTags: System.Array.Empty<string>());
+
+            Assert.IsFalse(tags.Any(t => t == "HQ" || t == "hq"));
         }
     }
 }

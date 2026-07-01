@@ -21,10 +21,9 @@ MonoBehaviour:
   tags:
   - Infantry
   - Defender
-  - Combatant
   primary: infantry
   combatRole: defender
-  systemTag: combatant
+  systemTag: 
   synergyTags: []
   abilityTags: []
   flavorTags: []

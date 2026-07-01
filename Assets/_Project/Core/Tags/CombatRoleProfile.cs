@@ -23,8 +23,7 @@ namespace DeadManZone.Core.Tags
                 [GameTagIds.Artillery] = CombatRoleTargetingBias.Furthest,
                 [GameTagIds.Support] = CombatRoleTargetingBias.LowestMaxHpRearPreferred,
                 [GameTagIds.Sniper] = CombatRoleTargetingBias.HighestHp,
-                [GameTagIds.Utility] = CombatRoleTargetingBias.NoAttack,
-                [GameTagIds.Headquarters] = CombatRoleTargetingBias.NoAttack
+                [GameTagIds.Utility] = CombatRoleTargetingBias.NoAttack
             };
 
         public static CombatRoleTargetingBias ResolveBias(string combatRole)

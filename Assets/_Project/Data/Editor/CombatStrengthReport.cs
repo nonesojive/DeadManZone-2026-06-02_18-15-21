@@ -44,11 +44,8 @@ namespace DeadManZone.Data.Editor
         private static BoardState BuildReferencePlayerBoard(ContentDatabase database, FactionSO faction)
         {
             var board = new BoardState(faction.CreateBoardLayout());
-            var hq = database.Pieces.FirstOrDefault(p => p.id == "ironmarch_hq")?.ToCore();
             var conscript = database.Pieces.FirstOrDefault(p => p.id == "conscript_rifleman")?.ToCore();
             var rifle = database.Pieces.FirstOrDefault(p => p.id == "rifle_squad")?.ToCore();
-            if (hq != null)
-                board.TryPlace(hq, new GridCoord(0, 4), "hq_player");
             if (conscript != null)
             {
                 board.TryPlace(conscript, new GridCoord(faction.rearCols + 1, 4), "conscript_1");

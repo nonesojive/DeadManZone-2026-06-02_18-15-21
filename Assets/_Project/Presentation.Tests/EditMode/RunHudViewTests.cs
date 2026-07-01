@@ -74,6 +74,54 @@ namespace DeadManZone.Presentation.Tests.EditMode
         }
 
         [Test]
+        public void RefreshIncomePreview_WiresIncomeLabelsFromHierarchy()
+        {
+            var topBar = new GameObject("TopBar", typeof(RectTransform));
+            var panel = new GameObject("TopResourcePanel", typeof(RectTransform));
+            panel.transform.SetParent(topBar.transform, false);
+
+            var suppliesIncome = CreateNumberText(panel.transform, "SuppliesIncome");
+            var manpowerIncome = CreateNumberText(panel.transform, "ManpowerIncome");
+            var authorityIncome = CreateNumberText(panel.transform, "AuthorityIncome");
+            var hud = topBar.AddComponent<RunHudView>();
+
+            try
+            {
+                hud.RefreshIncomePreview(new RoundIncomePreview(22, 14, 3, 18));
+
+                Assert.AreEqual("+22", suppliesIncome.text);
+                Assert.AreEqual("+14", manpowerIncome.text);
+                Assert.AreEqual("3", authorityIncome.text);
+            }
+            finally
+            {
+                Object.DestroyImmediate(topBar);
+            }
+        }
+
+        [Test]
+        public void RefreshIncomePreview_WiresSalvageNumberFromHierarchy()
+        {
+            var topBar = new GameObject("TopBar", typeof(RectTransform));
+            var panel = new GameObject("TopResourcePanel", typeof(RectTransform));
+            panel.transform.SetParent(topBar.transform, false);
+
+            var salvageNumber = CreateNumberText(panel.transform, "SalvageNumber");
+            var hud = topBar.AddComponent<RunHudView>();
+
+            try
+            {
+                hud.RefreshIncomePreview(new RoundIncomePreview(0, 0, 0, 23));
+
+                Assert.AreEqual("23%", salvageNumber.text);
+            }
+            finally
+            {
+                Object.DestroyImmediate(topBar);
+            }
+        }
+
+        [Test]
         public void RefreshMatchupFromBoards_UpdatesStrengthFromPlayerBoard()
         {
             var topInfoPanel = new GameObject("TopInfoPanel", typeof(RectTransform));

@@ -24,15 +24,9 @@ namespace DeadManZone.Game
                 MetaTracker.RecordCriticalMassTrigger();
         }
 
-        private void ProcessFightEndMeta(bool playerWon, bool hqDamaged)
+        private void ProcessFightEndMeta()
         {
-            if (hqDamaged)
-                MetaTracker.RecordHqDamaged();
-
             MetaTracker.RecordFightCompleted();
-
-            foreach (var id in MetaTracker.EvaluateFightEndAchievements(playerWon))
-                GrantAchievement(id);
 
             if (State.EmergencyDraftUsed)
                 GrantAchievement(AchievementIds.EmergencyDraftUsed);

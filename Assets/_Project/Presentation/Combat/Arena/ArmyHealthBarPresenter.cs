@@ -37,7 +37,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                     if (cell?.Definition == null)
                         continue;
 
-                    if (!PieceTagQueries.HasTag(cell.Definition, GameTagIds.Combatant))
+                    if (!PieceCombatRules.ParticipatesInCombat(cell.Definition))
                         continue;
 
                     _tracker.RegisterUnit(cell.InstanceId, cell.Side, cell.Definition.MaxHp);

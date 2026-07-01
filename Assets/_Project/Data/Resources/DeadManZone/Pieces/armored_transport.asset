@@ -22,10 +22,9 @@ MonoBehaviour:
   tags:
   - Vehicle
   - Tank
-  - Combatant
   primary: vehicle
   combatRole: tank
-  systemTag: combatant
+  systemTag: 
   synergyTags: []
   abilityTags: []
   flavorTags: []

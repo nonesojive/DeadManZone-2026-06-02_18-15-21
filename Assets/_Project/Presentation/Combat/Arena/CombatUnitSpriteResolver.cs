@@ -86,9 +86,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 if (string.IsNullOrEmpty(tag))
                     continue;
 
-                if (tag.Equals("Building", System.StringComparison.OrdinalIgnoreCase)
-                    || tag.Equals("HQ", System.StringComparison.OrdinalIgnoreCase)
-                    || tag.Equals("Headquarters", System.StringComparison.OrdinalIgnoreCase))
+                if (tag.Equals("Building", System.StringComparison.OrdinalIgnoreCase))
                     return true;
             }
 

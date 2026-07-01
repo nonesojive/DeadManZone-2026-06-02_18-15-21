@@ -2,25 +2,20 @@ using UnityEngine;
 
 namespace DeadManZone.Presentation.Run
 {
-    /// <summary>
-    /// Aligns center-column UI (messages, unit card, buff strip) with the main-row center column.
-    /// </summary>
+    /// <summary>Aligns bottom-bar info message region with the main-row center column.</summary>
     public sealed class CenterColumnLayoutFitter : MonoBehaviour
     {
         [SerializeField] private RectTransform buildPanel;
-        [SerializeField] private RectTransform messagesPanel;
-        [SerializeField] private RectTransform buffStripRegion;
+        [SerializeField] private RectTransform infoMessageRegion;
         [SerializeField] private BuildRowLayoutFitter mainRowLayout;
 
         public void Configure(
             RectTransform panel,
-            RectTransform messages,
-            RectTransform buffStrip,
+            RectTransform infoRegion,
             BuildRowLayoutFitter rowLayout)
         {
             buildPanel = panel;
-            messagesPanel = messages;
-            buffStripRegion = buffStrip;
+            infoMessageRegion = infoRegion;
             mainRowLayout = rowLayout;
             ApplyLayout();
         }
@@ -34,7 +29,7 @@ namespace DeadManZone.Presentation.Run
             if (buildPanel != null && RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel))
                 return;
 
-            if (mainRowLayout == null)
+            if (mainRowLayout == null || infoMessageRegion == null)
                 return;
 
             float minX = mainRowLayout.CenterColumnMinX;
@@ -42,27 +37,15 @@ namespace DeadManZone.Presentation.Run
             if (maxX <= minX + 0.001f)
                 return;
 
-            if (messagesPanel != null)
-            {
-                messagesPanel.anchorMin = new Vector2(minX, BuildLayoutMetrics.TopBarAnchorMinY);
-                messagesPanel.anchorMax = new Vector2(maxX, 1f);
-                messagesPanel.offsetMin = new Vector2(4f, BuildLayoutMetrics.TopBarHudBottomInsetPixels);
-                messagesPanel.offsetMax = new Vector2(-4f, -BuildLayoutMetrics.TopBarHudTopInsetPixels);
-            }
-
-            if (buffStripRegion != null)
-            {
-                buffStripRegion.anchorMin = new Vector2(minX, 0f);
-                buffStripRegion.anchorMax = new Vector2(maxX, 1f);
-                buffStripRegion.offsetMin = Vector2.zero;
-                buffStripRegion.offsetMax = Vector2.zero;
-            }
+            infoMessageRegion.anchorMin = new Vector2(minX, 0f);
+            infoMessageRegion.anchorMax = new Vector2(maxX, 1f);
+            infoMessageRegion.offsetMin = new Vector2(4f, 4f);
+            infoMessageRegion.offsetMax = new Vector2(-4f, -4f);
         }
 
         public static void EnsureOnBuildPanel(
             Transform buildPanelRoot,
-            RectTransform messages,
-            RectTransform buffStrip,
+            RectTransform infoRegion,
             BuildRowLayoutFitter rowLayout)
         {
             if (buildPanelRoot == null)
@@ -74,8 +57,7 @@ namespace DeadManZone.Presentation.Run
 
             fitter.Configure(
                 buildPanelRoot as RectTransform,
-                messages,
-                buffStrip,
+                infoRegion,
                 rowLayout);
         }
     }

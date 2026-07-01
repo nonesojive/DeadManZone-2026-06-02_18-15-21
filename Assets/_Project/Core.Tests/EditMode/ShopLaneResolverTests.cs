@@ -11,7 +11,6 @@ namespace DeadManZone.Core.Tests
         [TestCase(GameTagIds.Tank, ShopLane.Offensive)]
         [TestCase(GameTagIds.Support, ShopLane.Defensive)]
         [TestCase(GameTagIds.Utility, ShopLane.Defensive)]
-        [TestCase(GameTagIds.Headquarters, ShopLane.Defensive)]
         [TestCase(GameTagIds.Defender, ShopLane.Defensive)]
         [TestCase(GameTagIds.Artillery, ShopLane.Specialty)]
         public void Resolve_MapsCombatRoleToLane(string combatRole, ShopLane expectedLane)

@@ -29,6 +29,3 @@ MonoBehaviour:
   startingMorale: 90
   baseSalvageChancePercent: 10
   tokenBackgroundColor: {r: 0.28, g: 0.28, b: 0.3, a: 0.45}
-  hqPieceId: ironmarch_hq
-  hqSpawnAnchor: {x: 0, y: 4}
-  hqSpawnRotation: 0

@@ -3,7 +3,6 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Content;
-using DeadManZone.Core.Tags;
 using DeadManZone.Data;
 using DeadManZone.Game;
 using DeadManZone.Game.Dev;
@@ -156,7 +155,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 if (cell?.Definition == null)
                     continue;
 
-                if (!PieceTagQueries.HasTag(cell.Definition, GameTagIds.Combatant))
+                if (!PieceCombatRules.ParticipatesInCombat(cell.Definition))
                     continue;
 
                 var actor = _pool.Rent();
@@ -235,7 +234,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 if (cell?.Definition == null)
                     continue;
 
-                if (!PieceTagQueries.HasTag(cell.Definition, GameTagIds.Combatant))
+                if (!PieceCombatRules.ParticipatesInCombat(cell.Definition))
                     continue;
 
                 if (!_replayState.TryGetAnchor(cell.InstanceId, out var anchor) || _actors.ContainsKey(cell.InstanceId))

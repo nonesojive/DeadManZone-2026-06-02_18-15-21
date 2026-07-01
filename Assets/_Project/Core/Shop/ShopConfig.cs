@@ -18,8 +18,7 @@ namespace DeadManZone.Core.Shop
         {
             GameTagIds.Support,
             GameTagIds.Utility,
-            GameTagIds.Defender,
-            GameTagIds.Headquarters
+            GameTagIds.Defender
         };
 
         public IReadOnlyList<ShopSlotProfile> BaselineProfiles { get; init; } = Array.Empty<ShopSlotProfile>();

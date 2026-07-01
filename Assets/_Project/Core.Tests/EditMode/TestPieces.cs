@@ -15,20 +15,23 @@ namespace DeadManZone.Core.Tests
             Category = PieceCategory.Unit,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
             MaxHp = 100,
-            ManpowerCost = 10,
-            Tags = new[] { GameTagIds.Combatant }
+            ManpowerCost = 10
         };
 
-        public static PieceDefinition FieldingHq() => new()
+        /// <summary>Two-cell rear structure for combat footprint/layout tests.</summary>
+        public static PieceDefinition MultiCellRearBlocker() => new()
         {
-            Id = "hq",
-            DisplayName = "HQ",
-            Category = PieceCategory.Building,
-            Shape = new PieceShape(new[] { new GridCoord(0, 0), new GridCoord(1, 0) }),
-            Tags = new[] { GameTagIds.Hq },
+            Id = "rear_blocker",
+            DisplayName = "Rear Blocker",
+            Category = PieceCategory.Unit,
+            Primary = GameTagIds.Structure,
+            Shape = MultiCellHorizontalPairShape(),
             MaxHp = 80,
             ManpowerCost = 8
         };
+
+        public static PieceShape MultiCellHorizontalPairShape() =>
+            new(new[] { new GridCoord(0, 0), new GridCoord(1, 0) });
 
         public static PieceDefinition RifleSquad() => new()
         {
@@ -36,7 +39,7 @@ namespace DeadManZone.Core.Tests
             DisplayName = "Rifle Squad",
             Category = PieceCategory.Unit,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
-            Tags = new[] { GameTagIds.Infantry, GameTagIds.Combatant },
+            Tags = new[] { GameTagIds.Infantry },
             MaxHp = 100,
             BaseDamage = 20,
             CooldownTicks = 3,
@@ -94,36 +97,11 @@ namespace DeadManZone.Core.Tests
             Id = "command_bunker",
             DisplayName = "Command Bunker",
             Category = PieceCategory.Building,
-            Shape = new PieceShape(new[] { new GridCoord(0, 0), new GridCoord(1, 0) }),
+            Shape = MultiCellHorizontalPairShape(),
             MaxHp = 20,
             GoldCost = 8,
             CommandActions = CommandActionFlags.ChangeStance,
             ShopModifiers = ShopModifierFlags.ExtraGeneralSlot
-        };
-
-        public static PieceDefinition HqPiece() => new()
-        {
-            Id = "hq",
-            DisplayName = "HQ",
-            Category = PieceCategory.Building,
-            Shape = new PieceShape(new[] { new GridCoord(0, 0), new GridCoord(1, 0) }),
-            Tags = new[] { GameTagIds.Hq },
-            MaxHp = 80,
-            ManpowerCost = 8
-        };
-
-        /// <summary>Enemy field HQ marker for legacy zoned combat layouts (structure tag, combat board).</summary>
-        public static PieceDefinition CombatFieldHq() => new()
-        {
-            Id = "field_hq",
-            DisplayName = "Field HQ",
-            Category = PieceCategory.Unit,
-            Primary = GameTagIds.Structure,
-            SystemTag = GameTagIds.NonCombatant,
-            Shape = new PieceShape(new[] { new GridCoord(0, 0), new GridCoord(1, 0) }),
-            Tags = new[] { GameTagIds.Hq },
-            MaxHp = 80,
-            ManpowerCost = 8
         };
 
         public static PieceDefinition SupplyDepot() => new()
@@ -207,7 +185,7 @@ namespace DeadManZone.Core.Tests
             DisplayName = "Weak Conscript",
             Category = PieceCategory.Unit,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
-            Tags = new[] { GameTagIds.Infantry, GameTagIds.Combatant },
+            Tags = new[] { GameTagIds.Infantry },
             MaxHp = 3,
             BaseDamage = 1,
             CooldownTicks = 4,

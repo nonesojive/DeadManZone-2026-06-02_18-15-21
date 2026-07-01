@@ -38,12 +38,12 @@ namespace DeadManZone.Core.Tests.EditMode
             var hq = new BoardState(TestBoards.IronMarchHqLayout);
             var rifle = TestPieces.RifleSquad();
             Assert.IsTrue(combat.TryPlace(rifle, TestBoards.SupportLineAnchor(0), "rifle_1").Success);
-            Assert.IsTrue(hq.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 2), "hq_1").Success);
+            Assert.IsTrue(hq.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 2), "bunker_1").Success);
             var board = new BuildBoardSet { Combat = combat, Hq = hq }.ToAggregateBoard();
 
             var snapshot = ArmyStrengthCalculator.Evaluate(board);
             int expected = PieceCombatRating.ComputeBase(rifle)
-                + PieceCombatRating.ComputeBase(TestPieces.HqPiece());
+                + PieceCombatRating.ComputeBase(TestPieces.CommandBunker());
             Assert.AreEqual(expected, snapshot.BaseTotal);
             Assert.AreEqual(expected, snapshot.EffectiveTotal);
         }
@@ -53,13 +53,11 @@ namespace DeadManZone.Core.Tests.EditMode
         {
             var command = TestPieces.CreateUnit(
                 "command",
-                systemTag: GameTagIds.Combatant,
                 synergyTags: new[] { GameTagIds.Command });
             command = TestPieces.With(command, abilities: new[] { CreateCommandDamageAbility() });
             var artillery = TestPieces.CreateUnit(
                 "artillery",
-                combatRole: GameTagIds.Artillery,
-                systemTag: GameTagIds.Combatant);
+                combatRole: GameTagIds.Artillery);
 
             var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
             var board = new BoardState(layout);

@@ -3,7 +3,6 @@ using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Run;
-using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
 {
@@ -47,9 +46,6 @@ namespace DeadManZone.Core.Combat
         public IReadOnlyList<CombatantState> EnemyCombatantsForTests => _enemyCombatants;
 
         public IReadOnlyDictionary<GridCoord, string> OccupancySnapshotForTests => _occupancyGrid.Snapshot();
-
-        public bool IsPlayerHqAlive =>
-            _playerCombatants.Any(c => c.HasTag(GameTagIds.Hq) && c.IsAlive);
 
         private TickCombatRun(
             BoardState playerBoard,
@@ -402,7 +398,7 @@ namespace DeadManZone.Core.Combat
 
         private CombatAdvanceResult CompleteResult(int segment)
         {
-            var (total, lost, hqDamaged) = ComputePlayerLossStats();
+            var (total, lost) = ComputePlayerLossStats();
             var survivors = _playerCombatants
                 .Where(c => c.IsAlive && c.Definition.MaxHp > 0)
                 .Select(c => c.InstanceId)
@@ -417,7 +413,6 @@ namespace DeadManZone.Core.Combat
                 EventLog = _log,
                 PlayerCombatantsTotal = total,
                 PlayerCombatantsLost = lost,
-                PlayerHqDamaged = hqDamaged,
                 SurvivingPlayerCombatantIds = survivors,
                 PlayerCombatantsAtEnd = _playerCombatants,
                 BattleReport = BattleReportBuilder.Build(
@@ -430,7 +425,7 @@ namespace DeadManZone.Core.Combat
             };
         }
 
-        private (int total, int lost, bool hqDamaged) ComputePlayerLossStats()
+        private (int total, int lost) ComputePlayerLossStats()
         {
             int total = 0;
             int lost = 0;
@@ -445,7 +440,7 @@ namespace DeadManZone.Core.Combat
                     lost++;
             }
 
-            return (total, lost, hqDamaged: false);
+            return (total, lost);
         }
 
         private void RebuildOccupied()

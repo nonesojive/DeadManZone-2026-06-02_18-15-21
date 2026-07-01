@@ -21,10 +21,9 @@ MonoBehaviour:
   tags:
   - Building
   - Artillery
-  - Combatant
   primary: building
   combatRole: artillery
-  systemTag: combatant
+  systemTag: 
   synergyTags: []
   abilityTags: []
   flavorTags: []

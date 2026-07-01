@@ -20,11 +20,10 @@ MonoBehaviour:
   tags:
   - Infantry
   - Assault
-  - Combatant
   - Flamethrower
   primary: infantry
   combatRole: assault
-  systemTag: combatant
+  systemTag: 
   synergyTags: []
   abilityTags:
   - flamethrower

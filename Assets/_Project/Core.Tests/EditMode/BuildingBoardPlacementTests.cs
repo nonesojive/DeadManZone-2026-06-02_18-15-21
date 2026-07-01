@@ -1,17 +1,16 @@
 using System.Linq;
 using DeadManZone.Core;
 using DeadManZone.Core.Board;
-using DeadManZone.Core.Tags;
 using DeadManZone.Data;
 using DeadManZone.Game;
 using NUnit.Framework;
 
 namespace DeadManZone.Core.Tests.EditMode
 {
-    public sealed class HqSpawnTests
+    public sealed class BuildingBoardPlacementTests
     {
         [Test]
-        public void StartNewRun_DoesNotAutoPlaceHqOnCombatBoard()
+        public void StartNewRun_CombatBoardStartsEmpty()
         {
             var database = ContentDatabase.Load();
             if (database == null)
@@ -23,12 +22,11 @@ namespace DeadManZone.Core.Tests.EditMode
             SaveManager.DeleteSave();
             var orchestrator = new RunOrchestrator(database);
             orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 1);
-            var combat = orchestrator.GetCombatBoard();
-            Assert.IsFalse(combat.Pieces.Any(p => PieceTagQueries.HasTag(p.Definition, GameTagIds.Hq)));
+            Assert.IsEmpty(orchestrator.GetCombatBoard().Pieces);
         }
 
         [Test]
-        public void Buildings_PlaceOnHqBoard_NotCombat()
+        public void Buildings_PlaceOnBuildingBoard_NotCombat()
         {
             var database = ContentDatabase.Load();
             if (database == null)
@@ -40,9 +38,9 @@ namespace DeadManZone.Core.Tests.EditMode
             SaveManager.DeleteSave();
             var orchestrator = new RunOrchestrator(database);
             orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 1);
-            var hqBoard = orchestrator.GetHqBoard();
+            var buildingBoard = orchestrator.GetHqBoard();
             var radio = database.Pieces.First(p => p.id == "radio_array").ToCore();
-            Assert.IsTrue(hqBoard.TryPlace(radio, new Core.Common.GridCoord(1, 0), "radio_test").Success);
+            Assert.IsTrue(buildingBoard.TryPlace(radio, new Core.Common.GridCoord(1, 0), "radio_test").Success);
             Assert.IsFalse(orchestrator.GetCombatBoard().TryPlace(radio, new Core.Common.GridCoord(1, 0), "radio_fail").Success);
         }
     }

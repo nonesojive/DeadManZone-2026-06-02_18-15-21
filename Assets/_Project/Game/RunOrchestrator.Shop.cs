@@ -282,6 +282,7 @@ namespace DeadManZone.Game
 
         private void RefreshShop()
         {
+            SyncSalvageChancePercent();
             var board = GetShopBoard();
             int shopSeed = State.RunSeed + State.FightIndex * 100 + State.RerollCountThisRound;
             var shop = _shopGenerator.Generate(

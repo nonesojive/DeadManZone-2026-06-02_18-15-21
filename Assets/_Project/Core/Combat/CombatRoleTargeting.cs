@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DeadManZone.Core.Common;
+using DeadManZone.Core.Board;
 using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
@@ -55,10 +56,7 @@ namespace DeadManZone.Core.Combat
             if (combatant?.Definition == null)
                 return true;
 
-            if (combatant.HasTag(GameTagIds.Hq) || combatant.HasTag(GameTagIds.NonCombatant))
-                return true;
-
-            return CombatRoleProfile.ResolveBias(combatant.Definition.CombatRole) == CombatRoleTargetingBias.NoAttack;
+            return PieceCombatRules.IsDeprioritizedTarget(combatant.Definition);
         }
 
         private static CombatantState SelectFirstByInstanceId(IReadOnlyList<CombatantState> candidates)

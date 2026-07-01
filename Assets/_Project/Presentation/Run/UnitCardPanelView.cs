@@ -7,23 +7,36 @@ using UnityEngine.UI;
 
 namespace DeadManZone.Presentation.Run
 {
-    /// <summary>Fixed center-column unit detail panel (hidden when idle).</summary>
+    /// <summary>Fixed center-column detail panel; picks unit or building card layout by piece category.</summary>
     public sealed class UnitCardPanelView : MonoBehaviour
     {
+        public const string UnitDetailCardName = "UnitDetailCard";
+        public const string BuildingCardName = "BuildingPrefab";
+
         [SerializeField] private RectTransform panelRoot;
-        [FormerlySerializedAs("unitCard")]
-        [SerializeField] private PieceCardView cardView;
+        [FormerlySerializedAs("cardView")]
+        [SerializeField] private PieceCardView unitCardView;
+        [SerializeField] private PieceCardView buildingCardView;
 
         public bool IsVisible => panelRoot != null && panelRoot.gameObject.activeSelf;
 
-        public PieceCardView CardView => cardView;
+        /// <summary>Last bound card (unit or building), if any.</summary>
+        public PieceCardView CardView { get; private set; }
 
-        /// <summary>Wires an existing scene/prefab instance. Never writes to UnitDetailCard.prefab.</summary>
+        public static bool UsesBuildingCard(PieceDefinition definition) =>
+            definition != null && definition.Category == PieceCategory.Building;
+
+        /// <summary>Wires scene/prefab instances. Never writes to authored card prefab assets.</summary>
         public void EnsureCardView()
         {
-            var host = panelRoot != null ? panelRoot : transform;
+            var host = PanelHost;
             LegacyUnitCardCleanup.RemoveLegacyChildren(host);
-            ResolveCardView(host);
+            ResolveCardViews(host);
+            EnsureBuildingCardInstance(host);
+            if (unitCardView != null)
+                CenterCardInPanel(unitCardView.transform as RectTransform);
+            if (buildingCardView != null)
+                CenterCardInPanel(buildingCardView.transform as RectTransform);
             SuppressPanelBackgroundIfCardPresent();
         }
 
@@ -32,23 +45,30 @@ namespace DeadManZone.Presentation.Run
             if (definition == null)
                 return;
 
-            var host = panelRoot != null ? panelRoot : transform;
+            var host = PanelHost;
             LegacyUnitCardCleanup.RemoveLegacyChildren(host);
-            ResolveCardView(host);
+            ResolveCardViews(host);
+            EnsureBuildingCardInstance(host);
 
-            if (cardView == null)
+            var activeCard = SelectActiveCard(definition);
+            if (activeCard == null)
             {
                 Debug.LogWarning(
-                    "UnitCardPanelView has no assigned UnitDetailCard. Place or link one under UnitCardPanel in the Run scene.",
+                    UsesBuildingCard(definition)
+                        ? "UnitCardPanelView has no BuildingPrefab instance. Place or link one under UnitCardPanel in the Run scene."
+                        : "UnitCardPanelView has no UnitDetailCard instance. Place or link one under UnitCardPanel in the Run scene.",
                     this);
                 return;
             }
 
+            DeactivateInactiveCard(definition, activeCard);
+
             var model = PieceCardViewModelBuilder.Build(definition, context);
             string overflowTooltip = PieceCardOverflowTooltip.Build(definition, model);
-            cardView.Bind(model, overflowTooltip);
+            activeCard.Bind(model, overflowTooltip);
             SuppressPanelBackgroundIfCardPresent();
-            cardView.Show();
+            activeCard.Show();
+            CardView = activeCard;
 
             if (panelRoot != null)
                 panelRoot.gameObject.SetActive(true);
@@ -56,25 +76,99 @@ namespace DeadManZone.Presentation.Run
 
         public void Hide()
         {
-            cardView?.Hide();
+            unitCardView?.Hide();
+            buildingCardView?.Hide();
+            CardView = null;
+
             if (panelRoot != null)
                 panelRoot.gameObject.SetActive(false);
         }
 
-        private void ResolveCardView(Transform host)
+        private Transform PanelHost => panelRoot != null ? panelRoot : transform;
+
+        private PieceCardView SelectActiveCard(PieceDefinition definition) =>
+            UsesBuildingCard(definition) ? buildingCardView : unitCardView;
+
+        private void DeactivateInactiveCard(PieceDefinition definition, PieceCardView activeCard)
         {
-            if (cardView != null)
+            var inactive = UsesBuildingCard(definition) ? unitCardView : buildingCardView;
+            if (inactive == null || inactive == activeCard)
                 return;
 
-            cardView = host.GetComponentInChildren<PieceCardView>(true);
+            inactive.Hide();
+            inactive.gameObject.SetActive(false);
+            activeCard.gameObject.SetActive(true);
+        }
+
+        private void ResolveCardViews(Transform host)
+        {
+            if (unitCardView == null)
+                unitCardView = FindNamedCardView(host, UnitDetailCardName);
+
+            if (unitCardView == null)
+            {
+                foreach (var view in host.GetComponentsInChildren<PieceCardView>(true))
+                {
+                    if (view.gameObject.name == BuildingCardName)
+                        continue;
+
+                    unitCardView = view;
+                    break;
+                }
+            }
+
+            if (buildingCardView == null)
+                buildingCardView = FindNamedCardView(host, BuildingCardName);
+        }
+
+        private void EnsureBuildingCardInstance(Transform host)
+        {
+            if (buildingCardView != null)
+                return;
+
+            var prefab = CardPrefabRuntimeLoader.LoadPrefab(CardPrefabPaths.BuildingPrefab);
+            if (prefab == null)
+            {
+                Debug.LogWarning(
+                    $"UnitCardPanelView could not load building card prefab at '{CardPrefabPaths.BuildingPrefab}'.",
+                    this);
+                return;
+            }
+
+            var cardGo = Instantiate(prefab, host);
+            cardGo.name = BuildingCardName;
+            CenterCardInPanel(cardGo.GetComponent<RectTransform>());
+            buildingCardView = cardGo.GetComponent<PieceCardView>();
+            cardGo.SetActive(false);
+        }
+
+        private static PieceCardView FindNamedCardView(Transform host, string childName)
+        {
+            var child = host.Find(childName);
+            return child != null ? child.GetComponent<PieceCardView>() : null;
+        }
+
+        /// <summary>Preserves prefab size and child offsets; stretch-fill breaks center-anchored authored layouts.</summary>
+        public static void CenterCardInPanel(RectTransform rect)
+        {
+            if (rect == null)
+                return;
+
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+
+            // ponytail: both card prefabs use 450×700; stretch wiring zeroes sizeDelta.
+            if (rect.sizeDelta.x < 1f || rect.sizeDelta.y < 1f)
+                rect.sizeDelta = new Vector2(450f, 700f);
         }
 
         private void SuppressPanelBackgroundIfCardPresent()
         {
-            if (cardView == null)
+            if (unitCardView == null && buildingCardView == null)
                 return;
 
-            var host = panelRoot != null ? panelRoot : transform;
+            var host = PanelHost;
             var panelImage = host.GetComponent<Image>();
             if (panelImage != null)
                 panelImage.enabled = false;

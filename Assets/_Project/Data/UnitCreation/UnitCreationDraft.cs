@@ -27,7 +27,6 @@ namespace DeadManZone.Data.UnitCreation
 
         public string primary = GameTagIds.Infantry;
         public string combatRole = GameTagIds.Assault;
-        public string systemTag = GameTagIds.Combatant;
         public List<string> synergyTags = new();
         public List<string> abilityTags = new();
         public List<string> flavorTags = new();
@@ -83,7 +82,6 @@ namespace DeadManZone.Data.UnitCreation
                     : new[] { Vector2Int.zero },
                 primary = piece.primary,
                 combatRole = piece.combatRole,
-                systemTag = piece.systemTag,
                 synergyTags = new List<string>(piece.synergyTags ?? Array.Empty<string>()),
                 abilityTags = new List<string>(piece.abilityTags ?? Array.Empty<string>()),
                 flavorTags = new List<string>(piece.flavorTags ?? Array.Empty<string>()),
@@ -142,7 +140,7 @@ namespace DeadManZone.Data.UnitCreation
                 : new[] { Vector2Int.zero };
             piece.primary = primary;
             piece.combatRole = combatRole;
-            piece.systemTag = systemTag;
+            piece.systemTag = ResolveSystemTag();
             piece.synergyTags = synergyTags?.ToArray() ?? Array.Empty<string>();
             piece.abilityTags = abilityTags?.ToArray() ?? Array.Empty<string>();
             piece.flavorTags = flavorTags?.ToArray() ?? Array.Empty<string>();
@@ -172,7 +170,7 @@ namespace DeadManZone.Data.UnitCreation
                 baseDamage,
                 primary,
                 combatRole,
-                systemTag,
+                piece.systemTag,
                 piece.synergyTags,
                 piece.abilityTags,
                 piece.flavorTags);
@@ -180,5 +178,7 @@ namespace DeadManZone.Data.UnitCreation
             if (writeRegistration)
                 piece.includeInShopPool = includeInShopPool;
         }
+
+        private string ResolveSystemTag() => string.Empty;
     }
 }

@@ -14,14 +14,8 @@ namespace DeadManZone.Core.Tags
         public const string Artillery = "artillery";
         public const string Support = "support";
         public const string Utility = "utility";
-        public const string Headquarters = "headquarters";
         public const string Sniper = "sniper";
         public const string Defender = "defender";
-
-        // System
-        public const string Combatant = "combatant";
-        public const string NonCombatant = "noncombatant";
-        public const string Hq = "hq";
 
         // Attack type
         public const string Ballistic = "ballistic";

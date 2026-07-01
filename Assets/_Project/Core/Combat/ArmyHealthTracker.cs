@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using DeadManZone.Core.Tags;
+using DeadManZone.Core.Board;
 
 namespace DeadManZone.Core.Combat
 {
@@ -21,7 +21,7 @@ namespace DeadManZone.Core.Combat
             {
                 foreach (var combatant in combatants)
                 {
-                    if (!combatant.HasTag(GameTagIds.Combatant))
+                    if (!PieceCombatRules.ParticipatesInCombat(combatant.Definition))
                         continue;
 
                     starting += combatant.Definition.MaxHp;

@@ -21,10 +21,9 @@ MonoBehaviour:
   tags:
   - Infantry
   - Assault
-  - Combatant
   primary: infantry
   combatRole: assault
-  systemTag: combatant
+  systemTag: 
   synergyTags: []
   abilityTags: []
   flavorTags: []

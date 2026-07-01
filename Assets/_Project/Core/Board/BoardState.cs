@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Common;
-using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Board
 {
@@ -103,9 +102,6 @@ namespace DeadManZone.Core.Board
             if (!_pieces.TryGetValue(instanceId, out removedPiece))
                 return false;
 
-            if (IsImmovableHq(removedPiece.Definition))
-                return false;
-
             foreach (var cell in removedPiece.Definition.Shape.GetCells(removedPiece.Anchor, removedPiece.Rotation))
                 _occupied.Remove(cell);
 
@@ -117,9 +113,6 @@ namespace DeadManZone.Core.Board
         {
             if (!_pieces.TryGetValue(instanceId, out var piece))
                 return new PlacementResult { Success = false, Reason = "Piece not found" };
-
-            if (IsImmovableHq(piece.Definition))
-                return new PlacementResult { Success = false, Reason = "HQ cannot be moved" };
 
             if (piece.Anchor.X == newAnchor.X && piece.Anchor.Y == newAnchor.Y && piece.Rotation == rotation)
                 return new PlacementResult { Success = true };
@@ -135,9 +128,6 @@ namespace DeadManZone.Core.Board
 
             return TryPlace(removed.Definition, newAnchor, removed.InstanceId, rotation);
         }
-
-        private static bool IsImmovableHq(PieceDefinition definition) =>
-            PieceTagQueries.HasTag(definition, GameTagIds.Hq);
 
         private static bool IsPlacementAllowedForDefinition(
             PieceDefinition definition,

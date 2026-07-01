@@ -65,13 +65,11 @@ namespace DeadManZone.Core.Tests.EditMode
             var infantry = TestPieces.CreateUnit(
                 "inf",
                 primary: GameTagIds.Infantry,
-                combatRole: GameTagIds.Assault,
-                systemTag: GameTagIds.Combatant);
+                combatRole: GameTagIds.Assault);
             var vehicle = TestPieces.CreateUnit(
                 "veh",
                 primary: GameTagIds.Vehicle,
-                combatRole: GameTagIds.Tank,
-                systemTag: GameTagIds.Combatant);
+                combatRole: GameTagIds.Tank);
 
             for (int i = 0; i < 5; i++)
                 Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(i), $"inf{i}").Success);
@@ -158,7 +156,7 @@ namespace DeadManZone.Core.Tests.EditMode
 
             var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
             var board = new BoardState(layout);
-            var infantry = TestPieces.CreateUnit("inf", primary: GameTagIds.Infantry, systemTag: GameTagIds.Combatant);
+            var infantry = TestPieces.CreateUnit("inf", primary: GameTagIds.Infantry);
 
             for (int i = 0; i < 5; i++)
                 Assert.IsTrue(board.TryPlace(infantry, TestBoards.SupportLineAnchor(i), $"p{i}").Success);

@@ -4,7 +4,9 @@
 **Engine:** Unity  
 **Status:** Approved (brainstorming) — pending written spec review before implementation plan  
 **Builds on:** `2026-06-04-build-screen-layout-design.md`, `2026-06-06-shop-offer-card-design.md`  
-**Scope:** Unified shop (6–12 slots), layout reorganization, ShopCard/UnitCard panels, multi-lock reroll, buff icon strip, messages priority stack
+**Scope:** Unified shop (6–12 slots), layout reorganization, ShopCard/UnitCard panels, multi-lock reroll, critical mass drawer, messages in bottom InfoMessageRegion
+
+> **2026-07-01 update:** Bottom-center buff strip → **CriticalMassDrawer** (right-edge tab). Top-center messages → **BottomBar/InfoMessageRegion**. See `2026-07-01-critical-mass-panel-design.md` and `2026-07-01-build-hud-economy-design.md`.
 
 ---
 
@@ -20,14 +22,14 @@ Three vertical columns in the build panel:
 
 | Region | Position | Content |
 |--------|----------|---------|
-| **Resources** | Top-left | Supplies, Manpower, Authority, Morale (existing HUD block) |
-| **Messages** | Top-center | Priority-stack text (Section 4) |
+| Resources | Top bar | Supplies/Manpower/Authority/Morale balances + **Income** previews + **SalvageNumber** |
+| **Messages** | Bottom-center (`InfoMessageRegion`) | Build feedback / alerts (`BuildMessagesView`) |
+| **Buff / critical mass** | Right-edge drawer tab | Active + near-miss critical mass rules (not bottom strip) |
 | **Log / Menu** | Top-right | Event log toggle + pause MENU |
 | **Board** | Left-center | 9×10 grid + zone chrome |
 | **Unit Card** | Center-center | Fixed panel; hidden when idle; shown on hover |
 | **Shop** | Right-center | Unified offer grid (3×2 → 4×3) |
 | **Reserves** | Bottom-left | 2×9 grid |
-| **Buff icons** | Bottom-center | Synergy / critical-mass strip |
 | **Actions** | Bottom-right | SELL, REROLL, COMBAT under shop |
 
 `BuildLayoutMetrics` drops per-lane vertical stacking (`ShopLaneCount` lane anchors). Shop uses one `ShopArea` rect with an internal grid layout fitter.
@@ -177,7 +179,7 @@ Bottom-center strip between reserves and shop actions:
 | `UnifiedShopView` | Replaces lane roots in `ShopView` |
 | `ShopCardView` | Evolve `ShopOfferView` to wireframe layout |
 | `UnitCardPanelView` | Fixed center panel |
-| `BuffIconStripView` | Synergy + critical-mass icons |
+| `BuffIconStripView` | **Removed** from bottom bar — see `CriticalMassDrawerView` |
 | `BuildMessagesView` | Priority-stack messages |
 | `RunSceneSetup` | Rebuild shop column; remove `OffensiveRow` / `DefensiveRow` / `SpecialtyRow` |
 

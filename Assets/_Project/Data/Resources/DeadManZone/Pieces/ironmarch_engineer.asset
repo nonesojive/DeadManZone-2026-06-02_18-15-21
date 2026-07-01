@@ -20,10 +20,9 @@ MonoBehaviour:
   tags:
   - Infantry
   - Support
-  - Combatant
   primary: infantry
   combatRole: support
-  systemTag: combatant
+  systemTag: 
   synergyTags: []
   abilityTags: []
   flavorTags: []

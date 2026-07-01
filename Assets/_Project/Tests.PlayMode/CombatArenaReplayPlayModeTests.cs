@@ -119,7 +119,7 @@ namespace DeadManZone.PlayMode.Tests
             harness.Presenter.InitializeArena(CombatArenaTestBoards.BuildFieldGunVsHq(database));
 
             var log = new CombatEventLog();
-            log.Append(0, 0, "field_gun_1", "damage", "enemy_hq", 8);
+            log.Append(0, 0, "field_gun_1", "damage", "enemy_rifle_1", 8);
             log.Append(0, 1, "field_gun_1", "destroyed", string.Empty, 0);
 
             harness.Director.PlayLog(log, segment: 0);
@@ -147,7 +147,7 @@ namespace DeadManZone.PlayMode.Tests
             var destination = new GridCoord(5, 2);
             var log = new CombatEventLog();
             log.Append(0, 0, "field_gun_1", "move", $"{destination.X},{destination.Y}", 0);
-            log.Append(0, 1, "field_gun_1", "damage", "enemy_hq", 8);
+            log.Append(0, 1, "field_gun_1", "damage", "enemy_rifle_1", 8);
             log.Append(0, 2, "field_gun_1", "destroyed", string.Empty, 0);
 
             harness.Director.PlayLog(log, segment: 0);
@@ -173,12 +173,12 @@ namespace DeadManZone.PlayMode.Tests
             yield return loader.LoadAsync();
             presenter.InitializeArena(CombatArenaTestBoards.BuildFieldGunVsHq(database));
 
-            Assert.IsTrue(presenter.HasBuildingVisualForTests("hq_player"));
+            Assert.IsTrue(presenter.HasBuildingVisualForTests("player_blocker"));
             Assert.IsNotNull(FindActor(presenter, "field_gun_1"));
 
             yield return loader.UnloadAsync();
 
-            Assert.IsFalse(presenter.HasBuildingVisualForTests("hq_player"));
+            Assert.IsFalse(presenter.HasBuildingVisualForTests("player_blocker"));
             Assert.IsFalse(presenter.GetActiveActors().Any());
         }
 

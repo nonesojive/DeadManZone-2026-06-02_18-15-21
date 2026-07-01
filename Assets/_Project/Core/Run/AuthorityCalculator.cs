@@ -5,11 +5,11 @@ namespace DeadManZone.Core.Run
 {
     public static class AuthorityCalculator
     {
-        private const int HqBaseAuthority = 2;
-        /// <summary>Authority pool at build-round start: 2 from HQ plus 1 per command-capable building.</summary>
+        private const int BaseAuthority = 2;
+        /// <summary>Authority pool at build-round start: base pool plus 1 per command-capable building.</summary>
         public static int ComputeRoundPool(BoardState board)
         {
-            int pool = HqBaseAuthority;
+            int pool = BaseAuthority;
             if (board?.Pieces == null)
                 return pool;
 

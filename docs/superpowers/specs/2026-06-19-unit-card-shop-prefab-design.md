@@ -24,7 +24,7 @@ Two build-screen UX bugs and one workflow gap:
 | Unit card idle state | **Fully hidden** — no frame when nothing hovered |
 | Unit card pattern | **One prefab instance** in center column; Show/Hide + rebind (no per-hover Instantiate) |
 | Shop card pattern | **Same architecture** — prefab asset + existing `ShopOfferView.Bind()` |
-| Shared prefab | **No** — separate `UnitDetailCard` vs `ShopOfferCard` layouts; shared data layer only |
+| Shared prefab | **No** — separate `UnitDetailCard`, `BuildingPrefab`, and `ShopOfferCard` layouts; shared data layer only |
 | Multi-cell input | **Full footprint hit target** on `PieceShapeVisual` root |
 | Data layer | Keep `PieceCardViewModelBuilder` + `ShopOffer` — presentation only changes |
 | Branch | New feature branch off `master` (or current mainline after merge) |
@@ -59,7 +59,9 @@ Two build-screen UX bugs and one workflow gap:
 | Type | Path | Role |
 |------|------|------|
 | `PieceCardView` | `Assets/_Project/Presentation/UI/PieceCardView.cs` | Binds `PieceCardViewModel` to serialized TMP/Image/chip container |
-| `UnitDetailCard.prefab` | `Assets/_Project/Presentation/UI/Prefabs/` | Authorable layout |
+| `UnitDetailCard.prefab` | `Assets/_Project/Presentation/UI/Prefabs/` | Authorable layout — **combat units** |
+| `BuildingPrefab.prefab` | `Assets/_Project/Presentation/UI/Prefabs/` | Fork of unit card — **HQ/buildings** (designer-owned layout) |
+| `ShopOfferCard.prefab` | `Assets/_Project/Presentation/UI/Prefabs/` | Authorable shop offer layout |
 | `TagChip.prefab` (optional) | same folder | Template for dynamic tag chips |
 
 ### Prefab structure (recommended hierarchy)

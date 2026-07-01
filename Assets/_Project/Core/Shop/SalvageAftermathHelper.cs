@@ -29,14 +29,5 @@ namespace DeadManZone.Core.Shop
 
             return destroyedTypes.Count;
         }
-
-        public static FightOutcome ResolveOutcome(bool playerWon, bool isDraw)
-        {
-            if (isDraw)
-                return FightOutcome.Draw;
-
-            return playerWon ? FightOutcome.Victory : FightOutcome.Defeat;
-        }
     }
-
 }

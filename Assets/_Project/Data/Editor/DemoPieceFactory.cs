@@ -23,13 +23,6 @@ namespace DeadManZone.Data.Editor
 
         private static PieceDefinitionSO[] CreateIronmarchPieces() => new[]
         {
-            SaveMappedPiece("ironmarch_hq", "IronMarch High Command", PieceCategory.Building, ShopLane.Defensive,
-                new[]
-                {
-                    new Vector2Int(0, 0), new Vector2Int(0, 1), new Vector2Int(0, 2), new Vector2Int(0, 3),
-                    new Vector2Int(1, 1), new Vector2Int(1, 2), new Vector2Int(2, 0)
-                },
-                FactionIds.IronVanguard, maxHp: 80, goldCost: 0, manpowerCost: 8, includeInShopPool: false),
             SaveMappedPiece("rifle_squad", "Rifle Squad", PieceCategory.Unit, ShopLane.Offensive,
                 DemoSandboxShapes.Single, FactionIds.IronVanguard,
                 maxHp: 100, baseDamage: 20, manpowerCost: 10, goldCost: 5,
@@ -83,12 +76,12 @@ namespace DeadManZone.Data.Editor
                 maxHp: 70, baseDamage: 28, goldCost: 7, manpowerCost: 6, cooldownTicks: 4,
                 attackType: AttackType.Ballistic, armorType: ArmorType.Light,
                 attackRange: AttackRangeTier.Long, attackSpeed: AttackSpeedTier.Slow,
-                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, GameTagIds.Combatant)),
+                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty)),
             SaveMappedPiece("ironmarch_defender", "Bulwark Squad", PieceCategory.Unit, ShopLane.Defensive,
                 DemoSandboxShapes.HorizontalPair, FactionIds.IronVanguard,
                 maxHp: 140, baseDamage: 14, goldCost: 6, manpowerCost: 10,
                 attackType: AttackType.Melee, armorType: ArmorType.Heavy, movementSpeed: MovementSpeedTier.Low,
-                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Defender, GameTagIds.Combatant))
+                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Defender, string.Empty))
         };
 
         private static PieceDefinitionSO[] CreateNeutralPieces() => new[]
@@ -136,20 +129,17 @@ namespace DeadManZone.Data.Editor
                 maxHp: 75, baseDamage: 30, goldCost: 6, requisitionCost: 1, manpowerCost: 8,
                 attackType: AttackType.Explosive, armorType: ArmorType.Light, attackRange: AttackRangeTier.Long,
                 attackSpeed: AttackSpeedTier.Slow,
-                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Artillery, GameTagIds.Combatant)),
+                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Artillery, string.Empty)),
             SaveMappedPiece("marksman_squad", "Marksman Squad", PieceCategory.Unit, ShopLane.Specialty,
                 DemoSandboxShapes.Single, "neutral",
                 maxHp: 55, baseDamage: 26, goldCost: 6, manpowerCost: 5, cooldownTicks: 4,
                 attackType: AttackType.Ballistic, armorType: ArmorType.Light,
                 attackRange: AttackRangeTier.Long, attackSpeed: AttackSpeedTier.Slow,
-                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, GameTagIds.Combatant))
+                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty))
         };
 
         private static PieceDefinitionSO[] CreateDustScourgePieces() => new[]
         {
-            SaveMappedPiece("dust_hq", "Nomad Command", PieceCategory.Building, ShopLane.Defensive,
-                DemoSandboxShapes.HorizontalPair, FactionIds.DustScourge, maxHp: 220, goldCost: 0, manpowerCost: 0,
-                includeInShopPool: false),
             SaveMappedPiece("sand_raider", "Sand Raider", PieceCategory.Unit, ShopLane.Offensive,
                 DemoSandboxShapes.Single, FactionIds.DustScourge,
                 maxHp: 90, baseDamage: 24, cooldownTicks: 2, goldCost: 6,
@@ -167,15 +157,12 @@ namespace DeadManZone.Data.Editor
 
         private static PieceDefinitionSO[] CreateCartelPieces() => new[]
         {
-            SaveMappedPiece("echo_hq", "Echo Nexus", PieceCategory.Building, ShopLane.Defensive,
-                DemoSandboxShapes.HorizontalPair, FactionIds.CartelOfEchoes, maxHp: 200, goldCost: 0, manpowerCost: 0,
-                includeInShopPool: false),
             SaveMappedPiece("phantom_agent", "Phantom Agent", PieceCategory.Unit, ShopLane.Offensive,
                 DemoSandboxShapes.Single, FactionIds.CartelOfEchoes,
                 maxHp: 70, baseDamage: 24, cooldownTicks: 2, goldCost: 7,
                 abilityTags: new[] { GameTagIds.Stealth },
                 attackType: AttackType.Piercing, armorType: ArmorType.Light,
-                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, GameTagIds.Combatant)),
+                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty)),
             SaveMappedPiece("signal_relay", "Signal Relay", PieceCategory.Building, ShopLane.Defensive,
                 DemoSandboxShapes.Single, FactionIds.CartelOfEchoes,
                 maxHp: 110, goldCost: 6, musterPerShop: 1, shopModifiers: ShopModifierFlags.EnemyTagPreview),
@@ -208,7 +195,7 @@ namespace DeadManZone.Data.Editor
                 maxHp: 80, baseDamage: 32, goldCost: 0,
                 abilityTags: new[] { GameTagIds.Stealth },
                 attackType: AttackType.Piercing, armorType: ArmorType.Light,
-                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, GameTagIds.Combatant)),
+                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty)),
             SaveMappedPiece("wraith_phantom", "Ash Phantom", PieceCategory.Unit, ShopLane.Offensive,
                 DemoSandboxShapes.Single, "ash_wraiths",
                 maxHp: 100, baseDamage: 24, goldCost: 0,

@@ -20,10 +20,9 @@ MonoBehaviour:
   tags:
   - Building
   - Utility
-  - Non-Combatant
   primary: building
   combatRole: utility
-  systemTag: noncombatant
+  systemTag: 
   synergyTags: []
   abilityTags: []
   flavorTags: []

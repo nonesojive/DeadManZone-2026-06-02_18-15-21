@@ -53,8 +53,7 @@ namespace DeadManZone.Core.Tests.EditMode
         {
             var rifle = TestPieces.CreateUnit(
                 "rifle",
-                primary: GameTagIds.Infantry,
-                systemTag: GameTagIds.Combatant);
+                primary: GameTagIds.Infantry);
             var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
             var board = new BoardState(layout);
             Assert.IsTrue(board.TryPlace(rifle, TestBoards.SupportLineAnchor(0), "rifle_1").Success);
@@ -71,12 +70,10 @@ namespace DeadManZone.Core.Tests.EditMode
         {
             var medic = TestPieces.CreateUnit(
                 "medic",
-                systemTag: GameTagIds.Combatant,
                 synergyTags: new[] { GameTagIds.Medic });
             var infantry = TestPieces.CreateUnit(
                 "infantry",
-                primary: GameTagIds.Infantry,
-                systemTag: GameTagIds.Combatant);
+                primary: GameTagIds.Infantry);
             var board = CreateAdjacentBoard(medic, "medic_1", infantry, "infantry_1");
 
             var snapshot = PieceAbilityEngine.EvaluateFightStart(board);
@@ -88,12 +85,11 @@ namespace DeadManZone.Core.Tests.EditMode
         public void MedicArmorAbility_AdjacentInfantry_GrantsArmorBuff()
         {
             var medic = TestPieces.With(
-                TestPieces.CreateUnit("medic", systemTag: GameTagIds.Combatant),
+                TestPieces.CreateUnit("medic"),
                 abilities: new[] { CreateMedicArmorAbility() });
             var infantry = TestPieces.CreateUnit(
                 "infantry",
-                primary: GameTagIds.Infantry,
-                systemTag: GameTagIds.Combatant);
+                primary: GameTagIds.Infantry);
             var board = CreateAdjacentBoard(medic, "medic_1", infantry, "infantry_1");
 
             var snapshot = PieceAbilityEngine.EvaluateFightStart(board);
@@ -105,12 +101,11 @@ namespace DeadManZone.Core.Tests.EditMode
         public void CommandDamageAbility_AdjacentArtillery_GrantsDamageBonus()
         {
             var command = TestPieces.With(
-                TestPieces.CreateUnit("command", systemTag: GameTagIds.Combatant),
+                TestPieces.CreateUnit("command"),
                 abilities: new[] { CreateCommandDamageAbility() });
             var artillery = TestPieces.CreateUnit(
                 "artillery",
-                combatRole: GameTagIds.Artillery,
-                systemTag: GameTagIds.Combatant);
+                combatRole: GameTagIds.Artillery);
             var board = CreateAdjacentBoard(command, "command_1", artillery, "artillery_1");
 
             var snapshot = PieceAbilityEngine.EvaluateFightStart(board);
@@ -122,12 +117,11 @@ namespace DeadManZone.Core.Tests.EditMode
         public void MoveChargeAbility_AdjacentAny_GrantsMoveCharge()
         {
             var inspiring = TestPieces.With(
-                TestPieces.CreateUnit("inspiring", systemTag: GameTagIds.Combatant),
+                TestPieces.CreateUnit("inspiring"),
                 abilities: new[] { CreateInspiringMoveAbility() });
             var neighbor = TestPieces.CreateUnit(
                 "neighbor",
-                primary: GameTagIds.Infantry,
-                systemTag: GameTagIds.Combatant);
+                primary: GameTagIds.Infantry);
             var board = CreateAdjacentBoard(inspiring, "inspiring_1", neighbor, "neighbor_1");
 
             var snapshot = PieceAbilityEngine.EvaluateFightStart(board);
@@ -140,8 +134,7 @@ namespace DeadManZone.Core.Tests.EditMode
         {
             var rifle = TestPieces.CreateUnit(
                 "rifle",
-                primary: GameTagIds.Infantry,
-                systemTag: GameTagIds.Combatant);
+                primary: GameTagIds.Infantry);
             var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
             var board = new BoardState(layout);
             Assert.IsTrue(board.TryPlace(rifle, TestBoards.SupportLineAnchor(0), "rifle_1").Success);

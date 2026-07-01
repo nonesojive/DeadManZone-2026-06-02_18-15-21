@@ -93,12 +93,12 @@ namespace DeadManZone.Core.Tests.EditMode
             public static (BoardState player, BoardState enemy) MakeMatchedBoards()
             {
                 var player = new BoardState(TestBoards.Layout);
-                player.TryPlace(TestPieces.CombatFieldHq(), new GridCoord(0, 4), "player_hq");
+                player.TryPlace(TestPieces.MultiCellRearBlocker(), new GridCoord(0, 4), "player_blocker");
                 player.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(3), "player_rifle_1");
                 player.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(6), "player_rifle_2");
 
                 var enemy = new BoardState(TestBoards.Layout);
-                enemy.TryPlace(TestPieces.CombatFieldHq(), new GridCoord(0, 4), "enemy_hq");
+                enemy.TryPlace(TestPieces.MultiCellRearBlocker(), new GridCoord(0, 4), "enemy_blocker");
                 enemy.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(3), "enemy_rifle_1");
                 enemy.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(6), "enemy_rifle_2");
 
@@ -126,12 +126,12 @@ namespace DeadManZone.Core.Tests.EditMode
                     attackType: AttackType.Ballistic);
 
                 var player = new BoardState(TestBoards.Layout);
-                player.TryPlace(TestPieces.CombatFieldHq(), new GridCoord(0, 4), "player_hq");
+                player.TryPlace(TestPieces.MultiCellRearBlocker(), new GridCoord(0, 4), "player_blocker");
                 player.TryPlace(heavy, TestBoards.FrontLineAnchor(4), "player_heavy_1");
                 player.TryPlace(heavy, TestBoards.FrontLineAnchor(6), "player_heavy_2");
 
                 var enemy = new BoardState(TestBoards.Layout);
-                enemy.TryPlace(TestPieces.CombatFieldHq(), new GridCoord(0, 4), "enemy_hq");
+                enemy.TryPlace(TestPieces.MultiCellRearBlocker(), new GridCoord(0, 4), "enemy_blocker");
                 enemy.TryPlace(heavy, TestBoards.FrontLineAnchor(3), "enemy_heavy_1");
                 enemy.TryPlace(heavy, TestBoards.FrontLineAnchor(6), "enemy_heavy_2");
 
@@ -140,4 +140,4 @@ namespace DeadManZone.Core.Tests.EditMode
         }
     }
 }
-
+

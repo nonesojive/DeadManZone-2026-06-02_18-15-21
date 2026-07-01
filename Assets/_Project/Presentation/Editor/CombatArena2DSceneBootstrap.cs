@@ -126,10 +126,7 @@ namespace DeadManZone.Presentation.Editor
                 ("neutral_field_gun", "combat2d_building_field_gun.png"),
                 ("command_bunker", "combat2d_building_command_bunker.png"),
                 ("crimson_artillery", "combat2d_building_crimson_battery.png"),
-                ("dust_hq", "combat2d_building_dust_hq.png"),
-                ("echo_hq", "combat2d_building_echo_hq.png"),
                 ("field_workshop", "combat2d_building_workshop.png"),
-                ("ironmarch_hq", "combat2d_building_ironmarch_hq.png"),
                 ("radio_array", "combat2d_building_radio_array.png"),
                 ("signal_relay", "combat2d_building_signal_relay.png")
             };

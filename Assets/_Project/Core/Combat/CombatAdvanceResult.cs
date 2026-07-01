@@ -21,7 +21,6 @@ namespace DeadManZone.Core.Combat
         public CombatEventLog EventLog { get; init; }
         public int PlayerCombatantsTotal { get; init; }
         public int PlayerCombatantsLost { get; init; }
-        public bool PlayerHqDamaged { get; init; }
         public IReadOnlyList<string> SurvivingPlayerCombatantIds { get; init; } =
             System.Array.Empty<string>();
         public IReadOnlyList<CombatantState> PlayerCombatantsAtEnd { get; init; } =

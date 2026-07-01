@@ -8,19 +8,12 @@ namespace DeadManZone.Core.Combat
         public bool CanContinue(
             TacticType selected,
             TacticType previous,
-            bool hqAlive,
             bool hasCommandPiece,
             int checkpointIndex,
             ref int authority,
             out string reason)
         {
             reason = null;
-
-            if (selected == TacticType.DisciplinedFire && !hqAlive)
-            {
-                reason = "HQ destroyed";
-                return false;
-            }
 
             if (selected == TacticType.ProtectSupport && !hasCommandPiece)
             {
@@ -67,7 +60,6 @@ namespace DeadManZone.Core.Combat
         public bool ValidatePause(
             TacticType selected,
             TacticType previous,
-            bool hqAlive,
             bool hasCommandPiece,
             int checkpointIndex,
             int authority,
@@ -75,12 +67,6 @@ namespace DeadManZone.Core.Combat
             out string reason)
         {
             reason = null;
-
-            if (selected == TacticType.DisciplinedFire && !hqAlive)
-            {
-                reason = "HQ destroyed";
-                return false;
-            }
 
             if (selected == TacticType.ProtectSupport && !hasCommandPiece)
             {

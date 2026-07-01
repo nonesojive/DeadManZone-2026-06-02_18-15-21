@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
+using DeadManZone.Core.Board;
 using DeadManZone.Core.Tags;
 using DeadManZone.Data;
 using UnityEngine;
@@ -65,12 +66,11 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (definition == null)
                 return false;
 
-            if (PieceTagQueries.HasTag(definition, GameTagIds.Combatant))
+            if (PieceCombatRules.ParticipatesInCombat(definition))
                 return false;
 
             return definition.Category is PieceCategory.Building or PieceCategory.Hybrid
-                   || PieceTagQueries.HasPrimaryTag(definition, GameTagIds.Building)
-                   || PieceTagQueries.HasTag(definition, GameTagIds.Hq);
+                   || PieceTagQueries.HasPrimaryTag(definition, GameTagIds.Building);
         }
 
         private static GameObject SpawnBuilding(

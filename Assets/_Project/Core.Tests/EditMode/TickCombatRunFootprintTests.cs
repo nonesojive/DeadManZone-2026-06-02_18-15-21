@@ -2,7 +2,6 @@ using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
-using DeadManZone.Core.Tags;
 using DeadManZone.Core.Tests;
 using NUnit.Framework;
 
@@ -13,32 +12,32 @@ namespace DeadManZone.Core.Tests.EditMode
         [Test]
         public void SpawnFight_MultiCellPiece_HasMultipleOccupiedCells()
         {
-            var player = TestBoards.HqOnly();
+            var player = TestBoards.BuildingBoardWithCommandBunker();
             var enemy = TestBoards.StandardEnemy();
             var run = TickCombatRun.Start(player, enemy, seed: 42);
 
-            var hq = run.EnemyCombatantsForTests.Single(c => c.InstanceId == "enemy_hq");
+            var blocker = run.EnemyCombatantsForTests.Single(c => c.InstanceId == "enemy_blocker");
 
-            Assert.Greater(hq.OccupiedCells.Count, 1);
+            Assert.Greater(blocker.OccupiedCells.Count, 1);
             CollectionAssert.AreEquivalent(
-                CombatFootprint.ComputeOccupiedCells(hq.AnchorPosition, hq.ShapeOffsets).ToList(),
-                hq.OccupiedCells.ToList());
+                CombatFootprint.ComputeOccupiedCells(blocker.AnchorPosition, blocker.ShapeOffsets).ToList(),
+                blocker.OccupiedCells.ToList());
         }
 
         [Test]
         public void SpawnFight_MultiCellPiece_RegistersAllCellsOnOccupancyGrid()
         {
-            var player = TestBoards.HqOnly();
+            var player = TestBoards.BuildingBoardWithCommandBunker();
             var enemy = TestBoards.StandardEnemy();
             var run = TickCombatRun.Start(player, enemy, seed: 42);
 
-            var hq = run.EnemyCombatantsForTests.Single(c => c.InstanceId == "enemy_hq");
+            var blocker = run.EnemyCombatantsForTests.Single(c => c.InstanceId == "enemy_blocker");
             var snapshot = run.OccupancySnapshotForTests;
 
-            foreach (var cell in hq.OccupiedCells)
+            foreach (var cell in blocker.OccupiedCells)
             {
                 Assert.IsTrue(snapshot.ContainsKey(cell), $"Expected occupancy at {cell.X},{cell.Y}");
-                Assert.AreEqual(hq.InstanceId, snapshot[cell]);
+                Assert.AreEqual(blocker.InstanceId, snapshot[cell]);
             }
         }
 
@@ -49,7 +48,7 @@ namespace DeadManZone.Core.Tests.EditMode
             var enemy = TestBoards.WeakEnemyOnly();
             var run = TickCombatRun.Start(player, enemy, seed: 7);
 
-            var rifle = run.PlayerCombatantsForTests.Single(c => c.HasTag(GameTagIds.Combatant));
+            var rifle = run.PlayerCombatantsForTests.Single(c => c.InstanceId == "player_rifle");
 
             Assert.AreEqual(1, rifle.OccupiedCells.Count);
             Assert.AreEqual(rifle.AnchorPosition, rifle.OccupiedCells[0]);
@@ -58,18 +57,18 @@ namespace DeadManZone.Core.Tests.EditMode
         [Test]
         public void SpawnFight_NonCombatantBuilding_BlocksFootprintCells()
         {
-            var player = TestBoards.HqOnly();
+            var player = TestBoards.BuildingBoardWithCommandBunker();
             var enemy = TestBoards.WeakEnemyOnly();
             var run = TickCombatRun.Start(player, enemy, seed: 11);
 
-            var hq = run.PlayerCombatantsForTests.Single(c => c.HasTag(GameTagIds.Hq));
+            var bunker = run.PlayerCombatantsForTests.Single(c => c.InstanceId == "bunker_test");
             var snapshot = run.OccupancySnapshotForTests;
 
-            Assert.Greater(hq.OccupiedCells.Count, 1, "HQ footprint should occupy multiple cells.");
-            foreach (var cell in hq.OccupiedCells)
+            Assert.Greater(bunker.OccupiedCells.Count, 1, "Building footprint should occupy multiple cells.");
+            foreach (var cell in bunker.OccupiedCells)
             {
-                Assert.IsTrue(snapshot.ContainsKey(cell), $"Expected HQ occupancy at {cell.X},{cell.Y}");
-                Assert.AreEqual(hq.InstanceId, snapshot[cell]);
+                Assert.IsTrue(snapshot.ContainsKey(cell), $"Expected building occupancy at {cell.X},{cell.Y}");
+                Assert.AreEqual(bunker.InstanceId, snapshot[cell]);
             }
         }
 

@@ -29,6 +29,3 @@ MonoBehaviour:
   startingMorale: 100
   baseSalvageChancePercent: 12
   tokenBackgroundColor: {r: 0.32, g: 0.26, b: 0.42, a: 0.45}
-  hqPieceId: echo_hq
-  hqSpawnAnchor: {x: 0, y: 4}
-  hqSpawnRotation: 0
