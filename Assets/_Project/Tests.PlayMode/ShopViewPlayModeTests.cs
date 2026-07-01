@@ -47,9 +47,9 @@ namespace DeadManZone.PlayMode.Tests
             {
                 Offers = new List<ShopOffer>
                 {
-                    new() { OfferId = "a", Lane = ShopLane.Offensive, SlotIndex = 0, PieceId = "rifle_squad", GoldPrice = 3 },
-                    new() { OfferId = "b", Lane = ShopLane.Defensive, SlotIndex = 3, PieceId = "command_bunker", GoldPrice = 7 },
-                    new() { OfferId = "c", Lane = ShopLane.Specialty, SlotIndex = 6, PieceId = "mortar_crew", RequisitionPrice = 2 }
+                    new() { OfferId = "a", Lane = ShopLane.Offensive, SlotIndex = 0, PieceId = "conscript_rifleman", GoldPrice = 3 },
+                    new() { OfferId = "b", Lane = ShopLane.Defensive, SlotIndex = 3, PieceId = "command_outpost", GoldPrice = 7 },
+                    new() { OfferId = "c", Lane = ShopLane.Specialty, SlotIndex = 6, PieceId = "ironclad_mortars", RequisitionPrice = 2 }
                 },
                 Modifiers = new ShopModifiers
                 {

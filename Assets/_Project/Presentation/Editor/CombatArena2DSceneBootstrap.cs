@@ -121,14 +121,8 @@ namespace DeadManZone.Presentation.Editor
             (string pieceId, string spriteFile)[] assignments =
             {
                 ("supply_depot", "combat2d_building_supply_depot.png"),
-                ("neutral_supply_depot", "combat2d_building_supply_depot.png"),
-                ("field_gun_nest", "combat2d_building_field_gun.png"),
-                ("neutral_field_gun", "combat2d_building_field_gun.png"),
-                ("command_bunker", "combat2d_building_command_bunker.png"),
-                ("crimson_artillery", "combat2d_building_crimson_battery.png"),
-                ("field_workshop", "combat2d_building_workshop.png"),
-                ("radio_array", "combat2d_building_radio_array.png"),
-                ("signal_relay", "combat2d_building_signal_relay.png")
+                ("machine_gun_nest", "combat2d_building_field_gun.png"),
+                ("command_outpost", "combat2d_building_command_bunker.png"),
             };
 
             int wired = 0;

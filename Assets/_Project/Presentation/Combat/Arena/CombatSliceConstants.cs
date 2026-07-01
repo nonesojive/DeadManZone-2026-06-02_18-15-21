@@ -5,8 +5,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         public const int IronmarchUnionSkirmishSeed = 424242;
 
         public const string PlayerRifle = "conscript_rifleman";
-        public const string PlayerTank = "ironmarch_heavy_tank";
-        public const string PlayerFieldGun = "ironmarch_mortar";
+        public const string PlayerTank = "ironmarch_iron_horse";
+        public const string PlayerFieldGun = "ironclad_mortars";
 
         public const string EnemyRifle = "conscript_rifleman";
     }

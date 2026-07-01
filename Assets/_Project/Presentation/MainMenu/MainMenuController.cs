@@ -99,8 +99,14 @@ namespace DeadManZone.Presentation.MainMenu
         private void RefreshFactionButtons()
         {
             SetFactionButton(ironmarchUnionButton, FactionIds.IronmarchUnion, "IronMarch Union");
-            SetFactionButton(dustScourgeButton, FactionIds.DustScourge, "Dust Scourge");
-            SetFactionButton(cartelButton, FactionIds.CartelOfEchoes, "Cartel of Echoes");
+            SetFactionButtonHidden(dustScourgeButton);
+            SetFactionButtonHidden(cartelButton);
+        }
+
+        private static void SetFactionButtonHidden(Button button)
+        {
+            if (button != null)
+                button.gameObject.SetActive(false);
         }
 
         private static void SetFactionButton(Button button, string factionId, string displayName)
@@ -144,12 +150,7 @@ namespace DeadManZone.Presentation.MainMenu
             leaderboardPanel?.Hide();
 
             if (factionDetailText != null)
-            {
-                factionDetailText.text =
-                    "IronMarch Union — heavy industry and command.\n" +
-                    "Dust Scourge — nomadic scavengers with gas warfare.\n" +
-                    "Cartel of Echoes — stealth resonance and synergy.";
-            }
+                factionDetailText.text = "IronMarch Union — heavy industry and command.";
         }
 
         private void StartFaction(string factionId)
