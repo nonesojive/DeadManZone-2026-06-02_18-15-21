@@ -10,11 +10,8 @@ namespace DeadManZone.Presentation.Editor
     {
         public static UiThemeSO LoadTheme()
         {
-            if (AssetDatabase.IsValidFolder(SyntyUiKitSetup.KitRoot))
-                return SyntyUiKitSetup.EnsureSyntyTrenchTheme();
-
-            if (AssetDatabase.IsValidFolder(BunkerSurvivalUiKitSetup.KitRoot))
-                return BunkerSurvivalUiKitSetup.EnsureBunkerSurvivalTheme();
+            if (AssetDatabase.IsValidFolder(GrittyPostApocalypticUiKitSetup.KitRoot))
+                return GrittyPostApocalypticUiKitSetup.EnsureTheme();
 
             return UiThemeEditor.EnsureThemeAsset();
         }

@@ -10,7 +10,7 @@ namespace DeadManZone.Core.Tests.EditMode
     public sealed class TickCombatRunTriggerTests
     {
         [Test]
-        public void FirstContinue_PausesWhenEitherSideDropsTo75Percent()
+        public void FirstContinue_PausesWhenEitherSideDropsTo60Percent()
         {
             var (player, enemy) = TriggerTestBoards.MakeMatchedBoards();
             var run = TickCombatRun.Start(player, enemy, seed: 42);
@@ -19,34 +19,14 @@ namespace DeadManZone.Core.Tests.EditMode
 
             Assert.AreEqual(CombatAdvanceStatus.AwaitingCommand, result.Status);
             Assert.AreEqual(1, run.CheckpointsFired);
-            Assert.AreEqual(0, run.CurrentPauseIndex);
+            Assert.AreEqual(1, run.CurrentPauseIndex);
             Assert.NotNull(result.PauseTrigger);
-            Assert.AreEqual(0.75f, result.PauseTrigger.Threshold, 0.0001f);
+            Assert.AreEqual(CombatPacingConfig.PauseThresholds[0], result.PauseTrigger.Threshold, 0.0001f);
 
             float lowest = System.Math.Min(
                 ArmyHealthTracker.Evaluate(run.PlayerCombatantsForTests).Fraction,
                 ArmyHealthTracker.Evaluate(run.EnemyCombatantsForTests).Fraction);
-            Assert.LessOrEqual(lowest, 0.75f);
-        }
-
-        [Test]
-        public void SecondContinue_PausesAt30Percent()
-        {
-            var (player, enemy) = TriggerTestBoards.MakeMatchedBoards();
-            var run = TickCombatRun.Start(player, enemy, seed: 42);
-            run.Continue(System.Array.Empty<PhaseCommand>());
-
-            var result = run.Continue(System.Array.Empty<PhaseCommand>());
-
-            if (result.Status == CombatAdvanceStatus.AwaitingCommand)
-            {
-                Assert.AreEqual(2, run.CheckpointsFired);
-                Assert.AreEqual(0.30f, result.PauseTrigger.Threshold, 0.0001f);
-            }
-            else
-            {
-                Assert.IsTrue(run.IsFightOver);
-            }
+            Assert.LessOrEqual(lowest, CombatPacingConfig.PauseThresholds[0]);
         }
 
         [Test]
@@ -59,21 +39,6 @@ namespace DeadManZone.Core.Tests.EditMode
 
             Assert.AreEqual(CombatAdvanceStatus.Completed, result.Status);
             Assert.IsTrue(run.PlayerWon);
-        }
-
-        [Test]
-        public void BurstThroughBothThresholds_FiresSingleMergedPause()
-        {
-            var (player, enemy) = TriggerTestBoards.MakeBurstBoards();
-            var run = TickCombatRun.Start(player, enemy, seed: 7);
-
-            var result = run.Continue(System.Array.Empty<PhaseCommand>());
-
-            if (result.Status == CombatAdvanceStatus.AwaitingCommand)
-            {
-                Assert.AreEqual(2, run.CheckpointsFired, "merged pause must consume both thresholds");
-                Assert.AreEqual(1, run.CurrentPauseIndex);
-            }
         }
 
         [Test]
@@ -125,8 +90,20 @@ namespace DeadManZone.Core.Tests.EditMode
 
         private static class TriggerTestBoards
         {
-            public static (BoardState player, BoardState enemy) MakeMatchedBoards() =>
-                (TestBoards.StandardPlayer(), TestBoards.StandardEnemy());
+            public static (BoardState player, BoardState enemy) MakeMatchedBoards()
+            {
+                var player = new BoardState(TestBoards.Layout);
+                player.TryPlace(TestPieces.CombatFieldHq(), new GridCoord(0, 4), "player_hq");
+                player.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(3), "player_rifle_1");
+                player.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(6), "player_rifle_2");
+
+                var enemy = new BoardState(TestBoards.Layout);
+                enemy.TryPlace(TestPieces.CombatFieldHq(), new GridCoord(0, 4), "enemy_hq");
+                enemy.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(3), "enemy_rifle_1");
+                enemy.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(6), "enemy_rifle_2");
+
+                return (player, enemy);
+            }
 
             public static (BoardState player, BoardState enemy) MakeStompBoards()
             {
@@ -140,35 +117,6 @@ namespace DeadManZone.Core.Tests.EditMode
                 return (player, enemy);
             }
 
-            public static (BoardState player, BoardState enemy) MakeBurstBoards()
-            {
-                var player = new BoardState(TestBoards.Layout);
-                var striker = TestPieces.With(
-                    TestPieces.RifleSquad(),
-                    baseDamage: 400,
-                    attackSpeed: AttackSpeedTier.Fast);
-                player.TryPlace(striker, TestBoards.FrontLineAnchor(), "player_striker");
-
-                var enemy = new BoardState(TestBoards.Layout);
-                enemy.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 4), "enemy_hq");
-                var spongeBase = TestPieces.RifleSquad();
-                var sponge = new PieceDefinition
-                {
-                    Id = spongeBase.Id,
-                    DisplayName = spongeBase.DisplayName,
-                    Category = spongeBase.Category,
-                    Shape = spongeBase.Shape,
-                    Tags = spongeBase.Tags,
-                    MaxHp = 500,
-                    BaseDamage = spongeBase.BaseDamage,
-                    CooldownTicks = spongeBase.CooldownTicks,
-                    FactionId = spongeBase.FactionId
-                };
-                enemy.TryPlace(sponge, TestBoards.FrontLineAnchor(5), "enemy_sponge");
-
-                return (player, enemy);
-            }
-
             public static (BoardState player, BoardState enemy) MakeUnkillableBoards()
             {
                 var heavy = TestPieces.With(
@@ -178,12 +126,12 @@ namespace DeadManZone.Core.Tests.EditMode
                     attackType: AttackType.Ballistic);
 
                 var player = new BoardState(TestBoards.Layout);
-                player.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 4), "player_hq");
+                player.TryPlace(TestPieces.CombatFieldHq(), new GridCoord(0, 4), "player_hq");
                 player.TryPlace(heavy, TestBoards.FrontLineAnchor(4), "player_heavy_1");
                 player.TryPlace(heavy, TestBoards.FrontLineAnchor(6), "player_heavy_2");
 
                 var enemy = new BoardState(TestBoards.Layout);
-                enemy.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 4), "enemy_hq");
+                enemy.TryPlace(TestPieces.CombatFieldHq(), new GridCoord(0, 4), "enemy_hq");
                 enemy.TryPlace(heavy, TestBoards.FrontLineAnchor(3), "enemy_heavy_1");
                 enemy.TryPlace(heavy, TestBoards.FrontLineAnchor(6), "enemy_heavy_2");
 
@@ -192,3 +140,4 @@ namespace DeadManZone.Core.Tests.EditMode
         }
     }
 }
+

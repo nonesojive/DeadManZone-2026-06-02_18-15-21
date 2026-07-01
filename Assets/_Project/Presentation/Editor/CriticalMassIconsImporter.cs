@@ -1,3 +1,4 @@
+using DeadManZone.Data.Editor;
 using DeadManZone.Presentation.UI;
 using UnityEditor;
 using UnityEngine;
@@ -9,7 +10,7 @@ namespace DeadManZone.Presentation.Editor
         private const string SourceFolder = "Assets/critmassicons";
         private const string AssetPath = "Assets/_Project/Data/Resources/DeadManZone/CriticalMassIcons.asset";
 
-        [MenuItem("DeadManZone/Build Critical Mass Icons Asset")]
+        [MenuItem(DeadManZoneEditorMenus.Content + "Build Critical Mass Icons Asset")]
         public static void Build()
         {
             var guids = AssetDatabase.FindAssets("t:Texture2D", new[] { SourceFolder });

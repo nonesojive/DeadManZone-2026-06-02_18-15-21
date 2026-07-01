@@ -8,7 +8,7 @@ namespace DeadManZone.Data.Editor
     {
         private const string PiecesRoot = "Assets/_Project/Data/Resources/DeadManZone/Pieces";
 
-        [MenuItem("DeadManZone/Art/Apply Sandbox Art Pass")]
+        [MenuItem(DeadManZoneEditorMenus.Art + "Apply Sandbox Art Pass")]
         public static void ApplySandboxArtPass()
         {
             var catalog = AssetDatabase.LoadAssetAtPath<SandboxArtCatalogSO>(SandboxArtPaths.CatalogAssetPath);
@@ -31,7 +31,7 @@ namespace DeadManZone.Data.Editor
             Debug.Log($"Sandbox art pass applied to {applied}/{catalog.entries.Length} pieces.");
         }
 
-        [MenuItem("DeadManZone/Art/Validate Sandbox Art Coverage")]
+        [MenuItem(DeadManZoneEditorMenus.Art + "Validate Sandbox Art Coverage")]
         public static void ValidateSandboxArtCoverage()
         {
             if (AssetDatabase.LoadAssetAtPath<SandboxArtCatalogSO>(SandboxArtPaths.CatalogAssetPath) == null)

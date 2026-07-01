@@ -28,7 +28,7 @@ namespace DeadManZone.Core.Tests.EditMode
         {
             var player = new BoardState(TestBoards.Layout);
             var enemy = new BoardState(TestBoards.Layout);
-            enemy.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 4), instanceId: "enemy_hq");
+            enemy.TryPlace(TestPieces.CombatFieldHq(), new GridCoord(0, 4), instanceId: "enemy_hq");
 
             var battlefield = BattlefieldState.FromBoards(player, enemy);
             var hqCell = battlefield.FindCell("enemy_hq");

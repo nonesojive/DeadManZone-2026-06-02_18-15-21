@@ -7,7 +7,7 @@ namespace DeadManZone.Data.Editor
 {
     public static class SyntyArtBatchRunner
     {
-        [MenuItem("DeadManZone/Synty/Apply Full Synty Art Pass")]
+        [MenuItem(DeadManZoneEditorMenus.Art + "Synty/Apply Full Synty Art Pass")]
         public static void ApplyFullSyntyArtPass()
         {
             if (GraphicsSettings.defaultRenderPipeline == null)

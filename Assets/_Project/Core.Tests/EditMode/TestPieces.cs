@@ -112,6 +112,20 @@ namespace DeadManZone.Core.Tests
             ManpowerCost = 8
         };
 
+        /// <summary>Enemy field HQ marker for legacy zoned combat layouts (structure tag, combat board).</summary>
+        public static PieceDefinition CombatFieldHq() => new()
+        {
+            Id = "field_hq",
+            DisplayName = "Field HQ",
+            Category = PieceCategory.Unit,
+            Primary = GameTagIds.Structure,
+            SystemTag = GameTagIds.NonCombatant,
+            Shape = new PieceShape(new[] { new GridCoord(0, 0), new GridCoord(1, 0) }),
+            Tags = new[] { GameTagIds.Hq },
+            MaxHp = 80,
+            ManpowerCost = 8
+        };
+
         public static PieceDefinition SupplyDepot() => new()
         {
             Id = "supply_depot",

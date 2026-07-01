@@ -34,10 +34,12 @@ namespace DeadManZone.Core.Tests.EditMode
         public void FieldingPieces_SumRatings()
         {
             var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
-            var board = new BoardState(layout);
+            var combat = new BoardState(layout);
+            var hq = new BoardState(TestBoards.IronMarchHqLayout);
             var rifle = TestPieces.RifleSquad();
-            Assert.IsTrue(board.TryPlace(rifle, TestBoards.SupportLineAnchor(0), "rifle_1").Success);
-            Assert.IsTrue(board.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 2), "hq_1").Success);
+            Assert.IsTrue(combat.TryPlace(rifle, TestBoards.SupportLineAnchor(0), "rifle_1").Success);
+            Assert.IsTrue(hq.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 2), "hq_1").Success);
+            var board = new BuildBoardSet { Combat = combat, Hq = hq }.ToAggregateBoard();
 
             var snapshot = ArmyStrengthCalculator.Evaluate(board);
             int expected = PieceCombatRating.ComputeBase(rifle)
@@ -72,9 +74,13 @@ namespace DeadManZone.Core.Tests.EditMode
         [Test]
         public void BuildingsExcluded_FromTotals()
         {
-            var layout = BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>());
-            var board = new BoardState(layout);
-            Assert.IsTrue(board.TryPlace(TestPieces.CommandBunker(), TestBoards.SupportLineAnchor(0), "bunker_1").Success);
+            var hq = new BoardState(TestBoards.IronMarchHqLayout);
+            Assert.IsTrue(hq.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0), "bunker_1").Success);
+            var board = new BuildBoardSet
+            {
+                Combat = new BoardState(BoardLayout.CreateHorizontalZones(9, 6, 3, 3, System.Array.Empty<GridCoord>())),
+                Hq = hq
+            }.ToAggregateBoard();
 
             var snapshot = ArmyStrengthCalculator.Evaluate(board);
             Assert.AreEqual(0, snapshot.BaseTotal);

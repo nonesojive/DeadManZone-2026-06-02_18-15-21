@@ -25,7 +25,7 @@ namespace DeadManZone.Data.Editor
             "mobile_cannon"
         };
 
-        [MenuItem("DeadManZone/Art/Import Grok Batch 2 Icons")]
+        [MenuItem(DeadManZoneEditorMenus.Art + "Import Grok Batch 2 Icons")]
         public static void ImportBatch2Icons()
         {
             NeutralArtPipelineEditor.CreateFolders();

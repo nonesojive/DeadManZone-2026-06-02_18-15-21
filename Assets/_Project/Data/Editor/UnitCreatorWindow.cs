@@ -16,7 +16,7 @@ namespace DeadManZone.Data.Editor
         private PieceDefinitionSO[] _editPieces = System.Array.Empty<PieceDefinitionSO>();
         private int _editIndex = -1;
 
-        [MenuItem("DeadManZone/Unit Creator")]
+        [MenuItem(DeadManZoneEditorMenus.Content + "Unit Creator")]
         public static void Open()
         {
             var window = GetWindow<UnitCreatorWindow>("Unit Creator");

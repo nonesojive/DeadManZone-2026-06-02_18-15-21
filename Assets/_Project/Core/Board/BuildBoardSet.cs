@@ -17,7 +17,7 @@ namespace DeadManZone.Core.Board
         /// <summary>ponytail: 32x32 carrier grid; shop/unlock code only reads piece lists.</summary>
         public BoardState ToAggregateBoard()
         {
-            var layout = BoardLayout.CreateUnzoned(32, 32, BoardKind.Combat);
+            var layout = BoardLayout.CreateUnzoned(32, 32, BoardKind.Aggregate);
             var merged = new BoardState(layout);
             CopyPieces(merged, Combat, xOffset: 0);
             CopyPieces(merged, Hq, xOffset: 16);

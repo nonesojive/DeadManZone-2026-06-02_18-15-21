@@ -9,7 +9,6 @@ namespace DeadManZone.Data.Editor
         private const string PiecesRoot = "Assets/_Project/Data/Resources/DeadManZone/Pieces";
         private const int IconSize = 256;
 
-        [MenuItem("DeadManZone/Art/Create Neutral Art Folders")]
         public static void CreateFolders()
         {
             EnsureFolder(PieceArtPaths.ArtRoot);
@@ -22,8 +21,7 @@ namespace DeadManZone.Data.Editor
             Debug.Log("Neutral art folders are ready under Assets/_Project/Art/.");
         }
 
-        [MenuItem("DeadManZone/Art/Generate Placeholder Neutral Icons")]
-        public static void GeneratePlaceholderIcons()
+        internal static void GeneratePlaceholderIcons()
         {
             CreateFolders();
             var assigned = 0;
@@ -42,7 +40,6 @@ namespace DeadManZone.Data.Editor
             Debug.Log($"Generated {PieceArtPaths.NeutralPieceIds.Length} placeholder icons; assigned {assigned} on piece assets.");
         }
 
-        [MenuItem("DeadManZone/Art/Assign Neutral Icons From Renders")]
         public static void AssignIconsFromRenders()
         {
             var assigned = 0;
@@ -61,7 +58,6 @@ namespace DeadManZone.Data.Editor
             Debug.Log($"Assigned {assigned} neutral shop icons from {PieceArtPaths.NeutralIcons}.");
         }
 
-        [MenuItem("DeadManZone/Art/Assign Neutral Cell Sprites From Renders")]
         public static void AssignCellSpritesFromRenders()
         {
             var assignedPieces = 0;
@@ -102,8 +98,7 @@ namespace DeadManZone.Data.Editor
             Debug.Log($"Assigned cell sprites on {assignedPieces} neutral pieces from {PieceArtPaths.NeutralCells}.");
         }
 
-        [MenuItem("DeadManZone/Art/Validate Neutral Art Assets")]
-        public static void ValidateNeutralArt()
+        internal static void ValidateNeutralArt()
         {
             var report = string.Empty;
             foreach (var pieceId in PieceArtPaths.NeutralPieceIds)

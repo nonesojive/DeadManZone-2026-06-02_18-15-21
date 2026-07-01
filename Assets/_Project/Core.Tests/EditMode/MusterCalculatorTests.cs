@@ -33,15 +33,15 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
-        public void SupplySynergy_AdjacentPair_AddsOneMuster()
+        public void SupplySynergy_AdjacentPair_AddsSynergyBonus()
         {
-            var board = new BoardState(TestBoards.Layout);
+            var hq = new BoardState(TestBoards.IronMarchHqLayout);
             var supplyPiece = SupplierTaggedSupplyPiece();
-            Assert.IsTrue(board.TryPlace(supplyPiece, new GridCoord(0, 0), "supply_1").Success);
-            Assert.IsTrue(board.TryPlace(supplyPiece, new GridCoord(0, 1), "supply_2").Success);
+            Assert.IsTrue(hq.TryPlace(supplyPiece, new GridCoord(0, 0), "supply_1").Success, "supply_1 placement");
+            Assert.IsTrue(hq.TryPlace(supplyPiece, new GridCoord(0, 1), "supply_2").Success, "supply_2 placement");
 
-            int muster = MusterCalculator.Compute(board, baseMusterPerShop: 10);
-            Assert.AreEqual(11, muster);
+            int muster = MusterCalculator.Compute(hq, baseMusterPerShop: 10);
+            Assert.AreEqual(10 + MusterCalculator.SupplySynergyMusterBonus, muster);
         }
 
         private static PieceDefinition SupplierTaggedSupplyPiece() => new()

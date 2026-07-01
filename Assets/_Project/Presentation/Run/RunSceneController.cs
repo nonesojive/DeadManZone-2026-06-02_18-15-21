@@ -152,6 +152,7 @@ namespace DeadManZone.Presentation.Run
                     beginFightButton.interactable = canStart;
                 if (emergencyDraftButton != null)
                     emergencyDraftButton.gameObject.SetActive(false);
+                boardView?.RefreshFromRunManager();
                 runHudView?.Refresh(state, failureReason);
                 if (boardView != null)
                 {

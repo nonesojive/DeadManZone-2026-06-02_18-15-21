@@ -12,26 +12,7 @@ namespace DeadManZone.Core.Tests
     public class RunSaveSerializerTests
     {
         [Test]
-        public void SerializeDeserialize_PreservesFourResources()
-        {
-            var state = new RunState
-            {
-                Supplies = 120,
-                Manpower = 8,
-                Authority = 3,
-                Morale = 45,
-                SaveSchemaVersion = 3
-            };
-            var json = RunSaveSerializer.Serialize(state);
-            var loaded = RunSaveSerializer.Deserialize(json);
-            Assert.AreEqual(120, loaded.Supplies);
-            Assert.AreEqual(8, loaded.Manpower);
-            Assert.AreEqual(3, loaded.Authority);
-            Assert.AreEqual(45, loaded.Morale);
-        }
-
-        [Test]
-        public void Deserialize_MigratesLegacyGoldAndRequisition()
+        public void Deserialize_RejectsLegacyGoldAndRequisition()
         {
             const string legacyJson =
                 "{\n" +
@@ -206,14 +187,14 @@ namespace DeadManZone.Core.Tests
             {
                 LastEnemyFactionId = FactionIds.DustScourge,
                 SalvageChancePercent = 23,
-                SaveSchemaVersion = 6
+                SaveSchemaVersion = 8
             };
 
             var loaded = RunSaveSerializer.FromJson(RunSaveSerializer.ToJson(state));
 
             Assert.AreEqual(FactionIds.DustScourge, loaded.LastEnemyFactionId);
             Assert.AreEqual(23, loaded.SalvageChancePercent);
-            Assert.AreEqual(6, loaded.SaveSchemaVersion);
+            Assert.AreEqual(8, loaded.SaveSchemaVersion);
         }
 
         [Test]

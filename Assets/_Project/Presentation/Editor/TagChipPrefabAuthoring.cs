@@ -1,5 +1,6 @@
 using DeadManZone.Presentation.UI;
 using DeadManZone.Presentation.Visual;
+using DeadManZone.Data.Editor;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -11,10 +12,10 @@ namespace DeadManZone.Presentation.Editor
     {
         private const string PrefabsFolder = "Assets/_Project/Presentation/UI/Prefabs";
 
-        [MenuItem("DeadManZone/UI/Create Tag Chip Prefab")]
+        [MenuItem(DeadManZoneEditorMenus.Ui + "Create Tag Chip Prefab")]
         public static void CreateTagChipPrefab() => SaveTagChipPrefab(confirmOverwrite: false);
 
-        [MenuItem("DeadManZone/UI/Reset Tag Chip Prefab To Default")]
+        [MenuItem(DeadManZoneEditorMenus.Ui + "Reset Tag Chip Prefab To Default")]
         public static void ResetTagChipPrefabToDefault()
         {
             if (AssetDatabase.LoadAssetAtPath<GameObject>(CardPrefabPaths.TagChip) != null
@@ -49,7 +50,7 @@ namespace DeadManZone.Presentation.Editor
             }
         }
 
-        [MenuItem("DeadManZone/UI/Fix Tag Chip Layout On Unit Detail Card")]
+        [MenuItem(DeadManZoneEditorMenus.Ui + "Fix Tag Chip Layout On Unit Detail Card")]
         public static void FixTagChipLayoutOnUnitDetailCard()
         {
             var cardPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(CardPrefabPaths.UnitDetailCard);
@@ -73,7 +74,7 @@ namespace DeadManZone.Presentation.Editor
             }
         }
 
-        [MenuItem("DeadManZone/UI/Wire Tag Chip Prefab On Unit Detail Card")]
+        [MenuItem(DeadManZoneEditorMenus.Ui + "Wire Tag Chip Prefab On Unit Detail Card")]
         public static void WireTagChipOnUnitDetailCard()
         {
             var chipPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(CardPrefabPaths.TagChip);

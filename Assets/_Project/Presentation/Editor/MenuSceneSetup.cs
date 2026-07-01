@@ -1,4 +1,5 @@
 using DeadManZone.Data;
+using DeadManZone.Data.Editor;
 using DeadManZone.Game;
 using DeadManZone.Presentation.MainMenu;
 using DeadManZone.Presentation.Visual;
@@ -17,13 +18,13 @@ namespace DeadManZone.Presentation.Editor
         internal const string MainMenuPath = ScenesFolder + "/MainMenu.unity";
         private const string RunPath = ScenesFolder + "/Run.unity";
 
-        [MenuItem("DeadManZone/Set Play Mode Start Scene to MainMenu")]
+        [MenuItem(DeadManZoneEditorMenus.Run + "Set Play Mode Start Scene to MainMenu")]
         public static void SetPlayModeStartScene()
         {
             var mainMenu = AssetDatabase.LoadAssetAtPath<SceneAsset>(MainMenuPath);
             if (mainMenu == null)
             {
-                Debug.LogWarning("MainMenu scene not found. Run DeadManZone/Setup Main Menu & Run Scenes first.");
+                Debug.LogWarning("MainMenu scene not found. Run DeadManZone/Run/Setup Main Menu & Run Scenes first.");
                 return;
             }
 
@@ -31,11 +32,11 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log("Opened MainMenu as the active scene. Press Play to start from the main menu.");
         }
 
-        [MenuItem("DeadManZone/Setup Main Menu & Run Scenes")]
+        [MenuItem(DeadManZoneEditorMenus.Run + "Setup Main Menu & Run Scenes")]
         public static void SetupScenes()
         {
-            if (AssetDatabase.IsValidFolder(BunkerSurvivalUiKitSetup.KitRoot))
-                BunkerSurvivalUiKitSetup.EnsureBunkerSurvivalTheme();
+            if (AssetDatabase.IsValidFolder(GrittyPostApocalypticUiKitSetup.KitRoot))
+                GrittyPostApocalypticUiKitSetup.EnsureTheme();
             else
                 UiThemeEditor.EnsureThemeAsset();
             MenuThemeEditor.EnsureMenuTheme();
@@ -47,7 +48,7 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log("DeadManZone: MainMenu and Run scenes created. Open MainMenu and press Play.");
         }
 
-        [MenuItem("DeadManZone/Refresh Main Menu Scene")]
+        [MenuItem(DeadManZoneEditorMenus.Run + "Refresh Main Menu Scene")]
         public static void RefreshMainMenuScene()
         {
             UiThemeEditor.EnsureThemeAsset();
@@ -58,7 +59,7 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log("DeadManZone: cinematic MainMenu scene refreshed.");
         }
 
-        [MenuItem("DeadManZone/Add Main Menu Warehouse Backdrop")]
+        [MenuItem(DeadManZoneEditorMenus.Run + "Add Main Menu Warehouse Backdrop")]
         public static void AddMainMenuWarehouseBackdrop()
         {
             if (!MainMenuBackdropBuilder.IsKitAvailable())
@@ -83,7 +84,7 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log($"DeadManZone: {MainMenuBackdropBuilder.RootName} added to the open scene.");
         }
 
-        [MenuItem("DeadManZone/Refresh Run Scene")]
+        [MenuItem(DeadManZoneEditorMenus.Run + "Refresh Run Scene")]
         public static void RefreshRunScene()
         {
             UiThemeEditor.EnsureThemeAsset();
@@ -129,7 +130,7 @@ namespace DeadManZone.Presentation.Editor
             var manager = go.AddComponent<RunManager>();
             var database = ContentDatabase.Load();
             if (database == null)
-                Debug.LogWarning("ContentDatabase not found. Run DeadManZone → Generate Vertical Slice Content first.");
+                Debug.LogWarning(DeadManZoneEditorMenus.Content + "Generate Demo Content — content database missing.");
 
             var serialized = new SerializedObject(manager);
             serialized.FindProperty("contentDatabase").objectReferenceValue = database;

@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
+using DeadManZone.Data.Editor;
 using DeadManZone.Presentation.Visual;
 using UnityEditor;
 using UnityEngine;
-using Process = System.Diagnostics.Process;
-using ProcessStartInfo = System.Diagnostics.ProcessStartInfo;
 
 namespace DeadManZone.Presentation.Editor
 {
@@ -36,66 +35,7 @@ namespace DeadManZone.Presentation.Editor
             ["slot_empty"] = new Vector4(64, 64, 64, 64),
         };
 
-        [MenuItem("DeadManZone/UI Kit/Gritty Post-Apocalyptic/Slice Sheets (Python)")]
-        public static void SliceSheetsFromPython()
-        {
-            var projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
-            var scriptPath = Path.Combine(projectRoot, "Tools", "slice_gritty_ui_pack.py");
-            if (!File.Exists(scriptPath))
-            {
-                Debug.LogError($"Slicer not found: {scriptPath}");
-                return;
-            }
-
-            var psi = new ProcessStartInfo
-            {
-                FileName = "python",
-                Arguments = $"\"{scriptPath}\"",
-                WorkingDirectory = projectRoot,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-            };
-
-            using var process = Process.Start(psi);
-            if (process == null)
-            {
-                Debug.LogError("Failed to start Python slicer.");
-                return;
-            }
-
-            var stdout = process.StandardOutput.ReadToEnd();
-            var stderr = process.StandardError.ReadToEnd();
-            process.WaitForExit();
-
-            if (!string.IsNullOrEmpty(stdout))
-                Debug.Log(stdout.TrimEnd());
-            if (!string.IsNullOrEmpty(stderr))
-                Debug.LogWarning(stderr.TrimEnd());
-
-            if (process.ExitCode != 0)
-            {
-                Debug.LogError($"Gritty UI slicer failed with exit code {process.ExitCode}.");
-                return;
-            }
-
-            AssetDatabase.Refresh();
-            Debug.Log("Gritty Post-Apocalyptic UI sheets sliced. Run Configure All Sprites next.");
-        }
-
-        [MenuItem("DeadManZone/UI Kit/Gritty Post-Apocalyptic/Configure All Sprites")]
-        public static void ConfigureAllSprites()
-        {
-            ConfigureFolder(SpritesRoot, applyNineSlice: false);
-            ConfigureFolder(ComponentsRoot, applyNineSlice: true);
-            ConfigureFolder(IconsRoot, applyNineSlice: false);
-            ConfigureFolder(ScreensRoot, applyNineSlice: false);
-            AssetDatabase.SaveAssets();
-            Debug.Log("Configured Gritty Post-Apocalyptic sprites (raw + sliced).");
-        }
-
-        [MenuItem("DeadManZone/UI Kit/Gritty Post-Apocalyptic/Import Theme")]
+        [MenuItem(DeadManZoneEditorMenus.Ui + "Import Gritty Theme")]
         public static void ImportTheme()
         {
             if (!AssetDatabase.IsValidFolder(ComponentsRoot))
@@ -118,7 +58,7 @@ namespace DeadManZone.Presentation.Editor
                 $"- Preset profile: {PresetProfilePath}");
         }
 
-        [MenuItem("DeadManZone/UI Kit/Gritty Post-Apocalyptic/Apply Theme To Active Profile")]
+        [MenuItem(DeadManZoneEditorMenus.Ui + "Apply Gritty Theme To Active Profile")]
         public static void ApplyThemeToActiveProfile()
         {
             var theme = EnsureTheme();
@@ -196,6 +136,15 @@ namespace DeadManZone.Presentation.Editor
             profile.postProcessProfile = defaultProfile.postProcessProfile;
             EditorUtility.SetDirty(profile);
             return profile;
+        }
+
+        private static void ConfigureAllSprites()
+        {
+            ConfigureFolder(SpritesRoot, applyNineSlice: false);
+            ConfigureFolder(ComponentsRoot, applyNineSlice: true);
+            ConfigureFolder(IconsRoot, applyNineSlice: false);
+            ConfigureFolder(ScreensRoot, applyNineSlice: false);
+            AssetDatabase.SaveAssets();
         }
 
         private static void ConfigureFolder(string folder, bool applyNineSlice)

@@ -19,7 +19,7 @@ namespace DeadManZone.Data.Editor
             Generate();
         }
 
-        [MenuItem("DeadManZone/Generate Piece Ability Catalog")]
+        [MenuItem(DeadManZoneEditorMenus.Content + "Generate Piece Ability Catalog")]
         public static void Generate()
         {
             EnsureFolder(OutputFolder);

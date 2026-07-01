@@ -19,7 +19,7 @@ namespace DeadManZone.Data.Editor
             WriteDatabase(BuildDefaultRules());
         }
 
-        [MenuItem("DeadManZone/Generate Critical Mass Database")]
+        [MenuItem(DeadManZoneEditorMenus.Content + "Generate Critical Mass Database")]
         public static void Generate() => WriteDatabase(BuildDefaultRules());
 
         public static void GenerateFromCommandLine() => Generate();

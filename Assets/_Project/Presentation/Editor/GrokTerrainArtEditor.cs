@@ -1,4 +1,5 @@
 using DeadManZone.Data;
+using DeadManZone.Data.Editor;
 using DeadManZone.Presentation.Board;
 using DeadManZone.Presentation.Visual;
 using UnityEditor;
@@ -17,11 +18,7 @@ namespace DeadManZone.Presentation.Editor
             "Assets/_Project/Data/Visual/Presets/BunkerSurvivalUiTheme.asset"
         };
 
-        [MenuItem("DeadManZone/Art/Import Battlefield Backdrop And Shop Background")]
-        public static void ImportBattlefieldBackdropAndShopBackground() =>
-            ImportGrokTerrainAndShopBackground();
-
-        [MenuItem("DeadManZone/Art/Import Grok Terrain And Shop Background")]
+        [MenuItem(DeadManZoneEditorMenus.Art + "Import Grok Terrain And Shop Background")]
         public static void ImportGrokTerrainAndShopBackground()
         {
             ConfigureTerrainTexture(BattlefieldBackdropPath, 2048);

@@ -1,3 +1,4 @@
+using System;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 
@@ -56,20 +57,27 @@ namespace DeadManZone.Core.Tests
         public static BoardState StandardEnemy()
         {
             var board = new BoardState(Layout);
-            board.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 4), instanceId: "enemy_hq");
+            board.TryPlace(TestPieces.CombatFieldHq(), new GridCoord(0, 4), instanceId: "enemy_hq");
             board.TryPlace(TestPieces.RifleSquad(), FrontLineAnchor(3), instanceId: "enemy_rifle_1");
             board.TryPlace(TestPieces.RifleSquad(), FrontLineAnchor(6), instanceId: "enemy_rifle_2");
             return board;
         }
 
-        public static BoardState WithCommandBunker()
+        public static BoardState StandardEnemyRiflesOnly()
         {
             var board = new BoardState(Layout);
-            board.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0));
-            board.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 2), instanceId: "hq_test");
-            board.TryPlace(TestPieces.RifleSquad(), FrontLineAnchor(4));
+            board.TryPlace(TestPieces.RifleSquad(), FrontLineAnchor(3), instanceId: "enemy_rifle_1");
+            board.TryPlace(TestPieces.RifleSquad(), FrontLineAnchor(6), instanceId: "enemy_rifle_2");
             return board;
         }
+
+        public static BoardState WithCommandBunker() =>
+            ToAggregate((combat, hq) =>
+            {
+                hq.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0));
+                hq.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 2), instanceId: "hq_test");
+                combat.TryPlace(TestPieces.RifleSquad(), FrontLineAnchor(4));
+            });
 
         public static BoardState StrongPlayerVsWeakEnemy()
         {
@@ -90,36 +98,41 @@ namespace DeadManZone.Core.Tests
             return enemy;
         }
 
-        public static BoardState WithHqAndRifle()
-        {
-            var board = new BoardState(Layout);
-            board.TryPlace(TestPieces.FieldingHq(), new GridCoord(0, 2), instanceId: "hq_test");
-            board.TryPlace(TestPieces.RifleSquadTenMan(), FrontLineAnchor(4));
-            return board;
-        }
+        public static BoardState WithHqAndRifle() =>
+            ToAggregate((combat, hq) =>
+            {
+                hq.TryPlace(TestPieces.FieldingHq(), new GridCoord(0, 2), instanceId: "hq_test");
+                combat.TryPlace(TestPieces.RifleSquadTenMan(), FrontLineAnchor(4));
+            });
 
         public static BoardState HqOnly()
         {
-            var board = new BoardState(Layout);
-            board.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 4), instanceId: "hq_test");
-            return board;
+            var hq = new BoardState(IronMarchHqLayout);
+            hq.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 2), instanceId: "hq_test");
+            return new BuildBoardSet { Hq = hq }.ToAggregateBoard();
         }
 
-        public static BoardState WithSupplyDepot()
-        {
-            var board = new BoardState(Layout);
-            board.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 4), instanceId: "hq_test");
-            board.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 0));
-            return board;
-        }
+        public static BoardState WithSupplyDepot() =>
+            ToAggregate((combat, hq) =>
+            {
+                hq.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 2), instanceId: "hq_test");
+                hq.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 0));
+            });
 
-        public static BoardState WithTwoSupplyBuildings()
+        public static BoardState WithTwoSupplyBuildings() =>
+            ToAggregate((_, hq) =>
+            {
+                hq.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 2), instanceId: "hq_test");
+                hq.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 0), instanceId: "supply_depot_1");
+                hq.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 1), instanceId: "supply_depot_2");
+            });
+
+        private static BoardState ToAggregate(Action<BoardState, BoardState> setup)
         {
-            var board = new BoardState(Layout);
-            board.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 4), instanceId: "hq_test");
-            board.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 0), instanceId: "supply_depot_1");
-            board.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 1), instanceId: "supply_depot_2");
-            return board;
+            var combat = new BoardState(Layout);
+            var hq = new BoardState(IronMarchHqLayout);
+            setup(combat, hq);
+            return new BuildBoardSet { Combat = combat, Hq = hq }.ToAggregateBoard();
         }
     }
 }

@@ -2,6 +2,7 @@ using System.Linq;
 using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
+using DeadManZone.Core.Tests;
 using DeadManZone.Data;
 using DeadManZone.Presentation.Combat.Arena;
 using NUnit.Framework;
@@ -22,12 +23,19 @@ namespace DeadManZone.PlayMode.Tests
             Assert.NotNull(faction, "iron_vanguard faction required for arena replay tests.");
 
             var player = new BoardState(faction.CreateCombatBoardLayout());
-            Place(player, database, "field_gun_nest", new GridCoord(2, 2), "field_gun_1");
+            Place(player, database, "conscript_rifleman", new GridCoord(3, 2), "field_gun_1");
+            PlaceFieldHq(player, new GridCoord(0, 2), "hq_player");
 
             var enemy = new BoardState(faction.CreateCombatBoardLayout());
             Place(enemy, database, "conscript_rifleman", new GridCoord(5, 3), "enemy_rifle_1");
 
             return BattlefieldState.FromBoards(player, enemy);
+        }
+
+        private static void PlaceFieldHq(BoardState board, GridCoord anchor, string instanceId)
+        {
+            var result = board.TryPlace(TestPieces.CombatFieldHq(), anchor, instanceId);
+            Assert.IsTrue(result.Success, $"Failed to place field HQ at {anchor}: {result.Reason}");
         }
 
         private static void Place(

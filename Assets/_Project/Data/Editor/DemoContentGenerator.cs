@@ -13,7 +13,7 @@ namespace DeadManZone.Data.Editor
     {
         private const string Root = "Assets/_Project/Data/Resources/DeadManZone";
 
-        [MenuItem("DeadManZone/Generate Demo Content (5 Factions)")]
+        [MenuItem(DeadManZoneEditorMenus.Content + "Generate Demo Content")]
         public static void Generate()
         {
             EnsureFolder(Root);

@@ -1,5 +1,6 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
+using DeadManZone.Core.Tests;
 using DeadManZone.Presentation.Board;
 using NUnit.Framework;
 
@@ -10,19 +11,13 @@ namespace DeadManZone.Presentation.Tests.EditMode
         [Test]
         public void TryGetPieceAt_ReturnsPieceForNonAnchorFootprintCell()
         {
-            var layout = BoardLayout.CreateHorizontalZones(
-                width: 6,
-                height: 4,
-                rearCols: 2,
-                supportCols: 1,
-                specialTiles: System.Array.Empty<GridCoord>());
-            var board = new BoardState(layout);
+            var board = new BoardState(TestBoards.CombatLayout);
 
             var definition = new PieceDefinition
             {
-                Id = "command_center",
-                DisplayName = "Command Center",
-                Category = PieceCategory.Building,
+                Id = "wide_unit",
+                DisplayName = "Wide Unit",
+                Category = PieceCategory.Unit,
                 Shape = new PieceShape(new[]
                 {
                     new GridCoord(0, 0),

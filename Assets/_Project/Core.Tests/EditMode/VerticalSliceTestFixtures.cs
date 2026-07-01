@@ -6,6 +6,7 @@ using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Tags;
 using DeadManZone.Data;
+using DeadManZone.Game;
 using NUnit.Framework;
 
 namespace DeadManZone.Core.Tests
@@ -23,17 +24,24 @@ namespace DeadManZone.Core.Tests
 
             var combat = new BoardState(faction.CreateCombatBoardLayout());
             Place(combat, database, "mobile_cannon", new GridCoord(0, 0), "cannon_1");
-            Place(combat, database, "grenade_thrower", new GridCoord(2, 1), "grenade_1");
-            Place(combat, database, "armored_transport", new GridCoord(3, 2), "transport_1");
+            Place(combat, database, "grenade_thrower", new GridCoord(3, 0), "grenade_1");
+            Place(combat, database, "armored_transport", new GridCoord(4, 2), "transport_1");
             Place(combat, database, "field_medic", new GridCoord(4, 5), "medic_1");
             Place(combat, database, "conscript_rifleman", new GridCoord(5, 4), "conscript_1");
-            Place(combat, database, "diesel_walker", new GridCoord(3, 3), "walker_1");
-            Place(combat, database, "rifle_squad", new GridCoord(5, 5), "rifle_1");
+            Place(combat, database, "diesel_walker", new GridCoord(0, 3), "walker_1");
+            Place(combat, database, "rifle_squad", new GridCoord(5, 0), "rifle_1");
 
             var hq = new BoardState(faction.CreateHqBoardLayout());
             Place(hq, database, "radio_array", new GridCoord(1, 0), "radio_1");
 
             return new BuildBoardSet { Combat = combat, Hq = hq };
+        }
+
+        public static void SaveGauntletToOrchestrator(RunOrchestrator orchestrator, ContentDatabase database)
+        {
+            var boards = BuildGauntletBoards(database);
+            orchestrator.SaveCombatBoard(boards.Combat);
+            orchestrator.SaveHqBoard(boards.Hq);
         }
 
         /// <summary>Aggregate board for combat command helpers that scan all placed pieces.</summary>

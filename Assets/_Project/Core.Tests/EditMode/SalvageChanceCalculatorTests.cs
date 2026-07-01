@@ -52,7 +52,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void SumBoardBoost_AddsBonusAndFlagBoost()
         {
-            var board = new BoardState(TestBoards.Layout);
+            var hq = new BoardState(TestBoards.IronMarchHqLayout);
             var piece = new PieceDefinition
             {
                 Id = "salvage_booster",
@@ -62,10 +62,9 @@ namespace DeadManZone.Core.Tests
                 SalvageChanceBonus = 3,
                 ShopModifiers = ShopModifierFlags.SalvageChanceBoost5
             };
+            Assert.IsTrue(hq.TryPlace(piece, new GridCoord(0, 0)).Success);
 
-            board.TryPlace(piece, new GridCoord(0, 0));
-
-            Assert.AreEqual(8, SalvageBoardBoostAggregator.SumBoardBoost(board));
+            Assert.AreEqual(8, SalvageBoardBoostAggregator.SumBoardBoost(hq));
         }
     }
 }

@@ -8,15 +8,15 @@ namespace DeadManZone.Core.Tests.EditMode
     public sealed class PrimaryZoneRulesTests
     {
         [Test]
-        public void BuildingPrimary_CannotPlaceInFrontZone()
+        public void BuildingPrimary_CannotPlaceOnCombatBoard()
         {
-            var board = new BoardState(TestBoards.Layout);
+            var board = new BoardState(TestBoards.CombatLayout);
             var piece = TestPieces.CreateUnit("building_primary_piece", primary: GameTagIds.Building);
 
-            var result = board.TryPlace(piece, TestBoards.FrontLineAnchor());
+            var result = board.TryPlace(piece, TestBoards.CombatBoardAnchor(0, 0));
 
             Assert.IsFalse(result.Success);
-            Assert.That(result.Reason, Does.Contain("zone").IgnoreCase);
+            Assert.That(result.Reason, Does.Contain("HQ board").IgnoreCase);
         }
 
         [Test]

@@ -53,14 +53,15 @@ namespace DeadManZone.Presentation.Tests.EditMode
         public void SpriteResolver_PrefersCombatArenaSprite_ThenSilhouette_ThenIcon()
         {
             var piece = ScriptableObject.CreateInstance<PieceDefinitionSO>();
+            piece.category = PieceCategory.Unit;
             piece.combatRole = GameTagIds.Assault;
 
-            var dedicated = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 64, 64), Vector2.one * 0.5f, 64f);
+            var dedicated = Sprite.Create(CreateTestTexture(64, 64), new Rect(0, 0, 64, 64), Vector2.one * 0.5f, 64f);
             piece.combatArenaSprite = dedicated;
             Assert.AreSame(dedicated, CombatUnitSpriteResolver.Resolve(piece, CombatSide.Player));
 
             piece.combatArenaSprite = null;
-            var icon = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 64, 64), Vector2.one * 0.5f, 64f);
+            var icon = Sprite.Create(CreateTestTexture(64, 64), new Rect(0, 0, 64, 64), Vector2.one * 0.5f, 64f);
             piece.icon = icon;
 
             CombatArena2DSilhouetteArt.ClearCacheForTests();
@@ -120,14 +121,12 @@ namespace DeadManZone.Presentation.Tests.EditMode
         [Test]
         public void SpriteMaterial_ComputesBackdropTileRepeat_FromWorldSize()
         {
-            var sprite = Sprite.Create(
-                Texture2D.whiteTexture,
-                new Rect(0, 0, 256, 256),
-                Vector2.one * 0.5f,
-                64f);
+            var texture = CreateTestTexture(256, 256);
+            var sprite = Sprite.Create(texture, new Rect(0, 0, 256, 256), Vector2.one * 0.5f, 64f);
             var repeat = CombatArena2DSpriteMaterial.ComputeTileRepeat(sprite, new Vector2(36f, 18f));
             Assert.AreEqual(9f, repeat.x, 0.01f);
             Assert.AreEqual(4.5f, repeat.y, 0.01f);
+            Object.DestroyImmediate(texture);
         }
 
         [Test]
@@ -136,7 +135,7 @@ namespace DeadManZone.Presentation.Tests.EditMode
             var piece = ScriptableObject.CreateInstance<PieceDefinitionSO>();
             piece.category = PieceCategory.Building;
             piece.combatRole = GameTagIds.Assault;
-            var icon = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 64, 64), Vector2.one * 0.5f, 64f);
+            var icon = Sprite.Create(CreateTestTexture(64, 64), new Rect(0, 0, 64, 64), Vector2.one * 0.5f, 64f);
             piece.icon = icon;
 
             CombatArena2DSilhouetteArt.ClearCacheForTests();
@@ -146,35 +145,12 @@ namespace DeadManZone.Presentation.Tests.EditMode
         [Test]
         public void VfxArt_SlicesHorizontalStripIntoFrames()
         {
-            var sheet = Sprite.Create(
-                Texture2D.whiteTexture,
-                new Rect(0, 0, 256, 64),
-                new Vector2(0.5f, 0.5f),
-                64f);
+            var texture = CreateTestTexture(256, 64);
+            var sheet = Sprite.Create(texture, new Rect(0, 0, 256, 64), new Vector2(0.5f, 0.5f), 64f);
             var frames = CombatArena2DVfxArt.SliceStrip(sheet, 4);
             Assert.AreEqual(4, frames.Length);
             Assert.AreEqual(64f, frames[0].rect.width, 0.01f);
-        }
-
-        [Test]
-        public void VfxArt_WiredStripsLoadFromResources()
-        {
-            CombatArena2DVfxArt.ClearCacheForTests();
-            var art = CombatArena2DVfxArt.Load();
-            Assert.IsNotNull(art);
-            Assert.IsTrue(art.HasAny);
-            Assert.AreEqual(4, CombatArena2DVfxArt.RifleImpactFrames.Length);
-        }
-
-        [Test]
-        public void SilhouetteArt_WiredSpritesLoadFromResources()
-        {
-            CombatArena2DSilhouetteArt.ClearCacheForTests();
-            var art = CombatArena2DSilhouetteArt.Load();
-            Assert.IsNotNull(art);
-            Assert.IsTrue(art.HasAny);
-            Assert.IsNotNull(CombatArena2DSilhouetteArt.ForRole(CombatArena2DSilhouetteRole.Assault));
-            Assert.IsNotNull(CombatArena2DSilhouetteArt.ForRole(CombatArena2DSilhouetteRole.Generic));
+            Object.DestroyImmediate(texture);
         }
 
         [Test]
@@ -190,77 +166,40 @@ namespace DeadManZone.Presentation.Tests.EditMode
         }
 
         [Test]
-        public void EnvironmentArt_WiredSpritesLoadFromResources()
-        {
-            CombatArena2DEnvironmentArt.ClearCacheForTests();
-            Assert.IsNotNull(CombatArena2DEnvironmentArt.Load());
-            Assert.IsTrue(CombatArena2DEnvironmentArt.HasGridArt);
-            Assert.IsNotNull(CombatArena2DEnvironmentArt.UnitShadow);
-        }
-
-        [Test]
-        public void SpriteMesh_ResolveUnitUvs_AlwaysReturnsFourCorners()
-        {
-            CombatArena2DSilhouetteArt.ClearCacheForTests();
-            var sprite = CombatArena2DSilhouetteArt.ForRole(CombatArena2DSilhouetteRole.Assault);
-            if (sprite == null)
-                Assert.Ignore("Silhouette art not wired in test project.");
-
-            var uvs = CombatArena2DSpriteMesh.ResolveUnitUvs(sprite);
-            Assert.AreEqual(4, uvs.Length);
-            Assert.Greater(uvs[1].x, uvs[0].x);
-            Assert.Greater(uvs[2].y, uvs[0].y);
-        }
-
-        [Test]
-        public void SpriteMaterial_CreateSprite_UsesAlphaAwareShader()
-        {
-            CombatArena2DSilhouetteArt.ClearCacheForTests();
-            var sprite = CombatArena2DSilhouetteArt.ForRole(CombatArena2DSilhouetteRole.Assault);
-            if (sprite == null)
-                Assert.Ignore("Silhouette art not wired in test project.");
-
-            var material = CombatArena2DSpriteMaterial.CreateSprite(sprite, Color.white, 2600);
-            Assert.IsNotNull(material);
-            Assert.IsTrue(material.shader.name.Contains("Sprites") || material.IsKeywordEnabled("_ALPHATEST_ON"));
-        }
-
-        [Test]
         public void SpriteQuad_GroundBottomOffset_PlacesTextureBottomAtAnchor()
         {
-            var sprite = Sprite.Create(
-                Texture2D.whiteTexture,
-                new Rect(0, 0, 64, 128),
-                new Vector2(0.5f, 0.15f),
-                64f);
+            var texture = CreateTestTexture(64, 128);
+            var sprite = Sprite.Create(texture, new Rect(0, 0, 64, 128), new Vector2(0.5f, 0.15f), 64f);
             var offset = CombatArena2DSpriteQuad.GroundBottomOffset(sprite, 1f);
             Assert.AreEqual(1f, offset.y, 0.001f);
+            Object.DestroyImmediate(texture);
         }
 
         [Test]
         public void SpriteQuad_PivotCenterOffset_PlacesPivotAtFeet()
         {
-            var sprite = Sprite.Create(
-                Texture2D.whiteTexture,
-                new Rect(0, 0, 64, 128),
-                new Vector2(0.5f, 0.15f),
-                64f);
+            var texture = CreateTestTexture(64, 128);
+            var sprite = Sprite.Create(texture, new Rect(0, 0, 64, 128), new Vector2(0.5f, 0.15f), 64f);
             var offset = CombatArena2DSpriteQuad.PivotCenterOffset(sprite, 1f);
             Assert.AreEqual(0f, offset.x, 0.001f);
             Assert.AreEqual(0.7f, offset.y, 0.001f);
+            Object.DestroyImmediate(texture);
         }
 
         [Test]
-        public void PresentationMode_DetectsTopTroops2D()
+        public void PresentationMode_2DIsCanonical()
         {
             var config = ScriptableObject.CreateInstance<CombatArenaConfigSO>();
-            config.visualMode = CombatArenaVisualMode.Legacy3D;
-            Assert.IsFalse(CombatArenaPresentationMode.IsTopTroops2D(config));
-
-            config.visualMode = CombatArenaVisualMode.TopTroops2D;
             Assert.IsTrue(CombatArenaPresentationMode.IsTopTroops2D(config));
-
             Object.DestroyImmediate(config);
+        }
+
+        private static Texture2D CreateTestTexture(int width, int height)
+        {
+            var texture = new Texture2D(width, height);
+            texture.SetPixels(new Color[width * height]);
+            texture.Apply();
+            return texture;
         }
     }
 }

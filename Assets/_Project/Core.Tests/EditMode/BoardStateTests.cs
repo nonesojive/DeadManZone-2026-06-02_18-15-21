@@ -51,18 +51,22 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void BuildingOnSpecialTile_FlagsSpecialBonus()
         {
-            var board = new BoardState(DefaultLayout());
+            var layout = BoardLayout.CreateHqBoard(
+                TestBoards.IronMarchHqWidth,
+                TestBoards.IronMarchHqHeight,
+                specialTiles: new[] { new GridCoord(1, 0) });
+            var board = new BoardState(layout);
             var bunker = TestPieces.CommandBunker();
-            Assert.IsTrue(board.TryPlace(bunker, new GridCoord(1, 4)).Success);
+            Assert.IsTrue(board.TryPlace(bunker, new GridCoord(1, 0)).Success);
             Assert.IsTrue(board.IsOnSpecialTile(board.Pieces.First().InstanceId));
         }
 
         [Test]
         public void RemovePiece_FreesCellsForPlacement()
         {
-            var board = new BoardState(DefaultLayout());
+            var board = new BoardState(TestBoards.IronMarchHqLayout);
             var bunker = TestPieces.CommandBunker();
-            var anchor = new GridCoord(1, 4);
+            var anchor = new GridCoord(0, 0);
             Assert.IsTrue(board.TryPlace(bunker, anchor, "bunker_1").Success);
 
             Assert.IsTrue(board.TryRemove("bunker_1", out var removed));
@@ -76,26 +80,26 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void TryRelocate_MovesPieceToValidAnchor()
         {
-            var board = new BoardState(DefaultLayout());
+            var board = new BoardState(TestBoards.IronMarchHqLayout);
             var bunker = TestPieces.CommandBunker();
-            Assert.IsTrue(board.TryPlace(bunker, new GridCoord(1, 4), "bunker_1").Success);
+            Assert.IsTrue(board.TryPlace(bunker, new GridCoord(0, 0), "bunker_1").Success);
 
-            var result = board.TryRelocate("bunker_1", new GridCoord(0, 4), PieceRotation.R0);
+            var result = board.TryRelocate("bunker_1", new GridCoord(0, 2), PieceRotation.R0);
 
             Assert.IsTrue(result.Success, result.Reason);
             Assert.AreEqual(1, board.Pieces.Count);
-            Assert.AreEqual(new GridCoord(0, 4), board.Pieces.First().Anchor);
+            Assert.AreEqual(new GridCoord(0, 2), board.Pieces.First().Anchor);
         }
 
         [Test]
-        public void TryRelocate_RejectsInvalidZoneAndRestoresPosition()
+        public void TryRelocate_RejectsOutOfBoundsAndRestoresPosition()
         {
-            var board = new BoardState(DefaultLayout());
+            var board = new BoardState(TestBoards.IronMarchHqLayout);
             var bunker = TestPieces.CommandBunker();
-            var anchor = new GridCoord(1, 4);
+            var anchor = new GridCoord(0, 0);
             Assert.IsTrue(board.TryPlace(bunker, anchor, "bunker_1").Success);
 
-            var result = board.TryRelocate("bunker_1", new GridCoord(7, 4), PieceRotation.R0);
+            var result = board.TryRelocate("bunker_1", new GridCoord(2, 0), PieceRotation.R0);
 
             Assert.IsFalse(result.Success);
             Assert.AreEqual(anchor, board.Pieces.First().Anchor);

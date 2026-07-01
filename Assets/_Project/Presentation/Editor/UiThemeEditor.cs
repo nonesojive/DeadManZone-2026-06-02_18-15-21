@@ -1,3 +1,4 @@
+using DeadManZone.Data.Editor;
 using DeadManZone.Presentation.Visual;
 using UnityEditor;
 using UnityEngine;
@@ -8,7 +9,7 @@ namespace DeadManZone.Presentation.Editor
     {
         public const string ThemeAssetPath = "Assets/_Project/Data/Resources/DeadManZone/UiTheme.asset";
 
-        [MenuItem("DeadManZone/Create Default UI Theme")]
+        [MenuItem(DeadManZoneEditorMenus.Ui + "Create Default UI Theme")]
         public static void CreateDefaultUiTheme()
         {
             EnsureThemeAsset();

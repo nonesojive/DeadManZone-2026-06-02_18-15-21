@@ -1,4 +1,7 @@
+using DeadManZone.Core.Board;
+using DeadManZone.Core.Combat;
 using DeadManZone.Core.Run;
+using DeadManZone.Core.Tests;
 using DeadManZone.Presentation.Run;
 using NUnit.Framework;
 using TMPro;
@@ -44,6 +47,50 @@ namespace DeadManZone.Presentation.Tests.EditMode
             finally
             {
                 Object.DestroyImmediate(topBar);
+            }
+        }
+
+        [Test]
+        public void RefreshPlayerStrength_WiresStrengthNumberFromTopInfoPanel()
+        {
+            var topInfoPanel = new GameObject("TopInfoPanel", typeof(RectTransform));
+            var strengthNumber = CreateNumberText(topInfoPanel.transform, "StrengthNumber");
+            var hud = topInfoPanel.AddComponent<RunHudView>();
+
+            try
+            {
+                hud.RefreshPlayerStrength(new ArmyStrengthSnapshot
+                {
+                    BaseTotal = 900,
+                    EffectiveTotal = 1240
+                });
+
+                Assert.AreEqual("1,240", strengthNumber.text);
+            }
+            finally
+            {
+                Object.DestroyImmediate(topInfoPanel);
+            }
+        }
+
+        [Test]
+        public void RefreshMatchupFromBoards_UpdatesStrengthFromPlayerBoard()
+        {
+            var topInfoPanel = new GameObject("TopInfoPanel", typeof(RectTransform));
+            var strengthNumber = CreateNumberText(topInfoPanel.transform, "StrengthNumber");
+            var hud = topInfoPanel.AddComponent<RunHudView>();
+            var playerBoard = TestBoards.StandardPlayer();
+
+            try
+            {
+                hud.RefreshMatchupFromBoards(playerBoard, null);
+
+                var expected = ArmyStrengthCalculator.Evaluate(playerBoard).EffectiveTotal;
+                Assert.AreEqual(expected.ToString("N0"), strengthNumber.text);
+            }
+            finally
+            {
+                Object.DestroyImmediate(topInfoPanel);
             }
         }
 

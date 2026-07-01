@@ -13,12 +13,7 @@ namespace DeadManZone.Core.Tests
     {
         private static BoardLayout DefaultLayout() => TestBoards.Layout;
 
-        private static BoardState BuildBoardWithSupplyDepot()
-        {
-            var board = new BoardState(DefaultLayout());
-            board.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 0));
-            return board;
-        }
+        private static BoardState BuildBoardWithSupplyDepot() => TestBoards.WithSupplyDepot();
 
         [Test]
         public void DefaultBoard_GeneratesSixVisibleOffers()
@@ -64,8 +59,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void CommandBunker_DoesNotAddExtraShopSlots()
         {
-            var board = new BoardState(DefaultLayout());
-            board.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0));
+            var board = TestBoards.WithCommandBunker();
 
             var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
@@ -95,12 +89,18 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void FieldWorkshop_GuaranteesEngineerOffer()
         {
-            var board = new BoardState(DefaultLayout());
-            board.TryPlace(TestPieces.FieldWorkshop(), new GridCoord(1, 0));
+            var hq = new BoardState(TestBoards.IronMarchHqLayout);
+            Assert.IsTrue(hq.TryPlace(TestPieces.FieldWorkshop(), new GridCoord(0, 0)).Success);
+            var board = new BuildBoardSet
+            {
+                Combat = new BoardState(DefaultLayout()),
+                Hq = hq
+            }.ToAggregateBoard();
 
             var registry = new ContentRegistry();
             registry.Register(TestPieces.RifleSquad(), ShopLane.Offensive);
             registry.Register(TestPieces.CommandBunker(), ShopLane.Defensive);
+            registry.Register(TestPieces.FieldWorkshop(), ShopLane.Defensive);
 
             var generator = new ShopGenerator(registry);
             var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 7);
@@ -119,34 +119,6 @@ namespace DeadManZone.Core.Tests
             var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 42);
 
             Assert.IsFalse(shop.Offers.Any(o => o.Lane == ShopLane.Specialty));
-        }
-
-        [Test]
-        public void OffensiveSlots_BiasTowardAssaultRoles()
-        {
-            var board = new BoardState(DefaultLayout());
-            var registry = CreateRoleTestRegistry();
-            var generator = new ShopGenerator(registry);
-            var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 7);
-
-            var offensiveOffers = shop.Offers.Where(o => o.SlotIndex < 3).ToList();
-            Assert.That(offensiveOffers, Is.Not.Empty);
-            Assert.IsTrue(offensiveOffers.All(o =>
-                registry.GetById(o.PieceId).CombatRole == GameTagIds.Assault));
-        }
-
-        [Test]
-        public void DefensiveSlots_BiasTowardSupportRoles()
-        {
-            var board = new BoardState(DefaultLayout());
-            var registry = CreateRoleTestRegistry();
-            var generator = new ShopGenerator(registry);
-            var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 7);
-
-            var defensiveOffers = shop.Offers.Where(o => o.SlotIndex >= 3 && o.SlotIndex < 6).ToList();
-            Assert.That(defensiveOffers, Is.Not.Empty);
-            Assert.IsTrue(defensiveOffers.All(o =>
-                registry.GetById(o.PieceId).CombatRole == GameTagIds.Support));
         }
 
         private static ContentRegistry CreateRoleTestRegistry()

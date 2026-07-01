@@ -18,7 +18,7 @@ namespace DeadManZone.Core.Tests
             {
                 Assert.IsTrue(board.TryPlace(
                     TestPieces.RifleSquad(),
-                    TestBoards.FrontLineAnchor(i),
+                    new GridCoord(7, i),
                     $"rifle_{i}").Success);
             }
 
@@ -59,7 +59,7 @@ namespace DeadManZone.Core.Tests
         {
             var board = WithInfantry(2);
             Assert.IsTrue(board.TryPlace(
-                TestPieces.CreateUnit("field_gun", primary: GameTagIds.Building, combatRole: GameTagIds.Artillery),
+                TestPieces.CreateUnit("field_gun", primary: GameTagIds.Structure, combatRole: GameTagIds.Artillery),
                 TestBoards.SupportLineAnchor(0),
                 "field_gun").Success);
 
@@ -72,17 +72,20 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void Resolve_FullComposition_IsWildcard()
         {
-            var board = WithInfantry(2);
-            Assert.IsTrue(board.TryPlace(
-                TestPieces.CreateUnit("field_gun", primary: GameTagIds.Building, combatRole: GameTagIds.Artillery),
+            var combat = WithInfantry(2);
+            Assert.IsTrue(combat.TryPlace(
+                TestPieces.CreateUnit("field_gun", primary: GameTagIds.Structure, combatRole: GameTagIds.Artillery),
                 TestBoards.SupportLineAnchor(0),
                 "field_gun").Success);
-            Assert.IsTrue(board.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0), "bunker_1").Success);
-            Assert.IsTrue(board.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 1), "depot_1").Success);
-            Assert.IsTrue(board.TryPlace(
+            Assert.IsTrue(combat.TryPlace(
                 TestPieces.CreateUnit("transport", primary: GameTagIds.Vehicle, combatRole: GameTagIds.Tank),
                 TestBoards.FrontLineAnchor(4),
                 "transport").Success);
+
+            var hq = new BoardState(TestBoards.IronMarchHqLayout);
+            Assert.IsTrue(hq.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0), "bunker_1").Success);
+            Assert.IsTrue(hq.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 2), "depot_1").Success);
+            var board = new BuildBoardSet { Combat = combat, Hq = hq }.ToAggregateBoard();
 
             var context = SpecialtyLaneRuleCatalog.Resolve(board, TestContentRegistry.Instance);
 

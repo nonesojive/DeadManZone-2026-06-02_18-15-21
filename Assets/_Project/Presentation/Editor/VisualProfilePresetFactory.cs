@@ -1,3 +1,4 @@
+using DeadManZone.Data.Editor;
 using DeadManZone.Presentation.Visual;
 using UnityEditor;
 using UnityEngine;
@@ -14,7 +15,7 @@ namespace DeadManZone.Presentation.Editor
         public const string RuntimeProfilePath = "Assets/_Project/Data/Resources/DeadManZone/VisualProfile.asset";
         public const string PresetsFolder = "Assets/_Project/Data/Visual/Presets";
 
-        [MenuItem("DeadManZone/Visual Studio/Create Default Profile")]
+        [MenuItem(DeadManZoneEditorMenus.VisualStudio + "Create Default Profile")]
         public static void CreateDefaultProfileMenu()
         {
             EnsureDefaultProfile();
@@ -23,7 +24,7 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log($"Default visual profile ready at {DefaultProfilePath}");
         }
 
-        [MenuItem("DeadManZone/Visual Studio/Create Starter Presets")]
+        [MenuItem(DeadManZoneEditorMenus.VisualStudio + "Create Starter Presets")]
         public static void CreateStarterPresetsMenu()
         {
             var defaultProfile = EnsureDefaultProfile();
@@ -345,22 +346,16 @@ namespace DeadManZone.Presentation.Editor
 
         private static UiThemeSO ResolvePreferredUiTheme()
         {
-            if (AssetDatabase.IsValidFolder(SyntyUiKitSetup.KitRoot))
-                return SyntyUiKitSetup.EnsureSyntyTrenchTheme();
-
-            if (AssetDatabase.IsValidFolder(BunkerSurvivalUiKitSetup.KitRoot))
-                return BunkerSurvivalUiKitSetup.EnsureBunkerSurvivalTheme();
+            if (AssetDatabase.IsValidFolder(GrittyPostApocalypticUiKitSetup.KitRoot))
+                return GrittyPostApocalypticUiKitSetup.EnsureTheme();
 
             return UiThemeEditor.EnsureThemeAsset();
         }
 
         private static string ResolveProfileDisplayName(UiThemeSO uiTheme)
         {
-            if (AssetDatabase.IsValidFolder(SyntyUiKitSetup.KitRoot) && uiTheme.UsesButtonSprites)
-                return "Synty Trench";
-
-            if (AssetDatabase.IsValidFolder(BunkerSurvivalUiKitSetup.KitRoot) && uiTheme.UsesButtonSprites)
-                return "Bunker Survival";
+            if (AssetDatabase.IsValidFolder(GrittyPostApocalypticUiKitSetup.KitRoot) && uiTheme.UsesButtonSprites)
+                return "Gritty Post-Apocalyptic";
 
             return "IronMarch Union";
         }

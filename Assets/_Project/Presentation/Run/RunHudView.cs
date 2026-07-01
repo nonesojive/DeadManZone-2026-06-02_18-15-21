@@ -18,6 +18,7 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private TMP_Text manpowerValueText;
         [SerializeField] private TMP_Text authorityValueText;
         [SerializeField] private TMP_Text moraleValueText;
+        [SerializeField] private TMP_Text strengthValueText;
         [SerializeField] private MatchupStrengthView matchupStrengthView;
 
         private ContentDatabase _database;
@@ -34,7 +35,8 @@ namespace DeadManZone.Presentation.Run
             TMP_Text authorityValue,
             TMP_Text moraleValue,
             TMP_Text salvageIndicator = null,
-            MatchupStrengthView matchupStrength = null)
+            MatchupStrengthView matchupStrength = null,
+            TMP_Text strengthValue = null)
         {
             fightTitleText = fightTitle;
             fightIndexText = fightIndex;
@@ -45,13 +47,23 @@ namespace DeadManZone.Presentation.Run
             moraleValueText = moraleValue;
             salvageIndicatorText = salvageIndicator;
             matchupStrengthView = matchupStrength;
+            strengthValueText = strengthValue;
         }
 
-        public void RefreshMatchup(MatchupAssessment? assessment) =>
+        public void RefreshMatchup(MatchupAssessment? assessment)
+        {
             matchupStrengthView?.Refresh(assessment);
+            if (assessment.HasValue)
+                RefreshPlayerStrength(assessment.Value.Player);
+        }
 
         public void RefreshMatchupFromBoards(BoardState playerBoard, BoardState enemyBoard)
         {
+            var playerStrength = playerBoard != null
+                ? ArmyStrengthCalculator.Evaluate(playerBoard)
+                : default;
+            RefreshPlayerStrength(playerStrength);
+
             if (playerBoard == null || enemyBoard == null)
             {
                 RefreshMatchup(null);
@@ -59,10 +71,22 @@ namespace DeadManZone.Presentation.Run
             }
 
             var assessment = MatchupAssessment.Compare(
-                ArmyStrengthCalculator.Evaluate(playerBoard),
+                playerStrength,
                 ArmyStrengthCalculator.Evaluate(enemyBoard));
             RefreshMatchup(assessment);
         }
+
+        public void RefreshPlayerStrength(ArmyStrengthSnapshot snapshot)
+        {
+            EnsureHudTextsWired();
+            if (strengthValueText == null)
+                return;
+
+            strengthValueText.text = FormatStrength(snapshot.EffectiveTotal);
+        }
+
+        private static string FormatStrength(int effectiveTotal) =>
+            effectiveTotal.ToString("N0");
 
         public void Refresh(RunState state, string battleGateMessage = null)
         {
@@ -134,6 +158,7 @@ namespace DeadManZone.Presentation.Run
             ApplyLabel(manpowerValueText, false, theme);
             ApplyLabel(authorityValueText, false, theme);
             ApplyLabel(moraleValueText, false, theme);
+            ApplyLabel(strengthValueText, false, theme);
             matchupStrengthView?.ApplyTheme(theme);
         }
 
@@ -145,15 +170,10 @@ namespace DeadManZone.Presentation.Run
 
         private void EnsureHudTextsWired()
         {
-            if (_hudTextsWired &&
-                fightIndexText != null &&
-                suppliesValueText != null &&
-                manpowerValueText != null &&
-                authorityValueText != null &&
-                moraleValueText != null)
-            {
+            if (_hudTextsWired)
                 return;
-            }
+
+            strengthValueText ??= FindNamedText(transform, "StrengthNumber");
 
             var searchRoot = ResolveHudSearchRoot();
             fightIndexText ??= FindNamedText(searchRoot, "FightNumber", "FightIndex");
@@ -162,12 +182,9 @@ namespace DeadManZone.Presentation.Run
             manpowerValueText ??= FindNamedText(searchRoot, "ManpowerNumber");
             authorityValueText ??= FindNamedText(searchRoot, "AuthorityNumber");
             moraleValueText ??= FindNamedText(searchRoot, "MoraleNumber", "MoralNumber");
+            strengthValueText ??= FindNamedText(searchRoot, "StrengthNumber");
 
-            _hudTextsWired = fightIndexText != null ||
-                suppliesValueText != null ||
-                manpowerValueText != null ||
-                authorityValueText != null ||
-                moraleValueText != null;
+            _hudTextsWired = true;
         }
 
         private Transform ResolveHudSearchRoot()
@@ -176,10 +193,10 @@ namespace DeadManZone.Presentation.Run
             if (topResourcePanel != null)
                 return topResourcePanel;
 
-            var shopScene = transform.parent;
-            if (shopScene != null)
+            var topBar = transform.parent;
+            if (topBar != null)
             {
-                var nestedPanel = shopScene.Find("TopBar/TopResourcePanel");
+                var nestedPanel = topBar.Find("TopResourcePanel");
                 if (nestedPanel != null)
                     return nestedPanel;
             }

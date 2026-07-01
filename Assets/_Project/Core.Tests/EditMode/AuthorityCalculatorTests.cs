@@ -18,16 +18,15 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void ComputeRoundPool_AddsOnePerCommandBuilding()
         {
-            var board = new BoardState(TestBoards.Layout);
-            board.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0));
+            var board = TestBoards.WithCommandBunker();
             Assert.AreEqual(3, AuthorityCalculator.ComputeRoundPool(board));
         }
 
         [Test]
         public void ComputeRoundPool_CountsEachCommandBuilding()
         {
-            var board = new BoardState(TestBoards.Layout);
-            board.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0));
+            var hq = new BoardState(TestBoards.IronMarchHqLayout);
+            hq.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0));
             var radio = new PieceDefinition
             {
                 Id = "radio_array",
@@ -37,7 +36,12 @@ namespace DeadManZone.Core.Tests
                 CommandActions = CommandActionFlags.ChangeStance,
                 MaxHp = 12
             };
-            board.TryPlace(radio, new GridCoord(3, 0), "radio_1");
+            hq.TryPlace(radio, new GridCoord(0, 2), "radio_1");
+            var board = new BuildBoardSet
+            {
+                Combat = new BoardState(TestBoards.Layout),
+                Hq = hq
+            }.ToAggregateBoard();
             Assert.AreEqual(4, AuthorityCalculator.ComputeRoundPool(board));
         }
     }

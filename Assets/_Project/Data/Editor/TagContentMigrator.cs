@@ -74,7 +74,6 @@ namespace DeadManZone.Data.Editor
             "Sniper"
         };
 
-        [MenuItem("DeadManZone/Migrate Piece Tags")]
         public static void MigratePieceTags()
         {
             string[] guids = AssetDatabase.FindAssets("t:PieceDefinitionSO", new[] { PieceRoot });
@@ -119,8 +118,7 @@ namespace DeadManZone.Data.Editor
             Debug.Log($"[TagContentMigrator] Piece tag migration complete. Updated={updated}, Unchanged={unchanged}, Warnings={warnings}.");
         }
 
-        [MenuItem("DeadManZone/Clear Legacy Synergy Tags")]
-        public static void ClearLegacySynergyTags()
+        internal static void ClearLegacySynergyTags()
         {
             string[] guids = AssetDatabase.FindAssets("t:PieceDefinitionSO", new[] { PieceRoot });
             int cleared = 0;

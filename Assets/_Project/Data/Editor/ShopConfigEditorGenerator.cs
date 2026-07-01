@@ -11,7 +11,7 @@ namespace DeadManZone.Data.Editor
         private const string Root = "Assets/_Project/Data/Resources/DeadManZone/Shop";
         private const string ConfigPath = "Assets/_Project/Data/Resources/DeadManZone/ShopConfig.asset";
 
-        [MenuItem("DeadManZone/Shop/Create Default Shop Profiles")]
+        [MenuItem(DeadManZoneEditorMenus.Content + "Create Default Shop Profiles")]
         public static void CreateDefaultShopProfiles()
         {
             Directory.CreateDirectory(Root);

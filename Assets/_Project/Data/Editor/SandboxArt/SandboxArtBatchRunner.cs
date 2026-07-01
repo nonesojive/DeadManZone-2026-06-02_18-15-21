@@ -6,7 +6,7 @@ namespace DeadManZone.Data.Editor
     /// <summary>Runs the full sandbox art pipeline for batchmode / CI.</summary>
     public static class SandboxArtBatchRunner
     {
-        [MenuItem("DeadManZone/Art/Run Full Sandbox Art Pipeline")]
+        [MenuItem(DeadManZoneEditorMenus.Art + "Run Full Sandbox Art Pipeline")]
         public static void RunFromMenu() => RunFullPipeline();
 
         public static void RunFullPipeline()

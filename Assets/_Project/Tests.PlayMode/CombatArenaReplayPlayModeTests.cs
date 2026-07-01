@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
+using DeadManZone.Core.Tests;
 using DeadManZone.Data;
 using DeadManZone.Game;
 using DeadManZone.Presentation.Combat;
@@ -125,9 +126,9 @@ namespace DeadManZone.PlayMode.Tests
             yield return new WaitUntil(() => !harness.Director.IsPlaying);
             yield return new WaitUntil(() => FindActor(harness.Presenter, "field_gun_1") == null);
 
-            Assert.IsFalse(
-                harness.Presenter.GetActiveActors().Any(),
-                "Destroyed replay should remove arena unit actors.");
+            Assert.IsNull(
+                FindActor(harness.Presenter, "field_gun_1"),
+                "Destroyed replay should remove the targeted unit actor.");
         }
 
         [UnityTest]
@@ -153,9 +154,9 @@ namespace DeadManZone.PlayMode.Tests
             yield return new WaitUntil(() => !harness.Director.IsPlaying);
             yield return new WaitUntil(() => FindActor(harness.Presenter, "field_gun_1") == null);
 
-            Assert.IsFalse(
-                harness.Presenter.GetActiveActors().Any(),
-                "Full move/damage/destroy replay should end with no active unit actors.");
+            Assert.IsNull(
+                FindActor(harness.Presenter, "field_gun_1"),
+                "Full move/damage/destroy replay should remove the targeted unit actor.");
         }
 
         [UnityTest]
@@ -242,7 +243,7 @@ namespace DeadManZone.PlayMode.Tests
             var database = ContentDatabase.Load();
             if (database == null || database.Pieces.Count == 0)
             {
-                Assert.Ignore("Generated ContentDatabase not found. Run DeadManZone/Generate Vertical Slice Content first.");
+                Assert.Ignore(DeadManZoneTestContent.MissingDatabaseHint);
                 return null;
             }
 

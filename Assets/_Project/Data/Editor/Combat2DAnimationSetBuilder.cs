@@ -28,10 +28,10 @@ namespace DeadManZone.Data.Editor
             ("ironmarch_breacher", "ironmarch_breacher"),
         };
 
-        [MenuItem("DeadManZone/Combat Arena/Build Field Medic 2D Anim Set")]
+        [MenuItem(DeadManZoneEditorMenus.CombatArena + "Build Field Medic 2D Anim Set")]
         public static void BuildFieldMedic() => BuildOne("field_medic", "medic");
 
-        [MenuItem("DeadManZone/Combat Arena/Build All Unit 2D Anim Sets")]
+        [MenuItem(DeadManZoneEditorMenus.CombatArena + "Build All Unit 2D Anim Sets")]
         public static void BuildAll()
         {
             int built = 0;

@@ -6,7 +6,7 @@ namespace DeadManZone.Data.Editor
 {
     public static class SyntyArtCatalogFactory
     {
-        [MenuItem("DeadManZone/Synty/Create Synty Sandbox Art Catalog")]
+        [MenuItem(DeadManZoneEditorMenus.Art + "Synty/Create Synty Sandbox Art Catalog")]
         public static void CreateSyntySandboxArtCatalog()
         {
             EnsureFolder(SyntyArtPaths.Icons);

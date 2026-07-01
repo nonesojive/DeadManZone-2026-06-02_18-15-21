@@ -20,7 +20,7 @@ namespace DeadManZone.Core.Tests
             _database = ContentDatabase.Load();
             if (_database == null || _database.Pieces.Count == 0)
             {
-                Assert.Ignore("Generated ContentDatabase not found. Run DeadManZone/Generate Vertical Slice Content first.");
+                Assert.Ignore(DeadManZoneTestContent.MissingDatabaseHint);
             }
 
             SaveManager.DeleteSave();
@@ -36,9 +36,8 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void CompleteFight_SetsLastEnemyFactionIdAndSalvageChance()
         {
-            var board = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
             _orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
-            _orchestrator.SavePlayerBoard(board);
+            VerticalSliceTestFixtures.SaveGauntletToOrchestrator(_orchestrator, _database);
 
             var template = _database.GetEnemyTemplate(1);
             Assert.IsNotNull(template, "Fight 1 enemy template required.");

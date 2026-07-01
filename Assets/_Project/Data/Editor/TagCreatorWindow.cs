@@ -14,7 +14,7 @@ namespace DeadManZone.Data.Editor
         private MessageType _statusType = MessageType.Info;
         private Vector2 _scroll;
 
-        [MenuItem("DeadManZone/Tag Creator")]
+        [MenuItem(DeadManZoneEditorMenus.Content + "Tag Creator")]
         public static void Open()
         {
             var window = GetWindow<TagCreatorWindow>("Tag Creator");

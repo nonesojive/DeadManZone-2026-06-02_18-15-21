@@ -8,7 +8,7 @@ namespace DeadManZone.Data.Editor
     /// <summary>One-shot content tuning for four-band range + accuracy defaults.</summary>
     public static class CombatContentBalancePass
     {
-        [MenuItem("DeadManZone/Combat Content Balance Pass")]
+        [MenuItem(DeadManZoneEditorMenus.Content + "Combat Content Balance Pass")]
         public static void RunOnAllPieces()
         {
             var guids = AssetDatabase.FindAssets("t:PieceDefinitionSO");

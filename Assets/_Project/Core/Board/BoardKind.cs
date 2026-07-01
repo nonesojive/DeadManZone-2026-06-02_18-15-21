@@ -4,6 +4,8 @@ namespace DeadManZone.Core.Board
     {
         Combat,
         Hq,
-        Reserves
+        Reserves,
+        /// <summary>ponytail: shop/unlock carrier only; not a real placement surface.</summary>
+        Aggregate
     }
 }

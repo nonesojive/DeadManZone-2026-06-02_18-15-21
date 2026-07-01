@@ -1,4 +1,5 @@
 using System.IO;
+using DeadManZone.Data.Editor;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,7 +12,7 @@ namespace DeadManZone.Presentation.Editor
     {
         private const string Root = "Assets/_Project/Art/UI/GrokGenerations";
 
-        [MenuItem("DeadManZone/Art/Import GrokGenerations Sprites")]
+        [MenuItem(DeadManZoneEditorMenus.Art + "Import GrokGenerations Sprites")]
         public static void ImportGrokGenerationsSprites()
         {
             if (!AssetDatabase.IsValidFolder(Root))
@@ -55,7 +56,7 @@ namespace DeadManZone.Presentation.Editor
             importer.SaveAndReimport();
         }
 
-        [MenuItem("DeadManZone/Art/Sync Grok Source Into GrokGenerations")]
+        [MenuItem(DeadManZoneEditorMenus.Art + "Sync Grok Source Into GrokGenerations")]
         public static void SyncFromGrokSourceFolders()
         {
             CopyPngTree("Assets/grok tiles/groktileset5", Root + "/Tileset5");

@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using DeadManZone.Data;
+using DeadManZone.Data.Editor;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -11,7 +12,12 @@ namespace DeadManZone.Presentation.Editor
         private const string ConfigPath = "Assets/_Project/Data/Resources/DeadManZone/CombatArenaConfig.asset";
         private const string ScenePath = "Assets/_Project/Scenes/CombatArena2D.unity";
 
-        [MenuItem("DeadManZone/Combat Arena/Enable Top Troops 2D Mode")]
+        [MenuItem(DeadManZoneEditorMenus.CombatArena + "Wire All 2D Combat Art", priority = 0)]
+        public static void WireAll2DCombatArt()
+        {
+            EnableTopTroops2DMode();
+        }
+
         public static void EnableTopTroops2DMode()
         {
             var config = AssetDatabase.LoadAssetAtPath<CombatArenaConfigSO>(ConfigPath);
@@ -39,7 +45,6 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log("Top Troops 2D mode enabled on CombatArenaConfig. Combat fights load CombatArena2D scene.");
         }
 
-        [MenuItem("DeadManZone/Combat Arena/Wire 2D Environment Art")]
         public static void Wire2DEnvironmentArt()
         {
             const string artFolder = "Assets/_Project/Art/Combat2D/Environment";
@@ -64,7 +69,6 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log($"Wired 2D environment sprites into {assetPath}");
         }
 
-        [MenuItem("DeadManZone/Combat Arena/Wire 2D Silhouette Art")]
         public static void Wire2DSilhouetteArt()
         {
             const string artFolder = "Assets/_Project/Art/Combat2D/Units/Silhouettes";
@@ -88,7 +92,6 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log($"Wired 2D silhouette sprites into {assetPath}");
         }
 
-        [MenuItem("DeadManZone/Combat Arena/Wire 2D VFX Art")]
         public static void Wire2DVfxArt()
         {
             const string artFolder = "Assets/_Project/Art/Combat2D/VFX";
@@ -110,7 +113,6 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log($"Wired 2D VFX strips into {assetPath}");
         }
 
-        [MenuItem("DeadManZone/Combat Arena/Wire 2D Building Art")]
         public static void Wire2DBuildingArt()
         {
             const string artFolder = "Assets/_Project/Art/Combat2D/Buildings";
@@ -155,7 +157,7 @@ namespace DeadManZone.Presentation.Editor
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
         }
 
-        [MenuItem("DeadManZone/Combat Arena/Add CombatArena2D To Build Settings")]
+        [MenuItem(DeadManZoneEditorMenus.CombatArena + "Add CombatArena2D To Build Settings")]
         public static void EnsureSceneInBuildSettings()
         {
             if (!System.IO.File.Exists(ScenePath))

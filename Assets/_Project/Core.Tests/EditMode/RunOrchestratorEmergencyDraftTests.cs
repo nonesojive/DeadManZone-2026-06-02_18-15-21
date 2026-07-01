@@ -19,7 +19,7 @@ namespace DeadManZone.Core.Tests
             _database = ContentDatabase.Load();
             if (_database == null || _database.Pieces.Count == 0)
             {
-                Assert.Ignore("Generated ContentDatabase not found. Run DeadManZone/Generate Vertical Slice Content first.");
+                Assert.Ignore(DeadManZoneTestContent.MissingDatabaseHint);
             }
 
             SaveManager.DeleteSave();
@@ -38,8 +38,8 @@ namespace DeadManZone.Core.Tests
             _orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 777);
             var board = _orchestrator.GetPlayerBoard();
             var rifle = _database.Pieces.First(p => p.id == "rifle_squad").ToCore();
-            Assert.IsTrue(board.TryPlace(rifle, TestBoards.FrontLineAnchor(), "rifle_1").Success);
-            _orchestrator.SavePlayerBoard(board);
+            Assert.IsTrue(board.TryPlace(rifle, TestBoards.CombatBoardAnchor(5, 3), "rifle_1").Success);
+            _orchestrator.SaveCombatBoard(board);
 
             var registry = ContentRegistryProvider.Build(_database);
             int upkeep = ManpowerCalculator.ComputeUpkeep(_orchestrator.GetPlayerBoard(), registry);

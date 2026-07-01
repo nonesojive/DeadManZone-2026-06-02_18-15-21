@@ -26,8 +26,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void SpendRequisitionBuff_FailsWithoutRequisition()
         {
-            var board = new BoardState(TestBoards.Layout);
-            board.TryPlace(TestPieces.SupplyDepot(), new GridCoord(0, 0));
+            var board = TestBoards.WithSupplyDepot();
 
             var processor = new CommandProcessor();
             var tactics = new TacticState();
@@ -58,8 +57,13 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void BonusActionSlots_AreDisabledInDemo()
         {
-            var board = new BoardState(TestBoards.Layout);
-            board.TryPlace(TestPieces.CommandBunker(), new GridCoord(1, 4));
+            var hq = new BoardState(TestBoards.IronMarchHqLayout);
+            hq.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0));
+            var board = new BuildBoardSet
+            {
+                Combat = new BoardState(TestBoards.Layout),
+                Hq = hq
+            }.ToAggregateBoard();
 
             var processor = new CommandProcessor();
             Assert.That(processor.GetBonusActionSlots(board), Is.EqualTo(0));

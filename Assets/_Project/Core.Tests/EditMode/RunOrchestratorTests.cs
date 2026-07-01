@@ -24,7 +24,7 @@ namespace DeadManZone.Core.Tests
             _database = ContentDatabase.Load();
             if (_database == null || _database.Pieces.Count == 0)
             {
-                Assert.Ignore("Generated ContentDatabase not found. Run DeadManZone/Generate Vertical Slice Content first.");
+                Assert.Ignore(DeadManZoneTestContent.MissingDatabaseHint);
             }
 
             SaveManager.DeleteSave();
@@ -186,7 +186,7 @@ namespace DeadManZone.Core.Tests
 
             bool placed = _orchestrator.TryAcquireOfferToBoard(
                 offer.OfferId,
-                TestBoards.FrontLineAnchor(4));
+                TestBoards.CombatBoardAnchor(5, 4));
 
             Assert.IsFalse(placed);
             Assert.AreEqual(suppliesBefore, _orchestrator.State.Supplies);
@@ -196,14 +196,14 @@ namespace DeadManZone.Core.Tests
         public void TryMovePlacedPiece_RelocatesOnBoard()
         {
             _orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 505);
-            var board = _orchestrator.GetPlayerBoard();
+            var board = _orchestrator.GetHqBoard();
             var radio = GetPiece("radio_array");
-            Assert.IsTrue(board.TryPlace(radio, new Core.Common.GridCoord(1, 4), "radio_1").Success);
-            _orchestrator.SavePlayerBoard(board);
+            Assert.IsTrue(board.TryPlace(radio, new Core.Common.GridCoord(1, 0), "radio_1").Success);
+            _orchestrator.SaveHqBoard(board);
 
             Assert.IsTrue(_orchestrator.TryMovePlacedPiece("radio_1", new Core.Common.GridCoord(0, 2)));
 
-            var updated = _orchestrator.GetPlayerBoard();
+            var updated = _orchestrator.GetHqBoard();
             var piece = updated.Pieces.First(p => p.InstanceId == "radio_1");
             Assert.AreEqual(0, piece.Anchor.X);
             Assert.AreEqual(2, piece.Anchor.Y);
@@ -213,15 +213,15 @@ namespace DeadManZone.Core.Tests
         public void TryMoveBoardToReserves_RemovesFromBoardAndPlacesOnReserves()
         {
             _orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 606);
-            var board = _orchestrator.GetPlayerBoard();
+            var board = _orchestrator.GetHqBoard();
             var radio = GetPiece("radio_array");
-            Assert.IsTrue(board.TryPlace(radio, new Core.Common.GridCoord(1, 4), "radio_1").Success);
-            _orchestrator.SavePlayerBoard(board);
+            Assert.IsTrue(board.TryPlace(radio, new Core.Common.GridCoord(1, 0), "radio_1").Success);
+            _orchestrator.SaveHqBoard(board);
 
             Assert.IsTrue(_orchestrator.TryMoveBoardToReserves(
                 "radio_1",
                 new Core.Common.GridCoord(0, 0)));
-            Assert.AreEqual(1, _orchestrator.GetPlayerBoard().Pieces.Count());
+            Assert.IsEmpty(_orchestrator.GetHqBoard().Pieces);
             Assert.IsTrue(_orchestrator.State.Reserves.Pieces.Any(p =>
                 p.InstanceId == "radio_1" && p.PieceId == radio.Id));
         }
@@ -230,10 +230,9 @@ namespace DeadManZone.Core.Tests
         public void SaveMidCombat_RestoresAwaitingCommandWindow()
         {
             _orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 909);
-            var board = _orchestrator.GetPlayerBoard();
-            Assert.IsTrue(board.TryPlace(GetPiece("radio_array"), new Core.Common.GridCoord(1, 4), "radio_1").Success);
-            Assert.IsTrue(board.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(), "rifle_1").Success);
-            _orchestrator.SavePlayerBoard(board);
+            var board = _orchestrator.GetCombatBoard();
+            Assert.IsTrue(board.TryPlace(TestPieces.RifleSquad(), TestBoards.CombatBoardAnchor(5, 3), "rifle_1").Success);
+            _orchestrator.SaveCombatBoard(board);
 
             _orchestrator.BeginCombat();
             var openingStep = _orchestrator.AdvanceCombat();
@@ -289,9 +288,8 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void FullCombatLoop_CanReachVictoryWithStrongBoard()
         {
-            var board = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
             _orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
-            _orchestrator.SavePlayerBoard(board);
+            VerticalSliceTestFixtures.SaveGauntletToOrchestrator(_orchestrator, _database);
             int startingFightIndex = _orchestrator.State.FightIndex;
 
             for (int fight = 1; fight <= RunOrchestrator.MaxFights; fight++)
@@ -335,9 +333,9 @@ namespace DeadManZone.Core.Tests
         public void SaveMidPause_SameCommands_ProducesIdenticalCombatLog()
         {
             _orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 4242);
-            var board = _orchestrator.GetPlayerBoard();
-            Assert.IsTrue(board.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(), "rifle_1").Success);
-            _orchestrator.SavePlayerBoard(board);
+            var board = _orchestrator.GetCombatBoard();
+            Assert.IsTrue(board.TryPlace(TestPieces.RifleSquad(), TestBoards.CombatBoardAnchor(5, 3), "rifle_1").Success);
+            _orchestrator.SaveCombatBoard(board);
 
             _orchestrator.BeginCombat();
             _orchestrator.AdvanceCombat();
@@ -362,9 +360,9 @@ namespace DeadManZone.Core.Tests
 
             var fresh = new RunOrchestrator(_database);
             fresh.StartNewRun(FactionIds.IronVanguard, runSeed: 4242);
-            var freshBoard = fresh.GetPlayerBoard();
-            Assert.IsTrue(freshBoard.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(), "rifle_1").Success);
-            fresh.SavePlayerBoard(freshBoard);
+            var freshBoard = fresh.GetCombatBoard();
+            Assert.IsTrue(freshBoard.TryPlace(TestPieces.RifleSquad(), TestBoards.CombatBoardAnchor(5, 3), "rifle_1").Success);
+            fresh.SaveCombatBoard(freshBoard);
             fresh.BeginCombat();
             fresh.AdvanceCombat();
             fresh.SubmitCombatCommands(new List<PhaseCommand>

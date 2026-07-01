@@ -28,7 +28,7 @@ namespace DeadManZone.Core.Board
         }
 
         public static bool IsAllowedForBoard(PieceDefinition definition, BoardKind boardKind) =>
-            ResolveTargetBoard(definition) == boardKind;
+            boardKind == BoardKind.Aggregate || ResolveTargetBoard(definition) == boardKind;
 
         public static string InvalidBoardReason(PieceDefinition definition, BoardKind boardKind)
         {

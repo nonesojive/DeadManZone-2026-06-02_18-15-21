@@ -37,7 +37,7 @@ namespace DeadManZone.Core.Run
                     pairs++;
             }
 
-            return pairs;
+            return pairs * SupplySynergyMusterBonus;
         }
 
         private static bool HasSupplySynergyTag(PieceDefinition definition) =>

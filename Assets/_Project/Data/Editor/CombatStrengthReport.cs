@@ -11,7 +11,7 @@ namespace DeadManZone.Data.Editor
 {
     public static class CombatStrengthReport
     {
-        [MenuItem("DeadManZone/Combat Strength Report")]
+        [MenuItem(DeadManZoneEditorMenus.Content + "Combat Strength Report")]
         public static void Run()
         {
             var database = ContentDatabase.Load();

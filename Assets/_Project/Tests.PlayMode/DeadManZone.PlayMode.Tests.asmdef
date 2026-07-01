@@ -5,6 +5,7 @@
     "DeadManZone.Presentation",
     "DeadManZone.Game",
     "DeadManZone.Core",
+    "DeadManZone.Core.Tests",
     "DeadManZone.Data",
     "Unity.TextMeshPro"
   ],

@@ -11,7 +11,7 @@ namespace DeadManZone.Data.Editor
         private const float CameraElevation = 35f;
         private const float CameraAzimuth = 225f;
 
-        [MenuItem("DeadManZone/Art/Snapshot Missing Icons From Prefabs")]
+        [MenuItem(DeadManZoneEditorMenus.Art + "Snapshot Missing Icons From Prefabs")]
         public static void SnapshotMissingIconsFromPrefabs() => SnapshotAllIconsFromPrefabs(forceResnapshot: false);
 
         public static void SnapshotAllIconsFromPrefabs(bool forceResnapshot)

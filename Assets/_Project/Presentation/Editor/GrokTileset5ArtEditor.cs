@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Data;
+using DeadManZone.Data.Editor;
 using DeadManZone.Presentation.Board;
 using DeadManZone.Presentation.Visual;
 using UnityEditor;
@@ -24,7 +25,7 @@ namespace DeadManZone.Presentation.Editor
         // ponytail: slotted vent tiles identified by dark center fill; moved to reserves.
         private static readonly int[] GrateTiles = { 8, 11, 13, 20, 22 };
 
-        [MenuItem("DeadManZone/Art/Import Grok Tileset5 Board Tiles")]
+        [MenuItem(DeadManZoneEditorMenus.Art + "Import Grok Tileset5 Board Tiles")]
         public static void ImportGrokTileset5BoardTiles()
         {
             ConfigureTileTextures();

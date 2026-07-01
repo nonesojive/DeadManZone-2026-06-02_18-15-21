@@ -50,7 +50,7 @@ namespace DeadManZone.Core.Tests.EditMode
             player.TryPlace(piece, new GridCoord(4, 5), instanceId: "player_rifle");
 
             var enemy = new BoardState(TestBoards.Layout);
-            enemy.TryPlace(TestPieces.HqPiece(), new GridCoord(0, 4), instanceId: "enemy_hq");
+            enemy.TryPlace(TestPieces.CombatFieldHq(), new GridCoord(0, 4), instanceId: "enemy_hq");
             enemy.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(5), instanceId: "enemy_rifle");
 
             var run = TickCombatRun.Start(player, enemy, seed: 42);

@@ -1,3 +1,4 @@
+using DeadManZone.Data.Editor;
 using DeadManZone.Presentation.Visual;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -29,7 +30,7 @@ namespace DeadManZone.Presentation.Editor
             public System.Action Repaint;
         }
 
-        [MenuItem("DeadManZone/Visual Studio")]
+        [MenuItem(DeadManZoneEditorMenus.VisualStudio)]
         public static void Open()
         {
             var window = GetWindow<VisualStudioWindow>("Visual Studio");

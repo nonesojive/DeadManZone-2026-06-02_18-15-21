@@ -4,6 +4,7 @@ using DeadManZone.Presentation.Board;
 using DeadManZone.Presentation.Reserves;
 using DeadManZone.Presentation.Run;
 using DeadManZone.Presentation.Visual;
+using DeadManZone.Data.Editor;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -17,7 +18,7 @@ namespace DeadManZone.Presentation.Editor
     /// </summary>
     public static class BoardAreaTripleLayoutSetup
     {
-        private const string MenuPath = "DeadManZone/Run/Setup BoardArea Triple Layout";
+        private const string MenuPath = DeadManZoneEditorMenus.Run + "Setup BoardArea Triple Layout";
 
         private const int CombatColumns = 6;
         private const int CombatRows = 6;

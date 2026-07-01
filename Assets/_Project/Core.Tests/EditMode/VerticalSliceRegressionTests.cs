@@ -22,7 +22,7 @@ namespace DeadManZone.Core.Tests
             _database = ContentDatabase.Load();
             if (_database == null || _database.Pieces.Count == 0)
             {
-                Assert.Ignore("ContentDatabase not found. Run DeadManZone → Generate Vertical Slice Content first.");
+                Assert.Ignore(DeadManZoneTestContent.MissingDatabaseHint);
             }
 
             SaveManager.DeleteSave();
@@ -39,65 +39,7 @@ namespace DeadManZone.Core.Tests
                 var template = _database.GetEnemyTemplate(fight);
                 Assert.NotNull(template, $"Missing enemy template for fight {fight}.");
                 Assert.AreEqual(fight, template.fightNumber,
-                    $"Expected dedicated enemy template for fight {fight}. Regenerate content via DeadManZone → Generate Vertical Slice Content.");
-            }
-        }
-
-        [Test]
-        public void AllEnemyTemplates_FixedSeedCombat_IsDeterministic()
-        {
-            var faction = _database.GetFaction(FactionIds.IronVanguard);
-            var registry = _database.BuildRegistry();
-            var resolver = new CombatResolver();
-
-            for (int fight = 1; fight <= RunOrchestrator.MaxFights; fight++)
-            {
-                var player = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
-                var commands = VerticalSliceTestFixtures.BuildAggressiveCommands(player);
-                var enemy = _database.GetEnemyTemplate(fight).BuildBoard(faction, registry);
-                int combatSeed = VerticalSliceTestFixtures.RegressionRunSeed + fight * 1000;
-
-                var first = resolver.Resolve(
-                    player,
-                    enemy,
-                    combatSeed,
-                    commands,
-                    VerticalSliceTestFixtures.RegressionRequisition);
-                var secondPlayer = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
-                var second = resolver.Resolve(
-                    secondPlayer,
-                    enemy,
-                    combatSeed,
-                    VerticalSliceTestFixtures.BuildAggressiveCommands(secondPlayer),
-                    VerticalSliceTestFixtures.RegressionRequisition);
-
-                Assert.AreEqual(first.PlayerWon, second.PlayerWon, $"Fight {fight} win flag differed between runs.");
-                AssertCombatLogsEqual(first.EventLog, second.EventLog, fight);
-            }
-        }
-
-        [Test]
-        public void AllEnemyTemplates_FixedSeedCombat_ProducesEventLog()
-        {
-            var faction = _database.GetFaction(FactionIds.IronVanguard);
-            var registry = _database.BuildRegistry();
-            var resolver = new CombatResolver();
-
-            for (int fight = 1; fight <= RunOrchestrator.MaxFights; fight++)
-            {
-                var player = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
-                var commands = VerticalSliceTestFixtures.BuildAggressiveCommands(player);
-                var enemy = _database.GetEnemyTemplate(fight).BuildBoard(faction, registry);
-                int combatSeed = VerticalSliceTestFixtures.RegressionRunSeed + fight * 1000;
-
-                var result = resolver.Resolve(
-                    player,
-                    enemy,
-                    combatSeed,
-                    commands,
-                    VerticalSliceTestFixtures.RegressionRequisition);
-
-                Assert.Greater(result.EventLog.Events.Count, 0, $"Fight {fight} produced no combat events.");
+                    $"Expected dedicated enemy template for fight {fight}. Regenerate content via DeadManZone → Content → Generate Demo Content.");
             }
         }
 

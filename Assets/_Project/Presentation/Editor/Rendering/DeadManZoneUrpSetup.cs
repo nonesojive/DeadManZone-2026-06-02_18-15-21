@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Text;
+using DeadManZone.Data.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -38,7 +39,7 @@ namespace DeadManZone.Presentation.Editor
             return true;
         }
 
-        [MenuItem("DeadManZone/Rendering/Setup URP For Project")]
+        [MenuItem(DeadManZoneEditorMenus.Rendering + "Setup URP For Project")]
         public static void SetupUrpForProject()
         {
             EnsureFolder(SettingsFolder);
@@ -69,7 +70,7 @@ namespace DeadManZone.Presentation.Editor
             Debug.Log($"DeadManZone: URP assigned via {PipelineAssetPath}");
         }
 
-        [MenuItem("DeadManZone/Rendering/Validate URP Setup")]
+        [MenuItem(DeadManZoneEditorMenus.Rendering + "Validate URP Setup")]
         public static void ValidateUrpSetup()
         {
             var pipeline = GraphicsSettings.defaultRenderPipeline;
