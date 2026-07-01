@@ -144,7 +144,7 @@ namespace DeadManZone.Presentation.Visual
         public Color GetReserveSlotColor() =>
             storageSlotEmptySprite != null ? new Color(0.92f, 0.91f, 0.88f, 1f) : cardColor;
 
-        public void ApplyIronVanguardDefaults()
+        public void ApplyIronmarchUnionDefaults()
         {
             // Values match serialized defaults; explicit for editor menu creation.
         }

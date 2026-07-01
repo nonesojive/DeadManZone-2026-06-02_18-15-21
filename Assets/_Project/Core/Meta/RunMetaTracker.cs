@@ -46,7 +46,7 @@ namespace DeadManZone.Core.Meta
 
             switch (factionId)
             {
-                case FactionIds.IronVanguard:
+                case FactionIds.IronmarchUnion:
                     yield return AchievementIds.WinIronmarch;
                     break;
                 case FactionIds.DustScourge:

@@ -16,7 +16,7 @@ namespace DeadManZone.Core.Shop
             if (HasPieceOnBoard(board, "command_bunker"))
                 return true;
 
-            if (factionId == FactionIds.IronVanguard &&
+            if (factionId == FactionIds.IronmarchUnion &&
                 board.Pieces.Count(p => BoardPlacementRules.ResolveTargetBoard(p.Definition) == BoardKind.Combat) >= 3)
                 return true;
 

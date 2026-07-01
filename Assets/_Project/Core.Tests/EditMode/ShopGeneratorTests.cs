@@ -22,7 +22,7 @@ namespace DeadManZone.Core.Tests
             var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
 
-            var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 42);
+            var shop = generator.Generate(board, FactionIds.IronmarchUnion, round: 1, seed: 42);
 
             Assert.AreEqual(ShopSlotLayoutResolver.VisibleOfferSlotCount, shop.Offers.Count);
         }
@@ -33,7 +33,7 @@ namespace DeadManZone.Core.Tests
             var board = BuildBoardWithSupplyDepot();
             var registry = TestContentRegistry.Create();
             var generator = new ShopGenerator(registry);
-            var shop = generator.Generate(board, factionId: FactionIds.IronVanguard, round: 2, seed: 999);
+            var shop = generator.Generate(board, factionId: FactionIds.IronmarchUnion, round: 2, seed: 999);
 
             Assert.That(shop.Modifiers.GoldDiscountPercent, Is.GreaterThanOrEqualTo(10));
         }
@@ -45,8 +45,8 @@ namespace DeadManZone.Core.Tests
             var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
 
-            var shopA = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 42);
-            var shopB = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 42);
+            var shopA = generator.Generate(board, FactionIds.IronmarchUnion, round: 1, seed: 42);
+            var shopB = generator.Generate(board, FactionIds.IronmarchUnion, round: 1, seed: 42);
 
             Assert.AreEqual(shopA.Offers.Count, shopB.Offers.Count);
             for (int i = 0; i < shopA.Offers.Count; i++)
@@ -63,7 +63,7 @@ namespace DeadManZone.Core.Tests
 
             var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
-            var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 100);
+            var shop = generator.Generate(board, FactionIds.IronmarchUnion, round: 1, seed: 100);
 
             Assert.AreEqual(ShopSlotLayoutResolver.VisibleOfferSlotCount, shop.Offers.Count);
             Assert.That(shop.Modifiers.ExtraGeneralSlots, Is.EqualTo(1));
@@ -77,8 +77,8 @@ namespace DeadManZone.Core.Tests
             var registry = CreateRoleTestRegistry();
             var generator = new ShopGenerator(registry);
 
-            var shopWithout = generator.Generate(boardWithout, FactionIds.IronVanguard, round: 1, seed: 50);
-            var shopWith = generator.Generate(boardWith, FactionIds.IronVanguard, round: 1, seed: 50);
+            var shopWithout = generator.Generate(boardWithout, FactionIds.IronmarchUnion, round: 1, seed: 50);
+            var shopWith = generator.Generate(boardWith, FactionIds.IronmarchUnion, round: 1, seed: 50);
 
             var generalWithout = shopWithout.Offers.First(o => o.GoldPrice > 0);
             var matchingWith = shopWith.Offers.First(o => o.PieceId == generalWithout.PieceId);
@@ -103,7 +103,7 @@ namespace DeadManZone.Core.Tests
             registry.Register(TestPieces.FieldWorkshop(), ShopLane.Defensive);
 
             var generator = new ShopGenerator(registry);
-            var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 7);
+            var shop = generator.Generate(board, FactionIds.IronmarchUnion, round: 1, seed: 7);
 
             Assert.That(shop.Offers.Any(o => o.Lane == ShopLane.Defensive), Is.True);
             Assert.IsTrue(shop.Modifiers.GuaranteeEngineerOffer);
@@ -116,7 +116,7 @@ namespace DeadManZone.Core.Tests
             var registry = TestContentRegistry.Create();
             var generator = new ShopGenerator(registry);
 
-            var shop = generator.Generate(board, FactionIds.IronVanguard, round: 1, seed: 42);
+            var shop = generator.Generate(board, FactionIds.IronmarchUnion, round: 1, seed: 42);
 
             Assert.IsFalse(shop.Offers.Any(o => o.Lane == ShopLane.Specialty));
         }
@@ -142,7 +142,7 @@ namespace DeadManZone.Core.Tests
             Category = PieceCategory.Unit,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
             CombatRole = combatRole,
-            FactionId = FactionIds.IronVanguard,
+            FactionId = FactionIds.IronmarchUnion,
             GoldCost = 5,
             MaxHp = 10
         };

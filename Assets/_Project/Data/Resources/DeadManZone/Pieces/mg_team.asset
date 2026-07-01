@@ -46,7 +46,7 @@ MonoBehaviour:
   attackType: 4
   accuracyOverride: 70
   grantedAbility: 0
-  factionId: iron_vanguard
+  factionId: ironmarch_union
   icon: {fileID: 21300000, guid: b6dd13b340f54a23afefeabd4167f52e, type: 3}
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
   cellSprites: []

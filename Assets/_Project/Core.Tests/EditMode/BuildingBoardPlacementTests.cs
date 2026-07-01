@@ -21,7 +21,7 @@ namespace DeadManZone.Core.Tests.EditMode
 
             SaveManager.DeleteSave();
             var orchestrator = new RunOrchestrator(database);
-            orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 1);
+            orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 1);
             Assert.IsEmpty(orchestrator.GetCombatBoard().Pieces);
         }
 
@@ -37,7 +37,7 @@ namespace DeadManZone.Core.Tests.EditMode
 
             SaveManager.DeleteSave();
             var orchestrator = new RunOrchestrator(database);
-            orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 1);
+            orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 1);
             var buildingBoard = orchestrator.GetHqBoard();
             var radio = database.Pieces.First(p => p.id == "radio_array").ToCore();
             Assert.IsTrue(buildingBoard.TryPlace(radio, new Core.Common.GridCoord(1, 0), "radio_test").Success);

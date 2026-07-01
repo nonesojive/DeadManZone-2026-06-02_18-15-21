@@ -725,7 +725,7 @@ MonoBehaviour:
       useAttackRange: 0
       factionId: 
   - id: ironmarch_union
-    countTagId: iron_vanguard
+    countTagId: ironmarch_union
     countCategory: 6
     tiers:
     - threshold: 5

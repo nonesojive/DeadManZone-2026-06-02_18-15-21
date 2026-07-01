@@ -25,7 +25,7 @@ namespace DeadManZone.Presentation.Editor
 
             EnsureFolder("Assets/_Project/Data/Resources/DeadManZone");
             var theme = ScriptableObject.CreateInstance<UiThemeSO>();
-            theme.ApplyIronVanguardDefaults();
+            theme.ApplyIronmarchUnionDefaults();
             AssetDatabase.CreateAsset(theme, ThemeAssetPath);
             return theme;
         }

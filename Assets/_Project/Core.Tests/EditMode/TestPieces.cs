@@ -45,7 +45,7 @@ namespace DeadManZone.Core.Tests
             CooldownTicks = 3,
             GoldCost = 10,
             ManpowerCost = 10,
-            FactionId = FactionIds.IronVanguard
+            FactionId = FactionIds.IronmarchUnion
         };
 
         public static PieceDefinition With(

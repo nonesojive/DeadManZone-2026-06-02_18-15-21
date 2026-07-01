@@ -26,7 +26,7 @@ namespace DeadManZone.Presentation.Editor
             public GameObject OptionsPanel;
             public Button OptionsBackButton;
             public GameObject FactionPanel;
-            public Button IronVanguardButton;
+            public Button IronmarchUnionButton;
             public Button DustScourgeButton;
             public Button CartelButton;
             public Button FactionBackButton;
@@ -73,7 +73,7 @@ namespace DeadManZone.Presentation.Editor
                 OptionsPanel = optionsPanel,
                 OptionsBackButton = optionsBackBtn,
                 FactionPanel = factionPanel,
-                IronVanguardButton = ironBtn,
+                IronmarchUnionButton = ironBtn,
                 DustScourgeButton = dustBtn,
                 CartelButton = cartelBtn,
                 FactionBackButton = factionBackBtn,
@@ -192,7 +192,7 @@ namespace DeadManZone.Presentation.Editor
             MenuSceneSetup.CreateLabelPublic(panel.transform, "Choose Faction", 36, FontStyles.Bold,
                 new Vector2(0.5f, 0.78f), new Vector2(500, 60)).color = theme.textPrimary;
 
-            ironBtn = CreateMenuButton(panel.transform, "IronVanguardButton", "IronMarch Union",
+            ironBtn = CreateMenuButton(panel.transform, "IronmarchUnionButton", "IronMarch Union",
                 new Vector2(0.5f, 0.56f), menuTheme, theme, accent: true);
             dustBtn = CreateMenuButton(panel.transform, "DustScourgeButton", "Dust Scourge",
                 new Vector2(0.5f, 0.46f), menuTheme, theme, accent: true);
@@ -329,7 +329,7 @@ namespace DeadManZone.Presentation.Editor
             serialized.FindProperty("optionsPanel").objectReferenceValue = result.OptionsPanel;
             serialized.FindProperty("optionsBackButton").objectReferenceValue = result.OptionsBackButton;
             serialized.FindProperty("factionPanel").objectReferenceValue = result.FactionPanel;
-            serialized.FindProperty("ironVanguardButton").objectReferenceValue = result.IronVanguardButton;
+            serialized.FindProperty("ironmarchUnionButton").objectReferenceValue = result.IronmarchUnionButton;
             serialized.FindProperty("dustScourgeButton").objectReferenceValue = result.DustScourgeButton;
             serialized.FindProperty("cartelButton").objectReferenceValue = result.CartelButton;
             serialized.FindProperty("factionBackButton").objectReferenceValue = result.FactionBackButton;

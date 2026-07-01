@@ -15,7 +15,7 @@ namespace DeadManZone.Data.Editor
         public static void Run()
         {
             var database = ContentDatabase.Load();
-            var faction = database.GetFaction(FactionIds.IronVanguard);
+            var faction = database.GetFaction(FactionIds.IronmarchUnion);
             var registry = database.BuildRegistry();
             var referencePlayer = BuildReferencePlayerBoard(database, faction);
             var referenceSnapshot = ArmyStrengthCalculator.Evaluate(referencePlayer);

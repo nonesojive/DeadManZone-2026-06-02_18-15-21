@@ -38,7 +38,7 @@ namespace DeadManZone.Core.Tags
             AbilityRule("grenadier", GameTagIds.Grenadier, T(3, 1, 5, 2, 7, 3), CriticalMassStat.AttackRange, SynergyModType.TierStep, TargetAbility(GameTagIds.Grenadier)),
             FlavorRule("siege", GameTagIds.Siege, T(2, 1, 4, 2, 6, 3), CriticalMassStat.AttackSpeed, SynergyModType.TierStep, TargetRole(GameTagIds.Artillery)),
             RunRule("logistics", GameTagIds.Logistics, T(3, 5, 5, 10, 7, 15), CriticalMassStat.Supplies, SynergyModType.Percent, CriticalMassCountCategory.Flavor),
-            FactionRule("ironmarch_union", FactionIds.IronVanguard, T(5, 1, 7, 2, 10, 3), TargetPrimary(GameTagIds.Infantry))
+            FactionRule("ironmarch_union", FactionIds.IronmarchUnion, T(5, 1, 7, 2, 10, 3), TargetPrimary(GameTagIds.Infantry))
         };
 
         public static void RegisterWithCatalog() =>

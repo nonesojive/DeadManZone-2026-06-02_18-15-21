@@ -204,7 +204,7 @@ namespace DeadManZone.Presentation.Editor
 
         private static bool IsAccentButtonName(string buttonName) =>
             buttonName.Contains("Continue") || buttonName.Contains("NewRun")
-            || buttonName.Contains("Begin Fight") || buttonName.Contains("IronVanguard")
+            || buttonName.Contains("Begin Fight") || buttonName.Contains("IronmarchUnion")
             || buttonName.Contains("DustScourge") || buttonName.Contains("Cartel")
             || buttonName.Contains("Close") || buttonName.Contains("Submit");
 

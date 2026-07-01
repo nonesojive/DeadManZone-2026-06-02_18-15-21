@@ -10,7 +10,7 @@ namespace DeadManZone.Data
     [CreateAssetMenu(menuName = "DeadManZone/Faction")]
     public class FactionSO : ScriptableObject
     {
-        public string factionId = FactionIds.IronVanguard;
+        public string factionId = FactionIds.IronmarchUnion;
         public string displayName = "IronMarch Union";
 
         [Header("Combat board")]

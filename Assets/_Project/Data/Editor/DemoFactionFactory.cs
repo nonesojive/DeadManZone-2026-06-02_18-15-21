@@ -8,7 +8,7 @@ namespace DeadManZone.Data.Editor
         internal static FactionSO[] CreateAll() =>
             new[]
             {
-                DemoContentGenerator.SaveFaction(FactionIds.IronVanguard, "IronMarch Union",
+                DemoContentGenerator.SaveFaction(FactionIds.IronmarchUnion, "IronMarch Union",
                     startingSupplies: 125),
                 DemoContentGenerator.SaveFaction(FactionIds.DustScourge, "Dust Scourge",
                     startingManpower: 112),

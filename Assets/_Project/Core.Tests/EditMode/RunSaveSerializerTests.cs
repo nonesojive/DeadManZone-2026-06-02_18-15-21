@@ -20,7 +20,7 @@ namespace DeadManZone.Core.Tests
                 "  \"Gold\": 88,\n" +
                 "  \"Requisition\": 5,\n" +
                 "  \"RunSeed\": 42,\n" +
-                "  \"FactionId\": \"iron_vanguard\",\n" +
+                "  \"FactionId\": \"ironmarch_union\",\n" +
                 "  \"Phase\": \"Build\"\n" +
                 "}";
 
@@ -30,7 +30,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void SerializeDeserialize_PreservesCombatAndHqBoards()
         {
-            var state = RunState.CreateNew(FactionIds.IronVanguard, 42, 100, 100, 2, 100);
+            var state = RunState.CreateNew(FactionIds.IronmarchUnion, 42, 100, 100, 2, 100);
             state.CombatBoard = new BoardSnapshot
             {
                 BoardKind = BoardKind.Combat.ToString(),
@@ -64,7 +64,7 @@ namespace DeadManZone.Core.Tests
                 Manpower = 10,
                 Morale = 100,
                 RunSeed = 777,
-                FactionId = FactionIds.IronVanguard,
+                FactionId = FactionIds.IronmarchUnion,
                 Phase = RunPhase.Build
             };
 

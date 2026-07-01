@@ -13,7 +13,7 @@ namespace DeadManZone.Core.Shop
             IReadOnlyList<PieceDefinition> pool,
             int fightIndex,
             Rng rng,
-            string playerFactionId = FactionIds.IronVanguard) =>
+            string playerFactionId = FactionIds.IronmarchUnion) =>
             ShopPiecePicker.PickWeighted(pool, Array.Empty<string>(), preferredRoleWeight: 1f, rng);
     }
 }

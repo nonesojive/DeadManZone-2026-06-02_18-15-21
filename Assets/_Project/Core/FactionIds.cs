@@ -10,7 +10,7 @@ namespace DeadManZone.Core
     /// </summary>
     public static class FactionIds
     {
-        public const string IronVanguard = "iron_vanguard";
+        public const string IronmarchUnion = "ironmarch_union";
         public const string DustScourge = "dust_scourge";
         public const string CartelOfEchoes = "cartel_of_echoes";
 
@@ -19,13 +19,11 @@ namespace DeadManZone.Core
         /// </summary>
         public static readonly string[] Playable =
         {
-            IronVanguard,
-            DustScourge,
-            CartelOfEchoes
+            IronmarchUnion,
         };
 
         /// <summary>
-        /// Returns true if the given id is one of the three playable factions.
+        /// Returns true if the given id is a playable faction.
         /// </summary>
         public static bool IsPlayable(string factionId) =>
             !string.IsNullOrEmpty(factionId) && Array.IndexOf(Playable, factionId) >= 0;

@@ -500,7 +500,7 @@ MonoBehaviour:
   optionsPanel: {fileID: 561947496}
   optionsBackButton: {fileID: 236232550}
   factionPanel: {fileID: 739206515}
-  ironVanguardButton: {fileID: 1752057803}
+  ironmarchUnionButton: {fileID: 1752057803}
   dustScourgeButton: {fileID: 1412249441}
   cartelButton: {fileID: 232410980}
   factionBackButton: {fileID: 701640299}
@@ -6567,7 +6567,7 @@ GameObject:
   - component: {fileID: 1752057804}
   - component: {fileID: 1752057803}
   m_Layer: 0
-  m_Name: IronVanguardButton
+  m_Name: IronmarchUnionButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

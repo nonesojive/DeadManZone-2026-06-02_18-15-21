@@ -28,7 +28,7 @@ namespace DeadManZone.Presentation.MainMenu
 
         [Header("Faction select")]
         [SerializeField] private GameObject factionPanel;
-        [SerializeField] private Button ironVanguardButton;
+        [SerializeField] private Button ironmarchUnionButton;
         [SerializeField] private Button dustScourgeButton;
         [SerializeField] private Button cartelButton;
         [SerializeField] private Button factionBackButton;
@@ -61,8 +61,8 @@ namespace DeadManZone.Presentation.MainMenu
                 exitButton.onClick.AddListener(OnExitClicked);
             if (optionsBackButton != null)
                 optionsBackButton.onClick.AddListener(ShowMainPanel);
-            if (ironVanguardButton != null)
-                ironVanguardButton.onClick.AddListener(() => StartFaction(FactionIds.IronVanguard));
+            if (ironmarchUnionButton != null)
+                ironmarchUnionButton.onClick.AddListener(() => StartFaction(FactionIds.IronmarchUnion));
             if (dustScourgeButton != null)
                 dustScourgeButton.onClick.AddListener(() => StartFaction(FactionIds.DustScourge));
             if (cartelButton != null)
@@ -98,7 +98,7 @@ namespace DeadManZone.Presentation.MainMenu
 
         private void RefreshFactionButtons()
         {
-            SetFactionButton(ironVanguardButton, FactionIds.IronVanguard, "IronMarch Union");
+            SetFactionButton(ironmarchUnionButton, FactionIds.IronmarchUnion, "IronMarch Union");
             SetFactionButton(dustScourgeButton, FactionIds.DustScourge, "Dust Scourge");
             SetFactionButton(cartelButton, FactionIds.CartelOfEchoes, "Cartel of Echoes");
         }

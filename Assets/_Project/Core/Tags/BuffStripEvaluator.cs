@@ -192,7 +192,7 @@ namespace DeadManZone.Core.Tags
             if (TagRegistry.TryGet(tagId, out var tag) && !string.IsNullOrWhiteSpace(tag.DisplayName))
                 return tag.DisplayName;
 
-            if (tagId == FactionIds.IronVanguard)
+            if (tagId == FactionIds.IronmarchUnion)
                 return "IronMarch Union";
 
             return tagId;

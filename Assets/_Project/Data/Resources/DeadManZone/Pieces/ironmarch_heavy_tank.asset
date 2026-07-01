@@ -47,7 +47,7 @@ MonoBehaviour:
   armorType: 3
   attackType: 3
   grantedAbility: 0
-  factionId: iron_vanguard
+  factionId: ironmarch_union
   icon: {fileID: 21300000, guid: c545b30830d548a0bfc1e08e70776f09, type: 3}
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
   cellSprites: []

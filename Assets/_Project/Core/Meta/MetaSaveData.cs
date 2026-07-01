@@ -8,7 +8,7 @@ namespace DeadManZone.Core.Meta
     public sealed class MetaSaveData
     {
         public int SaveVersion = 1;
-        public HashSet<string> UnlockedFactions = new() { FactionIds.IronVanguard };
+        public HashSet<string> UnlockedFactions = new() { FactionIds.IronmarchUnion };
         public HashSet<string> UnlockedAchievements = new();
         public List<LeaderboardEntryRecord> LeaderboardEntries = new();
         public int TotalRunsCompleted;

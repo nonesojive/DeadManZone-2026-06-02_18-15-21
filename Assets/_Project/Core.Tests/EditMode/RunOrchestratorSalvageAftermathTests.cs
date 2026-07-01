@@ -36,7 +36,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void CompleteFight_SetsLastEnemyFactionIdAndSalvageChance()
         {
-            _orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
+            _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
             VerticalSliceTestFixtures.SaveGauntletToOrchestrator(_orchestrator, _database);
 
             var template = _database.GetEnemyTemplate(1);

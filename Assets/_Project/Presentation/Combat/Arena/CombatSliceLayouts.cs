@@ -8,9 +8,9 @@ namespace DeadManZone.Presentation.Combat.Arena
 {
     public static class CombatSliceLayouts
     {
-        public static BattlefieldState BuildIronVanguardSkirmish(ContentDatabase database)
+        public static BattlefieldState BuildIronmarchUnionSkirmish(ContentDatabase database)
         {
-            var faction = database.GetFaction(FactionIds.IronVanguard);
+            var faction = database.GetFaction(FactionIds.IronmarchUnion);
             if (faction == null)
                 return null;
 

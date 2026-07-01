@@ -9,7 +9,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void TryUse_AddsShortfallAndMarksUsed()
         {
-            var state = RunState.CreateNew(FactionIds.IronVanguard, 1, 10, 2, 5, 100);
+            var state = RunState.CreateNew(FactionIds.IronmarchUnion, 1, 10, 2, 5, 100);
 
             Assert.IsTrue(EmergencyDraft.TryUse(state, manpowerShortfall: 3));
             Assert.AreEqual(5, state.Manpower);
@@ -19,7 +19,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void TryUse_ReturnsFalseWhenAlreadyUsed()
         {
-            var state = RunState.CreateNew(FactionIds.IronVanguard, 1, 10, 5, 5, 100);
+            var state = RunState.CreateNew(FactionIds.IronmarchUnion, 1, 10, 5, 5, 100);
             state.EmergencyDraftUsed = true;
 
             Assert.IsFalse(EmergencyDraft.TryUse(state, manpowerShortfall: 2));
@@ -29,7 +29,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void TryUse_ReturnsFalseForNonPositiveShortfall()
         {
-            var state = RunState.CreateNew(FactionIds.IronVanguard, 1, 10, 5, 5, 100);
+            var state = RunState.CreateNew(FactionIds.IronmarchUnion, 1, 10, 5, 5, 100);
 
             Assert.IsFalse(EmergencyDraft.TryUse(state, manpowerShortfall: 0));
             Assert.IsFalse(state.EmergencyDraftUsed);

@@ -46,7 +46,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void GauntletBoard_WinsFightOne_WithBoardAuthority()
         {
-            var faction = _database.GetFaction(FactionIds.IronVanguard);
+            var faction = _database.GetFaction(FactionIds.IronmarchUnion);
             var registry = _database.BuildRegistry();
             var player = VerticalSliceTestFixtures.BuildGauntletBoard(_database);
             var enemy = _database.GetEnemyTemplate(1).BuildBoard(faction, registry);
@@ -111,7 +111,7 @@ namespace DeadManZone.Core.Tests
         public void SaveManager_BuildPhase_RestoresShopAndBoard()
         {
             var orchestrator = new RunOrchestrator(_database);
-            orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
+            orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
             var boards = VerticalSliceTestFixtures.BuildGauntletBoards(_database);
             orchestrator.SaveCombatBoard(boards.Combat);
             orchestrator.SaveHqBoard(boards.Hq);
@@ -131,12 +131,12 @@ namespace DeadManZone.Core.Tests
 
         private RunState CreateRepresentativeState(RunPhase phase)
         {
-            var faction = _database.GetFaction(FactionIds.IronVanguard);
+            var faction = _database.GetFaction(FactionIds.IronmarchUnion);
             var boards = VerticalSliceTestFixtures.BuildGauntletBoards(_database);
             var board = boards.ToAggregateBoard();
 
             var state = RunState.CreateNew(
-                FactionIds.IronVanguard,
+                FactionIds.IronmarchUnion,
                 VerticalSliceTestFixtures.RegressionRunSeed,
                 faction.startingSupplies,
                 faction.startingManpower,

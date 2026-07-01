@@ -94,7 +94,7 @@ namespace DeadManZone.Game
             return loaded;
         }
 
-        public void StartNewRun(string factionId = FactionIds.IronVanguard)
+        public void StartNewRun(string factionId = FactionIds.IronmarchUnion)
         {
             EnsureOrchestrator();
             _orchestrator.StartNewRun(factionId);

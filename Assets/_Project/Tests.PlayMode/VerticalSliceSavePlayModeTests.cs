@@ -19,7 +19,7 @@ namespace DeadManZone.PlayMode.Tests
             var manager = managerObject.AddComponent<RunManager>();
             yield return null;
 
-            manager.StartNewRun(FactionIds.IronVanguard);
+            manager.StartNewRun(FactionIds.IronmarchUnion);
             manager.Orchestrator.State.Supplies = 55;
             manager.SaveAndExit();
 

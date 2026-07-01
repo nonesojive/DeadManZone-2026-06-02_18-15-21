@@ -34,7 +34,7 @@ namespace DeadManZone.Core.Tests
             var context = new ShopUnlockContext
             {
                 Board = new BoardState(TestBoards.Layout),
-                FactionId = FactionIds.IronVanguard,
+                FactionId = FactionIds.IronmarchUnion,
                 Registry = TestContentRegistry.Create(),
                 Modifiers = new ShopModifiers()
             };

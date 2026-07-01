@@ -49,7 +49,7 @@ namespace DeadManZone.Core.Meta
 
         public static bool IsFactionUnlocked(string factionId)
         {
-            if (string.Equals(factionId, FactionIds.IronVanguard, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(factionId, FactionIds.IronmarchUnion, StringComparison.OrdinalIgnoreCase))
                 return true;
 
             var data = Load();

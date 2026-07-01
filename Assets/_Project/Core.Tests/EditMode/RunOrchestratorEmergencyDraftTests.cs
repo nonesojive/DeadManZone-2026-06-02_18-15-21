@@ -35,7 +35,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void TryEmergencyDraft_WhenShortfall_AppliesManpowerOnce()
         {
-            _orchestrator.StartNewRun(FactionIds.IronVanguard, runSeed: 777);
+            _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 777);
             var board = _orchestrator.GetPlayerBoard();
             var rifle = _database.Pieces.First(p => p.id == "rifle_squad").ToCore();
             Assert.IsTrue(board.TryPlace(rifle, TestBoards.CombatBoardAnchor(5, 3), "rifle_1").Success);

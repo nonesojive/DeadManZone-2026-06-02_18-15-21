@@ -15,7 +15,7 @@ namespace DeadManZone.Data
         /// <summary>Playable factions shown in faction select.</summary>
         public static readonly string[] PlayableFactionIds =
         {
-            FactionIds.IronVanguard,
+            FactionIds.IronmarchUnion,
             FactionIds.DustScourge,
             FactionIds.CartelOfEchoes
         };
