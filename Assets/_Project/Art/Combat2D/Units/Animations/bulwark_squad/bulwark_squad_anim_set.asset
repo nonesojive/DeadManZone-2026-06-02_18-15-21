@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4c0186fbc4806b4da4c818aa5dd1ea4, type: 3}
+  m_Name: bulwark_squad_anim_set
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatUnit2DAnimationSetSO
+  idle:
+    sheet: {fileID: 21300000, guid: 51c40f62f6894c9584e4868867565045, type: 3}
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 12
+    loop: 1
+  walk:
+    sheet: {fileID: 21300000, guid: 1b9d644b8db54b33815c058fa77f888a, type: 3}
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 14
+    loop: 1
+  run:
+    sheet: {fileID: 0}
+    frameCount: 0
+    columns: 0
+    framesPerSecond: 1
+    loop: 0
+  hurt:
+    sheet: {fileID: 0}
+    frameCount: 0
+    columns: 0
+    framesPerSecond: 1
+    loop: 0
+  hitReact:
+    sheet: {fileID: 0}
+    frameCount: 0
+    columns: 0
+    framesPerSecond: 1
+    loop: 0
+  shoot:
+    sheet: {fileID: 21300000, guid: f2b74627dc9642e3ac5c336e7068bf23, type: 3}
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 24
+    loop: 0
+  die:
+    sheet: {fileID: 21300000, guid: bf077f80670645a48ce0af5cb6b127a6, type: 3}
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 12
+    loop: 0

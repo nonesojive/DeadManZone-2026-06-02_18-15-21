@@ -23,6 +23,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private Camera _camera;
         private readonly System.Collections.Generic.List<GameObject> _soldierQuads = new();
         private readonly System.Collections.Generic.List<Transform> _soldierAnchors = new();
+        private readonly System.Collections.Generic.List<float> _soldierScales = new();
         private Quaternion _squadFacing = Quaternion.identity;
         private float _bobTime;
         private bool _walking;
@@ -31,10 +32,10 @@ namespace DeadManZone.Presentation.Combat.Arena
         private readonly CombatUnit2DStripPlayer _animPlayer = new();
         private bool _animated;
         private bool _dying;
-        private bool _hurtToggle;
         private bool _flipX;
 
         public bool IsBuilt => _presentationRoot != null;
+        public bool BlocksLocomotion => _animated && _animPlayer.IsLocked;
 
         public void Build(
             PieceDefinitionSO piece,
@@ -69,6 +70,15 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (worldDirection.sqrMagnitude < 0.0001f)
                 return;
 
+            // Side-view strips stay upright on billboards; 3D yaw reads as shrink/pop.
+            if (_animated)
+            {
+                bool faceLeft = worldDirection.x < 0f;
+                for (int i = 0; i < _soldierQuads.Count; i++)
+                    CombatArena2DSpriteQuad.SetFlipX(_soldierQuads[i], faceLeft);
+                return;
+            }
+
             _squadRoot.rotation = _squadFacing = Quaternion.LookRotation(worldDirection.normalized, Vector3.up);
         }
 
@@ -97,11 +107,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public void PlayHurt()
         {
-            if (!_animated || _dying)
-                return;
-
-            _hurtToggle = !_hurtToggle;
-            _animPlayer.Play(_hurtToggle ? CombatUnit2DAnimState.Hurt : CombatUnit2DAnimState.HitReact);
+            // ponytail: hurt/hit-react disabled for now — combat keeps marching through damage
         }
 
         private void TickAnimation()
@@ -117,7 +123,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
 
             for (int i = 0; i < _soldierQuads.Count; i++)
-                CombatArena2DSpriteQuad.SetFrame(_soldierQuads[i], frame);
+                CombatArena2DSpriteQuad.SetFrame(_soldierQuads[i], frame, _soldierScales[i]);
         }
 
         private void ApplySquadJog()
@@ -158,8 +164,19 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             if (_deathRoutine != null)
                 StopCoroutine(_deathRoutine);
+            if (_attackRoutine != null)
+            {
+                StopCoroutine(_attackRoutine);
+                _attackRoutine = null;
+            }
+
+            if (_squadRoot != null)
+                _squadRoot.localScale = Vector3.one;
+
+            _walking = false;
             if (_animated)
             {
+                _dying = true;
                 _animPlayer.Play(CombatUnit2DAnimState.Die);
                 _deathRoutine = StartCoroutine(AnimatedDeathRoutine(onComplete));
             }
@@ -184,6 +201,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _squadRoot = null;
             _soldierQuads.Clear();
             _soldierAnchors.Clear();
+            _soldierScales.Clear();
             _squadFacing = Quaternion.identity;
             _animated = false;
             _dying = false;
@@ -249,6 +267,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
                 CombatArena2DSpriteQuad.SetFlipX(quadRoot, _flipX);
                 _soldierQuads.Add(quadRoot);
+                _soldierScales.Add(scale);
             }
         }
 
@@ -274,23 +293,22 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (impactWait > 0f)
                 yield return new WaitForSeconds(impactWait);
 
-            if (_squadRoot != null)
-                _squadRoot.localScale = Vector3.one * 0.94f;
-
             onImpact?.Invoke();
             _attackRoutine = null;
         }
 
         private IEnumerator AnimatedDeathRoutine(Action onComplete)
         {
-            _dying = true;
-            float duration = Mathf.Max(0.3f, _animPlayer.CurrentDurationSeconds);
+            float duration = Mathf.Max(1f, _animPlayer.CurrentDurationSeconds);
             for (float t = 0f; t < duration; t += Time.deltaTime)
             {
                 TickAnimation();
+                UpdateSortAndBob(transform.position);
                 yield return null;
             }
 
+            TickAnimation();
+            UpdateSortAndBob(transform.position);
             _dying = false;
             onComplete?.Invoke();
             _deathRoutine = null;

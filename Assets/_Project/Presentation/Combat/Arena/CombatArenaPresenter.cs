@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
@@ -34,7 +35,18 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public bool IsPresentationFrozen { get; private set; }
 
+        /// <summary>True while a unit is still playing its death presentation (die strip / shrink).</summary>
+        public bool HasPendingDeathPresentations => _pendingDeathPresentations > 0;
+
+        private int _pendingDeathPresentations;
+
         public void SetPresentationFrozen(bool frozen) => IsPresentationFrozen = frozen;
+
+        public IEnumerator WaitForPendingDeathPresentations()
+        {
+            while (_pendingDeathPresentations > 0)
+                yield return null;
+        }
 
         private void Awake()
         {
@@ -118,6 +130,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         public void OnArenaUnloaded()
         {
             _actors.Clear();
+            _pendingDeathPresentations = 0;
             _replayState.ResetFromBattlefield(null);
             _battlefield = null;
             _chaseController?.Clear();
@@ -435,9 +448,23 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             Vector3 deathWorld = dead.transform.position;
             _actors.Remove(combatEvent.ActorId);
-            dead.PlayDeath(() => _pool.Release(dead));
-            audio?.PlayDeath(deathWorld);
-            _activeVfx?.PlayDeath(deathWorld);
+            _pendingDeathPresentations++;
+            dead.PlayDeath(() =>
+            {
+                _pendingDeathPresentations--;
+                _pool.Release(dead);
+            });
+            // ponytail: puff after die strip so the unit stays visible through the fall
+            StartCoroutine(PlayDeathVfxAfterDelay(deathWorld, 3f));
+        }
+
+        private System.Collections.IEnumerator PlayDeathVfxAfterDelay(Vector3 worldPosition, float delaySeconds)
+        {
+            if (delaySeconds > 0f)
+                yield return new WaitForSeconds(delaySeconds);
+
+            audio?.PlayDeath(worldPosition);
+            _activeVfx?.PlayDeath(worldPosition);
         }
 
         private bool TryGetDamageTargetPosition(CombatEvent combatEvent, out Vector3 worldPosition)
@@ -496,6 +523,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void ResetArenaActors(Transform poolRoot)
         {
+            _pendingDeathPresentations = 0;
             foreach (var actor in _actors.Values)
             {
                 if (actor != null)

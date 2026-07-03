@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-using System.Collections;
 using UnityEngine;
 
 namespace DeadManZone.Presentation.Combat.Arena
@@ -22,17 +21,12 @@ namespace DeadManZone.Presentation.Combat.Arena
             host.AddComponent<SidekickPreviewSceneCleanup>();
         }
 
-        private void Start() => StartCoroutine(CullForSeconds(8f));
-
-        /// <summary>Sidekick may spawn the preview a few frames after play mode via editor callback queue.</summary>
-        private IEnumerator CullForSeconds(float seconds)
+        private void Update()
         {
-            var end = Time.realtimeSinceStartup + seconds;
-            while (Time.realtimeSinceStartup < end)
-            {
-                DestroyLeakedPreviewIfPresent();
-                yield return null;
-            }
+            if (!CombatArenaSession.IsActive)
+                return;
+
+            DestroyLeakedPreviewIfPresent();
         }
 
         public static void DestroyLeakedPreviewIfPresent()
@@ -41,9 +35,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (leaked == null || leaked.transform.parent != null)
                 return;
 
-            // Real combat units live under CombatArena/UnitsRoot with AC_CombatArena_* controllers.
-            var animator = leaked.GetComponent<Animator>();
-            if (animator != null && animator.runtimeAnimatorController != null)
+            // Real combat units are CombatUnitActor children under UnitsRoot.
+            if (leaked.GetComponent<CombatUnitActor>() != null
+                || leaked.GetComponentInParent<CombatUnitActor>() != null)
                 return;
 
             Object.Destroy(leaked);

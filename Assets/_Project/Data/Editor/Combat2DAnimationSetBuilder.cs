@@ -4,32 +4,34 @@ using UnityEngine;
 
 namespace DeadManZone.Data.Editor
 {
-    /// <summary>Builds CombatUnit2DAnimationSetSO assets from repacked horizontal strips and
-    /// assigns them to their piece definitions. Strips are 16-frame, 128px/frame rows named
-    /// "{pieceId}_{state}.png" under Animations/{pieceId}/.</summary>
+    /// <summary>Builds CombatUnit2DAnimationSetSO assets from Autosprite grid sheets and
+    /// assigns them to piece definitions. Sheets are square grids (512 / 256 / 128 px cells)
+    /// named "{stripPrefix}_{state}.png" under Animations/{pieceId}/.</summary>
     public static class Combat2DAnimationSetBuilder
     {
-        private const int FrameCount = 49; // full 7x7 source grid
-        private const int Columns = 7;
         private const string AnimRoot = "Assets/_Project/Art/Combat2D/Units/Animations";
         private const string PieceRoot = "Assets/_Project/Data/Resources/DeadManZone/Pieces";
 
-        // Strip-file prefixes can differ from the piece id (e.g. the medic uses "medic_").
         private static readonly (string pieceId, string stripPrefix)[] Pieces =
         {
-            ("field_medic", "medic"),
+            ("field_medic", "field_medic"),
             ("conscript_rifleman", "conscript_rifleman"),
-            ("rifle_squad", "rifle_squad"),
-            ("grenade_thrower", "grenade_thrower"),
-            ("shock_trooper", "shock_trooper"),
-            ("marksman_squad", "marksman_squad"),
-            ("ironmarch_engineer", "ironmarch_engineer"),
-            ("ironmarch_sniper", "ironmarch_sniper"),
-            ("ironmarch_breacher", "ironmarch_breacher"),
+            ("armored_transport", "armored_transport"),
+            ("ironmarch_surgeon", "ironmarch_surgeon"),
+            ("bulwark_squad", "bulwark_squad"),
+            ("enlisted_rifleman", "enlisted_rifleman"),
+            ("ironmarch_iron_horse", "ironmarch_iron_horse"),
+            ("ironclad_mortars", "ironclad_mortars"),
+            ("ironclad_marksman", "ironclad_marksman"),
+            ("ironclad_field_marshal", "ironclad_field_marshal"),
+            ("machine_gun_nest", "machine_gun_nest"),
         };
 
         [MenuItem(DeadManZoneEditorMenus.CombatArena + "Build Field Medic 2D Anim Set")]
         public static void BuildFieldMedic() => BuildOne("field_medic", "medic");
+
+        [MenuItem(DeadManZoneEditorMenus.CombatArena + "Build Bulwark Squad 2D Anim Set")]
+        public static void BuildBulwarkSquad() => BuildOne("bulwark_squad", "bulwark_squad");
 
         [MenuItem(DeadManZoneEditorMenus.CombatArena + "Build All Unit 2D Anim Sets")]
         public static void BuildAll()
@@ -55,14 +57,13 @@ namespace DeadManZone.Data.Editor
                 AssetDatabase.CreateAsset(set, setPath);
             }
 
-            // FPS tuned for 49-frame cycles (~1.4-2.5s). Adjust to taste.
-            set.idle = Strip(dir, stripPrefix, "idle", 20f, true);
-            set.walk = Strip(dir, stripPrefix, "walk", 28f, true);
-            set.run = Strip(dir, stripPrefix, "run", 34f, true);
-            set.shoot = Strip(dir, stripPrefix, "shoot", 32f, false);
-            set.hurt = Strip(dir, stripPrefix, "hurt", 26f, false);
-            set.hitReact = Strip(dir, stripPrefix, "hit_react", 26f, false);
-            set.die = Strip(dir, stripPrefix, "die", 24f, false);
+            set.idle = Strip(dir, stripPrefix, "idle", targetDurationSeconds: 4f, loop: true);
+            set.walk = Strip(dir, stripPrefix, "walk", targetDurationSeconds: 4f, loop: true);
+            set.run = Strip(dir, stripPrefix, "run", targetDurationSeconds: 3f, loop: true);
+            set.shoot = Strip(dir, stripPrefix, "shoot", targetDurationSeconds: 2f, loop: false);
+            set.hurt = default;
+            set.hitReact = default;
+            set.die = Strip(dir, stripPrefix, "die", targetDurationSeconds: 6f, loop: false);
 
             if (!set.HasAny)
             {
@@ -86,17 +87,47 @@ namespace DeadManZone.Data.Editor
             return true;
         }
 
-        private static CombatUnit2DStrip Strip(string dir, string prefix, string state, float fps, bool loop)
+        private static CombatUnit2DStrip Strip(
+            string dir,
+            string prefix,
+            string state,
+            float targetDurationSeconds,
+            bool loop)
         {
-            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"{dir}/{prefix}_{state}.png");
+            string path = $"{dir}/{prefix}_{state}.png";
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sprite == null || sprite.texture == null)
+                return default;
+
+            EnsureReadable(path, sprite.texture);
+
+            if (!TryDetectLayout(sprite.texture, out int columns, out int frameCount))
+                return default;
+
             return new CombatUnit2DStrip
             {
                 sheet = sprite,
-                frameCount = FrameCount,
-                columns = Columns,
-                framesPerSecond = fps,
+                frameCount = frameCount,
+                columns = columns,
+                framesPerSecond = CombatUnit2DStripLayout.FramesPerSecondForDuration(frameCount, targetDurationSeconds),
                 loop = loop
             };
+        }
+
+        private static bool TryDetectLayout(Texture2D texture, out int columns, out int frameCount) =>
+            CombatUnit2DStripLayout.TryDetectBestFromTexture(texture, out columns, out frameCount, out _);
+
+        private static void EnsureReadable(string assetPath, Texture2D texture)
+        {
+            if (texture.isReadable)
+                return;
+
+            var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
+            if (importer == null)
+                return;
+
+            importer.isReadable = true;
+            importer.SaveAndReimport();
         }
     }
 }

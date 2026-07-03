@@ -50,9 +50,11 @@ MonoBehaviour:
   grantedAbility: 0
   accuracyOverride: 0
   factionId: neutral
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: df0fc13cca774fcc8052b32aabca1cd6, type: 3}
   categoryTint: {r: 1, g: 1, b: 1, a: 1}
-  cellSprites: []
+  cellSprites:
+  - localCell: {x: 0, y: 0}
+    sprite: {fileID: 21300000, guid: d9076fafc8f115541a5cad5b88d339d1, type: 3}
   catalogAbilities: []
   customAbilities:
   - id: field_medic_adjacent_infantry_hp
@@ -69,8 +71,8 @@ MonoBehaviour:
     magnitude: 10
     countTagId: 
     applyToSelf: 0
-  combatArenaSprite: {fileID: 0}
-  combatArena2DAnimations: {fileID: 0}
+  combatArenaSprite: {fileID: 21300000, guid: d95c4fc0ad814e70a3299d64a18c3a54, type: 3}
+  combatArena2DAnimations: {fileID: 11400000, guid: 41d1709fd5ff7cc459f1e9f08fb90bb0, type: 2}
   combatArenaPrefab: {fileID: 0}
   combatArenaModelScale: 1
   combatArenaModelHeight: 0

@@ -663,7 +663,7 @@ private PieceDefinition _selectedPiece;
                 coord,
                 GetZoneColor(zone),
                 isSpecial,
-                useBackdrop ? null : PickTerrainSprite(zone, coord),
+                useBackdrop ? null : PickTerrainSprite(coord),
                 useBackdrop);
         }
 
@@ -676,10 +676,14 @@ private PieceDefinition _selectedPiece;
             return art != null && art.HasBattlefieldBackdrop;
         }
 
-        private Sprite PickTerrainSprite(ZoneType zone, GridCoord coord)
+        private Sprite PickTerrainSprite(GridCoord coord)
         {
             var art = ResolveTerrainArt();
-            return art != null && art.HasTerrainTiles ? art.PickTile(zone, coord) : null;
+            if (art == null || !art.HasTerrainTiles)
+                return null;
+
+            int width = _layout != null ? _layout.Width : 6;
+            return art.PickTile(boardBinding, coord, width);
         }
 
         private void EnsureBattlefieldPresentation()

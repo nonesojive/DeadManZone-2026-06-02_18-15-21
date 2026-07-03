@@ -16,41 +16,41 @@ MonoBehaviour:
     sheet: {fileID: 21300000, guid: 0451554370ab4a2ea8f2094695a45f66, type: 3}
     frameCount: 49
     columns: 7
-    framesPerSecond: 20
+    framesPerSecond: 12
     loop: 1
   walk:
     sheet: {fileID: 21300000, guid: f565e4c38c544a818f8cebcb572cbc4e, type: 3}
     frameCount: 49
     columns: 7
-    framesPerSecond: 28
+    framesPerSecond: 14
     loop: 1
   run:
-    sheet: {fileID: 21300000, guid: 0655851ce13b4297b5f21d79d89c5511, type: 3}
-    frameCount: 49
-    columns: 7
-    framesPerSecond: 34
-    loop: 1
+    sheet: {fileID: 0}
+    frameCount: 0
+    columns: 0
+    framesPerSecond: 1
+    loop: 0
   hurt:
-    sheet: {fileID: 21300000, guid: 550769c1981f4d8986cdfb36aa3f6b54, type: 3}
-    frameCount: 49
-    columns: 7
-    framesPerSecond: 26
+    sheet: {fileID: 0}
+    frameCount: 0
+    columns: 0
+    framesPerSecond: 1
     loop: 0
   hitReact:
-    sheet: {fileID: 21300000, guid: 2dd47d994b5142cc918f81ca1ad16583, type: 3}
-    frameCount: 49
-    columns: 7
-    framesPerSecond: 26
+    sheet: {fileID: 0}
+    frameCount: 0
+    columns: 0
+    framesPerSecond: 1
     loop: 0
   shoot:
     sheet: {fileID: 21300000, guid: 6b28df908ce74beea8f559e45b1ac479, type: 3}
     frameCount: 49
     columns: 7
-    framesPerSecond: 32
+    framesPerSecond: 24
     loop: 0
   die:
     sheet: {fileID: 21300000, guid: 686c09e50ef943018e3f4a8dfb27d5e9, type: 3}
     frameCount: 49
     columns: 7
-    framesPerSecond: 24
+    framesPerSecond: 12
     loop: 0

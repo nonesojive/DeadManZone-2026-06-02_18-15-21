@@ -125,7 +125,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return 0;
 
             float t = strip.loop ? timeSeconds % duration : Mathf.Min(timeSeconds, duration);
-            int index = Mathf.FloorToInt(t * strip.framesPerSecond);
+            int index = Mathf.RoundToInt(t * strip.framesPerSecond);
             return Mathf.Clamp(index, 0, strip.frameCount - 1);
         }
 
@@ -136,27 +136,40 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (!strip.IsValid || strip.sheet.texture == null)
                 return System.Array.Empty<Sprite>();
 
-            var rect = strip.sheet.textureRect;
+            var texture = strip.sheet.texture;
+            int texW = texture.width;
+            int texH = texture.height;
+            if (texW < 1 || texH < 1)
+                return System.Array.Empty<Sprite>();
+
             int columns = Mathf.Max(1, strip.ColumnsOrDefault);
-            int rows = Mathf.CeilToInt(strip.frameCount / (float)columns);
-            float cellW = rect.width / columns;
-            float cellH = rect.height / rows;
+            int rows = Mathf.Max(1, Mathf.CeilToInt(strip.frameCount / (float)columns));
+
+            // Sprite rect can reflect source PNG size while the imported GPU texture is downscaled.
+            var source = strip.sheet.textureRect;
+            float scaleX = source.width > 0f ? texW / source.width : 1f;
+            float scaleY = source.height > 0f ? texH / source.height : 1f;
+            float originX = source.x * scaleX;
+            float originY = source.y * scaleY;
+
+            int cellW = Mathf.Max(1, Mathf.RoundToInt(texW / (float)columns));
+            int cellH = Mathf.Max(1, Mathf.RoundToInt(texH / (float)rows));
+            float cellWf = texW / (float)columns;
+            float cellHf = texH / (float)rows;
             var pivot = new Vector2(FramePivotX, FramePivotY);
-            float ppu = strip.sheet.pixelsPerUnit;
+            float ppu = strip.sheet.pixelsPerUnit * scaleX;
 
             var frames = new Sprite[strip.frameCount];
             for (int i = 0; i < strip.frameCount; i++)
             {
                 int col = i % columns;
                 int row = i / columns;
-                // Texture space is bottom-left origin; row 0 is the top of the sheet.
-                float x = rect.x + col * cellW;
-                float y = rect.y + rect.height - (row + 1) * cellH;
-                frames[i] = Sprite.Create(
-                    strip.sheet.texture,
-                    new Rect(x, y, cellW, cellH),
-                    pivot,
-                    ppu);
+                int x = Mathf.Clamp(Mathf.RoundToInt(originX + col * cellWf), 0, texW - cellW);
+                int y = Mathf.Clamp(Mathf.RoundToInt(originY + texH - (row + 1) * cellHf), 0, texH - cellH);
+                if (x + cellW > texW || y + cellH > texH)
+                    continue;
+
+                frames[i] = Sprite.Create(texture, new Rect(x, y, cellW, cellH), pivot, ppu);
             }
 
             return frames;

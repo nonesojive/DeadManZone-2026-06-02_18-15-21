@@ -97,8 +97,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             return quad;
         }
 
-        /// <summary>Swap the displayed animation frame on a built quad (UVs + texture only).</summary>
-        public static void SetFrame(GameObject root, Sprite frame)
+        /// <summary>Swap the displayed animation frame on a built quad (UVs, scale, feet pivot).</summary>
+        public static void SetFrame(GameObject root, Sprite frame, float uniformScale = 1f)
         {
             if (root == null || frame == null)
                 return;
@@ -108,6 +108,14 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
 
             CombatArena2DSpriteMesh.UpdateUvs(quad.GetComponent<MeshFilter>(), frame);
+
+            float width = frame.rect.width / frame.pixelsPerUnit * uniformScale;
+            float height = frame.rect.height / frame.pixelsPerUnit * uniformScale;
+            quad.localScale = new Vector3(
+                Mathf.Abs(quad.localScale.x) < 0.001f ? width : Mathf.Sign(quad.localScale.x) * width,
+                height,
+                1f);
+            quad.localPosition = PivotCenterOffset(frame, uniformScale);
 
             var renderer = quad.GetComponent<Renderer>();
             var material = renderer != null ? renderer.sharedMaterial : null;

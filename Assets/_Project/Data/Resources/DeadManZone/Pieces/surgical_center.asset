@@ -48,9 +48,11 @@ MonoBehaviour:
   grantedAbility: 0
   accuracyOverride: 0
   factionId: ironmarch_union
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 03f1bc5c78b749daab5780fbfadf19a4, type: 3}
   categoryTint: {r: 1, g: 1, b: 1, a: 1}
-  cellSprites: []
+  cellSprites:
+  - localCell: {x: 0, y: 0}
+    sprite: {fileID: 21300000, guid: df8ee256692462a4bb2874dca0b80fe5, type: 3}
   catalogAbilities: []
   customAbilities:
   - id: surgical_center_infantry_hp_percent
@@ -67,7 +69,7 @@ MonoBehaviour:
     magnitude: 5
     countTagId: 
     applyToSelf: 0
-  combatArenaSprite: {fileID: 0}
+  combatArenaSprite: {fileID: 21300000, guid: bef671f5b1314493ae50be1d50b3df30, type: 3}
   combatArena2DAnimations: {fileID: 0}
   combatArenaPrefab: {fileID: 0}
   combatArenaModelScale: 1

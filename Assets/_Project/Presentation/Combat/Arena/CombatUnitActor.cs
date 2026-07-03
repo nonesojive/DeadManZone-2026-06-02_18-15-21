@@ -21,6 +21,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private bool _freeChaseEnabled;
         private float _chaseMaxLeadCells = 4f;
         private Vector3? _chaseTargetWorld;
+        private Vector3 _smoothedSimWorld;
         private CombatAttackPresentationProfile _attackProfile;
 
         public string InstanceId { get; private set; }
@@ -75,6 +76,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
 
             SnapToAnchor(anchor);
+            _smoothedSimWorld = _mapper.ToWorld(anchor);
         }
 
         public void SetFrozen(bool frozen) => _frozen = frozen;
@@ -83,6 +85,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             _anchor = anchor;
             transform.position = _mapper.ToWorld(anchor);
+            _smoothedSimWorld = transform.position;
             _visual2D?.SetWalking(false);
         }
 
@@ -105,8 +108,19 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (!IsAlive || _frozen || _mapper == null || _visual2D == null)
                 return;
 
+            if (_visual2D.BlocksLocomotion)
+            {
+                _visual2D.SetWalking(false);
+                _visual2D.UpdateSortAndBob(transform.position);
+                return;
+            }
+
             Vector3 current = transform.position;
             Vector3 simWorld = _mapper.ToWorld(_anchor);
+            _smoothedSimWorld = Vector3.Lerp(
+                _smoothedSimWorld,
+                simWorld,
+                Mathf.Clamp01(Time.deltaTime * 14f));
 
             if (_freeChaseEnabled && _chaseTargetWorld.HasValue)
             {
@@ -119,9 +133,10 @@ namespace DeadManZone.Presentation.Combat.Arena
                 }
 
                 Vector3 next = CombatArenaFreeChaseMovement.ComputeStep(
-                    current, simWorld, chaseWorld, _moveWorldSpeed, Time.deltaTime,
+                    current, _smoothedSimWorld, chaseWorld, _moveWorldSpeed, Time.deltaTime,
                     _mapper.CellWidth, _chaseMaxLeadCells);
-                next = CombatArenaFreeChaseMovement.ClampToSimLead(next, simWorld, _mapper.CellWidth, _chaseMaxLeadCells);
+                next = CombatArenaFreeChaseMovement.ClampToSimLead(
+                    next, _smoothedSimWorld, _mapper.CellWidth, _chaseMaxLeadCells);
 
                 Vector3 moveDelta = next - current;
                 moveDelta.y = 0f;
@@ -134,16 +149,15 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
             }
 
-            var flatTarget = new Vector3(simWorld.x, current.y, simWorld.z);
+            var flatTarget = new Vector3(_smoothedSimWorld.x, current.y, _smoothedSimWorld.z);
             var flatCurrent = new Vector3(current.x, 0f, current.z);
             float dist = Vector3.Distance(flatCurrent, new Vector3(flatTarget.x, 0f, flatTarget.z));
-            bool atDestination = dist <= 0.02f;
+            bool atDestination = dist <= 0.04f;
             bool withinMarchGrace = Time.time - _lastMoveCommandTime < _marchGraceSeconds;
 
             if (atDestination)
             {
-                if (current != flatTarget)
-                    transform.position = flatTarget;
+                transform.position = Vector3.Lerp(current, flatTarget, Mathf.Clamp01(Time.deltaTime * 18f));
                 _visual2D.SetWalking(withinMarchGrace);
             }
             else
@@ -213,6 +227,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _frozen = false;
             _freeChaseEnabled = false;
             _chaseTargetWorld = null;
+            _smoothedSimWorld = Vector3.zero;
             _moveWorldSpeed = 1f;
             _moveLerpFallbackSeconds = 0.4f;
             _marchGraceSeconds = 2.4f;

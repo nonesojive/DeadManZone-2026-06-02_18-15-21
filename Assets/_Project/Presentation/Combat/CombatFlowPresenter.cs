@@ -139,7 +139,17 @@ namespace DeadManZone.Presentation.Combat
             ShowBattleReport();
 
             if (arenaLoader != null)
-                StartCoroutine(arenaLoader.UnloadAsync());
+                StartCoroutine(UnloadArenaAfterDeathPresentations());
+        }
+
+        private IEnumerator UnloadArenaAfterDeathPresentations()
+        {
+            // fight_end fires on the same tick as destroyed; keep the arena alive for die strips.
+            if (arenaPresenter != null)
+                yield return arenaPresenter.WaitForPendingDeathPresentations();
+
+            if (arenaLoader != null)
+                yield return arenaLoader.UnloadAsync();
         }
 
         private void ShowBattleReport()

@@ -52,9 +52,11 @@ MonoBehaviour:
   grantedAbility: 0
   accuracyOverride: 0
   factionId: ironmarch_union
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: dca282a155c34fa49d9978d9cadf407a, type: 3}
   categoryTint: {r: 1, g: 1, b: 1, a: 1}
-  cellSprites: []
+  cellSprites:
+  - localCell: {x: 0, y: 0}
+    sprite: {fileID: 21300000, guid: 87644dcced1af3f4dbbb85ce88c2a9dd, type: 3}
   catalogAbilities: []
   customAbilities:
   - id: field_marshal_adjacent_infantry_hp
@@ -86,7 +88,7 @@ MonoBehaviour:
     countTagId: 
     applyToSelf: 0
   combatArenaSprite: {fileID: 0}
-  combatArena2DAnimations: {fileID: 0}
+  combatArena2DAnimations: {fileID: 11400000, guid: 39f3704f7cc942cb936294941fd446e0, type: 2}
   combatArenaPrefab: {fileID: 0}
   combatArenaModelScale: 1
   combatArenaModelHeight: 0

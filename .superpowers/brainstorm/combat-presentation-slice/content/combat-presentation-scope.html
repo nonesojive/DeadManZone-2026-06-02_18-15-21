@@ -1,0 +1,71 @@
+<h2>Combat Presentation First: Slice Boundary</h2>
+<p class="subtitle">Goal: make CombatArena2D readable, weighty, and trustworthy before expanding the full 10-fight economy gauntlet.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Recommended: Readability Hardening Pass</h3>
+      <p>Keep the deterministic combat sim unchanged. Add focused tests and polish the existing replay consumers: hit reactions, run/walk choice, death completion, VFX/audio clarity, pause drama, and camera framing.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Visual Overhaul Pass</h3>
+      <p>Spend most effort on art, effects, camera tuning, and atmosphere assets. Highest visual upside, but weaker safety unless replay/death/pause behavior gets tests first.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Replay Correctness Pass</h3>
+      <p>Focus almost entirely on deterministic replay, save/resume, and event-log equality. Strong technical confidence, but does not by itself make fights feel better to watch.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Recommended Implementation Lane</h3>
+  <div class="mockup">
+    <div class="mockup-header">Event Log Replay → CombatArena2D Presentation</div>
+    <div class="mockup-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:stretch">
+        <div class="placeholder" style="min-height:120px">
+          <strong>1. Event Meaning</strong><br>
+          damage / graze / miss / move / destroyed / pause
+        </div>
+        <div class="placeholder" style="min-height:120px">
+          <strong>2. Visual Grammar</strong><br>
+          shoot timing, tracer, hit react, damage text, death lock
+        </div>
+        <div class="placeholder" style="min-height:120px">
+          <strong>3. Player Learning</strong><br>
+          pause emphasis, clear casualty moments, report teaches why
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="pros-cons">
+  <div class="pros">
+    <h4>In Scope Now</h4>
+    <ul>
+      <li>CombatArena2D actor animation states and timing</li>
+      <li>Death animations finishing before reset/unload</li>
+      <li>Hit reactions, readable impacts, VFX intensity limits</li>
+      <li>Pause presentation and aftermath clarity</li>
+      <li>Focused EditMode/PlayMode tests before implementation</li>
+    </ul>
+  </div>
+  <div class="cons">
+    <h4>Next Milestone</h4>
+    <ul>
+      <li>Full 10-fight economy tuning</li>
+      <li>Reserves 2x9 migration</li>
+      <li>Emergency Draft and all build-phase UX polish</li>
+      <li>Broad content expansion beyond IronMarch readability</li>
+    </ul>
+  </div>
+</div>

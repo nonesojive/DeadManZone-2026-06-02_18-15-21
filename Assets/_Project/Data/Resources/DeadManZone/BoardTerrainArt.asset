@@ -14,30 +14,44 @@ MonoBehaviour:
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.BoardTerrainArtSO
   battlefieldBackdrop: {fileID: 0}
   cellSprite: {fileID: 0}
-  rearTiles:
-  - {fileID: 21300000, guid: 605737e1c3fd56c4d82abdc1be039312, type: 3}
-  - {fileID: 21300000, guid: 7fcd54dcdd2b12b49a01d0db17217223, type: 3}
-  - {fileID: 21300000, guid: f881e668b27f5454590640c66b36797c, type: 3}
-  - {fileID: 21300000, guid: e20e4c6079ce8b8498c3c0b86ee9bbf2, type: 3}
-  - {fileID: 21300000, guid: 1a7c3421e4202614db1901366c4fa3aa, type: 3}
-  supportTiles:
-  - {fileID: 21300000, guid: 0c6117833bdb8034f942cb30e41f5775, type: 3}
-  - {fileID: 21300000, guid: 7fd360ce5288bb34ab58153434363277, type: 3}
-  - {fileID: 21300000, guid: abd8277b0f8254f48a289db857b4db63, type: 3}
-  - {fileID: 21300000, guid: a78557b9136b2ce47a71ef9701ce1c08, type: 3}
-  - {fileID: 21300000, guid: 01668bc8d038e1c45be3f47ef1cfbd3d, type: 3}
-  - {fileID: 21300000, guid: 2daa66326871f8c49bec4e8d3b583cd9, type: 3}
-  frontTiles:
-  - {fileID: 21300000, guid: c3b082889c81818489a2156113155c61, type: 3}
-  - {fileID: 21300000, guid: 4c919e712e6b0f34388320504a665dd5, type: 3}
-  - {fileID: 21300000, guid: 859b250f273c7144880ffa4db3db260d, type: 3}
-  - {fileID: 21300000, guid: fa85df1d24e8a164586ee0200a7703df, type: 3}
-  - {fileID: 21300000, guid: 12496919c1d07e94fbf61d74573559fb, type: 3}
-  - {fileID: 21300000, guid: e7f64e5b87126c945861e13748fe2826, type: 3}
+  combatBoardTiles:
+  - {fileID: 21300000, guid: 1f52185117c9b2d4ea6209a9e49b45ff, type: 3}
+  - {fileID: 21300000, guid: 3e1638326f4b1104ca9526225507b898, type: 3}
+  - {fileID: 21300000, guid: 57eeb4698d236f745ae7756859d87956, type: 3}
+  - {fileID: 21300000, guid: 9fbf66217d00f1c4081c30075f5910a5, type: 3}
+  - {fileID: 21300000, guid: 274df1ea1c648b34d81e40d9539077e3, type: 3}
+  - {fileID: 21300000, guid: 8d204c2bc5247d34e8f03f3859d4dd0e, type: 3}
+  - {fileID: 21300000, guid: 4c377477a115efa48b68e347532661b6, type: 3}
+  - {fileID: 21300000, guid: 761bfabf123b6c04f93dbb129135b2c9, type: 3}
+  - {fileID: 21300000, guid: 8d2c84ea926093044ad42bca43d67584, type: 3}
+  - {fileID: 21300000, guid: 20cbeab1989b9a049bdf28ec240e829c, type: 3}
+  - {fileID: 21300000, guid: 07324a15dcc221d47a83bf2bab803495, type: 3}
+  - {fileID: 21300000, guid: 022a94843a0ab4041a2381fb09efb42d, type: 3}
+  combatFrontColumnTiles:
+  - {fileID: 21300000, guid: 1545f37c71dd7c64f8d96741ad390c53, type: 3}
+  - {fileID: 21300000, guid: ba511b66c6d278243b5f6ebb8252aa7b, type: 3}
+  - {fileID: 21300000, guid: 0871ae7d50cbe504d9eae3f27c65aa78, type: 3}
+  - {fileID: 21300000, guid: ddd7a0cbe0204ca4b95520dcbe9b64e9, type: 3}
+  - {fileID: 21300000, guid: 1fd8d1a3a967a4a47abd13c769cea4f7, type: 3}
+  - {fileID: 21300000, guid: f7da38aa45df96e4393537ca37c8c057, type: 3}
+  - {fileID: 21300000, guid: 1185a534c6b7d4240a77c142c416d2db, type: 3}
+  - {fileID: 21300000, guid: 4c0e55ed1ff094048a771bbcc6cf544a, type: 3}
+  hqBoardTiles:
+  - {fileID: 21300000, guid: 2dbe32440eaf6d74fa2b7766caed4524, type: 3}
+  - {fileID: 21300000, guid: 6cc3deceb89e4a44b93cf9420273e557, type: 3}
+  - {fileID: 21300000, guid: 35de2b5e9212784469f723e388bf6fc6, type: 3}
+  - {fileID: 21300000, guid: eb59b829d30db2b4fbe281d3c7c760ab, type: 3}
+  - {fileID: 21300000, guid: 03cf177c19be993429695d65e96364c5, type: 3}
+  - {fileID: 21300000, guid: aaec7615525bcaf4790079c2e4f5115c, type: 3}
+  - {fileID: 21300000, guid: 34eafe33ba4101f4fa0eeb938d5d47ff, type: 3}
+  - {fileID: 21300000, guid: 2da7fd2c2c8f1334ca884edce7c89abc, type: 3}
+  rearTiles: []
+  supportTiles: []
+  frontTiles: []
   neutralTiles: []
   reserveSlotTiles:
-  - {fileID: 21300000, guid: e26fe131a1800ab4da870aa952ac8476, type: 3}
-  - {fileID: 21300000, guid: f7545520c9d510f4a86575f015373a22, type: 3}
-  - {fileID: 21300000, guid: d1443d0a4a214e143982175f6884dac1, type: 3}
-  - {fileID: 21300000, guid: 21c797c743b513045b4644aca3279a90, type: 3}
-  - {fileID: 21300000, guid: e393391d81368764a836e63bf898ae5e, type: 3}
+  - {fileID: 21300000, guid: 65d63a77141299f49a11ffee973fe730, type: 3}
+  - {fileID: 21300000, guid: 4da85861ee8215f47a6435fdc00575a6, type: 3}
+  - {fileID: 21300000, guid: f9ad78ed375a7b24c935d5478d55e9f3, type: 3}
+  - {fileID: 21300000, guid: 2ec9917669523884c95fbbe3468883be, type: 3}
+  - {fileID: 21300000, guid: d3c9f4e3db18a1143a8bbdc2a2ce3db2, type: 3}

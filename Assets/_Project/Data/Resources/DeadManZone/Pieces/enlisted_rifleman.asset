@@ -48,9 +48,11 @@ MonoBehaviour:
   grantedAbility: 0
   accuracyOverride: 0
   factionId: ironmarch_union
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: fd70ac6285004fa0a043317b764b69af, type: 3}
   categoryTint: {r: 1, g: 1, b: 1, a: 1}
-  cellSprites: []
+  cellSprites:
+  - localCell: {x: 0, y: 0}
+    sprite: {fileID: 21300000, guid: e49512f9b75f13940a9f999fbbb6e41e, type: 3}
   catalogAbilities: []
   customAbilities:
   - id: enlisted_rifleman_adjacent_command_attack_speed
@@ -68,7 +70,7 @@ MonoBehaviour:
     countTagId: 
     applyToSelf: 1
   combatArenaSprite: {fileID: 0}
-  combatArena2DAnimations: {fileID: 0}
+  combatArena2DAnimations: {fileID: 11400000, guid: 7222c1b10010458b862a27ecea464b6e, type: 2}
   combatArenaPrefab: {fileID: 0}
   combatArenaModelScale: 1
   combatArenaModelHeight: 0

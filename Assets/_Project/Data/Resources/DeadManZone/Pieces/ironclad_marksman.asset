@@ -50,13 +50,15 @@ MonoBehaviour:
   grantedAbility: 0
   accuracyOverride: 0
   factionId: ironmarch_union
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 00e99d4f05994bfcb8f83fdaf41b3b11, type: 3}
   categoryTint: {r: 1, g: 1, b: 1, a: 1}
-  cellSprites: []
+  cellSprites:
+  - localCell: {x: 0, y: 0}
+    sprite: {fileID: 21300000, guid: 6217cac1862e11f4d838cf6084989ad5, type: 3}
   catalogAbilities: []
   customAbilities: []
   combatArenaSprite: {fileID: 0}
-  combatArena2DAnimations: {fileID: 0}
+  combatArena2DAnimations: {fileID: 11400000, guid: 2e8dfcc5c24343af8cfa80d9cf001552, type: 2}
   combatArenaPrefab: {fileID: 0}
   combatArenaModelScale: 1
   combatArenaModelHeight: 0

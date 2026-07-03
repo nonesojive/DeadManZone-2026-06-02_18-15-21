@@ -50,9 +50,11 @@ MonoBehaviour:
   grantedAbility: 0
   accuracyOverride: 0
   factionId: ironmarch_union
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 5d190a3cd220458d8671f0a5ed562b76, type: 3}
   categoryTint: {r: 1, g: 1, b: 1, a: 1}
-  cellSprites: []
+  cellSprites:
+  - localCell: {x: 0, y: 0}
+    sprite: {fileID: 21300000, guid: dcb57171969893847ba46e9bd5047ee7, type: 3}
   catalogAbilities: []
   customAbilities:
   - id: bulwark_adjacent_phalanx_damage
@@ -83,8 +85,8 @@ MonoBehaviour:
     magnitude: 5
     countTagId: 
     applyToSelf: 1
-  combatArenaSprite: {fileID: 0}
-  combatArena2DAnimations: {fileID: 0}
+  combatArenaSprite: {fileID: 21300000, guid: a8f3c2e14b5d4e29a1c07d83f6e9b201, type: 3}
+  combatArena2DAnimations: {fileID: 11400000, guid: 65abdf15ba3e4628a5208e0ef55c0f19, type: 2}
   combatArenaPrefab: {fileID: 0}
   combatArenaModelScale: 1
   combatArenaModelHeight: 0

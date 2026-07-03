@@ -48,12 +48,14 @@ MonoBehaviour:
   grantedAbility: 0
   accuracyOverride: 0
   factionId: neutral
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: cfd9a7f6999148f19c4775c00b1c7c06, type: 3}
   categoryTint: {r: 1, g: 1, b: 1, a: 1}
-  cellSprites: []
+  cellSprites:
+  - localCell: {x: 0, y: 0}
+    sprite: {fileID: 21300000, guid: 3af5442550c6eca479b60137dc3e4e1f, type: 3}
   catalogAbilities: []
   customAbilities: []
-  combatArenaSprite: {fileID: 0}
+  combatArenaSprite: {fileID: 21300000, guid: cdf8239f815d4b0aab56db6012fff9e5, type: 3}
   combatArena2DAnimations: {fileID: 0}
   combatArenaPrefab: {fileID: 0}
   combatArenaModelScale: 1

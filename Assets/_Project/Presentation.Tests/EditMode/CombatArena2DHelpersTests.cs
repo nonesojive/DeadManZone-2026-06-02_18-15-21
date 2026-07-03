@@ -29,6 +29,22 @@ namespace DeadManZone.Presentation.Tests.EditMode
         }
 
         [Test]
+        public void SpriteResolver_BulwarkSquad_UsesDedicatedCombatSpriteAndAnimations()
+        {
+            var piece = Resources.Load<PieceDefinitionSO>("DeadManZone/Pieces/bulwark_squad");
+            Assert.NotNull(piece, "bulwark_squad piece asset missing from Resources");
+            Assert.NotNull(piece.combatArena2DAnimations, "bulwark_squad needs a combat 2D animation set");
+            Assert.IsTrue(piece.combatArena2DAnimations.HasAny);
+            Assert.GreaterOrEqual(piece.combatArena2DAnimations.walk.frameCount, 49);
+            Assert.AreEqual(8, piece.combatArena2DAnimations.walk.columns);
+
+            var resolved = CombatUnitSpriteResolver.Resolve(piece, CombatSide.Player);
+            Assert.NotNull(resolved);
+            if (piece.combatArenaSprite != null)
+                Assert.AreSame(piece.combatArenaSprite, resolved);
+        }
+
+        [Test]
         public void SortOrder_RenderQueue_BackRowStaysAboveGround()
         {
             int backRow = CombatArena2DSortOrder.RenderQueueFromWorldZ(7f);
