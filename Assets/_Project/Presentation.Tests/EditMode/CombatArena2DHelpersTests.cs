@@ -1,8 +1,10 @@
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
+using DeadManZone.Core.Common;
 using DeadManZone.Core.Tags;
 using DeadManZone.Core.Tests;
 using DeadManZone.Data;
+using DeadManZone.Presentation.Board;
 using DeadManZone.Presentation.Combat.Arena;
 using NUnit.Framework;
 using UnityEngine;
@@ -35,13 +37,26 @@ namespace DeadManZone.Presentation.Tests.EditMode
             Assert.NotNull(piece, "bulwark_squad piece asset missing from Resources");
             Assert.NotNull(piece.combatArena2DAnimations, "bulwark_squad needs a combat 2D animation set");
             Assert.IsTrue(piece.combatArena2DAnimations.HasAny);
+            // combatvisualv2 AutoSprite sheets: 7×7 grid @ 512px cells = 49 frames.
             Assert.GreaterOrEqual(piece.combatArena2DAnimations.walk.frameCount, 49);
-            Assert.AreEqual(8, piece.combatArena2DAnimations.walk.columns);
+            Assert.AreEqual(7, piece.combatArena2DAnimations.walk.columns);
 
             var resolved = CombatUnitSpriteResolver.Resolve(piece, CombatSide.Player);
             Assert.NotNull(resolved);
             if (piece.combatArenaSprite != null)
                 Assert.AreSame(piece.combatArenaSprite, resolved);
+        }
+
+        [Test]
+        public void SpriteResolver_ConscriptRifleman_UsesFullResolutionAnimationLayout()
+        {
+            var piece = Resources.Load<PieceDefinitionSO>("DeadManZone/Pieces/conscript_rifleman");
+            Assert.NotNull(piece, "conscript_rifleman piece asset missing from Resources");
+            Assert.NotNull(piece.combatArena2DAnimations, "conscript_rifleman needs a combat 2D animation set");
+            Assert.AreEqual(49, piece.combatArena2DAnimations.idle.frameCount);
+            Assert.AreEqual(7, piece.combatArena2DAnimations.idle.columns);
+            Assert.AreEqual(49, piece.combatArena2DAnimations.walk.frameCount);
+            Assert.AreEqual(7, piece.combatArena2DAnimations.walk.columns);
         }
 
         [Test]
@@ -95,6 +110,86 @@ namespace DeadManZone.Presentation.Tests.EditMode
 
             piece.icon = null;
             Assert.IsNotNull(CombatUnitSpriteResolver.Resolve(piece, CombatSide.Player));
+        }
+
+        [Test]
+        public void VisualScale_NormalizesDifferentSpriteHeightsToSharedInfantryTarget()
+        {
+            var piece = ScriptableObject.CreateInstance<PieceDefinitionSO>();
+            piece.id = "conscript_rifleman";
+
+            var tinyTexture = CreateTestTexture(96, 160);
+            var tallTexture = CreateTestTexture(256, 512);
+            var tiny = Sprite.Create(tinyTexture, new Rect(0, 0, 96, 160), new Vector2(0.5f, 0.05f), 256f);
+            var tall = Sprite.Create(tallTexture, new Rect(0, 0, 256, 512), new Vector2(0.5f, 0.05f), 256f);
+
+            float tinyScale = CombatUnit2DVisualScale.ResolveUniformScale(piece, tiny);
+            float tallScale = CombatUnit2DVisualScale.ResolveUniformScale(piece, tall);
+            float tinyHeight = tiny.rect.height / tiny.pixelsPerUnit * tinyScale;
+            float tallHeight = tall.rect.height / tall.pixelsPerUnit * tallScale;
+
+            Assert.AreEqual(tinyHeight, tallHeight, 0.001f);
+            Assert.AreEqual(1.45f, tinyHeight, 0.001f);
+
+            Object.DestroyImmediate(tinyTexture);
+            Object.DestroyImmediate(tallTexture);
+            Object.DestroyImmediate(piece);
+        }
+
+        [Test]
+        public void VisualScale_NormalizesVisibleAlphaHeightNotTransparentPadding()
+        {
+            var piece = ScriptableObject.CreateInstance<PieceDefinitionSO>();
+            piece.id = "conscript_rifleman";
+
+            var paddedTexture = CreateTestTexture(256, 512);
+            var filledTexture = CreateTestTexture(256, 512);
+            PaintRect(paddedTexture, 96, 140, 64, 180, Color.white);
+            PaintRect(filledTexture, 96, 40, 64, 360, Color.white);
+            paddedTexture.Apply();
+            filledTexture.Apply();
+
+            var padded = Sprite.Create(paddedTexture, new Rect(0, 0, 256, 512), new Vector2(0.5f, 0.05f), 256f);
+            var filled = Sprite.Create(filledTexture, new Rect(0, 0, 256, 512), new Vector2(0.5f, 0.05f), 256f);
+
+            float paddedScale = CombatUnit2DVisualScale.ResolveUniformScale(piece, padded);
+            float filledScale = CombatUnit2DVisualScale.ResolveUniformScale(piece, filled);
+            float paddedVisibleHeight = CombatArena2DSpriteMetrics.VisibleHeightUnits(padded) * paddedScale;
+            float filledVisibleHeight = CombatArena2DSpriteMetrics.VisibleHeightUnits(filled) * filledScale;
+
+            Assert.AreEqual(paddedVisibleHeight, filledVisibleHeight, 0.001f);
+            Assert.AreEqual(1.45f, paddedVisibleHeight, 0.001f);
+
+            Object.DestroyImmediate(paddedTexture);
+            Object.DestroyImmediate(filledTexture);
+            Object.DestroyImmediate(piece);
+        }
+
+        [Test]
+        public void PieceArtResolver_FreshIconOverridesCompleteCellArt()
+        {
+            var source = ScriptableObject.CreateInstance<PieceDefinitionSO>();
+            var iconTexture = CreateTestTexture(64, 64);
+            var cellTexture = CreateTestTexture(64, 64);
+            source.icon = Sprite.Create(iconTexture, new Rect(0, 0, 64, 64), Vector2.one * 0.5f, 64f);
+            var cellSprite = Sprite.Create(cellTexture, new Rect(0, 0, 64, 64), Vector2.one * 0.5f, 64f);
+            source.cellSprites = new[]
+            {
+                new PieceCellSprite { localCell = Vector2Int.zero, sprite = cellSprite },
+                new PieceCellSprite { localCell = Vector2Int.right, sprite = cellSprite }
+            };
+
+            var definition = new PieceDefinition
+            {
+                Shape = new PieceShape(new[] { new GridCoord(0, 0), new GridCoord(1, 0) })
+            };
+
+            Assert.IsTrue(PieceArtResolver.AllCellsHaveSprites(source, new GridCoord(0, 0), PieceRotation.R0, definition));
+            Assert.IsTrue(PieceArtResolver.ShouldUseFootprintIcon(source, new GridCoord(0, 0), PieceRotation.R0, definition));
+
+            Object.DestroyImmediate(source.icon.texture);
+            Object.DestroyImmediate(cellSprite.texture);
+            Object.DestroyImmediate(source);
         }
 
         [Test]
@@ -204,7 +299,21 @@ namespace DeadManZone.Presentation.Tests.EditMode
             var sprite = Sprite.Create(texture, new Rect(0, 0, 64, 128), new Vector2(0.5f, 0.15f), 64f);
             var offset = CombatArena2DSpriteQuad.PivotCenterOffset(sprite, 1f);
             Assert.AreEqual(0f, offset.x, 0.001f);
-            Assert.AreEqual(0.7f, offset.y, 0.001f);
+            Assert.AreEqual(1f, offset.y, 0.001f);
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void SpriteQuad_PivotCenterOffset_UsesVisibleAlphaBottomAsFeet()
+        {
+            var texture = CreateTestTexture(64, 128);
+            PaintRect(texture, 20, 24, 24, 80, Color.white);
+            texture.Apply();
+            var sprite = Sprite.Create(texture, new Rect(0, 0, 64, 128), new Vector2(0.5f, 0.15f), 64f);
+
+            var offset = CombatArena2DSpriteQuad.PivotCenterOffset(sprite, 1f);
+
+            Assert.AreEqual(0.625f, offset.y, 0.001f);
             Object.DestroyImmediate(texture);
         }
 
@@ -222,6 +331,15 @@ namespace DeadManZone.Presentation.Tests.EditMode
             texture.SetPixels(new Color[width * height]);
             texture.Apply();
             return texture;
+        }
+
+        private static void PaintRect(Texture2D texture, int x, int y, int width, int height, Color color)
+        {
+            for (int py = y; py < y + height; py++)
+            {
+                for (int px = x; px < x + width; px++)
+                    texture.SetPixel(px, py, color);
+            }
         }
     }
 }

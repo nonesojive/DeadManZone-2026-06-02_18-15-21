@@ -7,7 +7,8 @@ namespace DeadManZone.Data
     {
         public const int DefaultCellPixels = 512;
         private static readonly int[] CellCandidates = { 512, 256, 128 };
-        private const byte AlphaThreshold = 10;
+        // GetPixel returns 0-1 floats; threshold must live in that range (10/255 ≈ 0.039).
+        private const float AlphaThreshold01 = 10f / 255f;
 
         /// <summary>Picks the largest cell size that divides the sheet (512 → 256 → 128).
         /// Autosprite 4096² exports are 8×8 @ 512px; slicing at 256px shows a quarter-frame.</summary>
@@ -98,7 +99,7 @@ namespace DeadManZone.Data
             {
                 for (int x = x0; x < x0 + cellPixels; x++)
                 {
-                    if (texture.GetPixel(x, y).a > AlphaThreshold)
+                    if (texture.GetPixel(x, y).a > AlphaThreshold01)
                         return true;
                 }
             }

@@ -11,6 +11,8 @@ namespace DeadManZone.Data.Editor
     {
         private const string AnimRoot = "Assets/_Project/Art/Combat2D/Units/Animations";
         private const string PieceRoot = "Assets/_Project/Data/Resources/DeadManZone/Pieces";
+        private const int SpritePixelsPerUnit = 256;
+        private const int MaxAnimationTextureSize = 8192;
 
         private static readonly (string pieceId, string stripPrefix)[] Pieces =
         {
@@ -57,13 +59,14 @@ namespace DeadManZone.Data.Editor
                 AssetDatabase.CreateAsset(set, setPath);
             }
 
+            // Feel targets (combatvisualv2): weighty locomotion, snappy shots, readable deaths.
             set.idle = Strip(dir, stripPrefix, "idle", targetDurationSeconds: 4f, loop: true);
-            set.walk = Strip(dir, stripPrefix, "walk", targetDurationSeconds: 4f, loop: true);
+            set.walk = Strip(dir, stripPrefix, "walk", targetDurationSeconds: 3.5f, loop: true);
             set.run = Strip(dir, stripPrefix, "run", targetDurationSeconds: 3f, loop: true);
-            set.shoot = Strip(dir, stripPrefix, "shoot", targetDurationSeconds: 2f, loop: false);
+            set.shoot = Strip(dir, stripPrefix, "shoot", targetDurationSeconds: 1.5f, loop: false);
             set.hurt = default;
             set.hitReact = default;
-            set.die = Strip(dir, stripPrefix, "die", targetDurationSeconds: 6f, loop: false);
+            set.die = Strip(dir, stripPrefix, "die", targetDurationSeconds: 4f, loop: false);
 
             if (!set.HasAny)
             {
@@ -99,7 +102,7 @@ namespace DeadManZone.Data.Editor
             if (sprite == null || sprite.texture == null)
                 return default;
 
-            EnsureReadable(path, sprite.texture);
+            EnsureAnimationImportSettings(path);
 
             if (!TryDetectLayout(sprite.texture, out int columns, out int frameCount))
                 return default;
@@ -117,17 +120,74 @@ namespace DeadManZone.Data.Editor
         private static bool TryDetectLayout(Texture2D texture, out int columns, out int frameCount) =>
             CombatUnit2DStripLayout.TryDetectBestFromTexture(texture, out columns, out frameCount, out _);
 
-        private static void EnsureReadable(string assetPath, Texture2D texture)
+        private static void EnsureAnimationImportSettings(string assetPath)
         {
-            if (texture.isReadable)
-                return;
-
             var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
             if (importer == null)
                 return;
 
-            importer.isReadable = true;
-            importer.SaveAndReimport();
+            bool changed = false;
+            if (!importer.isReadable)
+            {
+                importer.isReadable = true;
+                changed = true;
+            }
+
+            if (importer.mipmapEnabled)
+            {
+                importer.mipmapEnabled = false;
+                changed = true;
+            }
+
+            if (!importer.alphaIsTransparency)
+            {
+                importer.alphaIsTransparency = true;
+                changed = true;
+            }
+
+            if (importer.maxTextureSize != MaxAnimationTextureSize)
+            {
+                importer.maxTextureSize = MaxAnimationTextureSize;
+                changed = true;
+            }
+
+            if (!Mathf.Approximately(importer.spritePixelsPerUnit, SpritePixelsPerUnit))
+            {
+                importer.spritePixelsPerUnit = SpritePixelsPerUnit;
+                changed = true;
+            }
+
+            if (importer.textureCompression != TextureImporterCompression.Uncompressed)
+            {
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                changed = true;
+            }
+
+            if (importer.npotScale != TextureImporterNPOTScale.None)
+            {
+                importer.npotScale = TextureImporterNPOTScale.None;
+                changed = true;
+            }
+
+            var defaultSettings = importer.GetDefaultPlatformTextureSettings();
+            if (defaultSettings.maxTextureSize != MaxAnimationTextureSize)
+            {
+                defaultSettings.maxTextureSize = MaxAnimationTextureSize;
+                importer.SetPlatformTextureSettings(defaultSettings);
+                changed = true;
+            }
+
+            var standaloneSettings = importer.GetPlatformTextureSettings("Standalone");
+            if (standaloneSettings.maxTextureSize != MaxAnimationTextureSize)
+            {
+                standaloneSettings.maxTextureSize = MaxAnimationTextureSize;
+                standaloneSettings.overridden = false;
+                importer.SetPlatformTextureSettings(standaloneSettings);
+                changed = true;
+            }
+
+            if (changed)
+                importer.SaveAndReimport();
         }
     }
 }

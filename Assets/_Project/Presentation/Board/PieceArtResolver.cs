@@ -22,8 +22,9 @@ namespace DeadManZone.Presentation.Board
             PieceRotation rotation,
             PieceDefinition definition)
         {
-            return source?.icon != null
-                && !AllCellsHaveSprites(source, anchor, rotation, definition);
+            // Fresh roster cards are the source of truth for board/reserve chips.
+            // Legacy per-cell sprites can be stale and should not override authored icons.
+            return source?.icon != null;
         }
 
         public static bool AllCellsHaveSprites(

@@ -164,8 +164,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         internal static Vector3 PivotCenterOffset(Sprite sprite, float scale)
         {
             float height = sprite.rect.height / sprite.pixelsPerUnit * scale;
-            float pivotFromBottom = sprite.pivot.y / sprite.pixelsPerUnit * scale;
-            return Vector3.up * (height * 0.5f - pivotFromBottom);
+            float visibleBottom = CombatArena2DSpriteMetrics.VisibleBottomUnits(sprite) * scale;
+            return Vector3.up * (height * 0.5f - visibleBottom);
         }
 
         private static void ApplyMaterial(

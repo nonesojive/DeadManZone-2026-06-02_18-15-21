@@ -33,9 +33,14 @@ namespace DeadManZone.Presentation.Combat.Arena
         private bool _animated;
         private bool _dying;
         private bool _flipX;
+        private float _locomotionLockUntil;
+        private Sprite _lastFrame;
+        private int _lastRenderQueue = int.MinValue;
 
         public bool IsBuilt => _presentationRoot != null;
-        public bool BlocksLocomotion => _animated && _animPlayer.IsLocked;
+        // ponytail: shoot/die strips can run longer than sim attack cadence; lock locomotion
+        // only through the presentation profile window (or full die), not the whole strip.
+        public bool BlocksLocomotion => _animated && (_dying || Time.time < _locomotionLockUntil);
 
         public void Build(
             PieceDefinitionSO piece,
@@ -119,11 +124,13 @@ namespace DeadManZone.Presentation.Combat.Arena
                 _animPlayer.Play(CombatUnit2DAnimState.Walk, restart: false);
 
             Sprite frame = _animPlayer.ResolveSprite(null);
-            if (frame == null)
+            if (frame == null || frame == _lastFrame)
                 return;
 
             for (int i = 0; i < _soldierQuads.Count; i++)
                 CombatArena2DSpriteQuad.SetFrame(_soldierQuads[i], frame, _soldierScales[i]);
+
+            _lastFrame = frame;
         }
 
         private void ApplySquadJog()
@@ -154,7 +161,10 @@ namespace DeadManZone.Presentation.Combat.Arena
             Action onImpact)
         {
             if (_animated)
+            {
                 _animPlayer.Play(CombatUnit2DAnimState.Shoot);
+                _locomotionLockUntil = Time.time + Mathf.Max(0.05f, profile.TotalDurationSeconds);
+            }
             if (_attackRoutine != null)
                 StopCoroutine(_attackRoutine);
             _attackRoutine = StartCoroutine(AttackRoutine(profile, targetWorld, onMuzzle, onImpact));
@@ -177,6 +187,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (_animated)
             {
                 _dying = true;
+                _locomotionLockUntil = float.MaxValue;
                 _animPlayer.Play(CombatUnit2DAnimState.Die);
                 _deathRoutine = StartCoroutine(AnimatedDeathRoutine(onComplete));
             }
@@ -206,6 +217,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             _animated = false;
             _dying = false;
             _flipX = false;
+            _locomotionLockUntil = 0f;
+            _lastFrame = null;
+            _lastRenderQueue = int.MinValue;
         }
 
         private void CreateShadow()
@@ -239,6 +253,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 _animPlayer.Bind(piece.combatArena2DAnimations);
                 _animPlayer.Play(CombatUnit2DAnimState.Idle);
                 sprite = _animPlayer.ResolveSprite(sprite);
+                _lastFrame = sprite;
                 tint = Color.white;
                 // Detailed character sheets are a single figure; the multi-soldier
                 // squad cluster only made sense for abstract silhouettes.
@@ -249,7 +264,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             for (int i = 0; i < count; i++)
             {
-                float scale = i == 0 ? 1.05f : 0.92f;
+                float scale = CombatUnit2DVisualScale.ResolveUniformScale(piece, sprite);
                 var anchor = new GameObject(i == 0 ? "Leader" : $"Soldier_{i}");
                 anchor.transform.SetParent(_squadRoot, false);
                 anchor.transform.localPosition = SquadOffsets[i];
@@ -273,8 +288,13 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void ApplySortOrder(int baseRenderQueue)
         {
+            if (baseRenderQueue == _lastRenderQueue)
+                return;
+
             for (int i = 0; i < _soldierQuads.Count; i++)
                 CombatArena2DSpriteQuad.SetRenderQueue(_soldierQuads[i], baseRenderQueue + i);
+
+            _lastRenderQueue = baseRenderQueue;
         }
 
         private IEnumerator AttackRoutine(

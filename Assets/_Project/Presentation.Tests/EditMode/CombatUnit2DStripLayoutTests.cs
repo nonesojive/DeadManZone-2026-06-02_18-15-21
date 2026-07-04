@@ -27,15 +27,16 @@ namespace DeadManZone.Presentation.Tests.EditMode
         }
 
         [Test]
-        public void DetectBestFromTexture_Prefers512PxCellsOn4096AutospriteSheet()
+        public void DetectBestFromTexture_PrefersLargestDividingCellSize()
         {
-            // Simulates Autosprite 4096² @ 512px (8×8) vs false 256px quarter-frames.
-            var texture = CreateGridTexture(columns: 8, rows: 8, cell: 128, filledCells: 64);
+            // 1024² sheet: 512 divides it, so detection must pick 512 cells (2×2 grid),
+            // never a smaller candidate that would slice frames into quarters.
+            var texture = CreateGridTexture(columns: 2, rows: 2, cell: 512, filledCells: 4);
             Assert.IsTrue(CombatUnit2DStripLayout.TryDetectBestFromTexture(
                 texture, out int columns, out int frameCount, out int cellPixels));
-            Assert.AreEqual(128, cellPixels);
-            Assert.AreEqual(8, columns);
-            Assert.AreEqual(64, frameCount);
+            Assert.AreEqual(512, cellPixels);
+            Assert.AreEqual(2, columns);
+            Assert.AreEqual(4, frameCount);
             Object.DestroyImmediate(texture);
         }
 

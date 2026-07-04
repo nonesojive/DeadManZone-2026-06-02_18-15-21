@@ -20,11 +20,16 @@ namespace DeadManZone.Presentation.Combat.Arena
     {
         private const float FramePivotX = 0.5f;
         private const float FramePivotY = 0.05f;
+        private const int FrameEdgeInsetPixels = 6;
+        private const int FrameCropPaddingPixels = 4;
+        private const float AlphaThreshold01 = 10f / 255f;
 
         private CombatUnit2DAnimationSetSO _set;
         private CombatUnit2DAnimState _state = CombatUnit2DAnimState.Idle;
         private float _time;
         private bool _locked;
+        private static readonly Dictionary<int, RectInt> SharedCropCache = new();
+        private static readonly Dictionary<int, Sprite[]> SharedFrameCache = new();
         private readonly Dictionary<CombatUnit2DAnimState, Sprite[]> _frameCache = new();
 
         public CombatUnit2DAnimState State => _state;
@@ -156,6 +161,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             int cellH = Mathf.Max(1, Mathf.RoundToInt(texH / (float)rows));
             float cellWf = texW / (float)columns;
             float cellHf = texH / (float)rows;
+            var crop = ResolveSharedCellCrop(texture, columns, rows, strip.frameCount, cellW, cellH);
             var pivot = new Vector2(FramePivotX, FramePivotY);
             float ppu = strip.sheet.pixelsPerUnit * scaleX;
 
@@ -164,15 +170,107 @@ namespace DeadManZone.Presentation.Combat.Arena
             {
                 int col = i % columns;
                 int row = i / columns;
-                int x = Mathf.Clamp(Mathf.RoundToInt(originX + col * cellWf), 0, texW - cellW);
-                int y = Mathf.Clamp(Mathf.RoundToInt(originY + texH - (row + 1) * cellHf), 0, texH - cellH);
-                if (x + cellW > texW || y + cellH > texH)
+                int cellX = Mathf.RoundToInt(originX + col * cellWf);
+                int cellY = Mathf.RoundToInt(originY + texH - (row + 1) * cellHf);
+                int x = Mathf.Clamp(cellX + crop.x, 0, texW - crop.width);
+                int y = Mathf.Clamp(cellY + crop.y, 0, texH - crop.height);
+                if (x + crop.width > texW || y + crop.height > texH)
                     continue;
 
-                frames[i] = Sprite.Create(texture, new Rect(x, y, cellW, cellH), pivot, ppu);
+                frames[i] = Sprite.Create(texture, new Rect(x, y, crop.width, crop.height), pivot, ppu);
             }
 
             return frames;
+        }
+
+        private static RectInt ResolveSharedCellCrop(
+            Texture2D texture,
+            int columns,
+            int rows,
+            int frameCount,
+            int cellW,
+            int cellH)
+        {
+            int key = CropCacheKey(texture, columns, rows, frameCount, cellW, cellH);
+            if (SharedCropCache.TryGetValue(key, out var cached))
+                return cached;
+
+            var crop = DetectSharedContentCrop(texture, columns, rows, frameCount, cellW, cellH);
+            SharedCropCache[key] = crop;
+            return crop;
+        }
+
+        private static RectInt DetectSharedContentCrop(
+            Texture2D texture,
+            int columns,
+            int rows,
+            int frameCount,
+            int cellW,
+            int cellH)
+        {
+            int edgeInset = Mathf.Min(FrameEdgeInsetPixels, Mathf.Max(0, Mathf.Min(cellW, cellH) / 8));
+            var fallback = new RectInt(
+                edgeInset,
+                edgeInset,
+                Mathf.Max(1, cellW - edgeInset * 2),
+                Mathf.Max(1, cellH - edgeInset * 2));
+
+            if (texture == null || !texture.isReadable)
+                return fallback;
+
+            int minX = cellW;
+            int minY = cellH;
+            int maxX = -1;
+            int maxY = -1;
+            int safeMaxX = Mathf.Max(edgeInset, cellW - edgeInset);
+            int safeMaxY = Mathf.Max(edgeInset, cellH - edgeInset);
+
+            int count = Mathf.Min(frameCount, columns * rows);
+            for (int i = 0; i < count; i++)
+            {
+                int col = i % columns;
+                int row = i / columns;
+                int cellX = col * cellW;
+                int cellY = texture.height - (row + 1) * cellH;
+
+                for (int y = edgeInset; y < safeMaxY; y++)
+                {
+                    for (int x = edgeInset; x < safeMaxX; x++)
+                    {
+                        if (texture.GetPixel(cellX + x, cellY + y).a <= AlphaThreshold01)
+                            continue;
+
+                        minX = Mathf.Min(minX, x);
+                        minY = Mathf.Min(minY, y);
+                        maxX = Mathf.Max(maxX, x);
+                        maxY = Mathf.Max(maxY, y);
+                    }
+                }
+            }
+
+            if (maxX < minX || maxY < minY)
+                return fallback;
+
+            minX = Mathf.Max(edgeInset, minX - FrameCropPaddingPixels);
+            minY = Mathf.Max(edgeInset, minY - FrameCropPaddingPixels);
+            maxX = Mathf.Min(cellW - edgeInset - 1, maxX + FrameCropPaddingPixels);
+            maxY = Mathf.Min(cellH - edgeInset - 1, maxY + FrameCropPaddingPixels);
+
+            return new RectInt(minX, minY, Mathf.Max(1, maxX - minX + 1), Mathf.Max(1, maxY - minY + 1));
+        }
+
+        private static int CropCacheKey(Texture2D texture, int columns, int rows, int frameCount, int cellW, int cellH)
+        {
+            unchecked
+            {
+                int key = texture != null ? texture.GetInstanceID() : 0;
+                key = (key * 397) ^ columns;
+                key = (key * 397) ^ rows;
+                key = (key * 397) ^ frameCount;
+                key = (key * 397) ^ cellW;
+                key = (key * 397) ^ cellH;
+                return key;
+            }
         }
 
         private Sprite[] GetFrames(CombatUnit2DAnimState state, CombatUnit2DStrip strip)
@@ -180,9 +278,35 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (_frameCache.TryGetValue(state, out var cached))
                 return cached;
 
-            var frames = SliceUnitStrip(strip);
+            var frames = ResolveSharedFrames(strip);
             _frameCache[state] = frames;
             return frames;
+        }
+
+        private static Sprite[] ResolveSharedFrames(CombatUnit2DStrip strip)
+        {
+            int key = FrameCacheKey(strip);
+            if (SharedFrameCache.TryGetValue(key, out var cached))
+                return cached;
+
+            var frames = SliceUnitStrip(strip);
+            SharedFrameCache[key] = frames;
+            return frames;
+        }
+
+        private static int FrameCacheKey(CombatUnit2DStrip strip)
+        {
+            unchecked
+            {
+                int key = strip.sheet != null ? strip.sheet.GetInstanceID() : 0;
+                var texture = strip.sheet != null ? strip.sheet.texture : null;
+                key = (key * 397) ^ (texture != null ? texture.GetInstanceID() : 0);
+                key = (key * 397) ^ strip.frameCount;
+                key = (key * 397) ^ strip.ColumnsOrDefault;
+                key = (key * 397) ^ (texture != null ? texture.width : 0);
+                key = (key * 397) ^ (texture != null ? texture.height : 0);
+                return key;
+            }
         }
 
         private CombatUnit2DStrip ResolveStrip(CombatUnit2DAnimState state)

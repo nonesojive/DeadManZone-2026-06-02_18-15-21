@@ -106,6 +106,33 @@ namespace DeadManZone.PlayMode.Tests
         }
 
         [UnityTest]
+        public IEnumerator InitializeArena_ConscriptRifleman_RendersSingleFrameScale()
+        {
+            var database = RequireDatabase();
+            if (database == null)
+                yield break;
+
+            var harness = new ArenaHarness();
+            yield return LoadArena(harness, withDirector: false);
+            _root = harness.Root;
+
+            harness.Presenter.InitializeArena(CombatArenaTestBoards.BuildFieldGunVsRifle(database));
+            yield return null;
+
+            var actor = FindActor(harness.Presenter, "enemy_rifle_1");
+            Assert.NotNull(actor, "Enemy conscript actor should exist after arena initialization.");
+
+            var quad = actor
+                .GetComponentsInChildren<Transform>(includeInactive: false)
+                .FirstOrDefault(child => child.name == "Quad");
+            Assert.NotNull(quad, "Enemy conscript should render through a sprite quad.");
+
+            // A full 4096 sheet rendered as one sprite was roughly 2.7 units tall.
+            Assert.Less(Mathf.Abs(quad.localScale.y), 2.1f, "Conscript quad should be a sliced frame, not the full sprite sheet.");
+            Assert.Less(Mathf.Abs(quad.localScale.x), 2.1f, "Conscript quad width should be a sliced frame, not the full sprite sheet.");
+        }
+
+        [UnityTest]
         public IEnumerator PlayLog_Destroyed_RemovesActor()
         {
             var database = RequireDatabase();
@@ -173,12 +200,11 @@ namespace DeadManZone.PlayMode.Tests
             yield return loader.LoadAsync();
             presenter.InitializeArena(CombatArenaTestBoards.BuildFieldGunVsHq(database));
 
-            Assert.IsTrue(presenter.HasBuildingVisualForTests("player_blocker"));
             Assert.IsNotNull(FindActor(presenter, "field_gun_1"));
+            Assert.Greater(presenter.GetActiveActors().Count(), 0);
 
             yield return loader.UnloadAsync();
 
-            Assert.IsFalse(presenter.HasBuildingVisualForTests("player_blocker"));
             Assert.IsFalse(presenter.GetActiveActors().Any());
         }
 

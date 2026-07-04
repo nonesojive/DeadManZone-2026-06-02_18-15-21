@@ -16,7 +16,7 @@ MonoBehaviour:
     sheet: {fileID: 21300000, guid: ce0e15f9872b4f138423c1922218b5d8, type: 3}
     frameCount: 49
     columns: 7
-    framesPerSecond: 12
+    framesPerSecond: 12.25
     loop: 1
   walk:
     sheet: {fileID: 21300000, guid: f653124965ed40719ca589f17fa90857, type: 3}
@@ -28,29 +28,29 @@ MonoBehaviour:
     sheet: {fileID: 0}
     frameCount: 0
     columns: 0
-    framesPerSecond: 1
+    framesPerSecond: 0
     loop: 0
   hurt:
     sheet: {fileID: 0}
     frameCount: 0
     columns: 0
-    framesPerSecond: 1
+    framesPerSecond: 0
     loop: 0
   hitReact:
     sheet: {fileID: 0}
     frameCount: 0
     columns: 0
-    framesPerSecond: 1
+    framesPerSecond: 0
     loop: 0
   shoot:
     sheet: {fileID: 21300000, guid: 7277763f370f404fbbb3774c7c428602, type: 3}
     frameCount: 49
     columns: 7
-    framesPerSecond: 24
+    framesPerSecond: 32.666668
     loop: 0
   die:
     sheet: {fileID: 21300000, guid: b0664fb94ba241d99aa4124b51176197, type: 3}
     frameCount: 49
     columns: 7
-    framesPerSecond: 12
+    framesPerSecond: 12.25
     loop: 0

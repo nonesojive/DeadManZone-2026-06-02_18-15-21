@@ -25,9 +25,9 @@ namespace DeadManZone.Presentation.Combat.Arena
         public static CombatAttackPresentationProfile InfantryRifle => new(
             CombatAttackPresentationKind.InfantryRifle,
             useForwardStep: false,
-            muzzleDelaySeconds: 0.08f,
-            impactDelaySeconds: 0.20f,
-            totalDurationSeconds: 0.55f);
+            muzzleDelaySeconds: 0.10f,
+            impactDelaySeconds: 0.24f,
+            totalDurationSeconds: 0.50f);
 
         public static CombatAttackPresentationProfile InfantryGrenade => new(
             CombatAttackPresentationKind.InfantryGrenade,
@@ -46,15 +46,15 @@ namespace DeadManZone.Presentation.Combat.Arena
         public static CombatAttackPresentationProfile VehicleCannon => new(
             CombatAttackPresentationKind.VehicleCannon,
             useForwardStep: false,
-            muzzleDelaySeconds: 0.05f,
-            impactDelaySeconds: 0.25f,
-            totalDurationSeconds: 0.50f);
+            muzzleDelaySeconds: 0.08f,
+            impactDelaySeconds: 0.32f,
+            totalDurationSeconds: 0.62f);
 
         public static CombatAttackPresentationProfile BuildingArtillery => new(
             CombatAttackPresentationKind.BuildingArtillery,
             useForwardStep: false,
-            muzzleDelaySeconds: 0.05f,
-            impactDelaySeconds: 0.30f,
-            totalDurationSeconds: 0.55f);
+            muzzleDelaySeconds: 0.06f,
+            impactDelaySeconds: 0.38f,
+            totalDurationSeconds: 0.68f);
     }
 }
