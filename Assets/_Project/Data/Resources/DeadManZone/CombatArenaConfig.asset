@@ -37,17 +37,17 @@ MonoBehaviour:
   autoFrameVerticalPosition: 1
   boardVerticalViewportCenter: 0.5
   autoFrameVerticalFill: 1
-  verticalViewportFill: 0.66
-  cameraDistanceScale: 0.92
+  verticalViewportFill: 0.82
+  cameraDistanceScale: 0.85
   lookAtDepthOffset: 0
   useManualCameraPose: 0
   manualCameraWorldPosition: {x: 0, y: 0, z: 0}
   lookAtWorld: {x: 0, y: 0, z: 0}
   showCheckerboardGrid: 1
-  gridLightCellColor: {r: 0.72, g: 0.56, b: 0.38, a: 1}
-  gridDarkCellColor: {r: 0.5, g: 0.37, b: 0.26, a: 1}
+  gridLightCellColor: {r: 0.615, g: 0.485, b: 0.345, a: 1}
+  gridDarkCellColor: {r: 0.575, g: 0.445, b: 0.315, a: 1}
   gridBackdropColor: {r: 0.16, g: 0.12, b: 0.09, a: 1}
-  gridCellInset: 0.045
+  gridCellInset: 0
   gridYOffset: 0.04
   moveLerpSeconds: 0.4
   moveSpeedPresentationScale: 1.1

@@ -35,11 +35,29 @@ namespace DeadManZone.Presentation.Combat.Arena
                 freezeController = controller;
         }
 
-        public void PlayRifleMuzzleAndTracer(Vector3 muzzleWorld, Vector3 targetWorld) =>
+        public void PlayRifleMuzzleAndTracer(Vector3 muzzleWorld, Vector3 targetWorld)
+        {
+            SpawnMuzzleFlash(muzzleWorld, targetWorld, 0.34f);
             StartCoroutine(ArcTracerRoutine(muzzleWorld, targetWorld, 0.18f, 0.12f));
+        }
 
-        public void PlayCannonMuzzleAndTracer(Vector3 muzzleWorld, Vector3 targetWorld) =>
+        public void PlayCannonMuzzleAndTracer(Vector3 muzzleWorld, Vector3 targetWorld)
+        {
+            SpawnMuzzleFlash(muzzleWorld, targetWorld, 0.6f);
+            CombatArenaCameraShake.Kick(0.05f, 0.12f);
             StartCoroutine(ArcTracerRoutine(muzzleWorld, targetWorld, 0.35f, 0.2f));
+        }
+
+        /// <summary>Gas/environmental damage: hurt feedback and text only — no weapon cues.</summary>
+        public void PlayEnvironmentalDamage(Vector3 targetWorld, int damageAmount)
+        {
+            PlayStrip(
+                CombatArena2DVfxArt.RifleImpactFrames,
+                targetWorld + Vector3.up * 0.35f,
+                0.8f,
+                0.3f);
+            SpawnFloatingText(targetWorld + Vector3.up * 0.8f, damageAmount > 0 ? $"-{damageAmount}" : damageAmount.ToString());
+        }
 
         public void PlayImpact(Vector3 targetWorld, int damageAmount)
         {
@@ -53,6 +71,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public void PlayExplosion(Vector3 targetWorld, int damageAmount)
         {
+            CombatArenaCameraShake.Kick(0.11f, 0.22f);
             PlayStrip(
                 CombatArena2DVfxArt.ExplosionFrames,
                 targetWorld + Vector3.up * 0.2f,
@@ -119,6 +138,51 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             int sortOrder = CombatArena2DSortOrder.FromWorldZ(worldPosition.z) + 50;
             CombatArena2DVfxSpriteAnim.Play(this, frames, worldPosition, scale, durationSeconds, sortOrder);
+        }
+
+        /// <summary>Short two-stage flash at the barrel: bright core that pops then fades,
+        /// stretched slightly toward the target so the shot direction reads.</summary>
+        private void SpawnMuzzleFlash(Vector3 muzzleWorld, Vector3 targetWorld, float scale)
+        {
+            var go = new GameObject("MuzzleFlash");
+            go.transform.SetParent(transform, true);
+            go.transform.position = muzzleWorld;
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = CombatArena2DPlaceholderSprites.WhitePixel;
+            sr.color = new Color(1f, 0.93f, 0.6f, 0.95f);
+            sr.sortingOrder = CombatArena2DSortOrder.FromWorldZ(muzzleWorld.z) + 60;
+
+            var camera = CombatArenaBootstrap.Instance?.ArenaCamera;
+            if (camera != null)
+                go.transform.rotation = camera.transform.rotation;
+
+            Vector3 toTarget = targetWorld - muzzleWorld;
+            toTarget.y = 0f;
+            float side = toTarget.x >= 0f ? 1f : -1f;
+            go.transform.localScale = new Vector3(scale * 1.6f * side, scale * 0.55f, 1f);
+
+            StartCoroutine(MuzzleFlashRoutine(sr));
+        }
+
+        private IEnumerator MuzzleFlashRoutine(SpriteRenderer sr)
+        {
+            const float lifetime = 0.09f;
+            Vector3 startScale = sr != null ? sr.transform.localScale : Vector3.one;
+            float elapsed = 0f;
+            while (elapsed < lifetime && sr != null)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / lifetime);
+                sr.transform.localScale = startScale * (1f + 0.6f * t);
+                var color = sr.color;
+                color.a = 0.95f * (1f - t * t);
+                sr.color = color;
+                yield return null;
+            }
+
+            if (sr != null)
+                Destroy(sr.gameObject);
         }
 
         private void SpawnImpactFlash(Vector3 worldPosition, float scale)

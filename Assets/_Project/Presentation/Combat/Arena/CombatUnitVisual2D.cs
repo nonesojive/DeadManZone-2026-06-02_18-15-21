@@ -358,10 +358,11 @@ namespace DeadManZone.Presentation.Combat.Arena
                 yield return new WaitForSeconds(profile.MuzzleDelaySeconds);
 
             // Animated sprites face by flip-X, so the barrel is lateral, not squad-forward.
+            // Shoulder-height origin: tracers from the hip read as a glitch.
             Vector3 barrelOffset = _animated
                 ? (_flipX ? Vector3.left : Vector3.right) * 0.35f
                 : (_squadRoot != null ? _squadRoot.forward : transform.forward) * 0.2f;
-            Vector3 muzzle = transform.position + Vector3.up * 0.45f + barrelOffset;
+            Vector3 muzzle = transform.position + Vector3.up * 0.72f + barrelOffset;
             onMuzzle?.Invoke(muzzle);
 
             float impactWait = profile.ImpactDelaySeconds - profile.MuzzleDelaySeconds;
@@ -385,9 +386,29 @@ namespace DeadManZone.Presentation.Combat.Arena
             TickAnimation();
             UpdateSortAndBob(transform.position);
 
-            // Corpse holds its last frame briefly; vanishing on the final die frame pops.
+            // Corpse holds its last frame, then fades out instead of popping off.
             if (CorpseLingerSeconds > 0f)
-                yield return new WaitForSeconds(CorpseLingerSeconds);
+            {
+                float holdSeconds = CorpseLingerSeconds * 0.4f;
+                float fadeSeconds = CorpseLingerSeconds - holdSeconds;
+                yield return new WaitForSeconds(holdSeconds);
+
+                if (_lastFrame != null)
+                {
+                    int queue = CombatArena2DSortOrder.RenderQueueFromWorldZ(transform.position.z);
+                    for (int i = 0; i < _soldierQuads.Count; i++)
+                        CombatArena2DSpriteQuad.SetFadeMaterial(_soldierQuads[i], _lastFrame, queue);
+                }
+
+                for (float t = 0f; t < fadeSeconds; t += Time.deltaTime)
+                {
+                    float alpha = 1f - Mathf.Clamp01(t / fadeSeconds);
+                    var fade = new Color(1f, 1f, 1f, alpha);
+                    for (int i = 0; i < _soldierQuads.Count; i++)
+                        CombatArena2DSpriteQuad.SetTint(_soldierQuads[i], fade);
+                    yield return null;
+                }
+            }
 
             _dying = false;
             onComplete?.Invoke();

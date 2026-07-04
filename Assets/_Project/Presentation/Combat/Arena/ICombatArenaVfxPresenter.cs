@@ -11,5 +11,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         void PlayExplosion(Vector3 targetWorld, int damageAmount);
         void PlayDeath(Vector3 worldPosition);
         void PlayDamage(Vector3 worldPosition, int amount);
+
+        /// <summary>Environmental damage (gas, hazards): feedback without weapon cues.</summary>
+        void PlayEnvironmentalDamage(Vector3 targetWorld, int damageAmount);
     }
 }

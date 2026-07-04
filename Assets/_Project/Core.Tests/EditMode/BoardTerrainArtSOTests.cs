@@ -48,7 +48,9 @@ namespace DeadManZone.Core.Tests.EditMode
         {
             var texture = new Texture2D(4, 4, TextureFormat.RGBA32, false);
             texture.name = name;
-            return Sprite.Create(texture, new Rect(0f, 0f, 4f, 4f), new Vector2(0.5f, 0.5f), 100f);
+            var sprite = Sprite.Create(texture, new Rect(0f, 0f, 4f, 4f), new Vector2(0.5f, 0.5f), 100f);
+            sprite.name = name; // Sprite.Create does not inherit the texture's name
+            return sprite;
         }
     }
 }

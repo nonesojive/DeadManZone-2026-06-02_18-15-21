@@ -83,9 +83,13 @@ namespace DeadManZone.Presentation.Combat.Arena
 
                     if (useSprites)
                     {
-                        Sprite sprite = IsLightCheckerCell(x, y) ? art.gridCellLight : art.gridCellDark;
+                        // One shared texture: alternating light/dark sprites read as a game
+                        // board, not terrain. A whisper of checker tint keeps motion readable.
                         Color tint = CombatArena2DSpriteMaterial.ResolveZoneTint(cellColor, 0.28f);
-                        CreateTexturedTile(parent, center, width, depth, CellYOffset, sprite, tint, CellRenderQueue);
+                        if (!IsLightCheckerCell(x, y))
+                            tint *= 0.955f;
+                        tint.a = 1f;
+                        CreateTexturedTile(parent, center, width, depth, CellYOffset, art.gridCellLight, tint, CellRenderQueue);
                     }
                     else
                         CreateColorTile(parent, center, width, depth, cellColor, CellYOffset);

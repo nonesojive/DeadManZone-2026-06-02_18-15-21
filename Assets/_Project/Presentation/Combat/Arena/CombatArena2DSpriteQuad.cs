@@ -145,6 +145,24 @@ namespace DeadManZone.Presentation.Combat.Arena
             quad.localScale = scale;
         }
 
+        /// <summary>Swap to a soft-alpha (blended) material so the quad can fade smoothly —
+        /// the default cutout material pops instead of fading when alpha drops.</summary>
+        public static void SetFadeMaterial(GameObject root, Sprite sprite, int renderQueue)
+        {
+            if (root == null || sprite == null)
+                return;
+
+            var quad = root.transform.Find("Quad");
+            var renderer = quad != null ? quad.GetComponent<Renderer>() : null;
+            if (renderer == null)
+                return;
+
+            var material = CombatArena2DSpriteMaterial.CreateSprite(
+                sprite, Color.white, renderQueue, softAlpha: true);
+            if (material != null)
+                renderer.sharedMaterial = material;
+        }
+
         /// <summary>Tint the quad's material (each quad owns its material instance).</summary>
         public static void SetTint(GameObject root, Color tint)
         {

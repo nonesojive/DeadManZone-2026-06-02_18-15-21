@@ -355,6 +355,15 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (!TryGetDamageTargetPosition(combatEvent, out var targetWorld))
                 return;
 
+            // Gas has no shooter; a rifle tracer here reads as a phantom attacker.
+            if (combatEvent.ActionType == "gas_damage")
+            {
+                _activeVfx?.PlayEnvironmentalDamage(targetWorld, combatEvent.Value);
+                if (_actors.TryGetValue(combatEvent.TargetId, out var gassed))
+                    gassed.PlayHurt();
+                return;
+            }
+
             if (!_actors.ContainsKey(combatEvent.ActorId))
             {
                 _activeVfx?.PlayDamage(targetWorld, combatEvent.Value);
