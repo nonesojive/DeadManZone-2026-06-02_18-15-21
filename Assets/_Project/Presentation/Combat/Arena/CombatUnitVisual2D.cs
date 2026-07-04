@@ -9,6 +9,12 @@ namespace DeadManZone.Presentation.Combat.Arena
     /// <summary>Sprite-based unit presentation for Top Troops 2D arena mode.</summary>
     public sealed class CombatUnitVisual2D : MonoBehaviour
     {
+        /// <summary>Die strips are authored ~4s; compress to a snappy fall that still reads.</summary>
+        public const float DieStripSeconds = 1.2f;
+
+        /// <summary>Hold the corpse's final frame briefly before the actor is pooled.</summary>
+        public const float CorpseLingerSeconds = 0.45f;
+
         private static readonly Vector3[] SquadOffsets =
         {
             new(-0.22f, 0f, -0.15f),
@@ -29,6 +35,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         private bool _walking;
         private Coroutine _attackRoutine;
         private Coroutine _deathRoutine;
+        private Coroutine _hurtRoutine;
+        private Color _baseTint = Color.white;
         private readonly CombatUnit2DStripPlayer _animPlayer = new();
         private bool _animated;
         private bool _dying;
@@ -79,6 +87,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (_animated)
             {
                 bool faceLeft = worldDirection.x < 0f;
+                _flipX = faceLeft;
                 for (int i = 0; i < _soldierQuads.Count; i++)
                     CombatArena2DSpriteQuad.SetFlipX(_soldierQuads[i], faceLeft);
                 return;
@@ -110,9 +119,28 @@ namespace DeadManZone.Presentation.Combat.Arena
             ApplySortOrder(renderQueue);
         }
 
+        /// <summary>Brief damage flash; combat keeps marching, but hits must read on the victim.</summary>
         public void PlayHurt()
         {
-            // ponytail: hurt/hit-react disabled for now — combat keeps marching through damage
+            if (_dying || _soldierQuads.Count == 0)
+                return;
+
+            if (_hurtRoutine != null)
+                StopCoroutine(_hurtRoutine);
+            _hurtRoutine = StartCoroutine(HurtFlashRoutine());
+        }
+
+        private IEnumerator HurtFlashRoutine()
+        {
+            var flash = new Color(1f, 0.42f, 0.36f, 1f);
+            for (int i = 0; i < _soldierQuads.Count; i++)
+                CombatArena2DSpriteQuad.SetTint(_soldierQuads[i], flash);
+
+            yield return new WaitForSeconds(0.09f);
+
+            for (int i = 0; i < _soldierQuads.Count; i++)
+                CombatArena2DSpriteQuad.SetTint(_soldierQuads[i], _baseTint);
+            _hurtRoutine = null;
         }
 
         private void TickAnimation()
@@ -162,8 +190,18 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             if (_animated)
             {
-                _animPlayer.Play(CombatUnit2DAnimState.Shoot);
-                _locomotionLockUntil = Time.time + Mathf.Max(0.05f, profile.TotalDurationSeconds);
+                // Square up to the target before firing; shooting backwards reads as a glitch.
+                FaceDirection(targetWorld - transform.position);
+
+                // Let an in-flight shoot finish instead of twitch-restarting on every
+                // damage event; the strip is compressed to end exactly with the lock.
+                bool shootInProgress = _animPlayer.State == CombatUnit2DAnimState.Shoot && _animPlayer.IsLocked;
+                if (!shootInProgress)
+                {
+                    float window = Mathf.Max(0.05f, profile.TotalDurationSeconds);
+                    _animPlayer.Play(CombatUnit2DAnimState.Shoot, restart: true, targetDurationSeconds: window);
+                    _locomotionLockUntil = Time.time + window;
+                }
             }
             if (_attackRoutine != null)
                 StopCoroutine(_attackRoutine);
@@ -180,6 +218,14 @@ namespace DeadManZone.Presentation.Combat.Arena
                 _attackRoutine = null;
             }
 
+            if (_hurtRoutine != null)
+            {
+                StopCoroutine(_hurtRoutine);
+                _hurtRoutine = null;
+                for (int i = 0; i < _soldierQuads.Count; i++)
+                    CombatArena2DSpriteQuad.SetTint(_soldierQuads[i], _baseTint);
+            }
+
             if (_squadRoot != null)
                 _squadRoot.localScale = Vector3.one;
 
@@ -188,7 +234,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             {
                 _dying = true;
                 _locomotionLockUntil = float.MaxValue;
-                _animPlayer.Play(CombatUnit2DAnimState.Die);
+                _animPlayer.Play(CombatUnit2DAnimState.Die, restart: true, targetDurationSeconds: DieStripSeconds);
                 _deathRoutine = StartCoroutine(AnimatedDeathRoutine(onComplete));
             }
             else
@@ -203,8 +249,12 @@ namespace DeadManZone.Presentation.Combat.Arena
                 StopCoroutine(_attackRoutine);
             if (_deathRoutine != null)
                 StopCoroutine(_deathRoutine);
+            if (_hurtRoutine != null)
+                StopCoroutine(_hurtRoutine);
             _attackRoutine = null;
             _deathRoutine = null;
+            _hurtRoutine = null;
+            _baseTint = Color.white;
 
             if (_presentationRoot != null)
                 Destroy(_presentationRoot.gameObject);
@@ -260,6 +310,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 count = 1;
             }
 
+            _baseTint = tint;
             int baseQueue = CombatArena2DSortOrder.RenderQueueFromWorldZ(transform.position.z);
 
             for (int i = 0; i < count; i++)
@@ -306,7 +357,11 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (profile.MuzzleDelaySeconds > 0f)
                 yield return new WaitForSeconds(profile.MuzzleDelaySeconds);
 
-            Vector3 muzzle = transform.position + Vector3.up * 0.45f + (_squadRoot != null ? _squadRoot.forward : transform.forward) * 0.2f;
+            // Animated sprites face by flip-X, so the barrel is lateral, not squad-forward.
+            Vector3 barrelOffset = _animated
+                ? (_flipX ? Vector3.left : Vector3.right) * 0.35f
+                : (_squadRoot != null ? _squadRoot.forward : transform.forward) * 0.2f;
+            Vector3 muzzle = transform.position + Vector3.up * 0.45f + barrelOffset;
             onMuzzle?.Invoke(muzzle);
 
             float impactWait = profile.ImpactDelaySeconds - profile.MuzzleDelaySeconds;
@@ -319,7 +374,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private IEnumerator AnimatedDeathRoutine(Action onComplete)
         {
-            float duration = Mathf.Max(1f, _animPlayer.CurrentDurationSeconds);
+            float duration = Mathf.Max(0.3f, _animPlayer.CurrentDurationSeconds);
             for (float t = 0f; t < duration; t += Time.deltaTime)
             {
                 TickAnimation();
@@ -329,6 +384,11 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             TickAnimation();
             UpdateSortAndBob(transform.position);
+
+            // Corpse holds its last frame briefly; vanishing on the final die frame pops.
+            if (CorpseLingerSeconds > 0f)
+                yield return new WaitForSeconds(CorpseLingerSeconds);
+
             _dying = false;
             onComplete?.Invoke();
             _deathRoutine = null;

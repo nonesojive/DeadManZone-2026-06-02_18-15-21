@@ -96,6 +96,42 @@ namespace DeadManZone.Presentation.Combat.Arena
             return material;
         }
 
+        /// <summary>Additive material for fire/impact VFX strips: black backgrounds add
+        /// nothing, so strips authored without alpha still composite cleanly.</summary>
+        public static Material CreateSpriteAdditive(Sprite sprite, int renderQueue)
+        {
+            if (sprite == null || sprite.texture == null)
+                return null;
+
+            var shader = Shader.Find("Universal Render Pipeline/Unlit")
+                ?? Shader.Find("Sprites/Default")
+                ?? Shader.Find("Unlit/Transparent");
+            if (shader == null)
+                return null;
+
+            var material = new Material(shader)
+            {
+                name = $"Combat2DVfxAdditive_{sprite.name}",
+                hideFlags = HideFlags.HideAndDontSave
+            };
+
+            material.mainTexture = sprite.texture;
+            if (material.HasProperty("_BaseMap"))
+                material.SetTexture("_BaseMap", sprite.texture);
+            if (material.HasProperty("_MainTex"))
+                material.SetTexture("_MainTex", sprite.texture);
+
+            CombatArenaMaterialUtility.ApplyColor(material, Color.white);
+            EnableAlphaBlend(material, renderQueue);
+            if (material.HasProperty("_SrcBlend"))
+                material.SetInt("_SrcBlend", (int)BlendMode.One);
+            if (material.HasProperty("_DstBlend"))
+                material.SetInt("_DstBlend", (int)BlendMode.One);
+
+            DisableDepthTest(material);
+            return material;
+        }
+
         internal static void EnableAlphaClip(Material material, int renderQueue, float cutoff = 0.08f)
         {
             if (material == null)

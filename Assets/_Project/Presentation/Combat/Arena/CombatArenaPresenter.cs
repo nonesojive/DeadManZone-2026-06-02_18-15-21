@@ -346,32 +346,24 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
         }
 
+        // Events within one sim tick replay on the same frame; a small random offset
+        // keeps volleys from firing in metronome sync across the whole army.
+        private const float MaxAttackStaggerSeconds = 0.15f;
+
         private void PlayDamageEvent(CombatEvent combatEvent)
         {
             if (!TryGetDamageTargetPosition(combatEvent, out var targetWorld))
                 return;
 
-            _actors.TryGetValue(combatEvent.TargetId, out var victim);
-
-            if (!_actors.TryGetValue(combatEvent.ActorId, out var attacker))
+            if (!_actors.ContainsKey(combatEvent.ActorId))
             {
                 _activeVfx?.PlayDamage(targetWorld, combatEvent.Value);
-                victim?.PlayHurt();
+                if (_actors.TryGetValue(combatEvent.TargetId, out var victim))
+                    victim.PlayHurt();
                 return;
             }
 
-            var piece = ResolvePieceForActor(attacker);
-            var profile = CombatAttackProfileResolver.Resolve(piece);
-
-            attacker.PlayAttackToward(
-                targetWorld,
-                profile,
-                muzzleWorld => PlayAttackMuzzleVfx(profile, muzzleWorld, targetWorld),
-                () =>
-                {
-                    PlayAttackImpactVfx(profile, targetWorld, combatEvent.Value);
-                    victim?.PlayHurt();
-                });
+            StartCoroutine(PlayStaggeredAttack(combatEvent, targetWorld, withImpact: true));
         }
 
         private void PlayMissEvent(CombatEvent combatEvent)
@@ -379,8 +371,24 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (!TryGetDamageTargetPosition(combatEvent, out var targetWorld))
                 return;
 
-            if (!_actors.TryGetValue(combatEvent.ActorId, out var attacker))
+            if (!_actors.ContainsKey(combatEvent.ActorId))
                 return;
+
+            StartCoroutine(PlayStaggeredAttack(combatEvent, targetWorld, withImpact: false));
+        }
+
+        private IEnumerator PlayStaggeredAttack(
+            CombatEvent combatEvent,
+            Vector3 targetWorld,
+            bool withImpact)
+        {
+            float stagger = Random.Range(0f, MaxAttackStaggerSeconds);
+            if (stagger > 0f)
+                yield return new WaitForSeconds(stagger);
+
+            // Re-resolve after the delay: the actor may have died or been pooled meanwhile.
+            if (!_actors.TryGetValue(combatEvent.ActorId, out var attacker))
+                yield break;
 
             var piece = ResolvePieceForActor(attacker);
             var profile = CombatAttackProfileResolver.Resolve(piece);
@@ -389,7 +397,14 @@ namespace DeadManZone.Presentation.Combat.Arena
                 targetWorld,
                 profile,
                 muzzleWorld => PlayAttackMuzzleVfx(profile, muzzleWorld, targetWorld),
-                onImpact: null);
+                withImpact
+                    ? () =>
+                    {
+                        PlayAttackImpactVfx(profile, targetWorld, combatEvent.Value);
+                        if (_actors.TryGetValue(combatEvent.TargetId, out var victim))
+                            victim.PlayHurt();
+                    }
+                    : (System.Action)null);
         }
 
         private void PlayAttackMuzzleVfx(
@@ -454,8 +469,8 @@ namespace DeadManZone.Presentation.Combat.Arena
                 _pendingDeathPresentations--;
                 _pool.Release(dead);
             });
-            // ponytail: puff after die strip so the unit stays visible through the fall
-            StartCoroutine(PlayDeathVfxAfterDelay(deathWorld, 3f));
+            // Dust/audio land when the fall finishes, right as the die strip completes.
+            StartCoroutine(PlayDeathVfxAfterDelay(deathWorld, CombatUnitVisual2D.DieStripSeconds));
         }
 
         private System.Collections.IEnumerator PlayDeathVfxAfterDelay(Vector3 worldPosition, float delaySeconds)

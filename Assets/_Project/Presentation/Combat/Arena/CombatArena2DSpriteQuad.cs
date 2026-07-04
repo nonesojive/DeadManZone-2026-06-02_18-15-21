@@ -145,6 +145,18 @@ namespace DeadManZone.Presentation.Combat.Arena
             quad.localScale = scale;
         }
 
+        /// <summary>Tint the quad's material (each quad owns its material instance).</summary>
+        public static void SetTint(GameObject root, Color tint)
+        {
+            if (root == null)
+                return;
+
+            var quad = root.transform.Find("Quad");
+            var renderer = quad != null ? quad.GetComponent<Renderer>() : null;
+            if (renderer?.sharedMaterial != null)
+                CombatArenaMaterialUtility.ApplyColor(renderer.sharedMaterial, tint);
+        }
+
         public static void SetRenderQueue(GameObject root, int renderQueue)
         {
             if (root == null)

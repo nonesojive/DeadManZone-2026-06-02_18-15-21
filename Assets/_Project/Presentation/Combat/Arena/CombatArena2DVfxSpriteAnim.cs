@@ -48,9 +48,8 @@ namespace DeadManZone.Presentation.Combat.Arena
                 if (meshFilter != null)
                     CombatArena2DSpriteMesh.Apply(meshFilter, frames[i]);
                 if (renderer != null)
-                    renderer.sharedMaterial = CombatArena2DSpriteMaterial.CreateSprite(
+                    renderer.sharedMaterial = CombatArena2DSpriteMaterial.CreateSpriteAdditive(
                         frames[i],
-                        Color.white,
                         CombatArena2DSortOrder.RenderQueueFromWorldZ(worldPosition.z, 50));
 
                 if (frameDuration > 0f)

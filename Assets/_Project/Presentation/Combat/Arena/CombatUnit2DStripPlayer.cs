@@ -27,6 +27,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private CombatUnit2DAnimationSetSO _set;
         private CombatUnit2DAnimState _state = CombatUnit2DAnimState.Idle;
         private float _time;
+        private float _rate = 1f;
         private bool _locked;
         private static readonly Dictionary<int, RectInt> SharedCropCache = new();
         private static readonly Dictionary<int, Sprite[]> SharedFrameCache = new();
@@ -34,7 +35,10 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public CombatUnit2DAnimState State => _state;
         public bool IsLocked => _locked;
-        public float CurrentDurationSeconds => ResolveStrip(_state).DurationSeconds;
+        public float CurrentDurationSeconds => _rate > 0f
+            ? ResolveStrip(_state).DurationSeconds / _rate
+            : ResolveStrip(_state).DurationSeconds;
+        internal float CurrentTimeSeconds => _time;
 
         public void Bind(CombatUnit2DAnimationSetSO set)
         {
@@ -42,12 +46,16 @@ namespace DeadManZone.Presentation.Combat.Arena
             _frameCache.Clear();
         }
 
-        public void Play(CombatUnit2DAnimState state, bool restart = true)
+        /// <summary>Play a state. When <paramref name="targetDurationSeconds"/> is positive,
+        /// the strip is time-scaled so its full playback fits that window (attack/death
+        /// strips are authored longer than the presentation beats they must match).</summary>
+        public void Play(CombatUnit2DAnimState state, bool restart = true, float targetDurationSeconds = -1f)
         {
             if (_set == null)
                 return;
 
-            if (!ResolveStrip(state).IsValid)
+            var strip = ResolveStrip(state);
+            if (!strip.IsValid)
             {
                 if (state != CombatUnit2DAnimState.Idle)
                     Play(CombatUnit2DAnimState.Idle, restart);
@@ -56,6 +64,11 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             if (restart || state != _state)
                 _time = 0f;
+
+            float naturalDuration = strip.DurationSeconds;
+            _rate = targetDurationSeconds > 0f && naturalDuration > 0f
+                ? naturalDuration / targetDurationSeconds
+                : 1f;
 
             _state = state;
             _locked = state is CombatUnit2DAnimState.Shoot or CombatUnit2DAnimState.Hurt
@@ -71,7 +84,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (!strip.IsValid || strip.framesPerSecond <= 0f)
                 return;
 
-            _time += deltaTime;
+            _time += deltaTime * _rate;
             float duration = strip.DurationSeconds;
             if (duration <= 0f)
                 return;
@@ -129,8 +142,10 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (duration <= 0f)
                 return 0;
 
+            // Floor keeps every frame on screen for its full window; rounding halves
+            // the first/last frames and skips ahead mid-strip.
             float t = strip.loop ? timeSeconds % duration : Mathf.Min(timeSeconds, duration);
-            int index = Mathf.RoundToInt(t * strip.framesPerSecond);
+            int index = Mathf.FloorToInt(t * strip.framesPerSecond);
             return Mathf.Clamp(index, 0, strip.frameCount - 1);
         }
 

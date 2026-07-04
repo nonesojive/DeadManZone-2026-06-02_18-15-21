@@ -136,17 +136,17 @@ namespace DeadManZone.Presentation.Combat
             if (RunManager.Instance != null)
                 RunManager.Instance.FinalizePendingCombat();
 
-            ShowBattleReport();
-
-            if (arenaLoader != null)
-                StartCoroutine(UnloadArenaAfterDeathPresentations());
+            StartCoroutine(ShowReportAfterDeathPresentations());
         }
 
-        private IEnumerator UnloadArenaAfterDeathPresentations()
+        private IEnumerator ShowReportAfterDeathPresentations()
         {
-            // fight_end fires on the same tick as destroyed; keep the arena alive for die strips.
+            // fight_end fires on the same tick as destroyed; let die strips finish
+            // before the report covers them and the arena unloads.
             if (arenaPresenter != null)
                 yield return arenaPresenter.WaitForPendingDeathPresentations();
+
+            ShowBattleReport();
 
             if (arenaLoader != null)
                 yield return arenaLoader.UnloadAsync();

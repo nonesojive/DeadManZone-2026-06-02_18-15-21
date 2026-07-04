@@ -106,6 +106,142 @@ namespace DeadManZone.Presentation.Tests.EditMode
             Object.DestroyImmediate(texture);
         }
 
+        [Test]
+        public void Play_WithTargetDuration_CompressesPlaybackToWindow()
+        {
+            // Shoot strips are authored long (e.g. 1.5s) but must finish inside the
+            // attack presentation window so locomotion lock and animation end together.
+            var (set, texture) = CreateSetWithShoot(frameCount: 2, framesPerSecond: 2f); // natural 1s
+            var player = new CombatUnit2DStripPlayer();
+            player.Bind(set);
+
+            player.Play(CombatUnit2DAnimState.Shoot, restart: true, targetDurationSeconds: 0.5f);
+            Assert.IsTrue(player.IsLocked, "shoot should lock locomotion while playing");
+
+            player.Tick(0.5f);
+            Assert.IsFalse(player.IsLocked, "compressed shoot should finish at the target window");
+            Assert.AreEqual(CombatUnit2DAnimState.Idle, player.State, "one-shot should return to idle");
+
+            Object.DestroyImmediate(set);
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void Play_WithTargetDuration_AdvancesTimeAtScaledRate()
+        {
+            var (set, texture) = CreateSetWithShoot(frameCount: 2, framesPerSecond: 2f); // natural 1s
+            var player = new CombatUnit2DStripPlayer();
+            player.Bind(set);
+
+            player.Play(CombatUnit2DAnimState.Shoot, restart: true, targetDurationSeconds: 0.5f);
+            player.Tick(0.25f); // half the window -> half the natural strip
+            Assert.AreEqual(0.5f, player.CurrentTimeSeconds, 0.0001f);
+
+            Object.DestroyImmediate(set);
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void Play_WithoutTargetDuration_UsesNaturalRate()
+        {
+            var (set, texture) = CreateSetWithShoot(frameCount: 2, framesPerSecond: 2f);
+            var player = new CombatUnit2DStripPlayer();
+            player.Bind(set);
+
+            player.Play(CombatUnit2DAnimState.Shoot);
+            player.Tick(0.25f);
+            Assert.AreEqual(0.25f, player.CurrentTimeSeconds, 0.0001f);
+
+            Object.DestroyImmediate(set);
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void CurrentDurationSeconds_ReportsScaledDuration()
+        {
+            // AnimatedDeathRoutine waits on this; a scaled die strip must report the
+            // compressed duration, not the authored one.
+            var (set, texture) = CreateSetWithShoot(frameCount: 2, framesPerSecond: 2f); // natural 1s
+            var player = new CombatUnit2DStripPlayer();
+            player.Bind(set);
+
+            player.Play(CombatUnit2DAnimState.Shoot, restart: true, targetDurationSeconds: 0.5f);
+            Assert.AreEqual(0.5f, player.CurrentDurationSeconds, 0.0001f);
+
+            Object.DestroyImmediate(set);
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void Play_FinishedOneShot_ResetsRateForNextState()
+        {
+            var (set, texture) = CreateSetWithShoot(frameCount: 2, framesPerSecond: 2f);
+            var player = new CombatUnit2DStripPlayer();
+            player.Bind(set);
+
+            player.Play(CombatUnit2DAnimState.Shoot, restart: true, targetDurationSeconds: 0.25f);
+            player.Tick(0.25f); // finishes, falls back to idle
+            Assert.AreEqual(CombatUnit2DAnimState.Idle, player.State);
+
+            player.Tick(0.1f);
+            Assert.AreEqual(0.1f, player.CurrentTimeSeconds, 0.0001f, "idle should play at natural rate");
+
+            Object.DestroyImmediate(set);
+            Object.DestroyImmediate(texture);
+        }
+
+        [Test]
+        public void Play_ScaledDie_StaysLockedOnLastFrameAfterCompletion()
+        {
+            // The corpse must hold its final frame (still locked, still Die) so the
+            // death presentation can linger before the actor is pooled.
+            var (set, texture) = CreateSetWithShoot(frameCount: 2, framesPerSecond: 2f);
+            set.die = set.shoot; // reuse the non-looping strip as the die strip
+            var player = new CombatUnit2DStripPlayer();
+            player.Bind(set);
+
+            player.Play(CombatUnit2DAnimState.Die, restart: true, targetDurationSeconds: 0.5f);
+            player.Tick(0.6f);
+
+            Assert.IsTrue(player.IsLocked, "die should stay locked after completion");
+            Assert.AreEqual(CombatUnit2DAnimState.Die, player.State, "die should not fall back to idle");
+
+            Object.DestroyImmediate(set);
+            Object.DestroyImmediate(texture);
+        }
+
+        private static (CombatUnit2DAnimationSetSO set, Texture2D texture) CreateSetWithShoot(
+            int frameCount,
+            float framesPerSecond)
+        {
+            var texture = new Texture2D(256, 128, TextureFormat.RGBA32, false);
+            texture.SetPixels(new Color[256 * 128]);
+            PaintRect(texture, 32, 24, 64, 80, Color.white);
+            PaintRect(texture, 160, 24, 64, 80, Color.white);
+            texture.Apply();
+
+            var sheet = Sprite.Create(texture, new Rect(0f, 0f, 256f, 128f), new Vector2(0.5f, 0.05f), 256f);
+            var set = ScriptableObject.CreateInstance<CombatUnit2DAnimationSetSO>();
+            var strip = new CombatUnit2DStrip
+            {
+                sheet = sheet,
+                frameCount = frameCount,
+                columns = frameCount,
+                framesPerSecond = framesPerSecond,
+                loop = false
+            };
+            set.shoot = strip;
+            set.idle = new CombatUnit2DStrip
+            {
+                sheet = sheet,
+                frameCount = frameCount,
+                columns = frameCount,
+                framesPerSecond = framesPerSecond,
+                loop = true
+            };
+            return (set, texture);
+        }
+
         private static void PaintRect(Texture2D texture, int x, int y, int width, int height, Color color)
         {
             for (int py = y; py < y + height; py++)
