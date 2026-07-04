@@ -195,3 +195,13 @@ InitTestScene*.unity*
 /[Aa]ssets/_Creepy_Cat.meta
 /[Aa]ssets/room/
 /[Aa]ssets/room.meta
+
+# Claude Code — personal settings, not shared with the team
+.claude/settings.local.json
+
+# Unity MCP tool stubs + skill symlinks — regenerated locally by the MCP
+# bridge and by `npx skills` (see skills-lock.json), not portable across machines
+.claude/skills/
+
+# Vendored skill sources fetched via `npx skills` from skills-lock.json
+.agents/

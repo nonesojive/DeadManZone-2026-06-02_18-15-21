@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx skills *)",
+      "Bash(npm install *)",
+      "Bash(claude plugin *)",
+      "Bash(claude --version)",
+      "WebSearch",
+      "WebFetch(domain:docs.meshy.ai)",
+      "WebFetch(domain:docs.x.ai)",
+      "WebFetch(domain:www.autosprite.io)"
+    ]
+  }
+}
