@@ -18,8 +18,10 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return null;
 
             var root = new GameObject("SpriteQuad");
-            root.transform.position = feetWorldPosition;
             AttachQuad(root.transform, sprite, tint, uniformScale, renderQueue, camera, Vector3.zero, softAlpha, groundBottom: false);
+            // After AttachQuad: it resets root.localPosition, which for a parentless
+            // root IS the world position — every impact/explosion rendered at origin.
+            root.transform.position = feetWorldPosition;
             return root;
         }
 
