@@ -12,6 +12,7 @@ namespace DeadManZone.Presentation.Combat.Arena
     {
         private const string ResourcePath = "DeadManZone/CombatArena2DDressingArt";
         private const int PropRenderQueue = 2455;
+        private const int DecalRenderQueue = 2452; // above cells (2450), under props/units
         private const float AlphaThreshold01 = 10f / 255f;
 
         private static CombatArena2DDressingArtSO _cached;
@@ -20,7 +21,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         private enum Sheet
         {
             Sandbags,
-            Wire
+            Wire,
+            Ruins
         }
 
         /// <summary>Generous source rects (texture-space, bottom-left origin) around
@@ -52,6 +54,19 @@ namespace DeadManZone.Presentation.Combat.Arena
             new(Sheet.Wire, new RectInt(3, 0, 187, 62), 2.3f),
             new(Sheet.Wire, new RectInt(195, 0, 187, 62), 2.3f),
             new(Sheet.Wire, new RectInt(387, 0, 123, 62), 1.6f),
+            // "WW1 ruins/4.png" — rubble pile and wire/sandbag emplacements.
+            new(Sheet.Ruins, new RectInt(0, 645, 128, 122), 1.3f),
+            new(Sheet.Ruins, new RectInt(640, 638, 128, 125), 1.7f),
+            new(Sheet.Ruins, new RectInt(768, 639, 128, 124), 1.7f),
+            new(Sheet.Ruins, new RectInt(900, 640, 122, 126), 1.6f),
+        };
+
+        // Flat marks scattered INSIDE the field: shell craters that scar the ground
+        // without cluttering unit readability (they render under everything mobile).
+        private static readonly PropDef[] FieldDecals =
+        {
+            new(Sheet.Ruins, new RectInt(0, 520, 128, 118), 1.5f),
+            new(Sheet.Ruins, new RectInt(127, 521, 128, 106), 1.3f),
         };
 
         public static void Build(
@@ -86,6 +101,23 @@ namespace DeadManZone.Presentation.Combat.Arena
                 minX: -fieldHalfWidth, maxX: fieldHalfWidth,
                 minZ: -fieldHalfDepth - 2.1f, maxZ: -fieldHalfDepth - 0.6f,
                 count: 5);
+
+            // Shell craters scar the field itself; flat and under everything mobile.
+            float decalStep = fieldHalfWidth * 2f / 5;
+            for (int i = 0; i < 5; i++)
+            {
+                var def = FieldDecals[random.Next(FieldDecals.Length)];
+                var sprite = ResolveSprite(art, def);
+                if (sprite == null)
+                    continue;
+
+                float x = -fieldHalfWidth + decalStep * i
+                    + (float)random.NextDouble() * decalStep * 0.7f + decalStep * 0.15f;
+                float z = Mathf.Lerp(-fieldHalfDepth + 1f, fieldHalfDepth - 1f, (float)random.NextDouble());
+                // Above the cell plane (0.06) or the cells' depth writes clip the decal.
+                CreateFlatProp(rootGo.transform, sprite, new Vector3(x, 0.07f, z), def.WorldWidth,
+                    flipX: random.Next(2) == 0, renderQueue: DecalRenderQueue);
+            }
         }
 
         private static void ScatterBand(
@@ -110,7 +142,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 float x = minX + step * i + (float)random.NextDouble() * step * 0.8f + step * 0.1f;
                 float z = Mathf.Lerp(minZ, maxZ, (float)random.NextDouble());
                 CreateFlatProp(parent, sprite, new Vector3(x, 0.05f, z), def.WorldWidth,
-                    flipX: random.Next(2) == 0);
+                    flipX: random.Next(2) == 0, renderQueue: PropRenderQueue);
             }
         }
 
@@ -119,7 +151,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             Sprite sprite,
             Vector3 position,
             float worldWidth,
-            bool flipX)
+            bool flipX,
+            int renderQueue)
         {
             float aspect = sprite.rect.width > 0f ? sprite.rect.height / sprite.rect.width : 1f;
             var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -137,7 +170,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             var renderer = quad.GetComponent<Renderer>();
             var material = CombatArena2DSpriteMaterial.CreateSprite(
-                sprite, Color.white, PropRenderQueue, softAlpha: false, ignoreDepth: false);
+                sprite, Color.white, renderQueue, softAlpha: false, ignoreDepth: false);
             if (material != null)
                 renderer.sharedMaterial = material;
 
@@ -148,7 +181,13 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private static Sprite ResolveSprite(CombatArena2DDressingArtSO art, PropDef def)
         {
-            var texture = def.Sheet == Sheet.Sandbags ? art.sandbagSheet : art.wireSheet;
+            var texture = def.Sheet switch
+            {
+                Sheet.Sandbags => art.sandbagSheet,
+                Sheet.Wire => art.wireSheet,
+                Sheet.Ruins => art.ruinsSheet,
+                _ => null
+            };
             if (texture == null)
                 return null;
 

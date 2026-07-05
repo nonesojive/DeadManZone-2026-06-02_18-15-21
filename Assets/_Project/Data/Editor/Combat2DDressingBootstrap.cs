@@ -9,6 +9,7 @@ namespace DeadManZone.Data.Editor
     {
         private const string SandbagSheetPath = "Assets/_Project/Art/Tilesets/WW1 trench/1 (1).png";
         private const string WireSheetPath = "Assets/_Project/Art/Tilesets/WW1 trench/3 (1).png";
+        private const string RuinsSheetPath = "Assets/_Project/Art/Tilesets/WW1 ruins/4.png";
         private const string OutputPath = "Assets/_Project/Data/Resources/DeadManZone/CombatArena2DDressingArt.asset";
 
         [MenuItem(DeadManZoneEditorMenus.CombatArena + "Setup Battlefield Dressing Art")]
@@ -16,9 +17,10 @@ namespace DeadManZone.Data.Editor
         {
             var sandbags = EnsureReadable(SandbagSheetPath);
             var wire = EnsureReadable(WireSheetPath);
-            if (sandbags == null || wire == null)
+            var ruins = EnsureReadable(RuinsSheetPath);
+            if (sandbags == null || wire == null || ruins == null)
             {
-                Debug.LogError("[Dressing] WW1 trench sheets not found; dressing art not created.");
+                Debug.LogError("[Dressing] WW1 tileset sheets not found; dressing art not created.");
                 return;
             }
 
@@ -31,6 +33,7 @@ namespace DeadManZone.Data.Editor
 
             art.sandbagSheet = sandbags;
             art.wireSheet = wire;
+            art.ruinsSheet = ruins;
             EditorUtility.SetDirty(art);
             AssetDatabase.SaveAssets();
             Debug.Log($"[Dressing] Battlefield dressing art ready at {OutputPath}.");

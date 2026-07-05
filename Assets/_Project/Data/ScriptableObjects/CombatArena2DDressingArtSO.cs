@@ -13,5 +13,8 @@ namespace DeadManZone.Data
 
         [Tooltip("WW1 trench sheet with barbed wire fences and barrels.")]
         public Texture2D wireSheet;
+
+        [Tooltip("WW1 ruins sheet with shell craters, rubble, and wire obstacles.")]
+        public Texture2D ruinsSheet;
     }
 }
