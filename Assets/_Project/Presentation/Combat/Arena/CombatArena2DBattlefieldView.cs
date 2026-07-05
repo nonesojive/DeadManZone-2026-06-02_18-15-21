@@ -35,6 +35,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             CreateSky(rootGo.transform, config, arenaCamera);
             CreateBackdrop(rootGo.transform, layout, config, art?.gridBackdrop);
             CreateCells(rootGo.transform, layout, mapper, config, palette, inset, art);
+            CombatArena2DBattlefieldDressing.Build(rootGo.transform, layout, mapper, config);
 
             return rootGo.transform;
         }

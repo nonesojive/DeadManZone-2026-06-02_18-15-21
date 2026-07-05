@@ -1,0 +1,55 @@
+using UnityEditor;
+using UnityEngine;
+
+namespace DeadManZone.Data.Editor
+{
+    /// <summary>Wires the WW1 trench tileset sheets into the battlefield dressing SO.
+    /// Sets the source textures readable so the prop slicer can alpha-crop them.</summary>
+    public static class Combat2DDressingBootstrap
+    {
+        private const string SandbagSheetPath = "Assets/_Project/Art/Tilesets/WW1 trench/1 (1).png";
+        private const string WireSheetPath = "Assets/_Project/Art/Tilesets/WW1 trench/3 (1).png";
+        private const string OutputPath = "Assets/_Project/Data/Resources/DeadManZone/CombatArena2DDressingArt.asset";
+
+        [MenuItem(DeadManZoneEditorMenus.CombatArena + "Setup Battlefield Dressing Art")]
+        public static void Setup()
+        {
+            var sandbags = EnsureReadable(SandbagSheetPath);
+            var wire = EnsureReadable(WireSheetPath);
+            if (sandbags == null || wire == null)
+            {
+                Debug.LogError("[Dressing] WW1 trench sheets not found; dressing art not created.");
+                return;
+            }
+
+            var art = AssetDatabase.LoadAssetAtPath<CombatArena2DDressingArtSO>(OutputPath);
+            if (art == null)
+            {
+                art = ScriptableObject.CreateInstance<CombatArena2DDressingArtSO>();
+                AssetDatabase.CreateAsset(art, OutputPath);
+            }
+
+            art.sandbagSheet = sandbags;
+            art.wireSheet = wire;
+            EditorUtility.SetDirty(art);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[Dressing] Battlefield dressing art ready at {OutputPath}.");
+        }
+
+        private static Texture2D EnsureReadable(string path)
+        {
+            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer == null)
+                return null;
+
+            if (!importer.isReadable || importer.textureCompression != TextureImporterCompression.Uncompressed)
+            {
+                importer.isReadable = true;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.SaveAndReimport();
+            }
+
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+    }
+}
