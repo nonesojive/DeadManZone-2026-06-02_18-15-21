@@ -104,7 +104,11 @@ namespace DeadManZone.Presentation.Combat
                 yield return null;
 
             HideLoadingOverlay();
+
+            // Ceremony order: reveal the field, play the banner, THEN ask for orders.
             CombatFightBanner.Show(this, RunManager.Instance?.State?.FightIndex ?? 1);
+            yield return new WaitForSeconds(CombatFightBanner.TotalSeconds + 0.1f);
+
             var combat = RunManager.Instance?.State?.Combat;
             if (IsOpeningTacticsPause(combat))
             {

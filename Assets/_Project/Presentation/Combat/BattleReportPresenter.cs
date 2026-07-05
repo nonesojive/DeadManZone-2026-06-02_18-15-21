@@ -19,6 +19,12 @@ namespace DeadManZone.Presentation.Combat
         {
             if (continueButton != null)
                 continueButton.onClick.AddListener(OnContinueClicked);
+
+            CombatGrimdarkSkin.StyleCard(panelRoot);
+            CombatGrimdarkSkin.StyleTitle(outcomeText, characterSpacing: 12f);
+            CombatGrimdarkSkin.StyleBody(summaryText);
+            CombatGrimdarkSkin.StyleBody(dealtText);
+            CombatGrimdarkSkin.StyleBody(takenText);
             Hide();
         }
 
@@ -37,9 +43,20 @@ namespace DeadManZone.Presentation.Combat
             if (outcomeText != null)
             {
                 if (report.IsDraw)
-                    outcomeText.text = "Draw";
+                {
+                    outcomeText.text = "DRAW";
+                    outcomeText.color = CombatGrimdarkSkin.Bone;
+                }
+                else if (report.PlayerWon)
+                {
+                    outcomeText.text = "VICTORY";
+                    outcomeText.color = CombatGrimdarkSkin.VictoryGold;
+                }
                 else
-                    outcomeText.text = report.PlayerWon ? "Victory" : "Defeat";
+                {
+                    outcomeText.text = "DEFEAT";
+                    outcomeText.color = CombatGrimdarkSkin.DefeatRed;
+                }
             }
 
             if (summaryText != null)

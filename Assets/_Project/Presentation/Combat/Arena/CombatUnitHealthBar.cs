@@ -9,7 +9,7 @@ namespace DeadManZone.Presentation.Combat.Arena
     {
         private const float Width = 0.86f;
         private const float Height = 0.11f;
-        private const float HeadHeight = 1.95f;
+        private const float HeadHeight = 2.25f; // clears the taller unit scale
 
         private static readonly Color AllyFill = new(0.38f, 0.84f, 0.34f, 1f);
         private static readonly Color EnemyFill = new(0.92f, 0.32f, 0.25f, 1f);

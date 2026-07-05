@@ -44,8 +44,8 @@ MonoBehaviour:
   manualCameraWorldPosition: {x: 0, y: 0, z: 0}
   lookAtWorld: {x: 0, y: 0, z: 0}
   showCheckerboardGrid: 1
-  gridLightCellColor: {r: 0.615, g: 0.485, b: 0.345, a: 1}
-  gridDarkCellColor: {r: 0.575, g: 0.445, b: 0.315, a: 1}
+  gridLightCellColor: {r: 0.565, g: 0.445, b: 0.315, a: 1}
+  gridDarkCellColor: {r: 0.525, g: 0.405, b: 0.285, a: 1}
   gridBackdropColor: {r: 0.16, g: 0.12, b: 0.09, a: 1}
   gridCellInset: 0
   gridYOffset: 0.04

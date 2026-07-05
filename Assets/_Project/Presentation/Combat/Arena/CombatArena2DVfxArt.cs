@@ -40,16 +40,50 @@ namespace DeadManZone.Presentation.Combat.Arena
             var rect = sheet.rect;
             float frameWidth = rect.width / frameCount;
             var frames = new Sprite[frameCount];
+            bool maskable = sheet.texture.isReadable;
             for (int i = 0; i < frameCount; i++)
             {
-                frames[i] = Sprite.Create(
-                    sheet.texture,
-                    new Rect(rect.x + frameWidth * i, rect.y, frameWidth, rect.height),
-                    sheet.pivot,
-                    sheet.pixelsPerUnit);
+                var frameRect = new Rect(rect.x + frameWidth * i, rect.y, frameWidth, rect.height);
+                frames[i] = maskable
+                    ? CreateMaskedFrame(sheet.texture, frameRect, sheet.pixelsPerUnit)
+                    : Sprite.Create(sheet.texture, frameRect, sheet.pivot, sheet.pixelsPerUnit);
             }
 
             return frames;
+        }
+
+        /// <summary>Copy a frame with a radial falloff baked in. The source strips carry
+        /// haze to their square cell edges, which reads as a flashing box in the arena;
+        /// fading RGB and alpha toward the frame border keeps only the round core.</summary>
+        private static Sprite CreateMaskedFrame(Texture2D source, Rect rect, float pixelsPerUnit)
+        {
+            int w = Mathf.Max(1, (int)rect.width);
+            int h = Mathf.Max(1, (int)rect.height);
+            var pixels = source.GetPixels((int)rect.x, (int)rect.y, w, h);
+
+            for (int y = 0; y < h; y++)
+            {
+                float ny = h > 1 ? (y / (float)(h - 1)) * 2f - 1f : 0f;
+                for (int x = 0; x < w; x++)
+                {
+                    float nx = w > 1 ? (x / (float)(w - 1)) * 2f - 1f : 0f;
+                    float d = Mathf.Sqrt(nx * nx + ny * ny);
+                    // Full strength inside the core, fading to zero before the corners.
+                    float falloff = 1f - Mathf.SmoothStep(0.55f, 0.95f, d);
+                    int index = y * w + x;
+                    var c = pixels[index];
+                    pixels[index] = new Color(c.r * falloff, c.g * falloff, c.b * falloff, c.a * falloff);
+                }
+            }
+
+            var masked = new Texture2D(w, h, TextureFormat.RGBA32, false)
+            {
+                filterMode = FilterMode.Bilinear,
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            masked.SetPixels(pixels);
+            masked.Apply();
+            return Sprite.Create(masked, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), pixelsPerUnit);
         }
 
         internal static void ClearCacheForTests()

@@ -14,6 +14,10 @@ namespace DeadManZone.Presentation.Combat
         private const float HoldSeconds = 0.85f;
         private const float FadeSeconds = 0.35f;
 
+        /// <summary>Full banner lifetime; the flow presenter holds the tactics gate
+        /// until the ceremony finishes (field → banner → orders).</summary>
+        public const float TotalSeconds = PunchSeconds + HoldSeconds + FadeSeconds;
+
         public static void Show(MonoBehaviour host, int fightIndex)
         {
             if (host == null)

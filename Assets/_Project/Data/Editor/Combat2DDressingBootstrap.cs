@@ -36,7 +36,29 @@ namespace DeadManZone.Data.Editor
             art.ruinsSheet = ruins;
             EditorUtility.SetDirty(art);
             AssetDatabase.SaveAssets();
+
+            // Combat VFX strips need readability so the runtime radial mask can bake;
+            // unmasked, their square cell haze flashes as a box mid-field.
+            var vfx = AssetDatabase.LoadAssetAtPath<CombatArena2DVfxArtSO>(
+                "Assets/_Project/Data/Resources/DeadManZone/CombatArena2DVfxArt.asset");
+            if (vfx != null)
+            {
+                EnsureSpriteTextureReadable(vfx.rifleImpactStrip);
+                EnsureSpriteTextureReadable(vfx.explosionSmallStrip);
+                EnsureSpriteTextureReadable(vfx.deathPuffStrip);
+            }
+
             Debug.Log($"[Dressing] Battlefield dressing art ready at {OutputPath}.");
+        }
+
+        private static void EnsureSpriteTextureReadable(Sprite sprite)
+        {
+            if (sprite == null || sprite.texture == null)
+                return;
+
+            string path = AssetDatabase.GetAssetPath(sprite.texture);
+            if (!string.IsNullOrEmpty(path))
+                EnsureReadable(path);
         }
 
         private static Texture2D EnsureReadable(string path)

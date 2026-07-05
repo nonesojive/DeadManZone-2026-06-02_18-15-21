@@ -144,6 +144,20 @@ namespace DeadManZone.Presentation.Combat
             {
                 continueButton = CreateButton(transform, "Continue", new Vector2(0.5f, 0.05f));
             }
+
+            ApplyGrimdarkSkin();
+        }
+
+        /// <summary>Match the FIGHT banner's kit: dark band behind the header, bone
+        /// title, leather buttons — replaces the floating themed-text look.</summary>
+        private void ApplyGrimdarkSkin()
+        {
+            CombatGrimdarkSkin.AddBand(transform, 0.755f, 0.945f, "HeaderBand");
+            CombatGrimdarkSkin.AddBand(transform, 0.015f, 0.115f, "FooterBand");
+            CombatGrimdarkSkin.StyleTitle(titleText);
+            CombatGrimdarkSkin.StyleBody(authorityText);
+            CombatGrimdarkSkin.StyleBody(reasonText);
+            CombatGrimdarkSkin.StyleButton(continueButton);
         }
 
         private void BuildTacticToggles()
@@ -380,7 +394,6 @@ namespace DeadManZone.Presentation.Combat
 
         private static Toggle CreateToggle(Transform parent, string label, Vector2 anchor)
         {
-            var theme = UiThemeProvider.Current;
             var go = new GameObject("Toggle", typeof(RectTransform), typeof(Toggle), typeof(Image));
             go.transform.SetParent(parent, false);
             var rect = go.GetComponent<RectTransform>();
@@ -390,14 +403,22 @@ namespace DeadManZone.Presentation.Combat
             rect.sizeDelta = new Vector2(180f, 36f);
 
             var image = go.GetComponent<Image>();
-            UiThemeApplicator.ApplyCard(image, theme);
+            image.sprite = null;
+            image.color = CombatGrimdarkSkin.ButtonLeather;
 
             var text = CreateLabel(go.transform, label, 16, FontStyles.Normal, new Vector2(0.5f, 0.5f), new Vector2(170f, 32f));
             text.raycastTarget = false;
-            UiThemeApplicator.ApplyLabel(text, secondary: false, theme);
+            text.color = CombatGrimdarkSkin.Bone;
 
             var toggle = go.GetComponent<Toggle>();
             toggle.targetGraphic = image;
+            var colors = toggle.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color(1.25f, 1.2f, 1.1f, 1f);
+            colors.pressedColor = new Color(0.75f, 0.72f, 0.68f, 1f);
+            // Selected doctrine glows warm so the active choice reads at a glance.
+            colors.selectedColor = new Color(1.45f, 1.32f, 1.0f, 1f);
+            toggle.colors = colors;
             return toggle;
         }
     }

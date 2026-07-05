@@ -195,10 +195,11 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (SpriteCache.TryGetValue(key, out var cached) && cached != null)
                 return cached;
 
-            // Full content bounds: rects are exact per-prop, and multi-part props
-            // (fence segments, bag clusters) must keep every piece — the previous
-            // largest-component crop truncated them to a single fragment.
-            var rect = CropToContent(texture, def.SourceRect);
+            // Every rect in the table now bounds exactly ONE connected component
+            // (scan-verified), so the largest component IS the whole prop — and any
+            // neighbor-tile pixels bleeding into the rect get discarded instead of
+            // stretching the sprite (seen as a clipped edge on one sandbag wall).
+            var rect = CropToLargestComponent(texture, def.SourceRect);
             var sprite = Sprite.Create(
                 texture,
                 new Rect(rect.x, rect.y, rect.width, rect.height),
