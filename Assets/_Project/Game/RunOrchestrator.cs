@@ -406,6 +406,21 @@ namespace DeadManZone.Game
                     casualties,
                     suppliesIncome,
                     moraleDelta: -moraleLoss);
+                // The sim's report carries the real damage tables; without this the
+                // defeat card always showed empty dealt/taken columns.
+                if (result.BattleReport != null)
+                {
+                    State.LastBattleReport = new BattleReport
+                    {
+                        PlayerWon = playerWon,
+                        IsDraw = isDraw,
+                        ManpowerCasualties = casualties,
+                        SuppliesEarned = suppliesIncome,
+                        MoraleDelta = -moraleLoss,
+                        TopDamageDealt = result.BattleReport.TopDamageDealt,
+                        TopDamageTaken = result.BattleReport.TopDamageTaken
+                    };
+                }
                 ApplySalvageAftermath();
                 State.Combat = null;
 

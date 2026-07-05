@@ -286,6 +286,50 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
+        public void DefeatReport_CarriesDamageTablesFromSim()
+        {
+            _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
+
+            // Stack the deck for a loss: field only the single cheapest offer.
+            var cheapest = _orchestrator.State.Shop.Offers
+                .OrderBy(o => o.GoldPrice)
+                .FirstOrDefault();
+            Assert.NotNull(cheapest, "shop should have at least one offer");
+
+            bool placed = false;
+            for (int y = 0; y < 6 && !placed; y++)
+                for (int x = 0; x < 6 && !placed; x++)
+                    placed = _orchestrator.TryAcquireOfferToBoard(cheapest.OfferId, new GridCoord(x, y));
+            Assert.IsTrue(placed, "cheapest offer should place on the combat board");
+
+            if (!_orchestrator.CanStartBattle(out string reason))
+                Assert.Ignore($"single-unit board cannot start battle: {reason}");
+
+            _orchestrator.BeginCombat();
+            while (_orchestrator.State.Phase == RunPhase.Combat)
+            {
+                SubmitCombatCommandsForCurrentWindow();
+                var step = _orchestrator.AdvanceCombat();
+                if (step.Status == CombatAdvanceStatus.Completed)
+                {
+                    _orchestrator.FinalizePendingCombat();
+                    break;
+                }
+            }
+
+            var report = _orchestrator.State.LastBattleReport;
+            Assert.NotNull(report, "fight end should produce a battle report");
+
+            if (report.PlayerWon)
+                Assert.Ignore("seeded single-unit board won fight 1; defeat path not exercised");
+
+            // The defeat card previously showed empty dealt/taken columns because the
+            // orchestrator rebuilt the report from an empty combatant array.
+            Assert.IsNotEmpty(report.TopDamageTaken,
+                "a defeated army took damage; the report must carry the sim's damage tables");
+        }
+
+        [Test]
         public void FullCombatLoop_CanReachVictoryWithStrongBoard()
         {
             _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
