@@ -39,17 +39,19 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
         }
 
+        // Rects derived from a connected-component scan of the 1024px sheets
+        // (texture-space, bottom-left origin), then confirmed visually in play —
+        // each bounds one COMPLETE prop. Neighboring regions on these sheets hold
+        // indoor/industrial tiles (vents, hatches) that read wrong on the field.
         private static readonly PropDef[] Props =
         {
-            // "WW1 trench/1 (1).png" — sandbag clusters, bottom-left on transparency.
-            new(Sheet.Sandbags, new RectInt(0, 92, 108, 82), 1.7f),
-            new(Sheet.Sandbags, new RectInt(0, 2, 108, 84), 1.6f),
-            new(Sheet.Sandbags, new RectInt(96, 2, 98, 96), 1.5f),
-            // "WW1 trench/3 (1).png" — barbed wire fence runs, bottom-left on transparency.
-            new(Sheet.Wire, new RectInt(2, 2, 128, 58), 2.1f),
-            new(Sheet.Wire, new RectInt(140, 2, 128, 58), 2.1f),
-            // "WW1 trench/3 (1).png" — barrel cluster, bottom-center on transparency.
-            new(Sheet.Wire, new RectInt(392, 18, 80, 82), 0.95f),
+            // "WW1 trench/1 (1).png" — whole sandbag wall sections.
+            new(Sheet.Sandbags, new RectInt(0, 62, 130, 65), 1.6f),
+            new(Sheet.Sandbags, new RectInt(0, 125, 130, 65), 1.6f),
+            // "WW1 trench/3 (1).png" — complete barbed-wire fence runs.
+            new(Sheet.Wire, new RectInt(3, 0, 187, 62), 2.3f),
+            new(Sheet.Wire, new RectInt(195, 0, 187, 62), 2.3f),
+            new(Sheet.Wire, new RectInt(387, 0, 123, 62), 1.6f),
         };
 
         public static void Build(
@@ -154,7 +156,10 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (SpriteCache.TryGetValue(key, out var cached) && cached != null)
                 return cached;
 
-            var rect = CropToLargestComponent(texture, def.SourceRect);
+            // Full content bounds: rects are exact per-prop, and multi-part props
+            // (fence segments, bag clusters) must keep every piece — the previous
+            // largest-component crop truncated them to a single fragment.
+            var rect = CropToContent(texture, def.SourceRect);
             var sprite = Sprite.Create(
                 texture,
                 new Rect(rect.x, rect.y, rect.width, rect.height),
