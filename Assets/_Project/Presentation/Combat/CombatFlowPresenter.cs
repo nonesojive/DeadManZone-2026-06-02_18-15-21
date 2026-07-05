@@ -104,6 +104,7 @@ namespace DeadManZone.Presentation.Combat
                 yield return null;
 
             HideLoadingOverlay();
+            CombatFightBanner.Show(this, RunManager.Instance?.State?.FightIndex ?? 1);
             var combat = RunManager.Instance?.State?.Combat;
             if (IsOpeningTacticsPause(combat))
             {
