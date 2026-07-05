@@ -51,6 +51,17 @@ namespace DeadManZone.Core.Combat
             }
         }
 
+        /// <summary>Current HP fraction for a single unit; false when unregistered.</summary>
+        public bool TryGetUnitFraction(string instanceId, out float fraction)
+        {
+            fraction = 0f;
+            if (string.IsNullOrEmpty(instanceId) || !_units.TryGetValue(instanceId, out var unit))
+                return false;
+
+            fraction = unit.MaxHp <= 0 ? 0f : (float)unit.CurrentHp / unit.MaxHp;
+            return true;
+        }
+
         public float GetFraction(CombatSide side)
         {
             int current = 0;

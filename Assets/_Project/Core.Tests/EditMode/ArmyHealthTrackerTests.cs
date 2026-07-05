@@ -76,6 +76,27 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
+        public void ReplayTracker_TryGetUnitFraction_TracksSingleUnit()
+        {
+            var tracker = new ArmyHealthReplayTracker();
+            tracker.RegisterUnit("p1", CombatSide.Player, maxHp: 80);
+
+            Assert.IsTrue(tracker.TryGetUnitFraction("p1", out float full));
+            Assert.AreEqual(1f, full, 0.0001f);
+
+            tracker.ApplyEvent(new CombatEvent { ActionType = "damage", TargetId = "p1", Value = 20 });
+            Assert.IsTrue(tracker.TryGetUnitFraction("p1", out float hurt));
+            Assert.AreEqual(0.75f, hurt, 0.0001f);
+
+            tracker.ApplyEvent(new CombatEvent { ActionType = "destroyed", ActorId = "p1" });
+            Assert.IsTrue(tracker.TryGetUnitFraction("p1", out float dead));
+            Assert.AreEqual(0f, dead, 0.0001f);
+
+            Assert.IsFalse(tracker.TryGetUnitFraction("ghost", out _));
+            Assert.IsFalse(tracker.TryGetUnitFraction(null, out _));
+        }
+
+        [Test]
         public void ReplayTracker_IgnoresUnknownTargetsAndNonDamageEvents()
         {
             var tracker = new ArmyHealthReplayTracker();

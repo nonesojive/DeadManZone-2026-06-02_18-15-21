@@ -23,6 +23,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private Vector3? _chaseTargetWorld;
         private Vector3 _smoothedSimWorld;
         private CombatAttackPresentationProfile _attackProfile;
+        private CombatUnitHealthBar _healthBar;
 
         public string InstanceId { get; private set; }
         public string PieceId { get; private set; }
@@ -77,6 +78,18 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             SnapToAnchor(anchor);
             _smoothedSimWorld = _mapper.ToWorld(anchor);
+
+            _healthBar = CombatUnitHealthBar.Attach(
+                this,
+                combatSide,
+                cameraTransform != null ? cameraTransform.GetComponent<Camera>() : null);
+        }
+
+        /// <summary>Update the unit's HP bar (0..1); hidden at full health.</summary>
+        public void SetHealthFraction(float fraction)
+        {
+            if (IsAlive)
+                _healthBar?.SetFraction(fraction);
         }
 
         public void SetFrozen(bool frozen) => _frozen = frozen;
@@ -196,6 +209,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         public void PlayDeath(Action onComplete)
         {
             IsAlive = false;
+            _healthBar?.Hide();
 
             if (_visual2D != null)
             {
@@ -233,6 +247,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _marchGraceSeconds = 2.4f;
             _lastMoveCommandTime = -999f;
             _attackProfile = CombatAttackPresentationProfile.InfantryRifle;
+            _healthBar?.Clear();
             ClearPresentation();
         }
 

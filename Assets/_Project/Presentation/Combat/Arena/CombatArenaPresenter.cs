@@ -22,6 +22,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private readonly Dictionary<string, CombatUnitActor> _actors = new();
         private readonly CombatReplayState _replayState = new();
         private readonly Dictionary<string, PieceDefinitionSO> _piecesById = new();
+        private readonly ArmyHealthReplayTracker _unitHealth = new();
 
         private CombatUnitActorPool _pool;
         private CombatGridMapper _mapper;
@@ -130,6 +131,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         public void OnArenaUnloaded()
         {
             _actors.Clear();
+            _unitHealth.Clear();
             _pendingDeathPresentations = 0;
             _replayState.ResetFromBattlefield(null);
             _battlefield = null;
@@ -178,6 +180,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             Transform buildingsRoot = bootstrap.BuildingsRoot != null ? bootstrap.BuildingsRoot : poolRoot;
             _buildingSpawner.SpawnAll(battlefield, _mapper, buildingsRoot, GetPiece, config);
 
+            _unitHealth.Clear();
             foreach (var cell in battlefield.Cells)
             {
                 if (cell?.Definition == null)
@@ -186,6 +189,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 if (!PieceCombatRules.ParticipatesInCombat(cell.Definition))
                     continue;
 
+                _unitHealth.RegisterUnit(cell.InstanceId, cell.Side, cell.Definition.MaxHp);
                 var actor = _pool.Rent();
                 var source = GetPiece(cell.Definition.Id);
                 float moveSpeed = CombatArenaMoveSpeedResolver.ResolveWorldSpeed(source, config);
@@ -225,6 +229,19 @@ namespace DeadManZone.Presentation.Combat.Arena
             int? excludeSegment)
         {
             _replayState.RestoreFromBattlefieldAndEvents(battlefield, events, excludeSegment);
+
+            // Replay HP the same way anchors are replayed so bars survive save/resume.
+            if (events == null)
+                return;
+
+            foreach (var combatEvent in events)
+            {
+                if (combatEvent == null)
+                    continue;
+                if (excludeSegment.HasValue && combatEvent.Segment == excludeSegment.Value)
+                    continue;
+                _unitHealth.ApplyEvent(combatEvent);
+            }
         }
 
         private void SyncActorsToAnchors(BattlefieldState battlefield)
@@ -295,6 +312,12 @@ namespace DeadManZone.Presentation.Combat.Arena
                 if (_actors.TryGetValue(pair.Key, out var actor))
                     actor.SnapToAnchor(pair.Value);
             }
+
+            foreach (var pair in _actors)
+            {
+                if (_unitHealth.TryGetUnitFraction(pair.Key, out float fraction))
+                    pair.Value.SetHealthFraction(fraction);
+            }
         }
 
         private void DestroyOrphanActors(Transform poolRoot)
@@ -317,6 +340,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
 
             _replayState.ApplyEvent(combatEvent);
+            _unitHealth.ApplyEvent(combatEvent);
             ApplyEventVisual(combatEvent);
         }
 
@@ -361,6 +385,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 _activeVfx?.PlayEnvironmentalDamage(targetWorld, combatEvent.Value);
                 if (_actors.TryGetValue(combatEvent.TargetId, out var gassed))
                     gassed.PlayHurt();
+                UpdateHealthBar(combatEvent.TargetId);
                 return;
             }
 
@@ -369,6 +394,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 _activeVfx?.PlayDamage(targetWorld, combatEvent.Value);
                 if (_actors.TryGetValue(combatEvent.TargetId, out var victim))
                     victim.PlayHurt();
+                UpdateHealthBar(combatEvent.TargetId);
                 return;
             }
 
@@ -412,8 +438,22 @@ namespace DeadManZone.Presentation.Combat.Arena
                         PlayAttackImpactVfx(profile, targetWorld, combatEvent.Value);
                         if (_actors.TryGetValue(combatEvent.TargetId, out var victim))
                             victim.PlayHurt();
+                        UpdateHealthBar(combatEvent.TargetId);
                     }
                     : (System.Action)null);
+        }
+
+        /// <summary>Push the replay tracker's HP fraction to the victim's bar.</summary>
+        private void UpdateHealthBar(string instanceId)
+        {
+            if (string.IsNullOrEmpty(instanceId))
+                return;
+
+            if (_actors.TryGetValue(instanceId, out var actor)
+                && _unitHealth.TryGetUnitFraction(instanceId, out float fraction))
+            {
+                actor.SetHealthFraction(fraction);
+            }
         }
 
         private void PlayAttackMuzzleVfx(

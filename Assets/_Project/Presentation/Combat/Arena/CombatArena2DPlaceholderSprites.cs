@@ -32,7 +32,33 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public static Sprite Shadow => CreateSilhouette(0f, 0f, 0f, alpha: 0.35f, size: 32);
 
-        public static Sprite WhitePixel => CreateSilhouette(1f, 1f, 1f, size: 4);
+        // ponytail: CreateSilhouette(size:4) yields a 4x1 all-clear texture (h clamps to 1,
+        // ellipse test divides by zero) — WhitePixel never rendered. Kept for callers that
+        // want the legacy name; SolidWhite below is the actually-opaque quad fill.
+        public static Sprite WhitePixel => SolidWhite;
+
+        private static Sprite _solidWhite;
+
+        /// <summary>Fully opaque 2x2 white sprite for tinted UI/VFX quads.</summary>
+        public static Sprite SolidWhite
+        {
+            get
+            {
+                if (_solidWhite == null)
+                {
+                    var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false)
+                    {
+                        filterMode = FilterMode.Point
+                    };
+                    tex.SetPixels(new[] { Color.white, Color.white, Color.white, Color.white });
+                    tex.Apply();
+                    _solidWhite = Sprite.Create(tex, new Rect(0, 0, 2, 2), new Vector2(0.5f, 0.5f), 2f);
+                    _solidWhite.name = "SolidWhite";
+                }
+
+                return _solidWhite;
+            }
+        }
 
         private static Sprite CreateRoleShape(CombatArena2DSilhouetteRole role)
         {

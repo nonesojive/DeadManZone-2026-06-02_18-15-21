@@ -141,17 +141,28 @@ namespace DeadManZone.Presentation.Combat.Arena
         }
 
         /// <summary>Short two-stage flash at the barrel: bright core that pops then fades,
-        /// stretched slightly toward the target so the shot direction reads.</summary>
+        /// stretched slightly toward the target so the shot direction reads. Mesh quad +
+        /// additive material — SpriteRenderers do not draw with this renderer setup.</summary>
         private void SpawnMuzzleFlash(Vector3 muzzleWorld, Vector3 targetWorld, float scale)
         {
-            var go = new GameObject("MuzzleFlash");
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = "MuzzleFlash";
             go.transform.SetParent(transform, true);
             go.transform.position = muzzleWorld;
 
-            var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = CombatArena2DPlaceholderSprites.WhitePixel;
-            sr.color = new Color(1f, 0.93f, 0.6f, 0.95f);
-            sr.sortingOrder = CombatArena2DSortOrder.FromWorldZ(muzzleWorld.z) + 60;
+            var collider = go.GetComponent<Collider>();
+            if (collider != null)
+                Destroy(collider);
+
+            var renderer = go.GetComponent<Renderer>();
+            var material = CombatArena2DSpriteMaterial.CreateSpriteAdditive(
+                CombatArena2DPlaceholderSprites.WhitePixel,
+                CombatArena2DSortOrder.RenderQueueFromWorldZ(muzzleWorld.z, 60));
+            if (material != null)
+            {
+                CombatArenaMaterialUtility.ApplyColor(material, new Color(1f, 0.82f, 0.42f, 1f));
+                renderer.sharedMaterial = material;
+            }
 
             var camera = CombatArenaBootstrap.Instance?.ArenaCamera;
             if (camera != null)
@@ -162,27 +173,31 @@ namespace DeadManZone.Presentation.Combat.Arena
             float side = toTarget.x >= 0f ? 1f : -1f;
             go.transform.localScale = new Vector3(scale * 1.6f * side, scale * 0.55f, 1f);
 
-            StartCoroutine(MuzzleFlashRoutine(sr));
+            StartCoroutine(MuzzleFlashRoutine(go.transform, material));
         }
 
-        private IEnumerator MuzzleFlashRoutine(SpriteRenderer sr)
+        private IEnumerator MuzzleFlashRoutine(Transform flash, Material material)
         {
             const float lifetime = 0.09f;
-            Vector3 startScale = sr != null ? sr.transform.localScale : Vector3.one;
+            Vector3 startScale = flash != null ? flash.localScale : Vector3.one;
             float elapsed = 0f;
-            while (elapsed < lifetime && sr != null)
+            while (elapsed < lifetime && flash != null)
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / lifetime);
-                sr.transform.localScale = startScale * (1f + 0.6f * t);
-                var color = sr.color;
-                color.a = 0.95f * (1f - t * t);
-                sr.color = color;
+                flash.localScale = startScale * (1f + 0.6f * t);
+                if (material != null)
+                {
+                    // Additive: fading toward black fades the glow out.
+                    float fade = 1f - t * t;
+                    CombatArenaMaterialUtility.ApplyColor(
+                        material, new Color(1f * fade, 0.82f * fade, 0.42f * fade, 1f));
+                }
                 yield return null;
             }
 
-            if (sr != null)
-                Destroy(sr.gameObject);
+            if (flash != null)
+                Destroy(flash.gameObject);
         }
 
         private void SpawnImpactFlash(Vector3 worldPosition, float scale)
