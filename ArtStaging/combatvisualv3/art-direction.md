@@ -39,12 +39,34 @@ realistic v2 roster. **Facing:** render from the -X camera (looking +X) for
 right-facing bases; do NOT rotate the model (Blender render ignores object
 rotation in this MCP context — camera moves work, object transforms don't).
 
-## BLOCKER — AutoSprite key invalid
+## AutoSprite pipeline — PROVEN end-to-end (rifleman pilot, 2026-07-06)
 
-Animation (step 3) is blocked: `AUTOSPRITE_API_KEY` is a placeholder
-(`your…`, 24 chars); `www.autosprite.io/api/v1` returns
-`UNAUTHORIZED / Invalid or revoked API key`. User must paste the real key
-from the AutoSprite dashboard, then the 4 states can be generated per unit.
+Real key supplied (`vspk_…`), registered as a local-scope MCP server
+(`autosprite`) and used directly via JSON-RPC this session. Full loop:
+
+1. `request_upload_url` → `curl -X PUT` the Hyper3D base render → `upload_character`
+   (uploading your own image is FREE, keeps the chunky style).
+2. `generate_spritesheet` with animations `[idle, walk, custom(shoot),
+   custom(die)]`, `spritesheet:{frameCount:25, frameSize:256}`. **5 credits per
+   animation** (20/unit). "shoot"/"die" are `kind:"custom"` with a prompt +
+   `loop:false`; idle/walk are their own kinds with `loop:true`.
+3. Poll `list_spritesheets latestOnly:false` until all `succeeded` (30–120s;
+   wait ≥30s between checks). The two customs come back with `name:null` —
+   identify shoot vs die by eye.
+4. Download: signed `?sig=` URLs expire in SECONDS — fetch a fresh URL via
+   `get_spritesheet` and download it IN THE SAME PROCESS with `-L` (redirects
+   to R2). Shell pipelines are too slow; use the in-process python in
+   scratchpad `dl_sheets.py`.
+5. Place as `Animations/<piece>/<piece>_{idle,walk,shoot,die}.png` (overwrite,
+   keep `.meta` for GUID), `assets-refresh`, run
+   `Combat2DAnimationSetBuilder.BuildAll` (auto-detects the 5×5 grid).
+
+Result verified in-arena: the chunky v3 rifleman POPS against the old v2
+roster — direction validated at gameplay scale. Cost so far: 20/260 credits.
+
+Remaining roster (14 units × ~20 credits ≈ 280) exceeds the 240 balance —
+budget top-up or a smaller state set (idle+walk+shoot, skip die) needed to
+finish all 17.
 
 ## Pipeline (agent-driven once Blender is up)
 
