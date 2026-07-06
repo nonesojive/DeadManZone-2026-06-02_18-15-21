@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatUnit2DAnimationSetSO
   idle:
     sheet: {fileID: 21300000, guid: 6badee53f2c245dcacac81b1de206a0e, type: 3}
-    frameCount: 25
-    columns: 5
-    framesPerSecond: 6.25
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 12.25
     loop: 1
   walk:
     sheet: {fileID: 21300000, guid: 8e6d205265bd4a779ab67541fcb099be, type: 3}
-    frameCount: 25
-    columns: 5
-    framesPerSecond: 7.142857
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 14
     loop: 1
   run:
     sheet: {fileID: 0}
@@ -44,13 +44,13 @@ MonoBehaviour:
     loop: 0
   shoot:
     sheet: {fileID: 21300000, guid: dc34fcd04607467186daeedb39207e37, type: 3}
-    frameCount: 25
-    columns: 5
-    framesPerSecond: 16.666666
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 32.666668
     loop: 0
   die:
     sheet: {fileID: 21300000, guid: 28938d5bba6d44d9b703d0e02873dd34, type: 3}
-    frameCount: 25
-    columns: 5
-    framesPerSecond: 6.25
+    frameCount: 49
+    columns: 7
+    framesPerSecond: 12.25
     loop: 0

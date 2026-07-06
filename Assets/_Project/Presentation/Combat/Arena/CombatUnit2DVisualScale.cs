@@ -6,11 +6,11 @@ namespace DeadManZone.Presentation.Combat.Arena
 {
     internal static class CombatUnit2DVisualScale
     {
-        // ~15% over the original pass: units read too small against the arena framing.
-        private const float InfantryHeight = 1.65f;
-        private const float HeavyInfantryHeight = 1.85f;
-        private const float StructureHeight = 1.8f;
-        private const float VehicleHeight = 1.95f;
+        // Bumped again per art review — bolder unit presence on the field.
+        private const float InfantryHeight = 1.85f;
+        private const float HeavyInfantryHeight = 2.05f;
+        private const float StructureHeight = 2.0f;
+        private const float VehicleHeight = 2.15f;
 
         public static float ResolveUniformScale(PieceDefinitionSO piece, Sprite sprite)
         {
@@ -32,8 +32,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             return piece.id switch
             {
                 "armored_transport" => VehicleHeight,
-                "ironmarch_iron_horse" => 2.1f,
-                "ironclad_mortars" => 1.9f,
+                "ironmarch_iron_horse" => 2.35f,
+                "ironclad_mortars" => 2.1f,
                 "machine_gun_nest" => StructureHeight,
                 "bulwark_squad" => HeavyInfantryHeight,
                 "ironclad_field_marshal" => HeavyInfantryHeight,
