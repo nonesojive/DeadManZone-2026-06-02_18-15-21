@@ -38,7 +38,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         public void PlayRifleMuzzleAndTracer(Vector3 muzzleWorld, Vector3 targetWorld)
         {
             SpawnMuzzleFlash(muzzleWorld, targetWorld, 0.34f);
-            StartCoroutine(ArcTracerRoutine(muzzleWorld, targetWorld, 0.18f, 0.12f));
+            StartCoroutine(BulletTracerRoutine(muzzleWorld, targetWorld));
         }
 
         public void PlayCannonMuzzleAndTracer(Vector3 muzzleWorld, Vector3 targetWorld)
@@ -91,6 +91,45 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             PlayRifleMuzzleAndTracer(worldPosition, worldPosition);
             PlayImpact(worldPosition, amount);
+        }
+
+        /// <summary>A short bright streak that shoots straight from muzzle to target —
+        /// reads as a bullet tracer, unlike the old lobbed arc. The head races along the
+        /// firing line with a fixed-length tail trailing behind it.</summary>
+        private IEnumerator BulletTracerRoutine(Vector3 from, Vector3 to)
+        {
+            var go = new GameObject("BulletTracer");
+            go.transform.SetParent(transform, false);
+            var line = go.AddComponent<LineRenderer>();
+            line.useWorldSpace = true;
+            line.positionCount = 2;
+            line.startWidth = 0.05f;
+            line.endWidth = 0.02f;
+            line.numCapVertices = 2;
+            line.material = new Material(Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Color"));
+            line.startColor = new Color(1f, 0.96f, 0.7f, 1f);   // hot head
+            line.endColor = new Color(1f, 0.7f, 0.25f, 0.25f);  // faded tail
+            _activeTracers.Add(line);
+
+            Vector3 dir = (to - from);
+            float dist = dir.magnitude;
+            dir = dist > 0.0001f ? dir / dist : Vector3.right;
+            float tailLen = Mathf.Min(0.9f, dist * 0.5f);
+            const float speed = 42f; // world units/sec — fast, bullet-like
+            float travelled = 0f;
+
+            while (travelled < dist)
+            {
+                travelled += speed * Time.deltaTime;
+                Vector3 head = from + dir * Mathf.Min(travelled, dist);
+                Vector3 tail = from + dir * Mathf.Max(0f, Mathf.Min(travelled, dist) - tailLen);
+                line.SetPosition(0, tail);
+                line.SetPosition(1, head);
+                yield return null;
+            }
+
+            _activeTracers.Remove(line);
+            Destroy(go);
         }
 
         private float ArcHeight =>

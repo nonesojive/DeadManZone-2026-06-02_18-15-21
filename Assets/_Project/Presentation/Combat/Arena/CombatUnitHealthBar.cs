@@ -7,9 +7,9 @@ namespace DeadManZone.Presentation.Combat.Arena
     /// (Top Troops style) so intact lines stay clean; appears on first damage.</summary>
     public sealed class CombatUnitHealthBar : MonoBehaviour
     {
-        private const float Width = 0.86f;
-        private const float Height = 0.11f;
-        private const float HeadHeight = 2.25f; // clears the taller unit scale
+        private const float Width = 0.62f;
+        private const float Height = 0.085f;
+        private const float HeadClearance = 0.22f; // gap above the head
 
         private static readonly Color AllyFill = new(0.38f, 0.84f, 0.34f, 1f);
         private static readonly Color EnemyFill = new(0.92f, 0.32f, 0.25f, 1f);
@@ -22,7 +22,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         public static CombatUnitHealthBar Attach(
             CombatUnitActor actor,
             CombatSide side,
-            Camera arenaCamera)
+            Camera arenaCamera,
+            float headHeight)
         {
             if (actor == null)
                 return null;
@@ -31,7 +32,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (bar == null)
                 bar = actor.gameObject.AddComponent<CombatUnitHealthBar>();
 
-            bar.BuildVisual(side, arenaCamera);
+            bar.BuildVisual(side, arenaCamera, headHeight + HeadClearance);
             return bar;
         }
 
@@ -72,13 +73,13 @@ namespace DeadManZone.Presentation.Combat.Arena
             _fraction = 1f;
         }
 
-        private void BuildVisual(CombatSide side, Camera arenaCamera)
+        private void BuildVisual(CombatSide side, Camera arenaCamera, float headHeight)
         {
             Clear();
 
             _root = new GameObject("HealthBar");
             _root.transform.SetParent(transform, false);
-            _root.transform.localPosition = new Vector3(0f, HeadHeight, 0f);
+            _root.transform.localPosition = new Vector3(0f, headHeight, 0f);
             if (arenaCamera != null)
                 _root.AddComponent<CombatArena2DSpriteBillboard>().Bind(arenaCamera);
 

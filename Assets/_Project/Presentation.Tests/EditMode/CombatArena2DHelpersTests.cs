@@ -129,7 +129,8 @@ namespace DeadManZone.Presentation.Tests.EditMode
             float tallHeight = tall.rect.height / tall.pixelsPerUnit * tallScale;
 
             Assert.AreEqual(tinyHeight, tallHeight, 0.001f);
-            Assert.AreEqual(1.45f, tinyHeight, 0.001f);
+            // Infantry target height (CombatUnit2DVisualScale.InfantryHeight).
+            Assert.AreEqual(1.85f, tinyHeight, 0.001f);
 
             Object.DestroyImmediate(tinyTexture);
             Object.DestroyImmediate(tallTexture);
@@ -158,7 +159,8 @@ namespace DeadManZone.Presentation.Tests.EditMode
             float filledVisibleHeight = CombatArena2DSpriteMetrics.VisibleHeightUnits(filled) * filledScale;
 
             Assert.AreEqual(paddedVisibleHeight, filledVisibleHeight, 0.001f);
-            Assert.AreEqual(1.45f, paddedVisibleHeight, 0.001f);
+            // Infantry target height (CombatUnit2DVisualScale.InfantryHeight).
+            Assert.AreEqual(1.85f, paddedVisibleHeight, 0.001f);
 
             Object.DestroyImmediate(paddedTexture);
             Object.DestroyImmediate(filledTexture);

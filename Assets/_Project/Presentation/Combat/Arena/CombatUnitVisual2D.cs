@@ -44,8 +44,13 @@ namespace DeadManZone.Presentation.Combat.Arena
         private float _locomotionLockUntil;
         private Sprite _lastFrame;
         private int _lastRenderQueue = int.MinValue;
+        private float _visualHeight = 1.8f;
 
         public bool IsBuilt => _presentationRoot != null;
+
+        /// <summary>Approx world height of the rendered figure (feet→head), for
+        /// positioning head-height UI (health bars) and shoulder-height VFX (muzzle).</summary>
+        public float VisualHeight => _visualHeight;
         // ponytail: shoot/die strips can run longer than sim attack cadence; lock locomotion
         // only through the presentation profile window (or full die), not the whole strip.
         public bool BlocksLocomotion => _animated && (_dying || Time.time < _locomotionLockUntil);
@@ -63,8 +68,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             rootGo.transform.SetParent(transform, false);
             _presentationRoot = rootGo.transform;
 
-            CreateShadow();
             CreateSquad(piece, side, Mathf.Clamp(squadSize, 1, SquadOffsets.Length));
+            CreateShadow();
         }
 
         public void SetWalking(bool walking)
@@ -275,11 +280,14 @@ namespace DeadManZone.Presentation.Combat.Arena
         private void CreateShadow()
         {
             int renderQueue = CombatArena2DSortOrder.RenderQueueFromWorldZ(transform.position.z) - 1;
+            // Ground cells sit at y≈0.07 now; keep the blob just above them so it isn't
+            // occluded, and scale it to the figure so bigger units cast bigger shadows.
+            float footprint = Mathf.Clamp(_visualHeight * 0.42f, 0.5f, 1.3f);
             CombatArena2DSpriteQuad.CreateFlatShadow(
                 _presentationRoot,
                 CombatArena2DEnvironmentArt.UnitShadow,
-                new Vector3(0f, 0.02f, -0.08f),
-                Vector3.one * 0.55f,
+                new Vector3(0f, 0.09f, -0.05f),
+                new Vector3(footprint, footprint * 0.55f, 1f),
                 renderQueue);
         }
 
@@ -312,6 +320,10 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             _baseTint = tint;
             int baseQueue = CombatArena2DSortOrder.RenderQueueFromWorldZ(transform.position.z);
+
+            // Figure top ≈ squad-root offset + visible sprite height (feet→head).
+            float leaderScale = CombatUnit2DVisualScale.ResolveUniformScale(piece, sprite);
+            _visualHeight = 0.35f + CombatArena2DSpriteMetrics.VisibleHeightUnits(sprite) * leaderScale;
 
             for (int i = 0; i < count; i++)
             {
@@ -358,11 +370,14 @@ namespace DeadManZone.Presentation.Combat.Arena
                 yield return new WaitForSeconds(profile.MuzzleDelaySeconds);
 
             // Animated sprites face by flip-X, so the barrel is lateral, not squad-forward.
-            // Shoulder-height origin: tracers from the hip read as a glitch.
+            // Shoulder height scales with the figure — a fixed 0.72 sat at the hip once
+            // units grew, so tracers came out of the legs.
+            float shoulder = Mathf.Max(0.8f, _visualHeight * 0.72f);
+            float lateral = Mathf.Max(0.35f, _visualHeight * 0.28f);
             Vector3 barrelOffset = _animated
-                ? (_flipX ? Vector3.left : Vector3.right) * 0.35f
+                ? (_flipX ? Vector3.left : Vector3.right) * lateral
                 : (_squadRoot != null ? _squadRoot.forward : transform.forward) * 0.2f;
-            Vector3 muzzle = transform.position + Vector3.up * 0.72f + barrelOffset;
+            Vector3 muzzle = transform.position + Vector3.up * shoulder + barrelOffset;
             onMuzzle?.Invoke(muzzle);
 
             float impactWait = profile.ImpactDelaySeconds - profile.MuzzleDelaySeconds;

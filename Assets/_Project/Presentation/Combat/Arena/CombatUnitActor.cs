@@ -82,7 +82,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             _healthBar = CombatUnitHealthBar.Attach(
                 this,
                 combatSide,
-                cameraTransform != null ? cameraTransform.GetComponent<Camera>() : null);
+                cameraTransform != null ? cameraTransform.GetComponent<Camera>() : null,
+                _visual2D != null ? _visual2D.VisualHeight : 1.8f);
         }
 
         /// <summary>Update the unit's HP bar (0..1); hidden at full health.</summary>
