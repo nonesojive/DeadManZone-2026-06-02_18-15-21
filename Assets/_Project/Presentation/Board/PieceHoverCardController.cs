@@ -24,10 +24,16 @@ namespace DeadManZone.Presentation.Board
         public void NotifyPieceHoverEnter(
             string instanceId,
             PieceDefinition definition,
-            PieceCardBuildContext context)
+            PieceCardBuildContext context,
+            Vector2? pointerScreenPosition = null)
         {
             _hoverLock.Enter(instanceId);
-            Show(definition, Vector2.zero, context);
+            Show(definition, pointerScreenPosition ?? Vector2.zero, context);
+
+            // Slide the card to the side of the screen opposite the hovered piece so
+            // the middle of the shop stays clear (piece on the left → card on the right).
+            if (pointerScreenPosition.HasValue)
+                ResolveUnitCardPanel()?.PositionOppositePointer(pointerScreenPosition.Value);
         }
 
         public void NotifyPieceHoverExit(string instanceId)

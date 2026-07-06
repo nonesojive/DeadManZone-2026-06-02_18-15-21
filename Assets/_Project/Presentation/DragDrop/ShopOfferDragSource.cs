@@ -41,7 +41,7 @@ namespace DeadManZone.Presentation.DragDrop
                 return;
 
             var context = BuildShopContext();
-            _hoverCardController.NotifyPieceHoverEnter(_offer.OfferId, definition, context);
+            _hoverCardController.NotifyPieceHoverEnter(_offer.OfferId, definition, context, eventData.position);
         }
 
         public void OnPointerExit(PointerEventData eventData)

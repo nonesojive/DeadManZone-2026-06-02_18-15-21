@@ -47,7 +47,7 @@ namespace DeadManZone.Presentation.Board
                 return;
 
             var context = BuildContext();
-            _hoverCardController?.NotifyPieceHoverEnter(instanceId, _definition, context);
+            _hoverCardController?.NotifyPieceHoverEnter(instanceId, _definition, context, eventData.position);
             _isHovering = true;
         }
 

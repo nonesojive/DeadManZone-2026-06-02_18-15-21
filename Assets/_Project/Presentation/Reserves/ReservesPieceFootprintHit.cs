@@ -49,7 +49,7 @@ namespace DeadManZone.Presentation.Reserves
             if (_definition == null || string.IsNullOrEmpty(instanceId))
                 return;
 
-            _hoverCardController?.NotifyPieceHoverEnter(instanceId, _definition, BuildContext());
+            _hoverCardController?.NotifyPieceHoverEnter(instanceId, _definition, BuildContext(), eventData.position);
             _isHovering = true;
         }
 

@@ -134,6 +134,13 @@ namespace DeadManZone.Presentation.Combat
         {
             if (state?.Phase == RunPhase.Aftermath)
                 ShowBattleReport();
+
+            // Safety net: whenever we're back in the shop/build, the arena must be gone.
+            // The normal unload runs after death presentations, but paths that reach
+            // aftermath via the state-change event (defeat, resume) skip it, leaving the
+            // arena rendered behind the shop.
+            if (state?.Phase == RunPhase.Build && arenaLoader != null && arenaLoader.IsLoaded)
+                StartCoroutine(arenaLoader.UnloadAsync());
         }
 
         private void OnCombatPresentationCompleted()

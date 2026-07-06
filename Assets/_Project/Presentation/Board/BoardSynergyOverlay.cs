@@ -43,6 +43,10 @@ namespace DeadManZone.Presentation.Board
                 linkView.gameObject.SetActive(true);
                 linkView.SetColor(color);
                 linkView.UpdatePoints(sourceVisual.Center, targetVisual.Center);
+                // Piece visuals are destroyed and recreated each refresh, landing as
+                // later siblings; the pooled links would otherwise stay buried behind
+                // them. Re-float active links to the top so adjacency cues stay visible.
+                linkView.transform.SetAsLastSibling();
                 _activeCount++;
             }
 

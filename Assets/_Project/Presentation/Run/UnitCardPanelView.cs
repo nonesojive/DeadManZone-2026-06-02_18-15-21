@@ -84,6 +84,40 @@ namespace DeadManZone.Presentation.Run
                 panelRoot.gameObject.SetActive(false);
         }
 
+        /// <summary>Docks the card to whichever screen edge is opposite the pointer,
+        /// keeping the center column free. Vertically tracks the pointer, clamped so the
+        /// card never spills off-screen.</summary>
+        public void PositionOppositePointer(Vector2 pointerScreenPosition)
+        {
+            if (panelRoot == null)
+                return;
+
+            if (panelRoot.parent is not RectTransform parent)
+                return;
+
+            var canvas = panelRoot.GetComponentInParent<Canvas>();
+            Camera cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? canvas.worldCamera
+                : null;
+
+            float margin = 32f;
+            float halfW = panelRoot.rect.width * 0.5f + margin;
+            float halfH = panelRoot.rect.height * 0.5f + margin;
+
+            float targetX = pointerScreenPosition.x < Screen.width * 0.5f
+                ? Screen.width - halfW   // pointer on the left → card on the right
+                : halfW;                 // pointer on the right → card on the left
+            float targetY = Mathf.Clamp(pointerScreenPosition.y, halfH, Screen.height - halfH);
+
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    parent, new Vector2(targetX, targetY), cam, out var localPoint))
+                return;
+
+            panelRoot.anchorMin = panelRoot.anchorMax = new Vector2(0.5f, 0.5f);
+            panelRoot.pivot = new Vector2(0.5f, 0.5f);
+            panelRoot.anchoredPosition = localPoint;
+        }
+
         private Transform PanelHost => panelRoot != null ? panelRoot : transform;
 
         private PieceCardView SelectActiveCard(PieceDefinition definition) =>
