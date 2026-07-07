@@ -84,8 +84,42 @@ namespace DeadManZone.Presentation.Board
             if (unitCardPanel != null)
                 return unitCardPanel;
 
-            unitCardPanel = FindFirstObjectByType<UnitCardPanelView>();
+            unitCardPanel = FindFirstObjectByType<UnitCardPanelView>(FindObjectsInactive.Include);
+            if (unitCardPanel == null)
+                unitCardPanel = CreateFloatingCardPanel();
             return unitCardPanel;
+        }
+
+        /// <summary>The hover card is positioned dynamically opposite the pointer, so it needs
+        /// no fixed home. If the authored panel was removed (e.g. the center column was deleted),
+        /// build a floating one under the canvas so hover keeps working.</summary>
+        private UnitCardPanelView CreateFloatingCardPanel()
+        {
+            var canvas = GetComponentInParent<Canvas>();
+            if (canvas == null)
+                canvas = FindFirstObjectByType<Canvas>();
+            if (canvas == null)
+                return null;
+
+            var go = new GameObject("UnitCardPanel", typeof(RectTransform));
+            go.transform.SetParent(canvas.transform, false);
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2(450f, 700f);
+
+            // The building card is auto-provisioned by EnsureCardView; instantiate the unit card.
+            var unitPrefab = CardPrefabRuntimeLoader.LoadPrefab(CardPrefabPaths.UnitDetailCard);
+            if (unitPrefab != null)
+            {
+                var card = Instantiate(unitPrefab, go.transform);
+                card.name = UnitCardPanelView.UnitDetailCardName;
+                card.SetActive(false);
+            }
+
+            var view = go.AddComponent<UnitCardPanelView>();
+            view.EnsureCardView();
+            go.SetActive(false);
+            return view;
         }
 
         private BuildMessagesView ResolveMessagesView()

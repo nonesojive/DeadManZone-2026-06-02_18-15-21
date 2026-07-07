@@ -289,7 +289,14 @@ namespace DeadManZone.Game
             if (result.Status == CombatAdvanceStatus.Completed)
                 _pendingCombatCompletion = result;
 
-            Persist();
+            // Combat is deterministic and resumes from the BeginCombat save (seed + boards +
+            // submitted commands + checkpoints via FastForwardFromSave) — it does NOT need the
+            // per-segment event log on disk. Serializing that ever-growing log every ~2s was an
+            // O(n^2) synchronous write that froze playback between segments. Persist only when
+            // the fight ends; mid-fight quit/resume simply replays the fight from its start.
+            if (result.Status == CombatAdvanceStatus.Completed)
+                Persist();
+
             return result;
         }
 

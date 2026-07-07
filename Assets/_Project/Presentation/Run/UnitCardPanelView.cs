@@ -18,6 +18,14 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private PieceCardView unitCardView;
         [SerializeField] private PieceCardView buildingCardView;
 
+        private void Awake()
+        {
+            // Runtime-provisioned panels have no authored panelRoot; fall back to our own
+            // rect so show/hide/positioning still work.
+            if (panelRoot == null)
+                panelRoot = transform as RectTransform;
+        }
+
         public bool IsVisible => panelRoot != null && panelRoot.gameObject.activeSelf;
 
         /// <summary>Last bound card (unit or building), if any.</summary>
