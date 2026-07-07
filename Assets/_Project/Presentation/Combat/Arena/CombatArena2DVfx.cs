@@ -19,6 +19,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private CombatArenaConfigSO _config;
         private readonly List<LineRenderer> _activeTracers = new();
+        private readonly Queue<TextMeshPro> _textPool = new();
 
         // One shared material for every tracer line — LineRenderer start/end colours are
         // vertex colours, independent of the material, so a single cached instance serves
@@ -273,21 +274,32 @@ namespace DeadManZone.Presentation.Combat.Arena
         private void SpawnFloatingText(Vector3 worldPosition, string text)
         {
             var cameraTransform = CombatArenaBootstrap.Instance?.ArenaCamera?.transform;
+
+            // Reuse damage-number objects: creating/destroying a TextMeshPro per hit is a heavy
+            // managed allocation (mesh + material), and volleys spawn many at once — a burst
+            // that hitches the frame. Pool them instead.
+            TextMeshPro tmp = _textPool.Count > 0 ? _textPool.Dequeue() : CreateFloatingText();
+            var go = tmp.gameObject;
+            go.SetActive(true);
+            go.transform.position = worldPosition;
+            tmp.text = text;
+            tmp.color = damageTextColor;
+
+            StartCoroutine(AnimateFloatingText(tmp, worldPosition, cameraTransform));
+        }
+
+        private TextMeshPro CreateFloatingText()
+        {
             var go = new GameObject("CombatDamageText");
             go.transform.SetParent(transform, true);
-            go.transform.position = worldPosition;
-
             var tmp = go.AddComponent<TextMeshPro>();
-            tmp.text = text;
             tmp.fontSize = 4.8f;
             tmp.fontStyle = FontStyles.Bold;
             tmp.alignment = TextAlignmentOptions.Center;
-            tmp.color = damageTextColor;
             tmp.outlineColor = damageTextOutlineColor;
             tmp.outlineWidth = damageTextOutlineWidth;
             tmp.transform.localScale = Vector3.one * damageTextScale;
-
-            StartCoroutine(AnimateFloatingText(tmp, worldPosition, cameraTransform));
+            return tmp;
         }
 
         private IEnumerator AnimateFloatingText(TextMeshPro text, Vector3 startPosition, Transform cameraTransform)
@@ -314,7 +326,10 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
 
             if (text != null)
-                Destroy(text.gameObject);
+            {
+                text.gameObject.SetActive(false);
+                _textPool.Enqueue(text);
+            }
         }
     }
 }

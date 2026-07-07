@@ -28,6 +28,12 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (config == null)
                 config = Resources.Load<CombatArenaConfigSO>("DeadManZone/CombatArenaConfig");
 
+            // Units interpolate toward their sim positions with Time.deltaTime, so a single
+            // long frame (a GC collection, or a volley's burst of VFX) makes them teleport
+            // forward. Cap the frame step so a hitch degrades to a brief slow-down instead of
+            // a visible jump (the default 0.333 lets a stall advance a third of a second).
+            Time.maximumDeltaTime = 0.05f;
+
             ConfigureCamera();
             TopTroopsAtmosphere.Apply(config, transform, arenaCamera);
 #if UNITY_URP_PRESENT
