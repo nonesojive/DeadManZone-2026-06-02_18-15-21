@@ -51,14 +51,22 @@ namespace DeadManZone.Presentation.Combat.Arena
             int x1 = Mathf.Clamp(Mathf.CeilToInt(rect.xMax), x0 + 1, texture.width);
             int y1 = Mathf.Clamp(Mathf.CeilToInt(rect.yMax), y0 + 1, texture.height);
 
+            // Sprite sheets here are up to 3584² — a per-pixel GetPixel scan is millions of
+            // slow native calls, and it ran the first time every unit was built (cached after),
+            // which is exactly why the FIRST combat of a session hitched and later ones didn't.
+            // Sample on an adaptive grid (~256 taps per axis max) instead; that's ample
+            // precision for figure height / shadow bounds while capping the cost.
+            const int MaxTapsPerAxis = 64;
+            int step = Mathf.Max(1, Mathf.Max(x1 - x0, y1 - y0) / MaxTapsPerAxis);
+
             int minX = x1;
             int minY = y1;
             int maxX = x0 - 1;
             int maxY = y0 - 1;
 
-            for (int y = y0; y < y1; y++)
+            for (int y = y0; y < y1; y += step)
             {
-                for (int x = x0; x < x1; x++)
+                for (int x = x0; x < x1; x += step)
                 {
                     if (texture.GetPixel(x, y).a <= AlphaThreshold01)
                         continue;
@@ -72,6 +80,17 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             if (maxX < minX || maxY < minY)
                 return fallback;
+
+            // When downsampling, the grid may miss the true edge by up to one step; pad so the
+            // figure is never clipped, then clamp back into the sprite rect. At step 1 the scan
+            // is exact, so no padding (it would inflate the bounds).
+            if (step > 1)
+            {
+                minX = Mathf.Max(x0, minX - step);
+                minY = Mathf.Max(y0, minY - step);
+                maxX = Mathf.Min(x1 - 1, maxX + step);
+                maxY = Mathf.Min(y1 - 1, maxY + step);
+            }
 
             return new Rect(
                 minX - rect.xMin,
