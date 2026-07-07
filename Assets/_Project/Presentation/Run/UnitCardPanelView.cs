@@ -67,6 +67,7 @@ namespace DeadManZone.Presentation.Run
             string overflowTooltip = PieceCardOverflowTooltip.Build(definition, model);
             activeCard.Bind(model, overflowTooltip);
             SuppressPanelBackgroundIfCardPresent();
+            EnsureOpaqueBacking(activeCard.transform as RectTransform);
             activeCard.Show();
             CardView = activeCard;
 
@@ -85,10 +86,9 @@ namespace DeadManZone.Presentation.Run
         }
 
         /// <summary>Docks the card to whichever screen edge is opposite the pointer,
-        /// keeping the center column free. Vertically tracks the pointer, clamped so the
-        /// card never spills off-screen. Works entirely in the parent's local canvas
-        /// space — mixing raw screen pixels with canvas units pushed the card half
-        /// off-screen on scaled canvases.</summary>
+        /// keeping the center column free, clamped in true screen space so it never spills
+        /// off any edge. Clamping against the parent rect (which is not full-screen) let the
+        /// top of the card run off the top of the screen for top-row offers.</summary>
         public void PositionOppositePointer(Vector2 pointerScreenPosition)
         {
             if (panelRoot == null)
@@ -97,35 +97,56 @@ namespace DeadManZone.Presentation.Run
             if (panelRoot.parent is not RectTransform parent)
                 return;
 
+            EnsureRendersOnTop();
+
             var canvas = panelRoot.GetComponentInParent<Canvas>();
             Camera cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
                 ? canvas.worldCamera
                 : null;
 
-            // Pointer → parent-local so the side test and clamp share one coordinate space.
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    parent, pointerScreenPosition, cam, out var pointerLocal))
+            // Card size is in canvas units; convert to screen pixels so the clamp is against
+            // the real screen, independent of how big the panel's parent rect is.
+            float scale = canvas != null ? canvas.scaleFactor : 1f;
+            if (scale <= 0f)
+                scale = 1f;
+            float halfW = panelRoot.rect.width * 0.5f * scale;
+            float halfH = panelRoot.rect.height * 0.5f * scale;
+            const float margin = 20f;
+
+            float targetX = pointerScreenPosition.x < Screen.width * 0.5f
+                ? Screen.width - halfW - margin   // pointer on the left → card on the right
+                : halfW + margin;                 // pointer on the right → card on the left
+            float targetY = Mathf.Clamp(
+                pointerScreenPosition.y,
+                halfH + margin,
+                Screen.height - halfH - margin);
+
+            // ScreenPointToLocalPointInRectangle returns a point relative to the parent's
+            // pivot, so the child's anchor must sit at that pivot for anchoredPosition to
+            // line up — otherwise a non-centered parent pivot shifts the card off one edge.
+            panelRoot.anchorMin = panelRoot.anchorMax = parent.pivot;
+            panelRoot.pivot = new Vector2(0.5f, 0.5f);
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    parent, new Vector2(targetX, targetY), cam, out var local))
+                panelRoot.anchoredPosition = local;
+        }
+
+        /// <summary>Give the card its own overriding canvas so it always draws above the
+        /// shop and board, wherever it sits in the hierarchy.</summary>
+        private void EnsureRendersOnTop()
+        {
+            if (panelRoot == null)
                 return;
 
-            Rect area = parent.rect;
-            const float margin = 24f;
-            float halfW = panelRoot.rect.width * 0.5f;
-            float halfH = panelRoot.rect.height * 0.5f;
+            var canvas = panelRoot.GetComponent<Canvas>();
+            if (canvas == null)
+            {
+                canvas = panelRoot.gameObject.AddComponent<Canvas>();
+                panelRoot.gameObject.AddComponent<GraphicRaycaster>();
+            }
 
-            bool pointerLeft = pointerLocal.x < area.center.x;
-            float targetX = pointerLeft
-                ? area.xMax - halfW - margin   // pointer on the left → card on the right
-                : area.xMin + halfW + margin;  // pointer on the right → card on the left
-            float targetY = Mathf.Clamp(
-                pointerLocal.y,
-                area.yMin + halfH + margin,
-                area.yMax - halfH - margin);
-
-            panelRoot.anchorMin = panelRoot.anchorMax = new Vector2(0.5f, 0.5f);
-            panelRoot.pivot = new Vector2(0.5f, 0.5f);
-            // anchoredPosition is measured from the parent's center; area.center is the
-            // parent rect's center in the same local units.
-            panelRoot.anchoredPosition = new Vector2(targetX, targetY) - area.center;
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = 500;
         }
 
         private Transform PanelHost => panelRoot != null ? panelRoot : transform;
@@ -205,6 +226,36 @@ namespace DeadManZone.Presentation.Run
             // ponytail: both card prefabs use 450×700; stretch wiring zeroes sizeDelta.
             if (rect.sizeDelta.x < 1f || rect.sizeDelta.y < 1f)
                 rect.sizeDelta = new Vector2(450f, 700f);
+        }
+
+        private const string BackingName = "OpaqueBacking";
+        private static readonly Color BackingColor = new(0.09f, 0.085f, 0.08f, 1f);
+
+        /// <summary>The authored card frame has a transparent interior, so the shop/board
+        /// showed through it. Insert a solid dark backing as the first (rearmost) child so
+        /// the card reads as an opaque panel wherever it hovers.</summary>
+        private static void EnsureOpaqueBacking(RectTransform card)
+        {
+            if (card == null)
+                return;
+
+            var existing = card.Find(BackingName) as RectTransform;
+            if (existing == null)
+            {
+                var go = new GameObject(BackingName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                existing = (RectTransform)go.transform;
+                existing.SetParent(card, false);
+                var image = go.GetComponent<Image>();
+                image.color = BackingColor;
+                image.raycastTarget = false;
+                image.maskable = false;
+            }
+
+            existing.anchorMin = Vector2.zero;
+            existing.anchorMax = Vector2.one;
+            existing.offsetMin = Vector2.zero;
+            existing.offsetMax = Vector2.zero;
+            existing.SetAsFirstSibling(); // behind all card content
         }
 
         private void SuppressPanelBackgroundIfCardPresent()

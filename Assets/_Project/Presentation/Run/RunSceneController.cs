@@ -134,6 +134,12 @@ namespace DeadManZone.Presentation.Run
             bool aftermath = state.Phase == RunPhase.Aftermath;
             bool runEnded = state.Phase == RunPhase.Victory || state.Phase == RunPhase.Defeat;
 
+            // Whenever the shop is the surface (build phase), the combat arena must be gone.
+            // The defeat path sets Phase=Defeat (not Aftermath), so it never routes through
+            // the presenter's Build safety net and the additive arena lingers behind the shop.
+            if (inBuild && CombatArenaSession.IsSceneLoaded)
+                CombatArenaSession.RequestUnload();
+
             if (shopScene != null)
             {
                 bool hideForArena = (inCombat || aftermath) && CombatArenaSession.IsActive;

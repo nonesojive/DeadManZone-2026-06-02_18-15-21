@@ -52,18 +52,33 @@ namespace DeadManZone.Presentation.Combat.Arena
             CombatArenaUiController.EnterArenaMode(runSceneController?.BuildPanelTransform, arenaCamera);
         }
 
+        /// <summary>Fire-and-forget unload used by always-alive callers (e.g. the run scene
+        /// controller) to guarantee the arena is gone when we return to the shop — including
+        /// the defeat path, which never routes through the presenter's Build safety net.</summary>
+        public void RequestUnload()
+        {
+            if (isActiveAndEnabled)
+                StartCoroutine(UnloadAsync());
+        }
+
         public IEnumerator UnloadAsync()
         {
-            if (!IsLoaded)
+            // Trust the actual scene state, not just the flag: on the defeat→new-run path the
+            // flag can desync while the additive scene lingers behind the shop.
+            bool sceneLoaded = SceneManager.GetSceneByName(GameScenes.CombatArena2D).isLoaded;
+            if (!IsLoaded && !sceneLoaded)
                 yield break;
 
             IsLoaded = false;
             CombatArenaUiController.ExitArenaMode(runSceneController?.BuildPanelTransform);
             GetComponent<CombatArenaPresenter>()?.OnArenaUnloaded();
 
-            var op = SceneManager.UnloadSceneAsync(GameScenes.CombatArena2D);
-            while (op != null && !op.isDone)
-                yield return null;
+            if (sceneLoaded)
+            {
+                var op = SceneManager.UnloadSceneAsync(GameScenes.CombatArena2D);
+                while (op != null && !op.isDone)
+                    yield return null;
+            }
 
             runSceneController?.RefreshCombatPresentation();
         }

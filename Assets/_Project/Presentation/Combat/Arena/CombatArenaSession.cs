@@ -1,3 +1,6 @@
+using DeadManZone.Game;
+using UnityEngine.SceneManagement;
+
 namespace DeadManZone.Presentation.Combat.Arena
 {
     /// <summary>
@@ -9,6 +12,20 @@ namespace DeadManZone.Presentation.Combat.Arena
         private static CombatArenaSceneLoader _loader;
 
         public static bool IsActive => _loader != null && _loader.IsLoaded;
+
+        /// <summary>True if the additive arena scene is actually loaded, regardless of any
+        /// per-loader flag — catches the defeat path where the flag desyncs.</summary>
+        public static bool IsSceneLoaded =>
+            SceneManager.GetSceneByName(GameScenes.CombatArena2D).isLoaded;
+
+        /// <summary>Guarantee the arena is gone. Safe to call whenever we enter the shop.</summary>
+        public static void RequestUnload()
+        {
+            if (_loader != null)
+                _loader.RequestUnload();
+            else if (IsSceneLoaded)
+                SceneManager.UnloadSceneAsync(GameScenes.CombatArena2D);
+        }
 
         internal static void Bind(CombatArenaSceneLoader loader) => _loader = loader;
 
