@@ -86,7 +86,9 @@ namespace DeadManZone.Presentation.Run
 
         /// <summary>Docks the card to whichever screen edge is opposite the pointer,
         /// keeping the center column free. Vertically tracks the pointer, clamped so the
-        /// card never spills off-screen.</summary>
+        /// card never spills off-screen. Works entirely in the parent's local canvas
+        /// space — mixing raw screen pixels with canvas units pushed the card half
+        /// off-screen on scaled canvases.</summary>
         public void PositionOppositePointer(Vector2 pointerScreenPosition)
         {
             if (panelRoot == null)
@@ -100,22 +102,30 @@ namespace DeadManZone.Presentation.Run
                 ? canvas.worldCamera
                 : null;
 
-            float margin = 32f;
-            float halfW = panelRoot.rect.width * 0.5f + margin;
-            float halfH = panelRoot.rect.height * 0.5f + margin;
-
-            float targetX = pointerScreenPosition.x < Screen.width * 0.5f
-                ? Screen.width - halfW   // pointer on the left → card on the right
-                : halfW;                 // pointer on the right → card on the left
-            float targetY = Mathf.Clamp(pointerScreenPosition.y, halfH, Screen.height - halfH);
-
+            // Pointer → parent-local so the side test and clamp share one coordinate space.
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    parent, new Vector2(targetX, targetY), cam, out var localPoint))
+                    parent, pointerScreenPosition, cam, out var pointerLocal))
                 return;
+
+            Rect area = parent.rect;
+            const float margin = 24f;
+            float halfW = panelRoot.rect.width * 0.5f;
+            float halfH = panelRoot.rect.height * 0.5f;
+
+            bool pointerLeft = pointerLocal.x < area.center.x;
+            float targetX = pointerLeft
+                ? area.xMax - halfW - margin   // pointer on the left → card on the right
+                : area.xMin + halfW + margin;  // pointer on the right → card on the left
+            float targetY = Mathf.Clamp(
+                pointerLocal.y,
+                area.yMin + halfH + margin,
+                area.yMax - halfH - margin);
 
             panelRoot.anchorMin = panelRoot.anchorMax = new Vector2(0.5f, 0.5f);
             panelRoot.pivot = new Vector2(0.5f, 0.5f);
-            panelRoot.anchoredPosition = localPoint;
+            // anchoredPosition is measured from the parent's center; area.center is the
+            // parent rect's center in the same local units.
+            panelRoot.anchoredPosition = new Vector2(targetX, targetY) - area.center;
         }
 
         private Transform PanelHost => panelRoot != null ? panelRoot : transform;

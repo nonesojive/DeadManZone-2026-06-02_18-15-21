@@ -20,6 +20,19 @@ namespace DeadManZone.Presentation.Combat.Arena
         private CombatArenaConfigSO _config;
         private readonly List<LineRenderer> _activeTracers = new();
 
+        // One shared material for every tracer line — LineRenderer start/end colours are
+        // vertex colours, independent of the material, so a single cached instance serves
+        // all tracers. Previously each shot did Shader.Find + new Material and leaked it
+        // (thousands of orphaned materials per fight → GC/native-memory hitches).
+        private static Material _tracerMaterial;
+        private static Material TracerMaterial =>
+            _tracerMaterial != null
+                ? _tracerMaterial
+                : _tracerMaterial = new Material(Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Color"))
+                {
+                    hideFlags = HideFlags.HideAndDontSave
+                };
+
         private void Awake()
         {
             if (freezeController == null)
@@ -106,7 +119,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             line.startWidth = 0.05f;
             line.endWidth = 0.02f;
             line.numCapVertices = 2;
-            line.material = new Material(Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Color"));
+            line.sharedMaterial = TracerMaterial;
             line.startColor = new Color(1f, 0.96f, 0.7f, 1f);   // hot head
             line.endColor = new Color(1f, 0.7f, 0.25f, 0.25f);  // faded tail
             _activeTracers.Add(line);
@@ -144,7 +157,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             line.positionCount = 12;
             line.startWidth = width;
             line.endWidth = width * 0.6f;
-            line.material = new Material(Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Color"));
+            line.sharedMaterial = TracerMaterial;
             line.startColor = new Color(1f, 0.92f, 0.55f, 0.95f);
             line.endColor = new Color(1f, 0.55f, 0.2f, 0.85f);
             _activeTracers.Add(line);
@@ -235,6 +248,10 @@ namespace DeadManZone.Presentation.Combat.Arena
                 yield return null;
             }
 
+            // The flash owns a per-instance material (color is animated), so it must be
+            // destroyed with the quad or it leaks one material per shot.
+            if (material != null)
+                Destroy(material);
             if (flash != null)
                 Destroy(flash.gameObject);
         }

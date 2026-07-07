@@ -6,14 +6,37 @@ namespace DeadManZone.Presentation.Combat.Arena
     /// <summary>URP-safe unlit materials from combat sprites (SpriteRenderer is unreliable on 3D ground).</summary>
     internal static class CombatArena2DSpriteMaterial
     {
+        // Shader.Find is a linear scan of every loaded shader — called per VFX it dominates
+        // CPU. Cache the resolved shaders once; they never change during a session.
+        private static Shader _unlitShader;
+        private static Shader _spriteShader;
+        private static Shader _additiveShader;
+
+        private static Shader UnlitShader => _unlitShader != null
+            ? _unlitShader
+            : _unlitShader = Shader.Find("Universal Render Pipeline/Unlit")
+                ?? Shader.Find("Unlit/Texture")
+                ?? CombatArenaMaterialUtility.ResolveGroundShader();
+
+        private static Shader SpriteShader => _spriteShader != null
+            ? _spriteShader
+            : _spriteShader = Shader.Find("Sprites/Default")
+                ?? Shader.Find("Universal Render Pipeline/Unlit")
+                ?? Shader.Find("Unlit/Transparent")
+                ?? Shader.Find("Unlit/Texture");
+
+        private static Shader AdditiveShader => _additiveShader != null
+            ? _additiveShader
+            : _additiveShader = Shader.Find("Universal Render Pipeline/Unlit")
+                ?? Shader.Find("Sprites/Default")
+                ?? Shader.Find("Unlit/Transparent");
+
         public static Material CreateUnlit(Sprite sprite, Color tint)
         {
             if (sprite == null || sprite.texture == null)
                 return null;
 
-            var shader = Shader.Find("Universal Render Pipeline/Unlit")
-                ?? Shader.Find("Unlit/Texture")
-                ?? CombatArenaMaterialUtility.ResolveGroundShader();
+            var shader = UnlitShader;
             if (shader == null)
                 return null;
 
@@ -51,10 +74,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (sprite == null || sprite.texture == null)
                 return null;
 
-            var shader = Shader.Find("Sprites/Default")
-                ?? Shader.Find("Universal Render Pipeline/Unlit")
-                ?? Shader.Find("Unlit/Transparent")
-                ?? Shader.Find("Unlit/Texture");
+            var shader = SpriteShader;
             if (shader == null)
                 return null;
 
@@ -103,9 +123,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (sprite == null || sprite.texture == null)
                 return null;
 
-            var shader = Shader.Find("Universal Render Pipeline/Unlit")
-                ?? Shader.Find("Sprites/Default")
-                ?? Shader.Find("Unlit/Transparent");
+            var shader = AdditiveShader;
             if (shader == null)
                 return null;
 

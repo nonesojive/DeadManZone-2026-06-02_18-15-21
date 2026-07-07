@@ -10,6 +10,10 @@ namespace DeadManZone.Presentation.Combat.Arena
         private const float Width = 0.62f;
         private const float Height = 0.085f;
         private const float HeadClearance = 0.22f; // gap above the head
+        // Units are camera-facing billboards under an angled arena camera, so the rendered
+        // head projects higher on screen than a plain world-vertical offset predicts. Lift
+        // the bar proportionally so it clears the head instead of sitting at shoulder height.
+        private const float HeadHeightFactor = 1.5f;
 
         private static readonly Color AllyFill = new(0.38f, 0.84f, 0.34f, 1f);
         private static readonly Color EnemyFill = new(0.92f, 0.32f, 0.25f, 1f);
@@ -32,7 +36,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (bar == null)
                 bar = actor.gameObject.AddComponent<CombatUnitHealthBar>();
 
-            bar.BuildVisual(side, arenaCamera, headHeight + HeadClearance);
+            bar.BuildVisual(side, arenaCamera, headHeight * HeadHeightFactor + HeadClearance);
             return bar;
         }
 

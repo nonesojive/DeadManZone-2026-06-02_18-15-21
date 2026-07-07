@@ -42,20 +42,30 @@ namespace DeadManZone.Presentation.Combat.Arena
             var meshFilter = go.GetComponentInChildren<MeshFilter>();
             var renderer = go.GetComponentInChildren<Renderer>();
 
+            // Every frame of a strip shares the same source texture; only the mesh UVs change.
+            // Build one material for the whole strip (not one per frame — that leaked a material
+            // on every impact/explosion, thousands per fight) and destroy it when the VFX ends.
+            Material material = null;
+            if (renderer != null)
+            {
+                material = CombatArena2DSpriteMaterial.CreateSpriteAdditive(
+                    frames[0],
+                    CombatArena2DSortOrder.RenderQueueFromWorldZ(worldPosition.z, 50));
+                renderer.sharedMaterial = material;
+            }
+
             float frameDuration = durationSeconds / frames.Length;
             for (int i = 0; i < frames.Length; i++)
             {
                 if (meshFilter != null)
                     CombatArena2DSpriteMesh.Apply(meshFilter, frames[i]);
-                if (renderer != null)
-                    renderer.sharedMaterial = CombatArena2DSpriteMaterial.CreateSpriteAdditive(
-                        frames[i],
-                        CombatArena2DSortOrder.RenderQueueFromWorldZ(worldPosition.z, 50));
 
                 if (frameDuration > 0f)
                     yield return new WaitForSeconds(frameDuration);
             }
 
+            if (material != null)
+                Object.Destroy(material);
             Object.Destroy(go);
         }
     }
