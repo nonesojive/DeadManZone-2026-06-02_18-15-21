@@ -54,10 +54,13 @@ namespace DeadManZone.Presentation.Combat.Arena
             // Sprite sheets here are up to 3584² — a per-pixel GetPixel scan is millions of
             // slow native calls, and it ran the first time every unit was built (cached after),
             // which is exactly why the FIRST combat of a session hitched and later ones didn't.
-            // Sample on an adaptive grid (~256 taps per axis max) instead; that's ample
-            // precision for figure height / shadow bounds while capping the cost.
+            // For large sheets, sample on an adaptive grid (~64 taps per axis) — ample precision
+            // for figure height / shadow bounds while capping the cost. Small sprites scan
+            // exactly (step 1) so tight-bounds precision is preserved where it's cheap.
             const int MaxTapsPerAxis = 64;
-            int step = Mathf.Max(1, Mathf.Max(x1 - x0, y1 - y0) / MaxTapsPerAxis);
+            const int ExactScanMaxSpan = 512;
+            int span = Mathf.Max(x1 - x0, y1 - y0);
+            int step = span > ExactScanMaxSpan ? Mathf.Max(1, span / MaxTapsPerAxis) : 1;
 
             int minX = x1;
             int minY = y1;
