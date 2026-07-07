@@ -20,6 +20,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         private CombatArenaConfigSO _config;
         private readonly List<LineRenderer> _activeTracers = new();
         private readonly Queue<TextMeshPro> _textPool = new();
+        private readonly Queue<LineRenderer> _tracerPool = new();
+        private readonly Queue<MuzzleFlash> _muzzlePool = new();
 
         // One shared material for every tracer line — LineRenderer start/end colours are
         // vertex colours, independent of the material, so a single cached instance serves
@@ -112,15 +114,9 @@ namespace DeadManZone.Presentation.Combat.Arena
         /// firing line with a fixed-length tail trailing behind it.</summary>
         private IEnumerator BulletTracerRoutine(Vector3 from, Vector3 to)
         {
-            var go = new GameObject("BulletTracer");
-            go.transform.SetParent(transform, false);
-            var line = go.AddComponent<LineRenderer>();
-            line.useWorldSpace = true;
-            line.positionCount = 2;
-            line.startWidth = 0.05f;
-            line.endWidth = 0.02f;
-            line.numCapVertices = 2;
-            line.sharedMaterial = TracerMaterial;
+            // Pooled: a volley fires many tracers on one frame; create/destroy churn hitched.
+            LineRenderer line = _tracerPool.Count > 0 ? _tracerPool.Dequeue() : CreateTracerLine();
+            line.gameObject.SetActive(true);
             line.startColor = new Color(1f, 0.96f, 0.7f, 1f);   // hot head
             line.endColor = new Color(1f, 0.7f, 0.25f, 0.25f);  // faded tail
             _activeTracers.Add(line);
@@ -143,7 +139,22 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
 
             _activeTracers.Remove(line);
-            Destroy(go);
+            line.gameObject.SetActive(false);
+            _tracerPool.Enqueue(line);
+        }
+
+        private LineRenderer CreateTracerLine()
+        {
+            var go = new GameObject("BulletTracer");
+            go.transform.SetParent(transform, false);
+            var line = go.AddComponent<LineRenderer>();
+            line.useWorldSpace = true;
+            line.positionCount = 2;
+            line.startWidth = 0.05f;
+            line.endWidth = 0.02f;
+            line.numCapVertices = 2;
+            line.sharedMaterial = TracerMaterial;
+            return line;
         }
 
         private float ArcHeight =>
@@ -198,24 +209,12 @@ namespace DeadManZone.Presentation.Combat.Arena
         /// additive material — SpriteRenderers do not draw with this renderer setup.</summary>
         private void SpawnMuzzleFlash(Vector3 muzzleWorld, Vector3 targetWorld, float scale)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            go.name = "MuzzleFlash";
-            go.transform.SetParent(transform, true);
+            // Pooled: GameObject.CreatePrimitive + a fresh material every shot is expensive,
+            // and volleys fire many at once. Reuse quads (each keeps its own material).
+            MuzzleFlash flash = _muzzlePool.Count > 0 ? _muzzlePool.Dequeue() : CreateMuzzleFlash();
+            var go = flash.Root;
+            go.SetActive(true);
             go.transform.position = muzzleWorld;
-
-            var collider = go.GetComponent<Collider>();
-            if (collider != null)
-                Destroy(collider);
-
-            var renderer = go.GetComponent<Renderer>();
-            var material = CombatArena2DSpriteMaterial.CreateSpriteAdditive(
-                CombatArena2DPlaceholderSprites.WhitePixel,
-                CombatArena2DSortOrder.RenderQueueFromWorldZ(muzzleWorld.z, 60));
-            if (material != null)
-            {
-                CombatArenaMaterialUtility.ApplyColor(material, new Color(1f, 0.82f, 0.42f, 1f));
-                renderer.sharedMaterial = material;
-            }
 
             var camera = CombatArenaBootstrap.Instance?.ArenaCamera;
             if (camera != null)
@@ -226,35 +225,58 @@ namespace DeadManZone.Presentation.Combat.Arena
             float side = toTarget.x >= 0f ? 1f : -1f;
             go.transform.localScale = new Vector3(scale * 1.6f * side, scale * 0.55f, 1f);
 
-            StartCoroutine(MuzzleFlashRoutine(go.transform, material));
+            StartCoroutine(MuzzleFlashRoutine(flash));
         }
 
-        private IEnumerator MuzzleFlashRoutine(Transform flash, Material material)
+        private MuzzleFlash CreateMuzzleFlash()
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = "MuzzleFlash";
+            go.transform.SetParent(transform, true);
+
+            var collider = go.GetComponent<Collider>();
+            if (collider != null)
+                Destroy(collider);
+
+            var renderer = go.GetComponent<Renderer>();
+            var material = CombatArena2DSpriteMaterial.CreateSpriteAdditive(
+                CombatArena2DPlaceholderSprites.WhitePixel,
+                CombatArena2DSortOrder.RenderQueueFromWorldZ(0f, 60));
+            if (material != null)
+                renderer.sharedMaterial = material;
+
+            return new MuzzleFlash { Root = go, Material = material };
+        }
+
+        private IEnumerator MuzzleFlashRoutine(MuzzleFlash flash)
         {
             const float lifetime = 0.09f;
-            Vector3 startScale = flash != null ? flash.localScale : Vector3.one;
+            Transform t = flash.Root.transform;
+            Vector3 startScale = t.localScale;
             float elapsed = 0f;
-            while (elapsed < lifetime && flash != null)
+            while (elapsed < lifetime)
             {
                 elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / lifetime);
-                flash.localScale = startScale * (1f + 0.6f * t);
-                if (material != null)
+                float k = Mathf.Clamp01(elapsed / lifetime);
+                t.localScale = startScale * (1f + 0.6f * k);
+                if (flash.Material != null)
                 {
                     // Additive: fading toward black fades the glow out.
-                    float fade = 1f - t * t;
+                    float fade = 1f - k * k;
                     CombatArenaMaterialUtility.ApplyColor(
-                        material, new Color(1f * fade, 0.82f * fade, 0.42f * fade, 1f));
+                        flash.Material, new Color(1f * fade, 0.82f * fade, 0.42f * fade, 1f));
                 }
                 yield return null;
             }
 
-            // The flash owns a per-instance material (color is animated), so it must be
-            // destroyed with the quad or it leaks one material per shot.
-            if (material != null)
-                Destroy(material);
-            if (flash != null)
-                Destroy(flash.gameObject);
+            flash.Root.SetActive(false);
+            _muzzlePool.Enqueue(flash);
+        }
+
+        private sealed class MuzzleFlash
+        {
+            public GameObject Root;
+            public Material Material;
         }
 
         private void SpawnImpactFlash(Vector3 worldPosition, float scale)
