@@ -29,7 +29,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             var volume = go.GetComponent<Volume>() ?? go.AddComponent<Volume>();
             volume.isGlobal = true;
             volume.priority = 10f;
-            volume.weight = 1f;
+            // Player can disable the grade in the options menu (weight 0 = no effect).
+            volume.weight = Settings.GraphicsSettings.PostProcessingEnabled ? 1f : 0f;
 
             var profile = volume.profile;
             if (profile == null)
