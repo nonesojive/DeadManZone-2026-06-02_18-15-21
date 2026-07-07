@@ -30,6 +30,9 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             ConfigureCamera();
             TopTroopsAtmosphere.Apply(config, transform, arenaCamera);
+#if UNITY_URP_PRESENT
+            CombatArenaPostFx.Ensure(transform);
+#endif
         }
 
         private void OnDestroy()
@@ -45,6 +48,9 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             ConfigureCamera();
             TopTroopsAtmosphere.Apply(config, transform, arenaCamera);
+#if UNITY_URP_PRESENT
+            CombatArenaPostFx.Ensure(transform);
+#endif
 
             var mapper = new CombatGridMapper(layout, config.cellWidth, config.cellDepth);
             CombatArena2DBattlefieldView.Build(transform, layout, mapper, config, arenaCamera);
@@ -65,7 +71,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             arenaCamera.tag = "Untagged";
             arenaCamera.depth = 10f;
             arenaCamera.rect = new Rect(0f, 0f, 1f, 1f);
-            arenaCamera.allowHDR = false;
+            arenaCamera.allowHDR = true; // let bloom pick up the bright additive muzzle/tracer VFX
             arenaCamera.orthographic = true;
 
             EnsureUrpCameraData(arenaCamera);
