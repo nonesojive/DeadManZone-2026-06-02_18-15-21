@@ -15,6 +15,15 @@ namespace DeadManZone.Presentation.Combat.Arena
         private const float MaxMoveDeltaTime = 1f / 40f;
         private const float MaxCatchupStepScale = 1.6f;
 
+        // SmoothDamp follow for the free-chase march: eases catch-ups so they glide, not jump.
+        // Target = anchor biased slightly toward the goal (keeps marching through pacing gaps).
+        // Low speed cap => any catch-up is a gentle glide, not a sprint.
+        private const float ChaseSmoothTime = 0.14f;
+        private const float ChaseMaxSpeedScale = 1.6f;
+        private const float ChaseGoalBias = 0.3f;
+        private const float MovingThresholdSqr = 0.00004f;
+        private Vector3 _chaseVelocity;
+
         private CombatUnitVisual2D _visual2D;
         private CombatGridMapper _mapper;
         private GridCoord _anchor;
@@ -105,6 +114,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _anchor = anchor;
             transform.position = _mapper.ToWorld(anchor);
             _smoothedSimWorld = transform.position;
+            _chaseVelocity = Vector3.zero;
             _visual2D?.SetWalking(false);
         }
 
@@ -150,28 +160,27 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             if (_freeChaseEnabled && _chaseTargetWorld.HasValue)
             {
+                // Track the (smoothed) sim anchor with a SmoothDamp, biased slightly toward the
+                // chase goal so the unit keeps marching through the presentation's pacing gaps
+                // instead of reaching a leash point and hard-stopping (the old stop → sprint-resume
+                // read as a jump). SmoothDamp eases in/out and a LOW speed cap keeps any catch-up a
+                // gentle glide — the visual may trail its bursty anchor slightly, but never lunges.
                 Vector3 chaseWorld = _chaseTargetWorld.Value;
-                if (!CombatArenaFreeChaseMovement.ShouldKeepMarching(current, chaseWorld))
-                {
-                    _visual2D.SetWalking(false);
-                    _visual2D.UpdateSortAndBob(transform.position);
-                    return;
-                }
+                Vector3 anchorFlat = new(_smoothedSimWorld.x, current.y, _smoothedSimWorld.z);
+                Vector3 goalFlat = new(chaseWorld.x, current.y, chaseWorld.z);
+                Vector3 targetFlat = Vector3.Lerp(anchorFlat, goalFlat, ChaseGoalBias);
 
-                Vector3 next = CombatArenaFreeChaseMovement.ComputeStep(
-                    current, _smoothedSimWorld, chaseWorld, _moveWorldSpeed, moveDt,
-                    _mapper.CellWidth, _chaseMaxLeadCells);
-                next = CombatArenaFreeChaseMovement.ClampToSimLead(
-                    next, _smoothedSimWorld, _mapper.CellWidth, _chaseMaxLeadCells);
-                // Hard cap on actual per-frame travel — bounds any snap from ClampToSimLead too.
-                next = Vector3.MoveTowards(current, new Vector3(next.x, current.y, next.z), maxStep);
+                float maxSpeed = _moveWorldSpeed * ChaseMaxSpeedScale;
+                Vector3 next = Vector3.SmoothDamp(
+                    current, targetFlat, ref _chaseVelocity, ChaseSmoothTime, maxSpeed, moveDt);
 
                 Vector3 moveDelta = next - current;
                 moveDelta.y = 0f;
-                if (moveDelta.sqrMagnitude > 0.0001f)
+                bool moving = moveDelta.sqrMagnitude > MovingThresholdSqr;
+                if (moving)
                     _visual2D.FaceDirection(moveDelta);
 
-                _visual2D.SetWalking(true);
+                _visual2D.SetWalking(moving);
                 transform.position = new Vector3(next.x, current.y, next.z);
                 _visual2D.UpdateSortAndBob(transform.position);
                 return;
@@ -257,6 +266,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _freeChaseEnabled = false;
             _chaseTargetWorld = null;
             _smoothedSimWorld = Vector3.zero;
+            _chaseVelocity = Vector3.zero;
             _moveWorldSpeed = 1f;
             _moveLerpFallbackSeconds = 0.4f;
             _marchGraceSeconds = 2.4f;
