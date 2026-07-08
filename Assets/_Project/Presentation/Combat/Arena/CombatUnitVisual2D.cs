@@ -339,7 +339,8 @@ namespace DeadManZone.Presentation.Combat.Arena
                     tint,
                     scale,
                     baseQueue + i,
-                    _camera);
+                    _camera,
+                    outline: true);
                 if (quadRoot == null)
                     continue;
 

@@ -34,7 +34,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             Camera camera,
             Vector3 localFeet = default,
             bool softAlpha = false,
-            bool groundBottom = false)
+            bool groundBottom = false,
+            bool outline = false)
         {
             if (sprite == null || parent == null)
                 return null;
@@ -42,7 +43,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             var root = new GameObject("SpriteQuad");
             root.transform.SetParent(parent, false);
             root.transform.localPosition = localFeet;
-            AttachQuad(root.transform, sprite, tint, uniformScale, renderQueue, camera, Vector3.zero, softAlpha, groundBottom);
+            AttachQuad(root.transform, sprite, tint, uniformScale, renderQueue, camera, Vector3.zero, softAlpha, groundBottom, outline);
             return root;
         }
 
@@ -55,7 +56,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             Camera camera,
             Vector3 localFeet,
             bool softAlpha,
-            bool groundBottom = false)
+            bool groundBottom = false,
+            bool outline = false)
         {
             float width = sprite.rect.width / sprite.pixelsPerUnit * uniformScale;
             float height = sprite.rect.height / sprite.pixelsPerUnit * uniformScale;
@@ -71,7 +73,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 ? GroundBottomOffset(sprite, uniformScale)
                 : PivotCenterOffset(sprite, uniformScale);
             quad.transform.localScale = new Vector3(width, height, 1f);
-            ApplyMaterial(quad, sprite, tint, renderQueue, softAlpha, ignoreDepth: true);
+            ApplyMaterial(quad, sprite, tint, renderQueue, softAlpha, ignoreDepth: true, outline: outline);
             DestroyCollider(quad);
         }
 
@@ -121,7 +123,15 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             var renderer = quad.GetComponent<Renderer>();
             var material = renderer != null ? renderer.sharedMaterial : null;
-            if (material == null || material.mainTexture == frame.texture)
+            if (material == null)
+                return;
+
+            // Frames within one state share the sheet texture but occupy different UV
+            // sub-rects — refresh the outline clamp rect every swap, before the texture
+            // early-out below (which fires for the common same-sheet case).
+            CombatArena2DSpriteMaterial.ApplyFrameRect(material, frame);
+
+            if (material.mainTexture == frame.texture)
                 return;
 
             material.mainTexture = frame.texture;
@@ -206,13 +216,16 @@ namespace DeadManZone.Presentation.Combat.Arena
             Color tint,
             int renderQueue,
             bool softAlpha = false,
-            bool ignoreDepth = true)
+            bool ignoreDepth = true,
+            bool outline = false)
         {
             var meshFilter = quad.GetComponent<MeshFilter>();
             CombatArena2DSpriteMesh.Apply(meshFilter, sprite);
 
             var renderer = quad.GetComponent<Renderer>();
-            var material = CombatArena2DSpriteMaterial.CreateSprite(sprite, tint, renderQueue, softAlpha, ignoreDepth);
+            var material = outline
+                ? CombatArena2DSpriteMaterial.CreateSpriteOutlined(sprite, tint, renderQueue, ignoreDepth)
+                : CombatArena2DSpriteMaterial.CreateSprite(sprite, tint, renderQueue, softAlpha, ignoreDepth);
             if (material != null)
                 renderer.sharedMaterial = material;
         }

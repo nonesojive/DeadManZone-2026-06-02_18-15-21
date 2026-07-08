@@ -11,6 +11,23 @@ namespace DeadManZone.Presentation.Combat.Arena
         private static Shader _unlitShader;
         private static Shader _spriteShader;
         private static Shader _additiveShader;
+        private static Shader _outlineShader;
+        private static bool _outlineShaderResolved;
+
+        // Hand-written URP outline shader. Resolve once; a missing/stripped shader falls
+        // back to the plain sprite path so units still render (just without the outline).
+        private static Shader OutlineShader
+        {
+            get
+            {
+                if (!_outlineShaderResolved)
+                {
+                    _outlineShader = Shader.Find("Hidden/DeadManZone/CombatUnitOutline");
+                    _outlineShaderResolved = true;
+                }
+                return _outlineShader;
+            }
+        }
 
         private static Shader UnlitShader => _unlitShader != null
             ? _unlitShader
@@ -106,6 +123,71 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (ignoreDepth)
                 DisableDepthTest(material);
             return material;
+        }
+
+        // Grimdark units read best against the olive battlefield with a near-black rim.
+        private static readonly Color DefaultOutlineColor = new(0.04f, 0.03f, 0.05f, 1f);
+        private const float DefaultOutlineTexels = 1.25f;
+
+        /// <summary>Outlined unit billboard: composites the frame and rims the silhouette so
+        /// units pop off the battlefield. Falls back to the plain sprite path if the outline
+        /// shader is unavailable. Caller MUST refresh the frame rect on every frame swap via
+        /// <see cref="ApplyFrameRect"/> or the outline bleeds into adjacent sheet frames.</summary>
+        public static Material CreateSpriteOutlined(
+            Sprite sprite,
+            Color tint,
+            int renderQueue,
+            bool ignoreDepth = true)
+        {
+            if (sprite == null || sprite.texture == null)
+                return null;
+
+            var shader = OutlineShader;
+            if (shader == null)
+                return CreateSprite(sprite, tint, renderQueue, softAlpha: false, ignoreDepth: ignoreDepth);
+
+            var material = new Material(shader)
+            {
+                name = $"Combat2DOutline_{sprite.name}",
+                hideFlags = HideFlags.HideAndDontSave
+            };
+
+            material.mainTexture = sprite.texture;
+            if (material.HasProperty("_MainTex"))
+                material.SetTexture("_MainTex", sprite.texture);
+            CombatArenaMaterialUtility.ApplyColor(material, tint);
+
+            if (material.HasProperty("_OutlineColor"))
+                material.SetColor("_OutlineColor", DefaultOutlineColor);
+            if (material.HasProperty("_OutlineTexels"))
+                material.SetFloat("_OutlineTexels", DefaultOutlineTexels);
+
+            ApplyFrameRect(material, sprite);
+
+            // The shader hardcodes alpha blend; ZTest is the only depth knob (billboards
+            // must ignore ground depth or oblique quads clip through the grid plane).
+            if (material.HasProperty("_ZTest"))
+                material.SetInt("_ZTest", (int)(ignoreDepth ? CompareFunction.Always : CompareFunction.LessEqual));
+            material.renderQueue = renderQueue;
+            return material;
+        }
+
+        /// <summary>Push the active frame's UV sub-rect (u0,v0,u1,v1) so the outline sampler
+        /// clamps neighbor taps to this frame and never bleeds into adjacent sheet frames.</summary>
+        public static void ApplyFrameRect(Material material, Sprite sprite)
+        {
+            if (material == null || sprite == null || sprite.texture == null)
+                return;
+            if (!material.HasProperty("_FrameRect"))
+                return;
+
+            var texture = sprite.texture;
+            var rect = sprite.textureRect;
+            material.SetVector("_FrameRect", new Vector4(
+                rect.x / texture.width,
+                rect.y / texture.height,
+                (rect.x + rect.width) / texture.width,
+                (rect.y + rect.height) / texture.height));
         }
 
         public static Material CreateUnlit(Sprite sprite, Color tint, int renderQueue)
