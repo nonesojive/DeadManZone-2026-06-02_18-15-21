@@ -19,7 +19,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         // Target = anchor biased slightly toward the goal (keeps marching through pacing gaps).
         // Low speed cap => any catch-up is a gentle glide, not a sprint.
         private const float ChaseSmoothTime = 0.14f;
-        private const float ChaseMaxSpeedScale = 1.6f;
+        private const float ChaseMaxSpeedScale = 1.25f;
         private const float ChaseGoalBias = 0.3f;
         private const float MovingThresholdSqr = 0.00004f;
         private Vector3 _chaseVelocity;

@@ -18,7 +18,7 @@ MonoBehaviour:
   useTopTroopsProceduralBattlefield: 0
   useProceduralUnitVisuals: 0
   useTopTroopsFreeChaseMovement: 1
-  topTroopsChaseSpeedMultiplier: 1.2
+  topTroopsChaseSpeedMultiplier: 1
   topTroopsChaseMaxLeadCells: 2
   useTopTroopsBrightSky: 1
   topTroopsPlayerZoneColor: {r: 0.45, g: 0.44, b: 0.35, a: 1}
@@ -50,7 +50,7 @@ MonoBehaviour:
   gridCellInset: 0
   gridYOffset: 0.04
   moveLerpSeconds: 0.4
-  moveSpeedPresentationScale: 1.1
+  moveSpeedPresentationScale: 2.2
   moveMarchGraceSeconds: 2.4
   attackLungeSeconds: 0.15
   attackLungeDistance: 0.35

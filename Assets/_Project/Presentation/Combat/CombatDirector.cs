@@ -13,6 +13,14 @@ namespace DeadManZone.Presentation.Combat
     {
         [SerializeField] private bool autoAdvanceAfterCommands = false;
 
+        // Empty "charge" ticks between a unit's cell-steps are paced at this fraction of a full
+        // tick so the grid anchor advances at ~walk speed instead of jumping a cell per event.
+        // Walk speed (moveSpeedPresentationScale in the arena config) is calibrated to match this.
+        private const float EmptyTickPaceScale = 0.45f;
+        // Beyond this many consecutive empty ticks we stop pacing and fast-forward: real marches
+        // fit inside it (slowest unit is ~50 ticks/cell), only pathological dead air is compressed.
+        private const int MaxPacedEmptyTicks = 64;
+
         private Coroutine _playbackRoutine;
         private bool _continueAfterPlayback;
         private float _secondsPerTick = CombatSegmentPlayback.SecondsPerTick;
@@ -166,6 +174,7 @@ namespace DeadManZone.Presentation.Combat
             }
 
             bool fightEnded = false;
+            int emptyRun = 0;
 
             for (int tick = firstTick; tick <= lastTick && !fightEnded; tick++)
             {
@@ -187,9 +196,26 @@ namespace DeadManZone.Presentation.Combat
                 if (fightEnded)
                     break;
 
-                // ponytail: sim advances every tick; presentation only paces ticks that produced visible events
-                if (hadEvents && _secondsPerTick > 0f)
+                if (_secondsPerTick <= 0f)
+                    continue;
+
+                // A unit takes many "charge" ticks to cross one cell (100/(speed+1) ≈ 20-50),
+                // and most produce no event. The old code skipped every empty tick, so a lone
+                // marching unit's grid anchor jumped a full cell per *event* tick — tens of times
+                // faster than its calibrated walk speed. The visual couldn't keep up and caught
+                // up in a lunge. Pace the empty charge ticks too (at a fraction of a full tick)
+                // so the anchor advances at ~walk speed; event ticks keep full pacing so attack
+                // and volley timing is unchanged. A cap still compresses pathological dead air.
+                if (hadEvents)
+                {
+                    emptyRun = 0;
                     yield return new WaitForSeconds(_secondsPerTick);
+                }
+                else if (emptyRun < MaxPacedEmptyTicks)
+                {
+                    emptyRun++;
+                    yield return new WaitForSeconds(_secondsPerTick * EmptyTickPaceScale);
+                }
             }
 
             _playbackRoutine = null;
