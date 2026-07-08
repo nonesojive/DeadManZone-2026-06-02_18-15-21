@@ -10,6 +10,11 @@ namespace DeadManZone.Presentation.Combat.Arena
     /// <summary>Drives a single 2D combat unit's movement and presentation in the arena.</summary>
     public sealed class CombatUnitActor : MonoBehaviour
     {
+        // Movement anti-lunge: cap the per-frame step to a 40fps-equivalent, and allow catch-up
+        // at up to ~1.6x that so a lagging unit closes the gap over a few smooth frames, never a jump.
+        private const float MaxMoveDeltaTime = 1f / 40f;
+        private const float MaxCatchupStepScale = 1.6f;
+
         private CombatUnitVisual2D _visual2D;
         private CombatGridMapper _mapper;
         private GridCoord _anchor;
@@ -136,6 +141,13 @@ namespace DeadManZone.Presentation.Combat.Arena
                 simWorld,
                 Mathf.Clamp01(Time.deltaTime * 14f));
 
+            // Cap the frame step so a hitch (long dt) or a catch-up from accumulated lag can't
+            // teleport the unit forward. The visual march lags its sparse sim anchor; letting it
+            // sprint the whole gap in one frame read as the "lunge 2 squares" glitch. Capping to a
+            // brisk-walk maximum makes the catch-up a smooth few frames instead of a jump.
+            float moveDt = Mathf.Min(Time.deltaTime, MaxMoveDeltaTime);
+            float maxStep = _moveWorldSpeed * MaxMoveDeltaTime * MaxCatchupStepScale;
+
             if (_freeChaseEnabled && _chaseTargetWorld.HasValue)
             {
                 Vector3 chaseWorld = _chaseTargetWorld.Value;
@@ -147,10 +159,12 @@ namespace DeadManZone.Presentation.Combat.Arena
                 }
 
                 Vector3 next = CombatArenaFreeChaseMovement.ComputeStep(
-                    current, _smoothedSimWorld, chaseWorld, _moveWorldSpeed, Time.deltaTime,
+                    current, _smoothedSimWorld, chaseWorld, _moveWorldSpeed, moveDt,
                     _mapper.CellWidth, _chaseMaxLeadCells);
                 next = CombatArenaFreeChaseMovement.ClampToSimLead(
                     next, _smoothedSimWorld, _mapper.CellWidth, _chaseMaxLeadCells);
+                // Hard cap on actual per-frame travel — bounds any snap from ClampToSimLead too.
+                next = Vector3.MoveTowards(current, new Vector3(next.x, current.y, next.z), maxStep);
 
                 Vector3 moveDelta = next - current;
                 moveDelta.y = 0f;
@@ -180,7 +194,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 Vector3 delta = flatTarget - current;
                 delta.y = 0f;
                 _visual2D.FaceDirection(delta);
-                float step = _moveWorldSpeed * Time.deltaTime;
+                float step = Mathf.Min(_moveWorldSpeed * moveDt, maxStep);
                 transform.position = Vector3.MoveTowards(current, flatTarget, step);
             }
 
