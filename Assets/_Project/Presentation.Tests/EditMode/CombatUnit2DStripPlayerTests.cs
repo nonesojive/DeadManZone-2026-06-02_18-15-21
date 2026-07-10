@@ -210,6 +210,40 @@ namespace DeadManZone.Presentation.Tests.EditMode
             Object.DestroyImmediate(texture);
         }
 
+        [Test]
+        public void Play_LocomotionSwap_PreservesCyclePhaseAcrossDifferentDurations()
+        {
+            // The sim's bursty anchor toggles Walk<->Idle many times a second. The
+            // cycle must neither restart (frozen-legs bug) nor carry raw seconds
+            // (idle ~4s vs walk ~1s -> unrelated pose); it carries the phase fraction.
+            var (set, texture) = CreateSetWithShoot(frameCount: 2, framesPerSecond: 2f);
+            set.idle = new CombatUnit2DStrip
+            {
+                sheet = set.idle.sheet, frameCount = 2, columns = 2,
+                framesPerSecond = 0.5f, loop = true // 4s cycle
+            };
+            set.walk = new CombatUnit2DStrip
+            {
+                sheet = set.idle.sheet, frameCount = 2, columns = 2,
+                framesPerSecond = 2f, loop = true // 1s cycle
+            };
+            var player = new CombatUnit2DStripPlayer();
+            player.Bind(set);
+
+            player.Play(CombatUnit2DAnimState.Idle);
+            player.Tick(2f); // half of the 4s idle cycle
+            player.Play(CombatUnit2DAnimState.Walk, restart: false);
+            Assert.AreEqual(0.5f, player.CurrentTimeSeconds, 0.0001f,
+                "half-phase idle should land at half-phase walk (0.5s of 1s)");
+
+            player.Play(CombatUnit2DAnimState.Idle, restart: false);
+            Assert.AreEqual(2f, player.CurrentTimeSeconds, 0.0001f,
+                "swapping back should return to half-phase idle, not reset");
+
+            Object.DestroyImmediate(set);
+            Object.DestroyImmediate(texture);
+        }
+
         private static (CombatUnit2DAnimationSetSO set, Texture2D texture) CreateSetWithShoot(
             int frameCount,
             float framesPerSecond)

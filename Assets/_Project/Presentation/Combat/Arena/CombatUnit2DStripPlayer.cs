@@ -62,8 +62,27 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
             }
 
-            if (restart || state != _state)
+            // Locomotion states (Idle/Walk/Run) share one continuous cycle: the sim's
+            // bursty anchor makes movement pulse, toggling Walk<->Idle many times a
+            // second. Resetting _time on each toggle restarted the cycle every few
+            // frames, so the legs never advanced past frame ~0-3 and the unit "slid"
+            // with a frozen pose. Preserve the phase across locomotion transitions;
+            // only one-shots (Shoot/Hurt/HitReact/Die) or an explicit restart rewind.
+            bool loopSwap = state != _state && IsLocomotion(state) && IsLocomotion(_state);
+            if (restart || (state != _state && !loopSwap))
+            {
                 _time = 0f;
+            }
+            else if (loopSwap)
+            {
+                // Idle/Walk/Run cycle at very different rates (idle ~4s, walk ~1s):
+                // carrying raw seconds across a swap lands on an unrelated pose. Carry
+                // the cycle PHASE instead so the legs continue from the same beat.
+                float oldDuration = ResolveStrip(_state).DurationSeconds;
+                float newDuration = strip.DurationSeconds;
+                if (oldDuration > 0f && newDuration > 0f)
+                    _time = _time % oldDuration / oldDuration * newDuration;
+            }
 
             float naturalDuration = strip.DurationSeconds;
             _rate = targetDurationSeconds > 0f && naturalDuration > 0f
@@ -132,6 +151,11 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             return frames[ResolveFrameIndex(strip, _time)] ?? fallback;
         }
+
+        private static bool IsLocomotion(CombatUnit2DAnimState state) =>
+            state is CombatUnit2DAnimState.Idle
+                or CombatUnit2DAnimState.Walk
+                or CombatUnit2DAnimState.Run;
 
         internal static int ResolveFrameIndex(CombatUnit2DStrip strip, float timeSeconds)
         {

@@ -16,19 +16,19 @@ MonoBehaviour:
     sheet: {fileID: 21300000, guid: bc4dac3234dd445e902e51d6c07d1f5d, type: 3}
     frameCount: 49
     columns: 7
-    framesPerSecond: 20
+    framesPerSecond: 21
     loop: 1
   walk:
     sheet: {fileID: 21300000, guid: c820a98e93dc4511825c9a1a598ef2b9, type: 3}
     frameCount: 49
     columns: 7
-    framesPerSecond: 28
+    framesPerSecond: 14
     loop: 1
   run:
     sheet: {fileID: 21300000, guid: d309f70ab0614f35b8699eb62db50a44, type: 3}
     frameCount: 49
     columns: 7
-    framesPerSecond: 34
+    framesPerSecond: 77.37
     loop: 1
   hurt:
     sheet: {fileID: 21300000, guid: d1044d37eca84dd28edf5482cadab400, type: 3}
@@ -46,7 +46,7 @@ MonoBehaviour:
     sheet: {fileID: 21300000, guid: de3c3fb8524b43fc873dc179dd2b3bcd, type: 3}
     frameCount: 49
     columns: 7
-    framesPerSecond: 32
+    framesPerSecond: 27.4
     loop: 0
   die:
     sheet: {fileID: 21300000, guid: cf9df0ae290541b2bd3479dad23d5ff9, type: 3}

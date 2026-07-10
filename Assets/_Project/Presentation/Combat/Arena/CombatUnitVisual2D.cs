@@ -45,6 +45,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private Sprite _lastFrame;
         private int _lastRenderQueue = int.MinValue;
         private float _visualHeight = 1.8f;
+        private float _targetQuadHeight;
 
         public bool IsBuilt => _presentationRoot != null;
 
@@ -160,8 +161,18 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (frame == null || frame == _lastFrame)
                 return;
 
+            // Lock quad world height to the idle build size. Per-strip content crops differ,
+            // and die frames often leave most of a shared crop empty — scaling by alpha
+            // height (ResolveUniformScale) inflated those sparse frames to gigantic.
+            float frameScale = _targetQuadHeight > 0f
+                ? CombatUnit2DVisualScale.ResolveScaleForRectHeight(frame, _targetQuadHeight)
+                : 1f;
+
             for (int i = 0; i < _soldierQuads.Count; i++)
-                CombatArena2DSpriteQuad.SetFrame(_soldierQuads[i], frame, _soldierScales[i]);
+            {
+                float scale = _targetQuadHeight > 0f ? frameScale : _soldierScales[i];
+                CombatArena2DSpriteQuad.SetFrame(_soldierQuads[i], frame, scale);
+            }
 
             _lastFrame = frame;
         }
@@ -275,6 +286,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _locomotionLockUntil = 0f;
             _lastFrame = null;
             _lastRenderQueue = int.MinValue;
+            _targetQuadHeight = 0f;
         }
 
         private void CreateShadow()
@@ -324,6 +336,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             // Figure top ≈ squad-root offset + visible sprite height (feet→head).
             float leaderScale = CombatUnit2DVisualScale.ResolveUniformScale(piece, sprite);
             _visualHeight = 0.35f + CombatArena2DSpriteMetrics.VisibleHeightUnits(sprite) * leaderScale;
+            // SetFrame sizes the mesh from sprite.rect — lock that world height across
+            // anim strips so crop-size differences don't pop (and die alpha-gaps don't explode).
+            _targetQuadHeight = CombatUnit2DVisualScale.RectWorldHeight(sprite, leaderScale);
 
             for (int i = 0; i < count; i++)
             {

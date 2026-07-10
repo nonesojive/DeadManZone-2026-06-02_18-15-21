@@ -21,7 +21,11 @@ namespace DeadManZone.Presentation.Combat.Arena
         private const float ChaseSmoothTime = 0.14f;
         private const float ChaseMaxSpeedScale = 1.25f;
         private const float ChaseGoalBias = 0.3f;
-        private const float MovingThresholdSqr = 0.00004f;
+        // Walk/idle animation switch: compare instantaneous speed (delta/dt), not the
+        // raw per-frame delta — a fixed delta threshold flips with frame rate (at the
+        // editor's ~500fps a marching unit moves ~0.003u/frame and read as "idle").
+        private const float MovingSpeedFraction = 0.15f;
+        private const float MovingSpeedFloorWorldPerSec = 0.05f;
         private Vector3 _chaseVelocity;
 
         private CombatUnitVisual2D _visual2D;
@@ -176,7 +180,10 @@ namespace DeadManZone.Presentation.Combat.Arena
 
                 Vector3 moveDelta = next - current;
                 moveDelta.y = 0f;
-                bool moving = moveDelta.sqrMagnitude > MovingThresholdSqr;
+                float movingThreshold = Mathf.Max(
+                    _moveWorldSpeed * MovingSpeedFraction,
+                    MovingSpeedFloorWorldPerSec) * moveDt;
+                bool moving = moveDelta.magnitude > movingThreshold;
                 if (moving)
                     _visual2D.FaceDirection(moveDelta);
 

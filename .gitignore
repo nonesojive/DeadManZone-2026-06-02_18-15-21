@@ -205,3 +205,15 @@ InitTestScene*.unity*
 
 # Vendored skill sources fetched via `npx skills` from skills-lock.json
 .agents/
+
+# Meshy 3D->sprite pipeline: large regenerable intermediates (keep the .py scripts, ignore data)
+/Tools/meshy/units/
+/Tools/meshy/output/
+/Tools/meshy/glb/
+/Tools/meshy/frames/
+/Tools/meshy/backup/
+/Tools/meshy/input/
+/Tools/meshy/*.log
+/Tools/meshy/*.txt
+/tmp_combat_scale_watch/
+/Tools/meshy/__pycache__/

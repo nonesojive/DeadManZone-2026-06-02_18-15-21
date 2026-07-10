@@ -16,7 +16,7 @@ MonoBehaviour:
     sheet: {fileID: 21300000, guid: 42fdcb31b2a44c0b99c7107ec3d84215, type: 3}
     frameCount: 49
     columns: 7
-    framesPerSecond: 12.25
+    framesPerSecond: 21
     loop: 1
   walk:
     sheet: {fileID: 21300000, guid: b7c016a3ac12439a9d3335b3ea38861c, type: 3}
@@ -46,7 +46,7 @@ MonoBehaviour:
     sheet: {fileID: 21300000, guid: 33924742b7f04073be7e894bd25c4f33, type: 3}
     frameCount: 49
     columns: 7
-    framesPerSecond: 32.666668
+    framesPerSecond: 27.4
     loop: 0
   die:
     sheet: {fileID: 21300000, guid: dd6bedbc8678472b93a711c3b12a7c4a, type: 3}

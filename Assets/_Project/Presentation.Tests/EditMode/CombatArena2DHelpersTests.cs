@@ -168,6 +168,64 @@ namespace DeadManZone.Presentation.Tests.EditMode
         }
 
         [Test]
+        public void VisualScale_ReusingIdleScaleOnLargerCrop_Pops_ReResolveKeepsHeight()
+        {
+            // Per-strip content crops (idle tight, shoot/die wide) fed SetFrame with the
+            // idle build-time scale → units grew/shrank on state swap. Locking quad height
+            // via rect (what SetFrame actually sizes) keeps world size constant.
+            var idleTexture = CreateTestTexture(256, 256);
+            var shootTexture = CreateTestTexture(256, 256);
+            PaintRect(idleTexture, 96, 60, 64, 140, Color.white);
+            PaintRect(shootTexture, 40, 20, 176, 220, Color.white);
+            idleTexture.Apply();
+            shootTexture.Apply();
+
+            // Different rect heights simulate different shared content crops per strip.
+            var idle = Sprite.Create(idleTexture, new Rect(80, 50, 96, 160), new Vector2(0.5f, 0.05f), 64f);
+            var shoot = Sprite.Create(shootTexture, new Rect(30, 10, 196, 236), new Vector2(0.5f, 0.05f), 64f);
+
+            float idleScale = 1.2f;
+            float targetQuadHeight = CombatUnit2DVisualScale.RectWorldHeight(idle, idleScale);
+            float poppedHeight = CombatUnit2DVisualScale.RectWorldHeight(shoot, idleScale);
+            float fixedScale = CombatUnit2DVisualScale.ResolveScaleForRectHeight(shoot, targetQuadHeight);
+            float fixedHeight = CombatUnit2DVisualScale.RectWorldHeight(shoot, fixedScale);
+
+            Assert.Greater(poppedHeight, targetQuadHeight + 0.2f, "idle scale on a larger crop must pop (documents the bug)");
+            Assert.AreEqual(targetQuadHeight, fixedHeight, 0.001f, "rect-height lock must hold quad world height");
+
+            Object.DestroyImmediate(idleTexture);
+            Object.DestroyImmediate(shootTexture);
+        }
+
+        [Test]
+        public void VisualScale_AlphaBasedScaleOnSparseDieFrame_ExplodesRect_RectLockDoesNot()
+        {
+            // Die strips share one large crop; late frames leave most of it empty.
+            // ResolveUniformScale (alpha height) then SetFrame(rect) → gigantic corpse.
+            var piece = ScriptableObject.CreateInstance<PieceDefinitionSO>();
+            piece.id = "conscript_rifleman";
+
+            var texture = CreateTestTexture(256, 256);
+            // Small crumpled body inside a large crop rect (shared die bounds).
+            PaintRect(texture, 100, 40, 56, 48, Color.white);
+            texture.Apply();
+
+            var sparseDie = Sprite.Create(texture, new Rect(20, 20, 216, 216), new Vector2(0.5f, 0.05f), 64f);
+            float targetQuadHeight = 2.5f; // ~idle quad world height
+
+            float alphaScale = CombatUnit2DVisualScale.ResolveUniformScale(piece, sparseDie);
+            float explodedHeight = CombatUnit2DVisualScale.RectWorldHeight(sparseDie, alphaScale);
+            float rectScale = CombatUnit2DVisualScale.ResolveScaleForRectHeight(sparseDie, targetQuadHeight);
+            float lockedHeight = CombatUnit2DVisualScale.RectWorldHeight(sparseDie, rectScale);
+
+            Assert.Greater(explodedHeight, targetQuadHeight * 2f, "alpha scale on sparse die frame must explode (documents the bug)");
+            Assert.AreEqual(targetQuadHeight, lockedHeight, 0.001f);
+
+            Object.DestroyImmediate(texture);
+            Object.DestroyImmediate(piece);
+        }
+
+        [Test]
         public void PieceArtResolver_FreshIconOverridesCompleteCellArt()
         {
             var source = ScriptableObject.CreateInstance<PieceDefinitionSO>();

@@ -24,6 +24,28 @@ namespace DeadManZone.Presentation.Combat.Arena
             return Mathf.Clamp(TargetHeight(piece) / sourceHeight, 0.2f, 3f);
         }
 
+        /// <summary>Scale so <see cref="CombatArena2DSpriteQuad.SetFrame"/> keeps a constant
+        /// quad world height. Must use rect height (not alpha bounds): SetFrame sizes the
+        /// mesh from the full sprite rect, and die frames often leave most of a shared crop
+        /// empty — alpha-based scale then blows the whole rect up to gigantic.</summary>
+        public static float ResolveScaleForRectHeight(Sprite sprite, float targetRectWorldHeight)
+        {
+            if (sprite == null || sprite.pixelsPerUnit <= 0f || sprite.rect.height <= 0f
+                || targetRectWorldHeight <= 0f)
+                return 1f;
+
+            float rectWorldHeight = sprite.rect.height / sprite.pixelsPerUnit;
+            return Mathf.Clamp(targetRectWorldHeight / rectWorldHeight, 0.2f, 3f);
+        }
+
+        public static float RectWorldHeight(Sprite sprite, float uniformScale)
+        {
+            if (sprite == null || sprite.pixelsPerUnit <= 0f)
+                return 0f;
+
+            return sprite.rect.height / sprite.pixelsPerUnit * uniformScale;
+        }
+
         private static float TargetHeight(PieceDefinitionSO piece)
         {
             if (piece == null || string.IsNullOrWhiteSpace(piece.id))
