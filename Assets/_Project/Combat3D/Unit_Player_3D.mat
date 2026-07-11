@@ -44,7 +44,7 @@ Material:
     - _InkStrength: 0.28
     - _MidStrength: 0.45
     - _MidThreshold: 0.55
-    - _OutlineWidth: 3
+    - _OutlineWidth: 0
     - _RampSmooth: 0.03
     - _ShadowThreshold: -0.15
     - _SideTintAmount: 0

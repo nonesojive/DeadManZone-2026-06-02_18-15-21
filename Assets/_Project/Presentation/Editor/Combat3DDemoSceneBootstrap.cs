@@ -19,7 +19,7 @@ namespace DeadManZone.Presentation.Editor
     /// cool ambient, P0_Grade volume, graybox trench dressing), a perspective camera, and the
     /// combat arena rig (bootstrap/director/presenter/pool) configured for ToonInk3D visuals
     /// with the Phase-0 rifleman model, a freshly generated AnimatorController, and side rings.
-    /// The spike scene/controller stay throwaway â€” everything generated lands under _Project.
+    /// The spike scene/controller stay throwaway — everything generated lands under _Project.
     /// </summary>
     public static class Combat3DDemoSceneBootstrap
     {
@@ -35,15 +35,14 @@ namespace DeadManZone.Presentation.Editor
         private const string CombatRendererPath = "Assets/_Project/Settings/Rendering/DeadManZone_CombatRenderer.asset";
 
         // Roster archetypes: Meshy 12k units copied under _Project (idle/walk/die GLBs sharing
-        // one rig per unit), mapped to the ContentDatabase piece id the sim uses. No
-        // grenade_thrower piece exists in content â€” that model stands in for the mortar team.
-        // A unit with broken/missing GLBs is skipped with a warning â€” actors with its piece id
+        // one rig per unit), mapped to the ContentDatabase piece id the sim uses.
+        // A unit with broken/missing GLBs is skipped with a warning - actors with its piece id
         // fall back to the default rifleman visuals instead of blocking the scene build.
         private static readonly (string folder, string pieceId)[] RosterUnits =
         {
             ("bulwark_squad", "bulwark_squad"),
             ("field_medic", "field_medic"),
-            ("grenade_thrower", "ironclad_mortars"),
+            ("ironclad_mortars", "ironclad_mortars"),
         };
 
         private static string RosterModelFolder(string unitFolder) =>
@@ -92,7 +91,7 @@ namespace DeadManZone.Presentation.Editor
             var ringRed = LoadOrFlag<Material>(RingRedPath, missing);
             var gradeProfile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(GradeProfilePath);
             if (gradeProfile == null)
-                Debug.LogWarning($"[Combat3D] Grade volume profile missing at {GradeProfilePath} â€” scene will render ungraded.");
+                Debug.LogWarning($"[Combat3D] Grade volume profile missing at {GradeProfilePath} — scene will render ungraded.");
 
             var idleClip = FindClip(IdleGlbPath, missing, "idle");
             var walkClip = FindClip(WalkGlbPath, missing, "walk");
@@ -101,7 +100,7 @@ namespace DeadManZone.Presentation.Editor
             if (missing.Count > 0)
             {
                 Debug.LogError(
-                    "[Combat3D] Aborting â€” required Phase-0 spike assets are missing:\n - " +
+                    "[Combat3D] Aborting — required Phase-0 spike assets are missing:\n - " +
                     string.Join("\n - ", missing));
                 return;
             }
@@ -133,7 +132,7 @@ namespace DeadManZone.Presentation.Editor
             EnsureFolder("Assets/_Project/Scenes");
             EditorSceneManager.SaveScene(scene, ScenePath);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Combat3D] Demo scene saved to {ScenePath}. Open it and press Play â€” " +
+            Debug.Log($"[Combat3D] Demo scene saved to {ScenePath}. Open it and press Play — " +
                       "the 3v3 fight auto-starts through the Core sim.");
         }
 
@@ -325,6 +324,10 @@ namespace DeadManZone.Presentation.Editor
             tuned.SetFloat("_ShadowThreshold", -0.15f);
             tuned.SetFloat("_InkStrength", 0.28f);
             tuned.SetFloat("_MidStrength", 0.45f);
+            // Inverted-hull outline fragments into scribble on Meshy skinned normals; the
+            // combat renderer's fullscreen depth/normal edge detect draws the clean
+            // silhouette instead, so units run with the hull pass off.
+            tuned.SetFloat("_OutlineWidth", 0f);
             EditorUtility.SetDirty(tuned);
             return tuned;
         }
@@ -378,7 +381,7 @@ namespace DeadManZone.Presentation.Editor
                 as UniversalRenderPipelineAsset;
             if (pipeline == null)
             {
-                Debug.LogWarning("[Combat3D] Active render pipeline is not URP â€” camera keeps the default renderer (no interior ink/SSAO).");
+                Debug.LogWarning("[Combat3D] Active render pipeline is not URP — camera keeps the default renderer (no interior ink/SSAO).");
                 return -1;
             }
 
@@ -391,7 +394,7 @@ namespace DeadManZone.Presentation.Editor
             }
 
             Debug.LogWarning($"[Combat3D] {CombatRendererPath} is not in the renderer list of " +
-                             $"{AssetDatabase.GetAssetPath(pipeline)} â€” camera keeps the default renderer (no interior ink/SSAO).");
+                             $"{AssetDatabase.GetAssetPath(pipeline)} — camera keeps the default renderer (no interior ink/SSAO).");
             return -1;
         }
 
@@ -528,7 +531,7 @@ namespace DeadManZone.Presentation.Editor
                 so.FindProperty("arenaLoader").objectReferenceValue = loader;
             });
 
-            // Feel pass: punch-in camera beats + pooled muzzle-flash VFX (arena spec Â§1/Â§6).
+            // Feel pass: punch-in camera beats + pooled muzzle-flash VFX (arena spec §1/§6).
             var punchIn = rig.AddComponent<CombatArenaPunchInCamera>();
             SetSerialized(punchIn, so =>
             {
@@ -565,3 +568,5 @@ namespace DeadManZone.Presentation.Editor
     }
 }
 #endif
+// EOF
+     
