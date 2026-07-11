@@ -15,8 +15,9 @@ using UnityEngine.Rendering.Universal;
 namespace DeadManZone.Presentation.Editor
 {
     /// <summary>
-    /// Builds Assets/_Project/Scenes/Combat3D_Demo.unity: spike-look environment (warm key /
-    /// cool ambient, P0_Grade volume, graybox trench dressing), a perspective camera, and the
+    /// Builds Assets/_Project/Scenes/Combat3D_Demo.unity: spike-look lighting (warm key /
+    /// cool ambient, P0_Grade volume), the Trenchline battlefield environment
+    /// (CombatEnvironmentBuilder — broken earth, trenchworks, wire, backdrop ring), and the
     /// combat arena rig (bootstrap/director/presenter/pool) configured for ToonInk3D visuals
     /// with the Phase-0 rifleman model, a freshly generated AnimatorController, and side rings.
     /// The spike scene/controller stay throwaway — everything generated lands under _Project.
@@ -30,8 +31,6 @@ namespace DeadManZone.Presentation.Editor
         private const string WalkClipPath = GeneratedFolder + "/Rifleman_Walk.anim";
         private const string DieClipPath = GeneratedFolder + "/Rifleman_Die.anim";
         private const string ConfigPath = GeneratedFolder + "/CombatArena3DDemoConfig.asset";
-        private const string GroundMaterialPath = GeneratedFolder + "/Combat3D_Ground.mat";
-        private const string SandbagMaterialPath = GeneratedFolder + "/Combat3D_Sandbag.mat";
         private const string CombatRendererPath = "Assets/_Project/Settings/Rendering/DeadManZone_CombatRenderer.asset";
 
         // Roster archetypes: Meshy 12k units copied under _Project (idle/walk/die GLBs sharing
@@ -111,8 +110,6 @@ namespace DeadManZone.Presentation.Editor
                 idleClip, walkClip, dieClip, IdleClipPath, WalkClipPath, DieClipPath, ControllerPath);
             var archetypes = BuildRosterArchetypes();
             var config = BuildDemoArenaConfig();
-            var groundMat = EnsureUnlitLitMaterial(GroundMaterialPath, new Color(0.30f, 0.28f, 0.25f));
-            var sandbagMat = EnsureUnlitLitMaterial(SandbagMaterialPath, new Color(0.44f, 0.39f, 0.29f));
             var riflePrefab = RiflePropBuilder.EnsurePrefab();
 
             // --- Scene ---
@@ -127,7 +124,7 @@ namespace DeadManZone.Presentation.Editor
             var camera = CreateCamera();
             CreateKeyLight();
             CreateGlobalVolume(gradeProfile);
-            CreateGraybox(groundMat, sandbagMat);
+            CombatEnvironmentBuilder.Build();
             CreateArenaRig(camera, config, controller, idleModel, playerMat, enemyMat, ringBlue, ringRed, riflePrefab, archetypes);
 
             EnsureFolder("Assets/_Project/Scenes");
@@ -285,28 +282,6 @@ namespace DeadManZone.Presentation.Editor
             return config;
         }
 
-        private static Material EnsureUnlitLitMaterial(string path, Color color)
-        {
-            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
-            if (material == null)
-            {
-                var shader = Shader.Find("Universal Render Pipeline/Lit");
-                if (shader == null)
-                    shader = Shader.Find("Standard");
-                material = new Material(shader);
-                AssetDatabase.CreateAsset(material, path);
-            }
-
-            if (material.HasProperty("_BaseColor"))
-                material.SetColor("_BaseColor", color);
-            else if (material.HasProperty("_Color"))
-                material.SetColor("_Color", color);
-            if (material.HasProperty("_Smoothness"))
-                material.SetFloat("_Smoothness", 0.05f);
-            EditorUtility.SetDirty(material);
-            return material;
-        }
-
         /// <summary>Copy a spike unit material to the generated folder (once) and apply the
         /// readability tune: lifted shadow band + softer rim ink for gameplay camera distance.</summary>
         private static Material LoadOrCreateTunedUnitMaterial(string sourcePath, string tunedPath)
@@ -346,7 +321,7 @@ namespace DeadManZone.Presentation.Editor
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
             RenderSettings.fogColor = new Color(0.14f, 0.16f, 0.20f);
-            RenderSettings.fogDensity = 0.018f; // spike used 0.028 on a smaller field
+            RenderSettings.fogDensity = 0.022f; // spike used 0.028 on a smaller field; 0.022 sells backdrop depth without eating units (~20% fog at the far lane)
         }
 
         private static Camera CreateCamera()
@@ -359,7 +334,10 @@ namespace DeadManZone.Presentation.Editor
             camera.farClipPlane = 200f;
             camera.allowHDR = true;
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.11f, 0.12f, 0.15f); // spike value
+            // Slightly above RenderSettings.fogColor: the fog line at the terrain crest is
+            // key-lit ground mixed with fog, so a bg at raw fog color reads as a dark seam.
+            // Solid grimdark sky per arena spec; the backdrop ring anchors the horizon.
+            camera.backgroundColor = new Color(0.17f, 0.19f, 0.24f);
             // Close enough that units read as inked figures (the fullscreen interior-ink
             // edge-detect saturates tiny characters into solid silhouettes when pulled back).
             go.transform.position = new Vector3(0f, 8.5f, -12.0f);
@@ -427,42 +405,6 @@ namespace DeadManZone.Presentation.Editor
             volume.isGlobal = true;
             volume.priority = 1f;
             volume.sharedProfile = profile; // P0_Grade (null tolerated; warned above)
-        }
-
-        private static void CreateGraybox(Material groundMat, Material sandbagMat)
-        {
-            var root = new GameObject("Environment");
-
-            var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            ground.name = "Graybox_Ground";
-            ground.transform.SetParent(root.transform, false);
-            ground.transform.localScale = new Vector3(4.2f, 1f, 2.4f); // 42m x 24m, board is ~30.6 x 10.8
-            if (groundMat != null)
-                ground.GetComponent<MeshRenderer>().sharedMaterial = groundMat;
-
-            // Simple sandbag-wall boxes echoing the spike trench dressing. Kept off the
-            // marching lanes (units fight along the field's middle rows).
-            (Vector3 pos, float yaw, Vector3 scale)[] walls =
-            {
-                (new Vector3(-2.1f, 0.25f, -3.9f), 8f, new Vector3(2.2f, 0.5f, 0.6f)),
-                (new Vector3(2.3f, 0.25f, -3.7f), -6f, new Vector3(2.2f, 0.5f, 0.6f)),
-                (new Vector3(-1.8f, 0.25f, 4.1f), -10f, new Vector3(2.4f, 0.5f, 0.6f)),
-                (new Vector3(2.0f, 0.25f, 4.2f), 5f, new Vector3(2.0f, 0.5f, 0.6f)),
-                (new Vector3(-7.4f, 0.25f, 3.9f), 24f, new Vector3(1.8f, 0.5f, 0.55f)),
-                (new Vector3(7.6f, 0.25f, -4.0f), -21f, new Vector3(1.8f, 0.5f, 0.55f)),
-            };
-
-            foreach (var (pos, yaw, scale) in walls)
-            {
-                var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                wall.name = "Sandbag_Wall";
-                wall.transform.SetParent(root.transform, false);
-                wall.transform.localPosition = pos;
-                wall.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
-                wall.transform.localScale = scale;
-                if (sandbagMat != null)
-                    wall.GetComponent<MeshRenderer>().sharedMaterial = sandbagMat;
-            }
         }
 
         private static void CreateArenaRig(

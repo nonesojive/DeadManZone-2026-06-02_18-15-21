@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Combat3D_Sandbag
-  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+  m_Shader: {fileID: 4800000, guid: 0046730eb22604a4ca8ffa86ef17e6fa, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -17,14 +17,17 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap:
-    RenderType: Opaque
+  stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AccentMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BaseMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -83,6 +86,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AccentEmission: 1
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
@@ -91,21 +95,35 @@ Material:
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
+    - _CreaseSharp: 0.18
+    - _CreaseStrength: 0.7
+    - _CreaseThreshold: 0.5
     - _Cull: 2
     - _Cutoff: 0.5
+    - _Desat: 0
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
+    - _DissolveAmount: 0
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _HitFlash: 0
+    - _InkPower: 3
+    - _InkStrength: 0.25
     - _Metallic: 0
+    - _MidStrength: 0.35
+    - _MidThreshold: 0.55
     - _OcclusionStrength: 1
+    - _OutlineWidth: 2
     - _Parallax: 0.005
     - _QueueOffset: 0
+    - _RampSmooth: 0.03
     - _ReceiveShadows: 1
+    - _ShadowThreshold: 0.05
+    - _SideTintAmount: 0
     - _Smoothness: 0.05
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -116,9 +134,14 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.44, g: 0.39, b: 0.29, a: 1}
+    - _AccentColor: {r: 1, g: 0.7, b: 0.2, a: 1}
+    - _BaseColor: {r: 0.42, g: 0.37, b: 0.27, a: 1}
     - _Color: {r: 0.44, g: 0.39, b: 0.29, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _InkColor: {r: 0.02, g: 0.02, b: 0.03, a: 1}
+    - _OutlineColor: {r: 0.03, g: 0.03, b: 0.04, a: 1}
+    - _ShadowColor: {r: 0.23099999, g: 0.2035, b: 0.14850001, a: 0.55}
+    - _SideTint: {r: 0.2, g: 0.4, b: 1, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -208,6 +208,13 @@ namespace DeadManZone.Core.Combat
             var triggeredBy = player.Fraction <= enemy.Fraction ? CombatSide.Player : CombatSide.Enemy;
             _log.Append(segment, GlobalTick, "combat", "checkpoint", triggeredBy.ToString(), (int)(lastThreshold * 100));
 
+            // Pause-granted armor (ShieldAllies) expires at every pause boundary,
+            // whether or not the player submits commands here. Fight-start armor
+            // (ArmorBuffSteps) is permanent and never touched. Enemy units have no
+            // command path, so only the player side can carry pause-scoped armor.
+            foreach (var combatant in _playerCombatants)
+                combatant.PauseArmorBuffSteps = 0;
+
             CheckpointsFired += consumed;
             _awaitingCommand = true;
             LastPauseTrigger = new PauseTriggerContext
@@ -336,7 +343,7 @@ namespace DeadManZone.Core.Combat
                     distance,
                     accuracyMod,
                     actor.DamageBonus + damageBuff,
-                    target.ArmorBuffSteps,
+                    target.TotalArmorSteps,
                     actor.DamagePercentBonus,
                     actor.AccuracyPercentBonus,
                     actor.Definition.AttackRange,
@@ -371,12 +378,6 @@ namespace DeadManZone.Core.Combat
             var pauseCommands = FilterCommands(commands, checkpointIndex);
             if (pauseCommands.Count == 0)
                 return;
-
-            // Pause-scoped armor buffs expire when the next command batch opens. Reset
-            // BEFORE applying the batch so buffs granted in it (ShieldAllies) survive
-            // until the next pause instead of being wiped the moment they're paid for.
-            foreach (var combatant in _playerCombatants)
-                combatant.ArmorBuffSteps = 0;
 
             int authority = Authority;
             _commandProcessor.TryApplyBatch(

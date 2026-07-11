@@ -98,7 +98,7 @@ namespace DeadManZone.Core.Combat
                 if (!HasInfantryTag(ally.Definition))
                     continue;
 
-                ally.ArmorBuffSteps += 1;
+                ally.PauseArmorBuffSteps += 1;
                 log.Append(logSegment, logTick, source.InstanceId, "shield_allies", ally.InstanceId, 1);
             }
 
@@ -165,7 +165,7 @@ namespace DeadManZone.Core.Combat
                     BaseDamage = baseDamage,
                     AttackType = attackType
                 };
-                int damage = CombatDamageResolver.ComputeDamage(tempAttacker, target.Definition, 1f, target.ArmorBuffSteps);
+                int damage = CombatDamageResolver.ComputeDamage(tempAttacker, target.Definition, 1f, target.TotalArmorSteps);
                 target.CurrentHp -= damage;
                 source.DamageDealtThisFight += damage;
                 target.DamageTakenThisFight += damage;
@@ -191,7 +191,7 @@ namespace DeadManZone.Core.Combat
                 BaseDamage = baseDamage,
                 AttackType = attackType
             };
-            int damage = CombatDamageResolver.ComputeDamage(tempAttacker, target.Definition, 1f, target.ArmorBuffSteps);
+            int damage = CombatDamageResolver.ComputeDamage(tempAttacker, target.Definition, 1f, target.TotalArmorSteps);
             target.CurrentHp -= damage;
             source.DamageDealtThisFight += damage;
             target.DamageTakenThisFight += damage;

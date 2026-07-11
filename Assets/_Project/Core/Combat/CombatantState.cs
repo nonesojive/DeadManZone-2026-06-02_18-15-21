@@ -27,7 +27,14 @@ namespace DeadManZone.Core.Combat
         public int AttackSpeedSteps { get; set; }
         public int MovementSpeedBonus { get; set; }
         public int AttackRangeSteps { get; set; }
+        /// <summary>Fight-start armor (synergies, critical mass, ProtectSupport). Permanent for the whole fight.</summary>
         public int ArmorBuffSteps { get; set; }
+
+        /// <summary>Pause-granted armor (ShieldAllies). Expires when the next pause boundary fires.</summary>
+        public int PauseArmorBuffSteps { get; set; }
+
+        /// <summary>Effective armor steps for damage resolution: permanent + pause-scoped.</summary>
+        public int TotalArmorSteps => ArmorBuffSteps + PauseArmorBuffSteps;
         public int DamageDealtThisFight { get; set; }
         public int DamageTakenThisFight { get; set; }
         public GridCoord AnchorPosition { get; set; }

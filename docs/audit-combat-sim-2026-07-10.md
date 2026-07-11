@@ -311,3 +311,72 @@ Units now carry a generated rifle prop and visibly aim + recoil when they fire. 
 - The at-rest carry is muzzle-down at the side (barrel along fingers). Reads fine at gameplay distance; a "port arms" two-hand carry would need a left-hand IK or a different grip euler per idle pose — deferred.
 - The left hand doesn't touch the rifle (single-hand grip). Acceptable at gameplay camera; revisit with a real shoot clip.
 - MCP gotcha: `editor-application-set-state` with only `isPaused` **stops Play mode** (omitted `isPlaying` defaults false) — always pass both flags to pause.
+
+## Armor lifetime rule (2026-07-11)
+
+Closes the deferred "armor-lifetime cleanup" from the F6 fix. Owner-decided rule:
+1. **Fight-start armor** (synergies, critical mass, ProtectSupport — granted during combat setup, before tick 0) is **permanent** for the whole fight. Never stripped by pause boundaries.
+2. **Pause-granted armor** (ShieldAllies) **expires at the next pause boundary** — every checkpoint fire, regardless of whether commands were submitted at either pause.
+
+### Implementation (split state — audit F6's "cleaner" option)
+- `Core/Combat/CombatantState.cs`: `ArmorBuffSteps` keeps its name and becomes the fight-start/permanent bucket (its two fight-start writers — `PieceAbilityEngine.ApplyToCombatants`, `TacticEffects.ApplyProtectSupportBuffs` — needed no changes). New `PauseArmorBuffSteps` holds pause-granted armor; new `TotalArmorSteps => ArmorBuffSteps + PauseArmorBuffSteps` is what damage resolution reads.
+- `Core/Combat/CombatAbilityExecutor.cs`: ShieldAllies grants into `PauseArmorBuffSteps`; the two ability-damage sites read `TotalArmorSteps`.
+- `Core/Combat/TickCombatRun.cs`: the `ApplyCommands` armor reset (which only ran when the pause had commands — the source of the button-press-dependent lifetime) is **deleted**. Expiry now lives in `TryFireCheckpoint`: the moment a checkpoint fires, all player `PauseArmorBuffSteps` are zeroed — unconditional, so it fires at every pause boundary. `ResolveAttacks` reads `TotalArmorSteps`.
+- Enemy side: enemies have no command path, so pause-granted enemy armor cannot exist — no reset machinery added for them (noted here instead). Fight-start enemy armor (PieceAbilityEngine) lands in `ArmorBuffSteps` and is permanent, per rule 1.
+- Save/resume: armor is **not** persisted anywhere in `CombatSaveState`/`RunState` (grep-verified) — resume reconstructs it by replaying `SubmittedCommands` through the same `Continue`/`TryFireCheckpoint` path, so the split needs no schema change. The F3 orchestrator restore test already proves log equality for mid-fight commands.
+
+### Tests (Core.Tests/EditMode/TickCombatRunCommandTests.cs — 5 new, suite 357/357)
+- `FightStartArmor_SurvivesCommandedPause` — regression for the old strip-at-first-commanded-pause quirk.
+- `FightStartArmor_SurvivesWholeFight_WithCommandsSubmitted` — runs to completion with commands at both pauses.
+- `ShieldAllies_ExpiresWhenNextPauseFires_EvenWithNoCommandsThere` — armor granted at the opening pause is 0 the moment the mid pause fires, before any commands; stays 0 through an uncommanded Continue.
+- `ShieldAllies_OnFightStartArmor_RevertsToBaselineAtNextPause` — ShieldAllies stacked on a medic-aura baseline; after the mid pause the unit is back to exactly baseline (1), not zero.
+- `ShieldAllies_ReplayViaFastForward_ReproducesIdenticalLog` — live run vs `FastForwardFromSave` replay with a ShieldAllies command produce identical event logs (save-resume determinism for both armor buckets).
+- New fixture helper `StartMatchedFightWithArmoredBuddy` grants fight-start armor through the real `PieceAbilityEngine` path (medic armor aura adjacent to infantry in the support zone). Gotcha re-hit: `SupportLineAnchor(0)` = column 3 is actually the Rear zone (rejects Units) — the trio sits at columns 4-6.
+
+### Expectation changes in existing tests (each inspected)
+- `ShieldAllies_GrantedAtPause_SurvivesTheCommandBatch`: asserts `PauseArmorBuffSteps == 1` instead of `ArmorBuffSteps == 1` — pure field rename, the expectation (armor survives the batch that grants it) is unchanged. No other test encoded the old strip behavior; the rest of the suite passed untouched.
+
+### Deferred / notes
+- **M9 unchanged and now unmasked**: `ApplyProtectSupportBuffs` still stacks `+2` on every `SetPlayerTactic(ProtectSupport)` call, and with permanent armor nothing ever removes it. Safe today because both live (`BeginCombat`) and restore paths call `SetPlayerTactic` exactly once after the ctor (whose default tactic is DisciplinedFire), and mid-fight tactic changes go through `CommandProcessor`, which doesn't touch armor. A second `SetPlayerTactic(ProtectSupport)` call would double-grant — fix when M9's idempotence cleanup lands.
+- Mid-fight switch **to** ProtectSupport still grants no armor (pre-existing `CommandProcessor` behavior, flagged in F3's fix note); under the new rule that's consistent — ProtectSupport armor is a fight-start grant only.
+- Presentation confirmed untouched: armor has no visual today (`shield_allies` only surfaces as a `CombatLogFormatter` line and ability names in `TacticPausePanel`/tooltips). No Presentation changes made.
+
+## Environment pass (2026-07-11)
+
+Replaced the graybox plane + sandbag boxes with a full Trenchline battlefield, all generated by the bootstrap. New file `Presentation/Editor/CombatEnvironmentBuilder.cs` (static builder, called from `Combat3DDemoSceneBootstrap.BuildDemoScene`); fully deterministic (fixed seed + hash-lattice value noise — no `UnityEngine.Random`), rebuilt repeatedly via the menu item with identical output. Editor-only code; Core/Game untouched, 2D path untouched.
+
+### What was built (spec sections cited)
+- **Ground** — 100x72-quad displaced mesh (140x100 m): gentle broken-earth relief, 14 shell craters with raised rims, and a churned crest that rises ~3 m toward the fog line so the frame-top horizon reads as jagged battlefield skyline (the camera is only 8.5 m up — the horizon has to happen inside z<40, not at the mesh edge). The 17x6-cell combat strip (±16.4 x ±6.4 m incl. margin) is EXACTLY flat (displacement smoothsteps in 0.5–5.5 m outside it); `AssertLanesFlat()` self-check runs every build so unit grounding at y=0 can never silently break. Ground material: URP/Lit, baked 2048px world-mapped albedo (mud/dry tonal patches, crater scorch, sparse pockmark speckle) + faint **marching-lane ruts** along the six rows — spec §2's "grid fades to diegetic ground markings (ruts)". Tiled 256px grey-noise detail map (~2 m repeat, trilinear + aniso 4) keeps the near field crisp.
+- **Trenchworks** (spec §5 Trenchline dressing: "olive/dirt, sandbags, duckboards, wire") — at both deployment edges: two staggered jittered sandbag rows with a mid-line sally port (spike-proven stacked-box read), timber revetment posts, duckboard walkways, crate dumps, standing + toppled barrels.
+- **Wire + tank traps** — two barbed-wire belts (jittered leaning posts + thin stretched strand segments) outside the strip, plus 10 anti-tank hedgehogs (three crossed steel beams each) strung along the belts and mid-ground.
+- **Scatter** — leaning telegraph poles and half-buried debris planks near far-side craters.
+- **Backdrop ring** — jagged low-poly ridge meshes (26-seg noise-displaced spines) on a 34–44 m ring, plus mid-distance ruin masses (rubble mounds, tilted wall slabs, chimneys) inside the visible band and larger ruined shells farther out; all URP/Lit (ToonInk doesn't apply fog — Lit is what lets the fog swallow them per spec §5) at a value above the mud so they read as hazed masses, not black cutouts.
+- **Line law (bible §4)**: primitive props (sandbags/timber/crates/barrels/hedgehogs) carry the hull outline (`_OutlineWidth` 2, clean normals); wire strands and backdrop run hull-off and take their line from the combat renderer's fullscreen pass — same doctrine as the rifle prop vs. Meshy units.
+
+### SO decision (step-5 check)
+`CombatArenaAtmosphereProfileSO` / `CombatArenaBackdropRingSO` / `CombatArenaBackdropSpawnPoint` are 2D-era: their only reference anywhere is the serialized `atmosphereProfile` field on `CombatArenaConfigSO:113` — zero readers. NOT forced into the 3D path; the environment is editor-time generated, not runtime-assembled. Candidates for the 2D-switchover deletion list.
+
+### Lighting/fog changes (base warm-key/cool-fill/trilight kept)
+- Fog density 0.018 → **0.022** (exp2, same color) — tuned WITH the backdrop so the ridge ring sits at ~35–50% fog and distance reads; units at the far lane stay well under the readability bar.
+- Camera background 0.13/0.15/0.19 → **0.17/0.19/0.24** (slightly above fog color): the fog line at the terrain crest is key-lit ground mixed with fog, and a bg at raw fog color read as a dark seam. Sky stays a solid grimdark band — the home frame's top edge is always ground crest, so a gradient skybox would render zero visible pixels; cheapest thing that looks intentional (deviation from "graded sky" noted below).
+- Timber/prop values kept dark deliberately: under the 1.7x warm key anything brighter became the most saturated thing on screen, violating bible §3's saturation budget (VFX must win).
+
+### Perf
+315 renderers, **23,980 tris**, **8 shared materials** (Ground, Sandbag, Timber, Crate, Barrel, Wire, Steel, Backdrop), everything flagged BatchingStatic, no colliders, no runtime scripts, textures generated once as assets (2048 albedo + 256 detail). Renders under fullscreen ink + SSAO without measurable cost at this scale.
+
+### Look iterations (3)
+1. Baseline shot: strip read as an empty blurry dirt sheet; ruins read as flat black cutouts; spec props missing (no hedgehogs/barrels). 
+2. Contrast + dressing pass: stronger mud/dry contrast, ruts widened/darkened, pockmark speckle added, backdrop value lifted (0.078 → 0.135), hedgehogs + barrels added. Verdict: field reads, but debris planks rendered as bright floating orange sticks (saturation-budget violation + crater-slope float).
+3. Value/seating/resolution pass: timber darkened (0.26 → 0.16 base), planks seated −0.01 into ground, albedo 1024 → 2048 with trilinear/aniso. Final home-frame shot: churned earth with ruts and pockmarks, wire belt + hedgehog X-silhouettes mid-frame, crater field and hazed ruin masses to the fog line — reads as a stylized WW1-diesel battlefield illustration.
+
+### Verification
+- Menu rebuild (`DeadManZone → Combat3D → Build Combat3D Demo Scene`) regenerates the full environment deterministically (ran 4+ times this session; lanes-flat self-check silent every time).
+- Play mode end-to-end: 3v3 sim fight (53 events / 2 segments), units march/fight/die on the flat strip, no prop occludes the fight read (mid-fight screenshot with a dissolving casualty + advancing enemy trio), `fight_end` replayed (segment 1, tick 122), defeat banner fired. Punch-in camera: pure dolly, ≤3.5 m from home toward mid-strip kill points — path stays over the prop-free flat strip; no clipping observed or geometrically possible.
+- EditMode 357/357 green.
+
+### Deferred
+- **Siege ground / Fog field themes** (spec §5): Trenchline only; the other two re-dressings wait for their fight content.
+- **Dust/ash particle drift**: skipped — the fullscreen ink turns sparse translucent particles into flickering edge noise; revisit with the VFX saturation pass (spec §6).
+- **Trenchworks visibility**: the deployment-edge trenches sit just outside the tight home frame (readability camera from the interior-ink fix); they read in punch-ins near the edges and scene view. If the owner wants them in the home frame, that's a camera-pullback decision, not a dressing change.
+- Graded sky dome: unnecessary while every frame's top edge is ground crest (see lighting notes).
+- Synty meshes deliberately not used (spec direction is toon-ink primitives; ADR-0003 kitbash applies to units, not the arena).

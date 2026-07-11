@@ -2,6 +2,7 @@ using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
+using DeadManZone.Core.Tags;
 using DeadManZone.Core.Tests;
 using NUnit.Framework;
 
@@ -137,8 +138,166 @@ namespace DeadManZone.Core.Tests.EditMode
                 run.Log.Events.Any(e => e.ActionType == "shield_allies" && e.TargetId == "player_rifle"),
                 "ShieldAllies should log its grant to the adjacent infantry ally");
             var buffed = run.PlayerCombatantsForTests.Single(c => c.InstanceId == "player_rifle");
-            Assert.AreEqual(1, buffed.ArmorBuffSteps,
+            Assert.AreEqual(1, buffed.PauseArmorBuffSteps,
                 "armor granted during the pause batch must survive until the next pause");
+        }
+
+        [Test]
+        public void FightStartArmor_SurvivesCommandedPause()
+        {
+            var run = StartMatchedFightWithArmoredBuddy(authority: 3);
+            var buddy = run.PlayerCombatantsForTests.Single(c => c.InstanceId == "player_buddy");
+            Assert.AreEqual(1, buddy.ArmorBuffSteps, "medic aura should grant fight-start armor");
+
+            var first = run.Continue(System.Array.Empty<PhaseCommand>());
+            Assert.AreEqual(CombatAdvanceStatus.AwaitingCommand, first.Status);
+
+            run.Continue(new[]
+            {
+                new PhaseCommand
+                {
+                    AfterCheckpoint = 1,
+                    Type = CommandType.UseAbility,
+                    Ability = GrantedAbility.GrenadeLob,
+                    SourcePieceId = "player_grenadier"
+                }
+            });
+
+            Assert.AreEqual(1, buddy.ArmorBuffSteps,
+                "fight-start armor is permanent — a commanded pause must not strip it (old F6 quirk)");
+        }
+
+        [Test]
+        public void FightStartArmor_SurvivesWholeFight_WithCommandsSubmitted()
+        {
+            var run = StartMatchedFightWithArmoredBuddy(authority: 6);
+            var buddy = run.PlayerCombatantsForTests.Single(c => c.InstanceId == "player_buddy");
+
+            var commands = new[]
+            {
+                new PhaseCommand
+                {
+                    AfterCheckpoint = 0,
+                    Type = CommandType.UseAbility,
+                    Ability = GrantedAbility.GrenadeLob,
+                    SourcePieceId = "player_grenadier"
+                },
+                new PhaseCommand
+                {
+                    AfterCheckpoint = 1,
+                    Type = CommandType.UseAbility,
+                    Ability = GrantedAbility.GrenadeLob,
+                    SourcePieceId = "player_grenadier"
+                }
+            };
+
+            var result = run.Continue(commands);
+            while (result.Status == CombatAdvanceStatus.AwaitingCommand)
+                result = run.Continue(commands);
+
+            Assert.AreEqual(CombatAdvanceStatus.Completed, result.Status);
+            Assert.AreEqual(1, buddy.ArmorBuffSteps,
+                "fight-start armor must persist for the whole fight");
+            Assert.AreEqual(0, buddy.PauseArmorBuffSteps);
+        }
+
+        [Test]
+        public void ShieldAllies_ExpiresWhenNextPauseFires_EvenWithNoCommandsThere()
+        {
+            var player = new BoardState(TestBoards.Layout);
+            player.TryPlace(
+                TestPieces.With(TestPieces.RifleSquad(), grantedAbility: GrantedAbility.ShieldAllies),
+                TestBoards.FrontLineAnchor(4),
+                "player_shield");
+            player.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(5), "player_rifle");
+            var enemy = new BoardState(TestBoards.Layout);
+            enemy.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(4), "enemy_rifle_1");
+            enemy.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(5), "enemy_rifle_2");
+
+            var run = TickCombatRun.Start(player, enemy, seed: 13, authority: 2);
+
+            var first = run.Continue(new[]
+            {
+                new PhaseCommand
+                {
+                    AfterCheckpoint = 0,
+                    Type = CommandType.UseAbility,
+                    Ability = GrantedAbility.ShieldAllies,
+                    SourcePieceId = "player_shield"
+                }
+            });
+
+            Assert.IsTrue(
+                run.Log.Events.Any(e => e.ActionType == "shield_allies" && e.TargetId == "player_rifle"),
+                "ShieldAllies must have granted armor at the opening pause");
+            Assert.AreEqual(CombatAdvanceStatus.AwaitingCommand, first.Status,
+                "matched rifle lines should fire the mid-fight pause");
+
+            var buffed = run.PlayerCombatantsForTests.Single(c => c.InstanceId == "player_rifle");
+            Assert.AreEqual(0, buffed.PauseArmorBuffSteps,
+                "pause-granted armor expires the moment the next pause boundary fires — before any commands");
+
+            run.Continue(System.Array.Empty<PhaseCommand>());
+            Assert.AreEqual(0, buffed.PauseArmorBuffSteps,
+                "an uncommanded pause must not resurrect or retain pause-granted armor");
+        }
+
+        [Test]
+        public void ShieldAllies_OnFightStartArmor_RevertsToBaselineAtNextPause()
+        {
+            var run = StartMatchedFightWithArmoredBuddy(authority: 2, buddyShieldSource: true);
+            var buddy = run.PlayerCombatantsForTests.Single(c => c.InstanceId == "player_buddy");
+            Assert.AreEqual(1, buddy.ArmorBuffSteps, "medic aura should grant fight-start armor");
+
+            var first = run.Continue(new[]
+            {
+                new PhaseCommand
+                {
+                    AfterCheckpoint = 0,
+                    Type = CommandType.UseAbility,
+                    Ability = GrantedAbility.ShieldAllies,
+                    SourcePieceId = "player_shield"
+                }
+            });
+
+            Assert.IsTrue(
+                run.Log.Events.Any(e => e.ActionType == "shield_allies" && e.TargetId == "player_buddy"),
+                "ShieldAllies must have granted armor to the adjacent buddy");
+            Assert.AreEqual(CombatAdvanceStatus.AwaitingCommand, first.Status,
+                "matched rifle lines should fire the mid-fight pause");
+            Assert.AreEqual(1, buddy.ArmorBuffSteps, "fight-start baseline is untouched by the pause boundary");
+            Assert.AreEqual(0, buddy.PauseArmorBuffSteps, "pause-granted armor is gone at the next pause");
+            Assert.AreEqual(1, buddy.TotalArmorSteps,
+                "after the next pause the unit is back to exactly its fight-start baseline, not zero");
+        }
+
+        [Test]
+        public void ShieldAllies_ReplayViaFastForward_ReproducesIdenticalLog()
+        {
+            var commands = new[]
+            {
+                new PhaseCommand
+                {
+                    AfterCheckpoint = 0,
+                    Type = CommandType.UseAbility,
+                    Ability = GrantedAbility.ShieldAllies,
+                    SourcePieceId = "player_shield"
+                }
+            };
+
+            var live = StartMatchedFightWithArmoredBuddy(authority: 2, buddyShieldSource: true);
+            var liveResult = live.Continue(commands);
+            Assert.AreEqual(CombatAdvanceStatus.AwaitingCommand, liveResult.Status);
+            live.Continue(System.Array.Empty<PhaseCommand>());
+
+            var restored = StartMatchedFightWithArmoredBuddy(authority: 2, buddyShieldSource: true);
+            restored.FastForwardFromSave(checkpointsFired: 1, savedAwaitingCommand: true, submittedCommands: commands);
+            restored.Continue(System.Array.Empty<PhaseCommand>());
+
+            CollectionAssert.AreEqual(
+                live.Log.Events.Select(e => $"{e.Segment}|{e.Tick}|{e.ActorId}|{e.ActionType}|{e.TargetId}|{e.Value}").ToList(),
+                restored.Log.Events.Select(e => $"{e.Segment}|{e.Tick}|{e.ActorId}|{e.ActionType}|{e.TargetId}|{e.Value}").ToList(),
+                "armor lifetime (fight-start + pause-granted) must reproduce identically through save-resume replay");
         }
 
         /// <summary>Matched rifle lines (fires the 60% mid pause) plus an immobile 3hp
@@ -163,6 +322,59 @@ namespace DeadManZone.Core.Tests.EditMode
                     TestBoards.SupportLineAnchor(1, 0),
                     "enemy_weak").Success,
                 "rear conscript must be placed (support zone is the deepest zone that accepts Units)");
+
+            return TickCombatRun.Start(player, enemy, seed: 42, authority: authority);
+        }
+
+        /// <summary>Matched rifle lines (fires the 60% mid pause) plus a medic-with-armor-aura
+        /// next to an infantry buddy in the player support zone, so "player_buddy" starts the
+        /// fight with 1 step of fight-start armor. Optional adjacent ShieldAllies source lets
+        /// pause-granted armor stack on top of that baseline.</summary>
+        private static TickCombatRun StartMatchedFightWithArmoredBuddy(
+            int authority,
+            bool buddyShieldSource = false)
+        {
+            var medic = TestPieces.With(
+                TestPieces.CreateUnit("medic"),
+                abilities: new[]
+                {
+                    new PieceAbilityDefinition
+                    {
+                        Id = "medic_adjacent_infantry_armor_plus_one",
+                        Trigger = PieceAbilityTrigger.AdjacentAura,
+                        NeighborFilter = new NeighborFilter { PrimaryTagId = GameTagIds.Infantry },
+                        Stat = SynergyStat.ArmorType,
+                        ModType = SynergyModType.Flat,
+                        Magnitude = 1
+                    }
+                });
+            var buddy = TestPieces.CreateUnit("infantry_buddy", primary: GameTagIds.Infantry);
+
+            var player = new BoardState(TestBoards.Layout);
+            player.TryPlace(
+                TestPieces.With(TestPieces.RifleSquad(), grantedAbility: GrantedAbility.GrenadeLob),
+                TestBoards.FrontLineAnchor(3),
+                "player_grenadier");
+            player.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(6), "player_rifle_2");
+            Assert.IsTrue(
+                player.TryPlace(medic, TestBoards.SupportLineAnchor(1, 0), "player_medic").Success,
+                "medic must be placed in the support zone (column 3 is rear, which rejects Units)");
+            Assert.IsTrue(
+                player.TryPlace(buddy, TestBoards.SupportLineAnchor(2, 0), "player_buddy").Success,
+                "buddy must be placed adjacent to the medic");
+            if (buddyShieldSource)
+            {
+                Assert.IsTrue(
+                    player.TryPlace(
+                        TestPieces.With(TestPieces.RifleSquad(), grantedAbility: GrantedAbility.ShieldAllies),
+                        TestBoards.SupportLineAnchor(3, 0),
+                        "player_shield").Success,
+                    "shield source must be placed adjacent to the buddy");
+            }
+
+            var enemy = new BoardState(TestBoards.Layout);
+            enemy.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(3), "enemy_rifle_1");
+            enemy.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(6), "enemy_rifle_2");
 
             return TickCombatRun.Start(player, enemy, seed: 42, authority: authority);
         }
