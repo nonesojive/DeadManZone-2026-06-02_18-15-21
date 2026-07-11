@@ -641,7 +641,11 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             if (vfx2D == null)
                 vfx2D = GetComponent<CombatArena2DVfx>();
-            return vfx2D;
+            if (vfx2D != null)
+                return vfx2D;
+
+            // 3D arenas have no 2D VFX component; their backend plugs in through the seam.
+            return GetComponent<ICombatArenaVfxPresenter>();
         }
 
         private void EnsureChaseController()

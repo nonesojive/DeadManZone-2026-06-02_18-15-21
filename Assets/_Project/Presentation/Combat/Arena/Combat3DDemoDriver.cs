@@ -27,12 +27,13 @@ namespace DeadManZone.Presentation.Combat.Arena
         [SerializeField] private CombatArenaPresenter presenter;
         [SerializeField] private CombatArenaSceneLoader arenaLoader;
         [SerializeField] private int combatSeed = 20260711;
-        [SerializeField] private string pieceId = "conscript_rifleman";
-        [SerializeField] private int unitsPerSide = 3;
+        [Tooltip("ContentDatabase piece ids, one per unit. No grenade_thrower piece exists — ironclad_mortars wears that model.")]
+        [SerializeField] private string[] playerRoster = { "conscript_rifleman", "bulwark_squad", "field_medic" };
+        [SerializeField] private string[] enemyRoster = { "conscript_rifleman", "ironclad_mortars", "conscript_rifleman" };
         [SerializeField] private float betweenSegmentsSeconds = 0.6f;
 
-        private const string PlayerIdPrefix = "p3d_rifle";
-        private const string EnemyIdPrefix = "e3d_rifle";
+        private const string PlayerIdPrefix = "p3d_unit";
+        private const string EnemyIdPrefix = "e3d_unit";
         private const int MaxContinueCalls = 8;
 
         private bool _fightEndSeen;
@@ -51,12 +52,13 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             var database = ContentDatabase.Load();
             var faction = database != null ? database.GetFaction(FactionIds.IronmarchUnion) : null;
-            var pieceSo = database?.Pieces?.FirstOrDefault(p => p != null && p.id == pieceId);
-            if (faction == null || pieceSo == null)
+            var playerPieces = ResolveRoster(database, playerRoster);
+            var enemyPieces = ResolveRoster(database, enemyRoster);
+            if (faction == null || playerPieces == null || enemyPieces == null)
             {
                 Debug.LogError(
-                    $"[Combat3D] ContentDatabase missing faction '{FactionIds.IronmarchUnion}' or piece " +
-                    $"'{pieceId}'. Run DeadManZone → Generate Demo Content (5 Factions) first.", this);
+                    $"[Combat3D] ContentDatabase missing faction '{FactionIds.IronmarchUnion}' or a roster " +
+                    "piece id (see warnings above). Run DeadManZone → Generate Demo Content (5 Factions) first.", this);
                 yield break;
             }
 
@@ -67,8 +69,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             // 1. Run the REAL fight through Core, offline, submitting no pause commands.
             var segments = new List<int>();
             var run = TickCombatRun.Start(
-                BuildArmy(faction, pieceSo, PlayerIdPrefix),
-                BuildArmy(faction, pieceSo, EnemyIdPrefix),
+                BuildArmy(faction, playerPieces, PlayerIdPrefix),
+                BuildArmy(faction, enemyPieces, EnemyIdPrefix),
                 combatSeed);
 
             for (int i = 0; i < MaxContinueCalls; i++)
@@ -92,8 +94,8 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             // 2. Spawn 3D actors from an identical battlefield (same instance ids/anchors).
             var battlefield = BattlefieldState.FromBoards(
-                BuildArmy(faction, pieceSo, PlayerIdPrefix),
-                BuildArmy(faction, pieceSo, EnemyIdPrefix));
+                BuildArmy(faction, playerPieces, PlayerIdPrefix),
+                BuildArmy(faction, enemyPieces, EnemyIdPrefix));
             presenter.InitializeArena(battlefield);
 
             director.EventReplayed += OnEventReplayed;
@@ -130,18 +132,45 @@ namespace DeadManZone.Presentation.Combat.Arena
             Debug.Log($"[Combat3D] fight_end replayed at segment {combatEvent.Segment}, tick {combatEvent.Tick}.");
         }
 
-        /// <summary>One 3-rifleman army, built the same way the tests hand-build Core state.</summary>
-        private BoardState BuildArmy(FactionSO faction, PieceDefinitionSO pieceSo, string idPrefix)
+        /// <summary>Roster ids → piece definitions; null (with a warning per missing id) if any is unknown.</summary>
+        private PieceDefinitionSO[] ResolveRoster(ContentDatabase database, string[] roster)
+        {
+            if (database?.Pieces == null || roster == null || roster.Length == 0)
+                return null;
+
+            var pieces = new PieceDefinitionSO[roster.Length];
+            bool complete = true;
+            for (int i = 0; i < roster.Length; i++)
+            {
+                pieces[i] = database.Pieces.FirstOrDefault(p => p != null && p.id == roster[i]);
+                if (pieces[i] == null)
+                {
+                    Debug.LogWarning($"[Combat3D] Roster piece id '{roster[i]}' not found in ContentDatabase.", this);
+                    complete = false;
+                }
+            }
+
+            return complete ? pieces : null;
+        }
+
+        /// <summary>One army from the roster, built the same way the tests hand-build Core state.
+        /// Rows advance by each piece's footprint height so multi-cell pieces never collide.</summary>
+        private BoardState BuildArmy(FactionSO faction, PieceDefinitionSO[] pieces, string idPrefix)
         {
             var board = new BoardState(faction.CreateCombatBoardLayout());
-            int count = Mathf.Clamp(unitsPerSide, 1, 5);
-            for (int i = 0; i < count; i++)
+            int row = 1; // column 4 = own front line-ish; rows fan out from the field's middle band
+            for (int i = 0; i < pieces.Length; i++)
             {
-                // Column 4 = own front line-ish; rows fan out from the field's middle band.
-                var anchor = new GridCoord(4, 1 + i);
-                var result = board.TryPlace(pieceSo.ToCore(), anchor, $"{idPrefix}_{i + 1}");
+                var core = pieces[i].ToCore();
+                var anchor = new GridCoord(4, row);
+                var result = board.TryPlace(core, anchor, $"{idPrefix}_{i + 1}");
                 if (!result.Success)
-                    Debug.LogError($"[Combat3D] Failed to place {pieceSo.id} at {anchor}: {result.Reason}", this);
+                    Debug.LogError($"[Combat3D] Failed to place {pieces[i].id} at {anchor}: {result.Reason}", this);
+
+                int footprintHeight = 1;
+                foreach (var cell in core.Shape.GetCells(new GridCoord(0, 0), PieceRotation.R0))
+                    footprintHeight = Mathf.Max(footprintHeight, cell.Y + 1);
+                row += footprintHeight;
             }
 
             return board;

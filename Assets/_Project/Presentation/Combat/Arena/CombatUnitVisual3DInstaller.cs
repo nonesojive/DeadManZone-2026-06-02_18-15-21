@@ -14,8 +14,20 @@ namespace DeadManZone.Presentation.Combat.Arena
     /// </summary>
     public sealed class CombatUnitVisual3DInstaller : MonoBehaviour
     {
+        /// <summary>Per-archetype model/controller override, matched on the piece's content id
+        /// (<see cref="PieceDefinitionSO.id"/> — the same id the Core sim uses). Unknown or
+        /// incomplete entries fall back to the default (rifleman) model/controller.</summary>
+        [Serializable]
+        private struct ArchetypeVisual
+        {
+            public string pieceId;
+            public GameObject model;
+            public RuntimeAnimatorController controller;
+        }
+
         [SerializeField] private GameObject unitModel;
         [SerializeField] private RuntimeAnimatorController animatorController;
+        [SerializeField] private ArchetypeVisual[] archetypes = Array.Empty<ArchetypeVisual>();
         [SerializeField] private Material playerUnitMaterial;
         [SerializeField] private Material enemyUnitMaterial;
         [SerializeField] private Material playerRingMaterial;
@@ -47,7 +59,24 @@ namespace DeadManZone.Presentation.Combat.Arena
             CombatSide side,
             Camera arenaCamera)
         {
-            if (unitModel == null || animatorController == null)
+            var model = unitModel;
+            var controller = animatorController;
+            if (piece != null && archetypes != null)
+            {
+                for (int i = 0; i < archetypes.Length; i++)
+                {
+                    if (archetypes[i].pieceId == piece.id &&
+                        archetypes[i].model != null &&
+                        archetypes[i].controller != null)
+                    {
+                        model = archetypes[i].model;
+                        controller = archetypes[i].controller;
+                        break;
+                    }
+                }
+            }
+
+            if (model == null || controller == null)
             {
                 if (!_loggedMissingAssets)
                 {
@@ -64,8 +93,8 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             var visual = actor.gameObject.AddComponent<CombatUnitVisual3D>();
             visual.Build(
-                unitModel,
-                animatorController,
+                model,
+                controller,
                 side == CombatSide.Player ? playerUnitMaterial : enemyUnitMaterial,
                 side == CombatSide.Player ? playerRingMaterial : enemyRingMaterial,
                 unitHeight,

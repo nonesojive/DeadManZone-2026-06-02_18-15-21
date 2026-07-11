@@ -251,3 +251,51 @@ Presentability tuning discovered and backported into the bootstrap:
 - **Lighting**: brightened trilight ambient + added a shadowless cool fill light (0.45 @ 25°/160°) so the toon shadow band never collapses to black.
 
 Open items for the next session: scope the interior-ink feature per-layer instead of globally (still the outstanding arena-spec decision), punch-in camera beats on kill/crit events, custom shoot animation (attack is a placeholder pose), seed/roster variety on `Combat3DDemoDriver` (serialized `combatSeed` / `pieceId` / `unitsPerSide`), and the deferred armor-lifetime cleanup (fight-start buffs still strip at the first commanded pause).
+
+## Roster integration (2026-07-11)
+
+Three new Meshy 12k units (image3d → remesh → rig → animate, job ids in docs/meshy-roster-jobs-2026-07-11.md) integrated into the Combat3D demo:
+
+- **GLBs**: `Assets/_Project/Combat3D/Models/{bulwark_squad,field_medic,grenade_thrower}/{idle,walk,die}.glb` (source of truth stays in `tools/meshy/units/<unit>/glb12k/`).
+- **Archetype mechanism**: `CombatUnitVisual3DInstaller` grew a serialized `archetypes` array (`pieceId` → model + controller), resolved in the visual factory by the same ContentDatabase piece id the sim uses; unknown ids fall back to the default rifleman visuals. The bootstrap generates a looped-clip AnimatorController per unit (same discovery logic as the rifleman) and wires the array.
+- **Piece-id mapping**: `bulwark_squad` and `field_medic` map 1:1; **no `grenade_thrower` piece exists in content** — that model is worn by `ironclad_mortars`.
+- **Demo rosters** (serialized on `Combat3DDemoDriver`): player = conscript_rifleman, bulwark_squad, field_medic; enemy = conscript_rifleman, ironclad_mortars, conscript_rifleman. `BuildArmy` now advances placement rows by each piece's footprint height (ironclad_mortars is 2 cells tall).
+- **Verified**: mixed silhouettes on both sides in Play mode, fight completed (53 events / 2 segments, fight_end at segment 1 tick 122, defeat banner), EditMode 352/352 green.
+- **Note**: the session-limit cutoff mid-agent left `Combat3DDemoSceneBootstrap.cs` with a duplicated tail (stale pre-archetype copy after `#endif`); removed — if the scene ever rebuilds oddly, check that file first.
+- **Texture roulette**: all three units came out in acceptable olive/camo tones this gen; no re-gens needed.
+ the HDR grade blooms it) stretched toward the target at the visual's shoulder-height muzzle point, plus a shadowless point-light pop. Rifle 1×/0.07s, cannon 1.9×/0.11s, small impact pop 0.65×, explosion 2.2×. Pool of 8, grown on demand, decay driven from one `Update` — zero per-shot allocation after warm-up. `PlayDamage`/`PlayEnvironmentalDamage`/`PlayDeath` stay no-ops (unit shader hit-flash/dissolve own the body channel until the real VFX pass). |
+
+### Wiring (smallest diffs)
+- `CombatArenaPresenter.ResolveVfxPresenter()` — when no `CombatArena2DVfx` exists, falls back to `GetComponent<ICombatArenaVfxPresenter>()`; 2D scenes take the exact old path.
+- `Presentation/Editor/Combat3DDemoSceneBootstrap.cs` — `CreateArenaRig` adds both components and wires director/presenter/camera; scene rebuilt via the menu item so `Combat3D_Demo.unity` carries them.
+
+### Spec decisions
+- Punch-ins fire on `destroyed` (+ `fight_end` upgrade) **only** — the event log has no crit event type, and HQ hits are plain `damage` on a building target (deferred until HQs exist in the 3D arena). No invented event types.
+- Two feedback tiers, no full-screen interrupts, camera motion is the only impact channel beyond the unit shader — all per spec §1/§6.
+- Hit-stop kept sub-perceptual for a replay (0.05s at 0.12×) and toggleable off.
+
+### Verified in-editor (2026-07-11)
+Zero compile errors; scene rebuilt via menu; two Play-mode runs of the seeded 3v3 (seed 20260711, enemy win): muzzle/impact flash pool exercised at correct shoulder-height positions (inspected live), additive rendering confirmed visually, tier-2 fight-end punch-in captured in Game-view screenshots, camera returned to the exact home pose (0, 8.5, −12) after every beat, `Time.timeScale` restored to 1, `[Combat3D] fight_end` still logs. EditMode tests: **352/352**.
+
+## Interior-ink scoping (2026-07-11)
+
+The `DMZ_InteriorInk` (FullScreenPassRendererFeature → `_Phase0Spike/Materials/InteriorInk.mat`, BeforeRenderingPostProcessing, Depth|Normal) and `DMZ_SSAO` renderer features are now **combat-only** — resolves the outstanding arena-spec decision (they previously ran on every camera via the shared renderer).
+
+### What moved where
+- `Assets/_Project/Settings/Rendering/DeadManZone_CombatRenderer.asset` — NEW. `AssetDatabase.CopyAsset` duplicate of the shared forward renderer (file copy preserves sub-asset fileIDs, so both features + material refs survived intact). Carries `DMZ_InteriorInk` + `DMZ_SSAO`.
+- `Assets/_Project/Settings/Rendering/DeadManZone_ForwardRenderer.asset` — both features removed (`m_RendererFeatures`/`m_RendererFeatureMap` cleared, sub-assets deleted). Every camera that doesn't opt in (main menu, Run, everything) renders clean.
+- `Assets/_Project/Settings/Rendering/DeadManZone_URP.asset` — `m_RendererDataList` is now `[0] DeadManZone_ForwardRenderer (default), [1] DeadManZone_CombatRenderer`.
+
+### Opt-in mechanism (renderer index)
+Combat cameras select the combat renderer by index on their `UniversalAdditionalCameraData` (`m_RendererIndex = 1`, serialized into the scene). `Combat3DDemoSceneBootstrap.CreateCamera` resolves the index at build time via `FindCombatRendererIndex()` — walks the active pipeline's `m_RendererDataList` for the combat renderer's asset path and calls `SetRenderer(i)`; logs a warning and keeps the default renderer if the pipeline isn't URP or the entry is missing. `Combat3D_Demo.unity` was rebuilt through the menu item so the saved scene carries index 1.
+
+### Pipeline/quality coverage
+One pipeline asset serves everything: `DeadManZone_URP.asset` is the GraphicsSettings default AND the override on all 6 quality levels (Very Low → Ultra), so a single renderer-list edit covers every quality level — no split-pipeline caveat.
+
+### Spike-scene note
+`Assets/_Phase0Spike/Scenes/Phase0_Spike.unity` (throwaway) was left on the default renderer — its camera loses the interior-ink/SSAO look. Acceptable per spec; if a spike revisit needs ink, set its camera's renderer to index 1.
+
+### Verified in-editor (2026-07-11)
+- `Run.unity`: opened, camera screenshot clean (no ink edge-detect, no SSAO), zero render errors, closed without saving.
+- `Combat3D_Demo.unity`: Play-mode 3v3 — interior-ink linework clearly visible on units mid-fight, `[Combat3D] fight_end replayed at segment 1, tick 177` logged, defeat banner shown.
+- EditMode tests: **352/352**.

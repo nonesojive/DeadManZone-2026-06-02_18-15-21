@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +10,7 @@ using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace DeadManZone.Presentation.Editor
 {
@@ -18,7 +19,7 @@ namespace DeadManZone.Presentation.Editor
     /// cool ambient, P0_Grade volume, graybox trench dressing), a perspective camera, and the
     /// combat arena rig (bootstrap/director/presenter/pool) configured for ToonInk3D visuals
     /// with the Phase-0 rifleman model, a freshly generated AnimatorController, and side rings.
-    /// The spike scene/controller stay throwaway — everything generated lands under _Project.
+    /// The spike scene/controller stay throwaway â€” everything generated lands under _Project.
     /// </summary>
     public static class Combat3DDemoSceneBootstrap
     {
@@ -31,6 +32,22 @@ namespace DeadManZone.Presentation.Editor
         private const string ConfigPath = GeneratedFolder + "/CombatArena3DDemoConfig.asset";
         private const string GroundMaterialPath = GeneratedFolder + "/Combat3D_Ground.mat";
         private const string SandbagMaterialPath = GeneratedFolder + "/Combat3D_Sandbag.mat";
+        private const string CombatRendererPath = "Assets/_Project/Settings/Rendering/DeadManZone_CombatRenderer.asset";
+
+        // Roster archetypes: Meshy 12k units copied under _Project (idle/walk/die GLBs sharing
+        // one rig per unit), mapped to the ContentDatabase piece id the sim uses. No
+        // grenade_thrower piece exists in content â€” that model stands in for the mortar team.
+        // A unit with broken/missing GLBs is skipped with a warning â€” actors with its piece id
+        // fall back to the default rifleman visuals instead of blocking the scene build.
+        private static readonly (string folder, string pieceId)[] RosterUnits =
+        {
+            ("bulwark_squad", "bulwark_squad"),
+            ("field_medic", "field_medic"),
+            ("grenade_thrower", "ironclad_mortars"),
+        };
+
+        private static string RosterModelFolder(string unitFolder) =>
+            GeneratedFolder + "/Models/" + unitFolder;
 
         // Proven Phase-0 spike assets (referenced, never modified).
         private const string IdleGlbPath = "Assets/_Phase0Spike/Models/enlisted_rifleman_12k.glb";
@@ -75,7 +92,7 @@ namespace DeadManZone.Presentation.Editor
             var ringRed = LoadOrFlag<Material>(RingRedPath, missing);
             var gradeProfile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(GradeProfilePath);
             if (gradeProfile == null)
-                Debug.LogWarning($"[Combat3D] Grade volume profile missing at {GradeProfilePath} — scene will render ungraded.");
+                Debug.LogWarning($"[Combat3D] Grade volume profile missing at {GradeProfilePath} â€” scene will render ungraded.");
 
             var idleClip = FindClip(IdleGlbPath, missing, "idle");
             var walkClip = FindClip(WalkGlbPath, missing, "walk");
@@ -84,14 +101,16 @@ namespace DeadManZone.Presentation.Editor
             if (missing.Count > 0)
             {
                 Debug.LogError(
-                    "[Combat3D] Aborting — required Phase-0 spike assets are missing:\n - " +
+                    "[Combat3D] Aborting â€” required Phase-0 spike assets are missing:\n - " +
                     string.Join("\n - ", missing));
                 return;
             }
 
             // --- Generated assets under _Project (spike stays throwaway). ---
             EnsureFolder(GeneratedFolder);
-            var controller = BuildAnimatorController(idleClip, walkClip, dieClip);
+            var controller = BuildAnimatorController(
+                idleClip, walkClip, dieClip, IdleClipPath, WalkClipPath, DieClipPath, ControllerPath);
+            var archetypes = BuildRosterArchetypes();
             var config = BuildDemoArenaConfig();
             var groundMat = EnsureUnlitLitMaterial(GroundMaterialPath, new Color(0.30f, 0.28f, 0.25f));
             var sandbagMat = EnsureUnlitLitMaterial(SandbagMaterialPath, new Color(0.44f, 0.39f, 0.29f));
@@ -109,12 +128,12 @@ namespace DeadManZone.Presentation.Editor
             CreateKeyLight();
             CreateGlobalVolume(gradeProfile);
             CreateGraybox(groundMat, sandbagMat);
-            CreateArenaRig(camera, config, controller, idleModel, playerMat, enemyMat, ringBlue, ringRed);
+            CreateArenaRig(camera, config, controller, idleModel, playerMat, enemyMat, ringBlue, ringRed, archetypes);
 
             EnsureFolder("Assets/_Project/Scenes");
             EditorSceneManager.SaveScene(scene, ScenePath);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Combat3D] Demo scene saved to {ScenePath}. Open it and press Play — " +
+            Debug.Log($"[Combat3D] Demo scene saved to {ScenePath}. Open it and press Play â€” " +
                       "the 3v3 fight auto-starts through the Core sim.");
         }
 
@@ -150,16 +169,53 @@ namespace DeadManZone.Presentation.Editor
             return null;
         }
 
+        /// <summary>One archetype entry per roster unit whose GLBs imported cleanly:
+        /// generated looped .anim copies + AnimatorController (same logic as the rifleman)
+        /// living next to the unit's GLBs under Combat3D/Models/&lt;unit&gt;/.</summary>
+        private static List<(string pieceId, GameObject model, AnimatorController controller)>
+            BuildRosterArchetypes()
+        {
+            var archetypes = new List<(string, GameObject, AnimatorController)>();
+            foreach (var (unitFolder, pieceId) in RosterUnits)
+            {
+                string folder = RosterModelFolder(unitFolder);
+                var unitMissing = new List<string>();
+                var model = LoadOrFlag<GameObject>(folder + "/idle.glb", unitMissing);
+                var idle = FindClip(folder + "/idle.glb", unitMissing, "idle");
+                var walk = FindClip(folder + "/walk.glb", unitMissing, "walk");
+                var die = FindClip(folder + "/die.glb", unitMissing, "dead", "die");
+
+                if (unitMissing.Count > 0)
+                {
+                    Debug.LogWarning(
+                        $"[Combat3D] Roster unit '{unitFolder}' skipped (falls back to rifleman visuals):\n - " +
+                        string.Join("\n - ", unitMissing));
+                    continue;
+                }
+
+                var controller = BuildAnimatorController(
+                    idle, walk, die,
+                    $"{folder}/{unitFolder}_Idle.anim",
+                    $"{folder}/{unitFolder}_Walk.anim",
+                    $"{folder}/{unitFolder}_Die.anim",
+                    $"{folder}/{unitFolder}Combat3D.controller");
+                archetypes.Add((pieceId, model, controller));
+            }
+
+            return archetypes;
+        }
+
         private static AnimatorController BuildAnimatorController(
-            AnimationClip idleSource, AnimationClip walkSource, AnimationClip dieSource)
+            AnimationClip idleSource, AnimationClip walkSource, AnimationClip dieSource,
+            string idleClipPath, string walkClipPath, string dieClipPath, string controllerPath)
         {
             // Writable copies so loop flags can be set (imported GLB sub-assets are read-only).
-            var idle = SaveClipCopy(idleSource, IdleClipPath, loop: true);
-            var walk = SaveClipCopy(walkSource, WalkClipPath, loop: true);
-            var die = SaveClipCopy(dieSource, DieClipPath, loop: false);
+            var idle = SaveClipCopy(idleSource, idleClipPath, loop: true);
+            var walk = SaveClipCopy(walkSource, walkClipPath, loop: true);
+            var die = SaveClipCopy(dieSource, dieClipPath, loop: false);
 
-            AssetDatabase.DeleteAsset(ControllerPath);
-            var controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
+            AssetDatabase.DeleteAsset(controllerPath);
+            var controller = AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
             controller.AddParameter("Moving", AnimatorControllerParameterType.Bool);
             controller.AddParameter("Die", AnimatorControllerParameterType.Trigger);
 
@@ -304,7 +360,39 @@ namespace DeadManZone.Presentation.Editor
             // edge-detect saturates tiny characters into solid silhouettes when pulled back).
             go.transform.position = new Vector3(0f, 8.5f, -12.0f);
             go.transform.rotation = Quaternion.Euler(30f, 0f, 0f);
+
+            // Combat-only rendering: the interior-ink + SSAO features live on
+            // DeadManZone_CombatRenderer, not the shared forward renderer, so
+            // non-combat scenes stay clean. Opt this camera into it by index.
+            int rendererIndex = FindCombatRendererIndex();
+            if (rendererIndex >= 0)
+                camera.GetUniversalAdditionalCameraData().SetRenderer(rendererIndex);
             return camera;
+        }
+
+        /// <summary>Index of DeadManZone_CombatRenderer in the active URP asset's renderer
+        /// list (serialized onto the camera, so the scene keeps working at runtime).</summary>
+        private static int FindCombatRendererIndex()
+        {
+            var pipeline = (QualitySettings.renderPipeline ?? GraphicsSettings.defaultRenderPipeline)
+                as UniversalRenderPipelineAsset;
+            if (pipeline == null)
+            {
+                Debug.LogWarning("[Combat3D] Active render pipeline is not URP â€” camera keeps the default renderer (no interior ink/SSAO).");
+                return -1;
+            }
+
+            var rendererList = new SerializedObject(pipeline).FindProperty("m_RendererDataList");
+            for (int i = 0; i < rendererList.arraySize; i++)
+            {
+                var data = rendererList.GetArrayElementAtIndex(i).objectReferenceValue;
+                if (data != null && AssetDatabase.GetAssetPath(data) == CombatRendererPath)
+                    return i;
+            }
+
+            Debug.LogWarning($"[Combat3D] {CombatRendererPath} is not in the renderer list of " +
+                             $"{AssetDatabase.GetAssetPath(pipeline)} â€” camera keeps the default renderer (no interior ink/SSAO).");
+            return -1;
         }
 
         private static void CreateKeyLight()
@@ -381,7 +469,8 @@ namespace DeadManZone.Presentation.Editor
             Material playerMat,
             Material enemyMat,
             Material ringBlue,
-            Material ringRed)
+            Material ringRed,
+            List<(string pieceId, GameObject model, AnimatorController controller)> archetypes)
         {
             var rig = new GameObject("Combat3DArena");
 
@@ -419,6 +508,16 @@ namespace DeadManZone.Presentation.Editor
                 so.FindProperty("enemyUnitMaterial").objectReferenceValue = enemyMat;
                 so.FindProperty("playerRingMaterial").objectReferenceValue = ringBlue;
                 so.FindProperty("enemyRingMaterial").objectReferenceValue = ringRed;
+
+                var archetypeArray = so.FindProperty("archetypes");
+                archetypeArray.arraySize = archetypes.Count;
+                for (int i = 0; i < archetypes.Count; i++)
+                {
+                    var element = archetypeArray.GetArrayElementAtIndex(i);
+                    element.FindPropertyRelative("pieceId").stringValue = archetypes[i].pieceId;
+                    element.FindPropertyRelative("model").objectReferenceValue = archetypes[i].model;
+                    element.FindPropertyRelative("controller").objectReferenceValue = archetypes[i].controller;
+                }
             });
 
             var driver = rig.AddComponent<Combat3DDemoDriver>();
@@ -427,6 +526,21 @@ namespace DeadManZone.Presentation.Editor
                 so.FindProperty("director").objectReferenceValue = director;
                 so.FindProperty("presenter").objectReferenceValue = presenter;
                 so.FindProperty("arenaLoader").objectReferenceValue = loader;
+            });
+
+            // Feel pass: punch-in camera beats + pooled muzzle-flash VFX (arena spec Â§1/Â§6).
+            var punchIn = rig.AddComponent<CombatArenaPunchInCamera>();
+            SetSerialized(punchIn, so =>
+            {
+                so.FindProperty("director").objectReferenceValue = director;
+                so.FindProperty("presenter").objectReferenceValue = presenter;
+                so.FindProperty("arenaCamera").objectReferenceValue = camera;
+            });
+
+            var vfx = rig.AddComponent<Combat3DVfxPresenter>();
+            SetSerialized(vfx, so =>
+            {
+                so.FindProperty("arenaCamera").objectReferenceValue = camera;
             });
         }
 
