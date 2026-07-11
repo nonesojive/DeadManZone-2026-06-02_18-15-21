@@ -22,6 +22,11 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public static CombatArenaBootstrap Instance { get; private set; }
 
+        /// <summary>ToonInk3D scenes author their own perspective camera, lighting, and grade;
+        /// the 2D atmosphere/battlefield build and orthographic framing must not run.</summary>
+        private bool Is3DMode =>
+            config != null && config.visualMode == CombatArenaVisualMode.ToonInk3D;
+
         private void Awake()
         {
             Instance = this;
@@ -35,10 +40,13 @@ namespace DeadManZone.Presentation.Combat.Arena
             Time.maximumDeltaTime = 0.05f;
 
             ConfigureCamera();
-            TopTroopsAtmosphere.Apply(config, transform, arenaCamera);
+            if (!Is3DMode)
+            {
+                TopTroopsAtmosphere.Apply(config, transform, arenaCamera);
 #if UNITY_URP_PRESENT
-            CombatArenaPostFx.Ensure(transform);
+                CombatArenaPostFx.Ensure(transform);
 #endif
+            }
         }
 
         private void OnDestroy()
@@ -53,6 +61,9 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
 
             ConfigureCamera();
+            if (Is3DMode)
+                return; // scene-authored camera pose/lighting; no 2D battlefield view.
+
             TopTroopsAtmosphere.Apply(config, transform, arenaCamera);
 #if UNITY_URP_PRESENT
             CombatArenaPostFx.Ensure(transform);
@@ -78,11 +89,12 @@ namespace DeadManZone.Presentation.Combat.Arena
             arenaCamera.depth = 10f;
             arenaCamera.rect = new Rect(0f, 0f, 1f, 1f);
             arenaCamera.allowHDR = true; // let bloom pick up the bright additive muzzle/tracer VFX
-            arenaCamera.orthographic = true;
+            if (!Is3DMode)
+                arenaCamera.orthographic = true;
 
             EnsureUrpCameraData(arenaCamera);
 
-            if (RenderSettings.skybox == null)
+            if (!Is3DMode && RenderSettings.skybox == null)
             {
                 arenaCamera.clearFlags = CameraClearFlags.SolidColor;
                 arenaCamera.backgroundColor = new Color(0.12f, 0.11f, 0.10f);

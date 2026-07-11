@@ -79,6 +79,7 @@ namespace DeadManZone.Core.Tests
                 enemyCombatants: new List<CombatantState>(),
                 log,
                 checkpointIndex: 0,
+                logSegment: 0,
                 globalTick: 0);
 
             Assert.IsTrue(result.Success, result.Reason);

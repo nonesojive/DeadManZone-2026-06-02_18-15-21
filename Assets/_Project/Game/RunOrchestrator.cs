@@ -149,6 +149,7 @@ namespace DeadManZone.Game
                 Requisition = State.Authority,
                 Authority = State.Authority,
                 PlayerTactic = defaultTactic,
+                StartingTactic = defaultTactic,
                 SubmittedCommands = new List<PhaseCommand>(),
                 EventLog = new List<CombatEventRecord>()
             };
@@ -198,13 +199,7 @@ namespace DeadManZone.Game
                 _activeCombat.CurrentPauseIndex);
         }
 
-        public int GetPrimaryActionBudget()
-        {
-            int budget = 1;
-            if (_commandProcessor.GetBonusActionSlots(GetBuildBoards().ToAggregateBoard()) > 0)
-                budget += 1;
-            return budget;
-        }
+        public int GetPrimaryActionBudget() => 1;
 
         public CombatPauseContext GetCombatPauseContext()
         {
@@ -552,20 +547,22 @@ namespace DeadManZone.Game
                 State.Combat.Authority > 0 ? State.Combat.Authority : State.Combat.Requisition,
                 buildBoards);
 
-            var playerTactic = State.Combat.PlayerTactic;
+            // Re-apply the FIGHT-START tactic before fast-forwarding; the saved
+            // PlayerTactic may be a mid-fight change, which must replay through
+            // SubmittedCommands exactly as it did live — applying it here would
+            // recompute fight-start buffs from the wrong tactic and diverge.
+            var playerTactic = State.Combat.StartingTactic ?? State.Combat.PlayerTactic;
             if (!TacticUnlockRules.IsUnlocked(Faction, playerTactic))
                 playerTactic = ResolveDefaultPlayerTactic(Faction);
 
             if (playerTactic != default)
-            {
                 _activeCombat.SetPlayerTactic(playerTactic);
-                State.Combat.PlayerTactic = playerTactic;
-            }
 
             _activeCombat.FastForwardFromSave(
                 State.Combat.CheckpointsFired,
                 State.Combat.AwaitingCommand,
                 State.Combat.SubmittedCommands);
+            State.Combat.PlayerTactic = _activeCombat.PlayerTactic;
 
             _pendingCombatCompletion = _activeCombat.BuildCompletionResultIfOver();
         }

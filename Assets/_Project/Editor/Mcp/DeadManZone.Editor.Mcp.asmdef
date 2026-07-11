@@ -1,0 +1,13 @@
+{
+  "name": "DeadManZone.Editor.Mcp",
+  "rootNamespace": "DeadManZone.Editor.Mcp",
+  "references": [
+    "MCPForUnity.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "autoReferenced": false
+}

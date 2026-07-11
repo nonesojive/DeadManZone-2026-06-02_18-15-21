@@ -162,8 +162,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (config == null)
                 return;
 
-            bool use2D = CombatArenaPresentationMode.IsTopTroops2D(config);
-            _activeVfx = ResolveVfxPresenter(use2D);
+            _activeVfx = ResolveVfxPresenter();
 
             _mapper = new CombatGridMapper(battlefield.Layout, config.cellWidth, config.cellDepth);
             _battlefield = battlefield;
@@ -254,8 +253,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (config == null)
                 return;
 
-            bool use2D = CombatArenaPresentationMode.IsTopTroops2D(config);
-            _activeVfx = ResolveVfxPresenter(use2D);
+            _activeVfx = ResolveVfxPresenter();
 
             Transform poolRoot = bootstrap.UnitsRoot != null ? bootstrap.UnitsRoot : transform;
             DestroyOrphanActors(poolRoot);
@@ -511,6 +509,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
 
             Vector3 deathWorld = dead.transform.position;
+            float deathSeconds = dead.DeathSeconds;
             _actors.Remove(combatEvent.ActorId);
             _pendingDeathPresentations++;
             dead.PlayDeath(() =>
@@ -518,8 +517,8 @@ namespace DeadManZone.Presentation.Combat.Arena
                 _pendingDeathPresentations--;
                 _pool.Release(dead);
             });
-            // Dust/audio land when the fall finishes, right as the die strip completes.
-            StartCoroutine(PlayDeathVfxAfterDelay(deathWorld, CombatUnitVisual2D.DieStripSeconds));
+            // Dust/audio land when the fall finishes, right as the death presentation completes.
+            StartCoroutine(PlayDeathVfxAfterDelay(deathWorld, deathSeconds));
         }
 
         private System.Collections.IEnumerator PlayDeathVfxAfterDelay(Vector3 worldPosition, float delaySeconds)
@@ -635,12 +634,10 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (audio == null)
                 audio = GetComponent<CombatArenaAudioPresenter>();
 
-            var bootstrap = CombatArenaBootstrap.Instance;
-            bool use2D = bootstrap?.Config != null && CombatArenaPresentationMode.IsTopTroops2D(bootstrap.Config);
-            _activeVfx = ResolveVfxPresenter(use2D);
+            _activeVfx = ResolveVfxPresenter();
         }
 
-        private ICombatArenaVfxPresenter ResolveVfxPresenter(bool use2D)
+        private ICombatArenaVfxPresenter ResolveVfxPresenter()
         {
             if (vfx2D == null)
                 vfx2D = GetComponent<CombatArena2DVfx>();

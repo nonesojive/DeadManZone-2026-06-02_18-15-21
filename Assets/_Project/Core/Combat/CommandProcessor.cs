@@ -61,8 +61,6 @@ namespace DeadManZone.Core.Combat
             return list;
         }
 
-        public int GetBonusActionSlots(BoardState board) => 0;
-
         public CommandResult TryApplyBatch(
             IReadOnlyList<PhaseCommand> commands,
             BoardState board,
@@ -72,10 +70,10 @@ namespace DeadManZone.Core.Combat
             IList<CombatantState> enemyCombatants,
             CombatEventLog log,
             int checkpointIndex,
+            int logSegment,
             int globalTick,
             TacticType[] startingTactics = null)
         {
-            int logSegment = checkpointIndex + 1;
             int authoritySnapshot = authority;
             var tacticCommand = commands?.FirstOrDefault(c =>
                 c.Type == CommandType.SetTactic || c.Type == CommandType.ChangeStance);
@@ -99,6 +97,10 @@ namespace DeadManZone.Core.Combat
                 }
 
                 tactics.PlayerTactic = tacticCommand.Tactic;
+                // Keep the cached damage buff in sync with the live tactic, mirroring
+                // TickCombatRun.SetPlayerTactic — otherwise mid-fight changes fight with
+                // the old tactic's buff and save-restore diverges from the live fight.
+                tactics.PlayerDamageBuff = TacticEffects.GetDamageBuff(tacticCommand.Tactic);
                 log.Append(logSegment, globalTick, "tactic", "tactic_set", null, (int)tacticCommand.Tactic);
             }
 
@@ -156,44 +158,6 @@ namespace DeadManZone.Core.Combat
             }
 
             return CommandResult.Ok();
-        }
-
-        public CommandResult TryApply(
-            PhaseCommand command,
-            BoardState board,
-            ref int requisition,
-            TacticState tactics,
-            IList<CombatantState> playerCombatants,
-            IList<CombatantState> enemyCombatants,
-            CombatEventLog log,
-            int checkpointIndex,
-            int globalTick)
-        {
-            if (command.Type is CommandType.SpendRequisitionBuff or CommandType.CallStrike)
-            {
-                return TryApplyLegacy(
-                    command,
-                    board,
-                    ref requisition,
-                    tactics,
-                    playerCombatants,
-                    enemyCombatants,
-                    log,
-                    checkpointIndex + 1,
-                    globalTick);
-            }
-
-            return TryApplyBatch(
-                new[] { command },
-                board,
-                ref requisition,
-                tactics,
-                playerCombatants,
-                enemyCombatants,
-                log,
-                checkpointIndex,
-                globalTick,
-                startingTactics: null);
         }
 
         private CommandResult TryApplyLegacy(

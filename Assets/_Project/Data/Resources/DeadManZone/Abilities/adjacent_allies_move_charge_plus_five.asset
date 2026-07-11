@@ -21,6 +21,8 @@ MonoBehaviour:
     SystemTagId: 
     SynergyTagId: 
     AbilityTagId: 
-  stat: 4
+  stat: 5
   modType: 0
   magnitude: 5
+  countTagId: 
+  applyToSelf: 0

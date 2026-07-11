@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8f2a1b3d4e5678901234567890abcde, type: 3}
+  m_Name: CombatArena3DDemoConfig
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatArenaConfigSO
+  visualMode: 2
+  cellWidth: 1.8
+  cellDepth: 1.8
+  useTopTroopsProceduralBattlefield: 0
+  useProceduralUnitVisuals: 0
+  useTopTroopsFreeChaseMovement: 1
+  topTroopsChaseSpeedMultiplier: 1.2
+  topTroopsChaseMaxLeadCells: 2
+  useTopTroopsBrightSky: 0
+  topTroopsPlayerZoneColor: {r: 0.54, g: 0.44, b: 0.3, a: 1}
+  topTroopsNeutralZoneColor: {r: 0.46, g: 0.42, b: 0.36, a: 1}
+  topTroopsEnemyZoneColor: {r: 0.42, g: 0.34, b: 0.3, a: 1}
+  topTroopsSkyColor: {r: 0.24, g: 0.21, b: 0.18, a: 1}
+  projectileArcHeight: 0.6
+  orthoCameraElevationDegrees: 52
+  orthoCameraAzimuthDegrees: 270
+  cameraElevationDegrees: 52
+  cameraAzimuthDegrees: 270
+  cameraDistance: 28
+  fieldOfView: 42
+  autoFrameWidth: 1
+  horizontalViewportPadding: 0
+  autoFrameVerticalPosition: 1
+  boardVerticalViewportCenter: 0.5
+  autoFrameVerticalFill: 1
+  verticalViewportFill: 0.58
+  cameraDistanceScale: 0.88
+  lookAtDepthOffset: 0
+  useManualCameraPose: 0
+  manualCameraWorldPosition: {x: 0, y: 0, z: 0}
+  lookAtWorld: {x: 0, y: 0, z: 0}
+  showCheckerboardGrid: 0
+  gridLightCellColor: {r: 0.72, g: 0.56, b: 0.38, a: 1}
+  gridDarkCellColor: {r: 0.5, g: 0.37, b: 0.26, a: 1}
+  gridBackdropColor: {r: 0.16, g: 0.12, b: 0.09, a: 1}
+  gridCellInset: 0.045
+  gridYOffset: 0.04
+  moveLerpSeconds: 0.4
+  moveSpeedPresentationScale: 1.1
+  moveMarchGraceSeconds: 2.4
+  attackLungeSeconds: 0.15
+  attackLungeDistance: 0.35
+  unitSpawnFadeSeconds: 0.35
+  unitModelScaleMultiplier: 1.25
+  defaultUnitModelHeight: 1.85
+  defaultVehicleModelHeight: 1.8
+  useSyntyTerrain: 0
+  atmosphereProfile: {fileID: 0}
+  spawnPerimeterProps: 0
+  useSyntySkybox: 0
+  groundPadding: 1.35
+  enableArenaFog: 0
+  fogDensity: 0.022
+  syntyGroundPrefabPath: Assets/Synty/PolygonGeneric/Prefabs/Environment/SM_Gen_Env_Ground_Dirt_Large_01.prefab
+  useFlatTexturedGround: 1
+  syntyGroundMaterial: {fileID: 0}
+  syntyGroundPrefab: {fileID: 0}
+  syntyGroundMaterialPath: Assets/Synty/PolygonGeneric/Materials/Generic_Dirt.mat
+  syntySkyboxMaterialPath: Assets/Synty/PolygonApocalypse/Materials/Misc/Skydome_Day_01.mat
+  fallbackUnitPrefabPath: Assets/_Project/Art/Synty/Arena/Units/ArenaUnit_Rifle.prefab
+  fallbackBuildingPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_SupplyDepot.prefab
+  fallbackHqPrefabPath: Assets/_Project/Art/Synty/Arena/Buildings/ArenaBuilding_Hq.prefab

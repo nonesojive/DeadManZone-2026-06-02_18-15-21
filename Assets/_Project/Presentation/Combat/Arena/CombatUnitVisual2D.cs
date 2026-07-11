@@ -7,10 +7,13 @@ using UnityEngine;
 namespace DeadManZone.Presentation.Combat.Arena
 {
     /// <summary>Sprite-based unit presentation for Top Troops 2D arena mode.</summary>
-    public sealed class CombatUnitVisual2D : MonoBehaviour
+    public sealed class CombatUnitVisual2D : MonoBehaviour, ICombatUnitVisual
     {
         /// <summary>Die strips are authored ~4s; compress to a snappy fall that still reads.</summary>
         public const float DieStripSeconds = 1.2f;
+
+        /// <inheritdoc cref="ICombatUnitVisual.DeathSeconds"/>
+        public float DeathSeconds => DieStripSeconds;
 
         /// <summary>Hold the corpse's final frame briefly before the actor is pooled.</summary>
         public const float CorpseLingerSeconds = 0.45f;

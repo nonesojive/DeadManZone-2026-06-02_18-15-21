@@ -10,7 +10,8 @@ namespace DeadManZone.Core.Combat
 
     public sealed class CombatEvent
     {
-        /// <summary>Playback segment: 0 = start→pause 1, 1 = pause 1→pause 2, 2 = remainder.</summary>
+        /// <summary>Playback segment (= CheckpointsFired when logged): 0 = start→mid pause,
+        /// 1 = mid pause→end. Pause-command events land in the segment that plays next.</summary>
         public int Segment { get; init; }
         /// <summary>Global fight tick — never resets across segments.</summary>
         public int Tick { get; init; }

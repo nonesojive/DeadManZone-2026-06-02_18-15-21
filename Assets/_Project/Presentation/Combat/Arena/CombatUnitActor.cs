@@ -28,7 +28,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private const float MovingSpeedFloorWorldPerSec = 0.05f;
         private Vector3 _chaseVelocity;
 
-        private CombatUnitVisual2D _visual2D;
+        private ICombatUnitVisual _visual;
         private CombatGridMapper _mapper;
         private GridCoord _anchor;
         private float _moveWorldSpeed = 1f;
@@ -43,11 +43,24 @@ namespace DeadManZone.Presentation.Combat.Arena
         private CombatAttackPresentationProfile _attackProfile;
         private CombatUnitHealthBar _healthBar;
 
+        /// <summary>Scene-installed visual backend override (e.g. the ToonInk3D arena via
+        /// <see cref="CombatUnitVisual3DInstaller"/>). Null — the default — keeps the 2D
+        /// sprite pipeline byte-identical. Actors are pooled/runtime-created, so this is a
+        /// static hook rather than a serialized field.</summary>
+        public static Func<CombatUnitActor, PieceDefinitionSO, CombatSide, Camera, ICombatUnitVisual>
+            VisualFactory;
+
         public string InstanceId { get; private set; }
         public string PieceId { get; private set; }
         public GridCoord Anchor => _anchor;
         public bool IsAlive { get; private set; } = true;
         public CombatAttackPresentationProfile AttackProfile => _attackProfile;
+
+        /// <summary>Seconds the death presentation takes (through the visual seam);
+        /// falls back to the actor's own scale-out routine duration.</summary>
+        public float DeathSeconds => _visual?.DeathSeconds ?? FallbackDeathSeconds;
+
+        private const float FallbackDeathSeconds = 0.35f;
 
         public void Initialize(
             string instanceId,
@@ -85,13 +98,20 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             if (pieceDefinition != null)
             {
-                _visual2D = gameObject.AddComponent<CombatUnitVisual2D>();
-                int squadSize = Mathf.Clamp(pieceDefinition.manpowerCost, 1, 5);
-                _visual2D.Build(
-                    pieceDefinition,
-                    combatSide,
-                    cameraTransform != null ? cameraTransform.GetComponent<Camera>() : null,
-                    squadSize);
+                var arenaCamera = cameraTransform != null
+                    ? cameraTransform.GetComponent<Camera>()
+                    : null;
+
+                // Scene-installed backend (3D toon-ink) wins; the 2D sprite pipeline
+                // stays the default when no factory is installed (or it declines).
+                _visual = VisualFactory?.Invoke(this, pieceDefinition, combatSide, arenaCamera);
+                if (_visual == null)
+                {
+                    var visual2D = gameObject.AddComponent<CombatUnitVisual2D>();
+                    int squadSize = Mathf.Clamp(pieceDefinition.manpowerCost, 1, 5);
+                    visual2D.Build(pieceDefinition, combatSide, arenaCamera, squadSize);
+                    _visual = visual2D;
+                }
             }
 
             SnapToAnchor(anchor);
@@ -101,7 +121,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 this,
                 combatSide,
                 cameraTransform != null ? cameraTransform.GetComponent<Camera>() : null,
-                _visual2D != null ? _visual2D.VisualHeight : 1.8f);
+                _visual != null ? _visual.VisualHeight : 1.8f);
         }
 
         /// <summary>Update the unit's HP bar (0..1); hidden at full health.</summary>
@@ -119,7 +139,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             transform.position = _mapper.ToWorld(anchor);
             _smoothedSimWorld = transform.position;
             _chaseVelocity = Vector3.zero;
-            _visual2D?.SetWalking(false);
+            _visual?.SetWalking(false);
         }
 
         public void MoveTo(GridCoord anchor)
@@ -138,13 +158,13 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void Update()
         {
-            if (!IsAlive || _frozen || _mapper == null || _visual2D == null)
+            if (!IsAlive || _frozen || _mapper == null || _visual == null)
                 return;
 
-            if (_visual2D.BlocksLocomotion)
+            if (_visual.BlocksLocomotion)
             {
-                _visual2D.SetWalking(false);
-                _visual2D.UpdateSortAndBob(transform.position);
+                _visual.SetWalking(false);
+                _visual.UpdateSortAndBob(transform.position);
                 return;
             }
 
@@ -185,11 +205,11 @@ namespace DeadManZone.Presentation.Combat.Arena
                     MovingSpeedFloorWorldPerSec) * moveDt;
                 bool moving = moveDelta.magnitude > movingThreshold;
                 if (moving)
-                    _visual2D.FaceDirection(moveDelta);
+                    _visual.FaceDirection(moveDelta);
 
-                _visual2D.SetWalking(moving);
+                _visual.SetWalking(moving);
                 transform.position = new Vector3(next.x, current.y, next.z);
-                _visual2D.UpdateSortAndBob(transform.position);
+                _visual.UpdateSortAndBob(transform.position);
                 return;
             }
 
@@ -202,19 +222,19 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (atDestination)
             {
                 transform.position = Vector3.Lerp(current, flatTarget, Mathf.Clamp01(Time.deltaTime * 18f));
-                _visual2D.SetWalking(withinMarchGrace);
+                _visual.SetWalking(withinMarchGrace);
             }
             else
             {
-                _visual2D.SetWalking(true);
+                _visual.SetWalking(true);
                 Vector3 delta = flatTarget - current;
                 delta.y = 0f;
-                _visual2D.FaceDirection(delta);
+                _visual.FaceDirection(delta);
                 float step = Mathf.Min(_moveWorldSpeed * moveDt, maxStep);
                 transform.position = Vector3.MoveTowards(current, flatTarget, step);
             }
 
-            _visual2D.UpdateSortAndBob(transform.position);
+            _visual.UpdateSortAndBob(transform.position);
         }
 
         public void PlayAttackToward(
@@ -226,7 +246,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (_frozen || !IsAlive)
                 return;
 
-            _visual2D?.PlayAttack(profile, targetWorld, onMuzzle, onImpact);
+            _visual?.PlayAttack(profile, targetWorld, onMuzzle, onImpact);
         }
 
         public void PlayHurt()
@@ -234,7 +254,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (_frozen || !IsAlive)
                 return;
 
-            _visual2D?.PlayHurt();
+            _visual?.PlayHurt();
         }
 
         public void PlayDeath(Action onComplete)
@@ -242,9 +262,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             IsAlive = false;
             _healthBar?.Hide();
 
-            if (_visual2D != null)
+            if (_visual != null)
             {
-                _visual2D.PlayDeath(() =>
+                _visual.PlayDeath(() =>
                 {
                     onComplete?.Invoke();
                     gameObject.SetActive(false);
@@ -285,7 +305,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private IEnumerator DeathRoutine(Action onComplete)
         {
-            float duration = 0.35f;
+            float duration = FallbackDeathSeconds;
             Vector3 startScale = transform.localScale;
             for (float t = 0f; t < duration; t += Time.deltaTime)
             {
@@ -300,11 +320,12 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void ClearPresentation()
         {
-            if (_visual2D != null)
+            if (_visual != null)
             {
-                _visual2D.Clear();
-                Destroy(_visual2D);
-                _visual2D = null;
+                _visual.Clear();
+                if (_visual is Component visualComponent)
+                    Destroy(visualComponent);
+                _visual = null;
             }
         }
     }

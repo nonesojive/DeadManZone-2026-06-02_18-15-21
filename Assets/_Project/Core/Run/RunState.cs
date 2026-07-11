@@ -29,6 +29,10 @@ namespace DeadManZone.Core.Run
         public int Requisition { get; set; }
         public int Authority { get; set; }
         public TacticType PlayerTactic { get; set; } = TacticType.DisciplinedFire;
+
+        /// <summary>Tactic active at fight start. Restore re-applies this one (mid-fight
+        /// changes replay via <see cref="SubmittedCommands"/>); null on older saves.</summary>
+        public TacticType? StartingTactic { get; set; }
         public TacticType? PendingSelectedTactic { get; set; }
         public List<GrantedAbility> PendingSelectedAbilities { get; set; } = new();
         public List<PhaseCommand> SubmittedCommands { get; set; } = new();

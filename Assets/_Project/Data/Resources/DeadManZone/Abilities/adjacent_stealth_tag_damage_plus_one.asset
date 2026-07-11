@@ -24,3 +24,5 @@ MonoBehaviour:
   stat: 0
   modType: 0
   magnitude: 1
+  countTagId: 
+  applyToSelf: 0

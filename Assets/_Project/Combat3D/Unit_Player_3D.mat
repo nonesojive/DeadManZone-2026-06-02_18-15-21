@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Unit_Player_3D
+  m_Shader: {fileID: 4800000, guid: 0046730eb22604a4ca8ffa86ef17e6fa, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _AccentMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BaseMap:
+        m_Texture: {fileID: -6661117783983832310, guid: 1955224ca925d5245b3ed201f661ad5e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AccentEmission: 1
+    - _CreaseSharp: 0.18
+    - _CreaseStrength: 0.7
+    - _CreaseThreshold: 0.5
+    - _Desat: 0
+    - _DissolveAmount: 0
+    - _HitFlash: 0
+    - _InkPower: 3.5
+    - _InkStrength: 0.28
+    - _MidStrength: 0.45
+    - _MidThreshold: 0.55
+    - _OutlineWidth: 3
+    - _RampSmooth: 0.03
+    - _ShadowThreshold: -0.15
+    - _SideTintAmount: 0
+    m_Colors:
+    - _AccentColor: {r: 1, g: 0.7, b: 0.2, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _InkColor: {r: 0.02, g: 0.02, b: 0.03, a: 1}
+    - _OutlineColor: {r: 0.02, g: 0.02, b: 0.03, a: 1}
+    - _ShadowColor: {r: 0.45, g: 0.44, b: 0.5, a: 1}
+    - _SideTint: {r: 0.28, g: 0.55, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

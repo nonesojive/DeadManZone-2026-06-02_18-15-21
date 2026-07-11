@@ -429,6 +429,64 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
+        public void RestoreAfterMidFightTacticChange_ReproducesLiveEventLog()
+        {
+            // The live fight applies the tactic change mid-fight via the command
+            // processor; restore must reproduce that (starting tactic at fight start,
+            // change replayed from SubmittedCommands), not re-derive fight-start
+            // buffs from the saved end-tactic.
+            var live = RunFightWithOpeningTacticChange(runSeed: 4242, saveAndReloadMidFight: false);
+            var restored = RunFightWithOpeningTacticChange(runSeed: 4242, saveAndReloadMidFight: true);
+
+            CollectionAssert.AreEqual(live, restored,
+                "restored fight must replay the exact event log the player watched");
+        }
+
+        private List<string> RunFightWithOpeningTacticChange(int runSeed, bool saveAndReloadMidFight)
+        {
+            SaveManager.DeleteSave();
+            var orchestrator = new RunOrchestrator(_database);
+            orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed);
+            var board = orchestrator.GetCombatBoard();
+            Assert.IsTrue(board.TryPlace(
+                TestPieces.RifleSquad(),
+                TestBoards.CombatBoardAnchor(5, 3),
+                "rifle_1").Success);
+            orchestrator.SaveCombatBoard(board);
+
+            orchestrator.BeginCombat();
+            // Change tactic at the opening pause — the saved PlayerTactic then differs
+            // from the fight's starting tactic, which is what F3 got wrong on restore.
+            orchestrator.SubmitCombatCommands(new[]
+            {
+                new PhaseCommand
+                {
+                    AfterCheckpoint = 0,
+                    Type = CommandType.SetTactic,
+                    Tactic = TacticType.Advance,
+                    SourcePieceId = "player_tactic"
+                }
+            });
+            var step = orchestrator.AdvanceCombat();
+
+            if (saveAndReloadMidFight)
+            {
+                orchestrator.SaveAndExit();
+                orchestrator = new RunOrchestrator(_database);
+                Assert.IsTrue(orchestrator.TryLoadSavedRun());
+                step = orchestrator.AdvanceCombat();
+            }
+
+            while (step.Status != CombatAdvanceStatus.Completed)
+                step = orchestrator.AdvanceCombat();
+
+            Assert.NotNull(step.EventLog);
+            return step.EventLog.Events
+                .Select(e => $"{e.Segment}|{e.Tick}|{e.ActorId}|{e.ActionType}|{e.TargetId}|{e.Value}")
+                .ToList();
+        }
+
+        [Test]
         public void TryLoadSavedRun_CompletedFight_SetsPendingCompletion()
         {
             _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 187463421);

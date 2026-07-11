@@ -372,6 +372,12 @@ namespace DeadManZone.Core.Combat
             if (pauseCommands.Count == 0)
                 return;
 
+            // Pause-scoped armor buffs expire when the next command batch opens. Reset
+            // BEFORE applying the batch so buffs granted in it (ShieldAllies) survive
+            // until the next pause instead of being wiped the moment they're paid for.
+            foreach (var combatant in _playerCombatants)
+                combatant.ArmorBuffSteps = 0;
+
             int authority = Authority;
             _commandProcessor.TryApplyBatch(
                 pauseCommands,
@@ -382,11 +388,14 @@ namespace DeadManZone.Core.Combat
                 _enemyCombatants,
                 _log,
                 checkpointIndex,
+                CheckpointsFired,
                 GlobalTick);
             Authority = authority;
 
-            foreach (var combatant in _playerCombatants)
-                combatant.ArmorBuffSteps = 0;
+            // Ability/strike kills inside the batch don't touch the occupancy grid
+            // (only tick-loop kills route through LogDestroyed) — rebuild so dead
+            // units stop blocking pathfinding for the rest of the fight.
+            RebuildOccupied();
         }
 
         private bool TryEndFight(int segment)

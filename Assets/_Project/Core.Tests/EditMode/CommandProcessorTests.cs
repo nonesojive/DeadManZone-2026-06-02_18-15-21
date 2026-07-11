@@ -39,8 +39,8 @@ namespace DeadManZone.Core.Tests
                 SourcePieceId = board.Pieces.First().InstanceId
             };
 
-            var result = processor.TryApply(
-                command,
+            var result = processor.TryApplyBatch(
+                new[] { command },
                 board,
                 ref requisition,
                 tactics,
@@ -48,25 +48,11 @@ namespace DeadManZone.Core.Tests
                 enemyCombatants: new System.Collections.Generic.List<CombatantState>(),
                 log: new CombatEventLog(),
                 checkpointIndex: 0,
+                logSegment: 0,
                 globalTick: 0);
 
             Assert.IsFalse(result.Success);
             Assert.That(result.Reason, Does.Contain("requisition").IgnoreCase);
-        }
-
-        [Test]
-        public void BonusActionSlots_AreDisabledInDemo()
-        {
-            var hq = new BoardState(TestBoards.IronMarchHqLayout);
-            hq.TryPlace(TestPieces.CommandBunker(), new GridCoord(0, 0));
-            var board = new BuildBoardSet
-            {
-                Combat = new BoardState(TestBoards.Layout),
-                Hq = hq
-            }.ToAggregateBoard();
-
-            var processor = new CommandProcessor();
-            Assert.That(processor.GetBonusActionSlots(board), Is.EqualTo(0));
         }
     }
 }

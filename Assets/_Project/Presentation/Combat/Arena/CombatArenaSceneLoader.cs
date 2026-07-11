@@ -13,6 +13,11 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public bool IsLoaded { get; private set; }
 
+        /// <summary>For scenes that embed the arena directly (Combat3D demo) instead of
+        /// additively loading the 2D arena scene: marks the session active so
+        /// <see cref="CombatArenaPresenter"/> accepts director replay events.</summary>
+        public void MarkEmbeddedArenaLoaded() => IsLoaded = true;
+
         private void Awake()
         {
             if (runSceneController == null)

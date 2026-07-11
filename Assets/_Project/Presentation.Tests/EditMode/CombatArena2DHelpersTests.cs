@@ -377,14 +377,6 @@ namespace DeadManZone.Presentation.Tests.EditMode
             Object.DestroyImmediate(texture);
         }
 
-        [Test]
-        public void PresentationMode_2DIsCanonical()
-        {
-            var config = ScriptableObject.CreateInstance<CombatArenaConfigSO>();
-            Assert.IsTrue(CombatArenaPresentationMode.IsTopTroops2D(config));
-            Object.DestroyImmediate(config);
-        }
-
         private static Texture2D CreateTestTexture(int width, int height)
         {
             var texture = new Texture2D(width, height);
