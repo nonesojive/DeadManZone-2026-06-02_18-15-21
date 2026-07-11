@@ -113,6 +113,7 @@ namespace DeadManZone.Presentation.Editor
             var config = BuildDemoArenaConfig();
             var groundMat = EnsureUnlitLitMaterial(GroundMaterialPath, new Color(0.30f, 0.28f, 0.25f));
             var sandbagMat = EnsureUnlitLitMaterial(SandbagMaterialPath, new Color(0.44f, 0.39f, 0.29f));
+            var riflePrefab = RiflePropBuilder.EnsurePrefab();
 
             // --- Scene ---
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
@@ -127,7 +128,7 @@ namespace DeadManZone.Presentation.Editor
             CreateKeyLight();
             CreateGlobalVolume(gradeProfile);
             CreateGraybox(groundMat, sandbagMat);
-            CreateArenaRig(camera, config, controller, idleModel, playerMat, enemyMat, ringBlue, ringRed, archetypes);
+            CreateArenaRig(camera, config, controller, idleModel, playerMat, enemyMat, ringBlue, ringRed, riflePrefab, archetypes);
 
             EnsureFolder("Assets/_Project/Scenes");
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -473,6 +474,7 @@ namespace DeadManZone.Presentation.Editor
             Material enemyMat,
             Material ringBlue,
             Material ringRed,
+            GameObject riflePrefab,
             List<(string pieceId, GameObject model, AnimatorController controller)> archetypes)
         {
             var rig = new GameObject("Combat3DArena");
@@ -511,6 +513,7 @@ namespace DeadManZone.Presentation.Editor
                 so.FindProperty("enemyUnitMaterial").objectReferenceValue = enemyMat;
                 so.FindProperty("playerRingMaterial").objectReferenceValue = ringBlue;
                 so.FindProperty("enemyRingMaterial").objectReferenceValue = ringRed;
+                so.FindProperty("riflePrefab").objectReferenceValue = riflePrefab;
 
                 var archetypeArray = so.FindProperty("archetypes");
                 archetypeArray.arraySize = archetypes.Count;

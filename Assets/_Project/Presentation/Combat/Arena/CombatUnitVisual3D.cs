@@ -20,14 +20,30 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private const float DissolveSeconds = 0.8f;
         private const float CorpseLingerSeconds = 0.35f;
-        private const float HitFlashPeak = 0.85f;
-        private const float HitFlashSeconds = 0.16f;
+        // Softened from 0.85/0.16 — full peak read as a pure-white ghost at gameplay distance.
+        private const float HitFlashPeak = 0.45f;
+        private const float HitFlashSeconds = 0.12f;
         private const float FallbackDieClipSeconds = 3f;
         private const float TurnDegreesPerSecond = 720f;
         private const float AttackLungeDistance = 0.22f;
 
         private static readonly int HitFlashId = Shader.PropertyToID("_HitFlash");
         private static readonly int DissolveId = Shader.PropertyToID("_DissolveAmount");
+
+        [Header("Rifle grip (hand-bone axes, world meters; shared default across archetypes)")]
+        [SerializeField] private Vector3 rifleGripOffsetMeters = new(0f, 0.05f, 0.02f);
+        [SerializeField] private Vector3 rifleGripLocalEuler = new(-90f, 0f, 0f);
+        [Tooltip("Rifle size relative to its authored 0.73 m (for a 1.7 m figure).")]
+        [SerializeField] private float rifleWorldScale = 1f;
+
+        [Header("Aim & recoil (code-driven, layered after the Animator in LateUpdate)")]
+        [SerializeField, Range(0f, 1f)] private float aimWeight = 0.65f;
+        [SerializeField, Range(0f, 1f)] private float spineTwistWeight = 0.25f;
+        [SerializeField] private float aimBlendInSeconds = 0.15f;
+        [SerializeField] private float aimBlendOutSeconds = 0.20f;
+        [SerializeField] private float recoilDistanceMeters = 0.05f;
+        [SerializeField] private float recoilOutSeconds = 0.06f;
+        [SerializeField] private float recoilSettleSeconds = 0.15f;
 
         private Transform _modelRoot;
         private Animator _animator;
@@ -45,6 +61,20 @@ namespace DeadManZone.Presentation.Combat.Arena
         private Coroutine _lungeRoutine;
         private Coroutine _hurtRoutine;
         private Coroutine _deathRoutine;
+
+        // Rifle + shoot-pose state (all optional — units without a right hand go rifle-less).
+        private Transform _spineBone;
+        private Transform _upperArmBone;
+        private Transform _forearmBone;
+        private Transform _handBone;
+        private Transform _rifle;
+        private Transform _muzzlePoint;
+        private Vector3 _rifleRestLocalPosition;
+        private Quaternion _rifleRestLocalRotation;
+        private Vector3 _aimTargetWorld;
+        private float _aimStartTime = float.NegativeInfinity;
+        private float _aimEndTime = float.NegativeInfinity;
+        private float _recoilStartTime = float.NegativeInfinity;
 
         public bool IsBuilt => _modelRoot != null;
 
@@ -64,6 +94,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             RuntimeAnimatorController animatorController,
             Material unitMaterial,
             Material ringMaterial,
+            GameObject riflePrefab,
             float targetHeight,
             float yawOffsetDegrees)
         {
@@ -107,10 +138,98 @@ namespace DeadManZone.Presentation.Combat.Arena
                 }
             }
 
+            // After the unit-material pass so the rifle keeps its own gunmetal/wood
+            // ToonInk materials (hull outline ON — clean primitive normals).
+            AttachRifle(instance.transform, riflePrefab);
+
             _mpb ??= new MaterialPropertyBlock();
             ApplyStatus(hitFlash: 0f, dissolve: 0f);
 
             BuildSideRing(ringMaterial);
+        }
+
+        /// <summary>Parents the rifle prop to the rig's right hand so it inherits animation
+        /// and falls/dissolves with the body. Bone lookup is by name (case-insensitive);
+        /// a rig without a right hand logs an error and stays rifle-less.</summary>
+        private void AttachRifle(Transform rigRoot, GameObject riflePrefab)
+        {
+            if (riflePrefab == null)
+                return;
+
+            _handBone = FindBone(rigRoot, "hand", "right");
+            if (_handBone == null)
+            {
+                Debug.LogError(
+                    $"[Combat3D] No right-hand bone found under '{rigRoot.name}' " +
+                    "(searched for names containing 'right'+'hand') — unit goes rifle-less.",
+                    this);
+                return;
+            }
+
+            _forearmBone = FindBone(rigRoot, "forearm", "right");
+            _upperArmBone = FindRightUpperArm(rigRoot);
+            _spineBone = FindSpine(rigRoot);
+
+            var rifle = Instantiate(riflePrefab, _handBone);
+            rifle.name = "Rifle";
+            // Meshy armatures carry ~0.01 bone scale — normalize so the rifle keeps its
+            // authored world size (scaled with the figure) and the grip offset stays in meters.
+            float boneScale = Mathf.Max(0.0001f, _handBone.lossyScale.x);
+            float figureScale = _visualHeight / 1.7f; // prop authored for a 1.7 m figure
+            _rifleRestLocalPosition = rifleGripOffsetMeters / boneScale;
+            _rifleRestLocalRotation = Quaternion.Euler(rifleGripLocalEuler);
+            rifle.transform.localPosition = _rifleRestLocalPosition;
+            rifle.transform.localRotation = _rifleRestLocalRotation;
+            rifle.transform.localScale = Vector3.one * (rifleWorldScale * figureScale / boneScale);
+            _rifle = rifle.transform;
+            _muzzlePoint = FindBone(rifle.transform, "muzzlepoint", null);
+
+            // Fold the rifle into the status channels so hit flashes and the death
+            // dissolve cover the whole figure (rifle materials are ToonInk too).
+            _renderers.AddRange(rifle.GetComponentsInChildren<Renderer>(true));
+        }
+
+        private static Transform FindBone(Transform root, string token, string sideToken)
+        {
+            foreach (var bone in root.GetComponentsInChildren<Transform>(true))
+            {
+                string name = bone.name.ToLowerInvariant();
+                if (name.Contains(token) && (sideToken == null || name.Contains(sideToken)))
+                    return bone;
+            }
+
+            return null;
+        }
+
+        private static Transform FindRightUpperArm(Transform root)
+        {
+            foreach (var bone in root.GetComponentsInChildren<Transform>(true))
+            {
+                string name = bone.name.ToLowerInvariant();
+                if (name.Contains("right") && name.Contains("arm") &&
+                    !name.Contains("forearm") && !name.Contains("lowerarm") &&
+                    !name.Contains("shoulder") && !name.Contains("hand"))
+                    return bone;
+            }
+
+            return null;
+        }
+
+        /// <summary>Prefer the chest bone (exact 'Spine', parent of the shoulders on the
+        /// Meshy rigs) over lower Spine01/Spine02 so the twist stays in the upper body.</summary>
+        private static Transform FindSpine(Transform root)
+        {
+            Transform fallback = null;
+            foreach (var bone in root.GetComponentsInChildren<Transform>(true))
+            {
+                string name = bone.name.ToLowerInvariant();
+                if (name == "spine")
+                    return bone;
+                if (fallback == null && name.Contains("spine"))
+                    fallback = bone;
+            }
+
+            return fallback;
         }
 
         /// <inheritdoc/>
@@ -162,6 +281,12 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             float window = Mathf.Max(0.05f, profile.TotalDurationSeconds);
             _locomotionLockUntil = Time.time + window;
+
+            // Arm the LateUpdate aim layer: chest-height point on the victim, blended
+            // in over aimBlendInSeconds, held for the window, released after recovery.
+            _aimTargetWorld = targetWorld + Vector3.up * (_visualHeight * 0.55f);
+            _aimStartTime = Time.time;
+            _aimEndTime = Time.time + window;
 
             if (_lungeRoutine != null)
                 StopCoroutine(_lungeRoutine);
@@ -220,6 +345,15 @@ namespace DeadManZone.Presentation.Combat.Arena
             _ring = null;
             _animator = null;
             _renderers.Clear();
+            _spineBone = null;
+            _upperArmBone = null;
+            _forearmBone = null;
+            _handBone = null;
+            _rifle = null;
+            _muzzlePoint = null;
+            _aimStartTime = float.NegativeInfinity;
+            _aimEndTime = float.NegativeInfinity;
+            _recoilStartTime = float.NegativeInfinity;
             _dying = false;
             _locomotionLockUntil = 0f;
             _targetRotation = Quaternion.identity;
@@ -251,10 +385,21 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (profile.MuzzleDelaySeconds > 0f)
                 yield return new WaitForSeconds(profile.MuzzleDelaySeconds);
 
-            float shoulder = Mathf.Max(0.8f, _visualHeight * 0.72f);
-            Vector3 muzzle = transform.position
-                             + Vector3.up * shoulder
-                             + _lastFacingDir * (_visualHeight * 0.25f);
+            Vector3 muzzle;
+            if (_muzzlePoint != null)
+            {
+                // Real rifle tip — the LateUpdate aim pose has already leveled it.
+                muzzle = _muzzlePoint.position;
+            }
+            else
+            {
+                float shoulder = Mathf.Max(0.8f, _visualHeight * 0.72f);
+                muzzle = transform.position
+                         + Vector3.up * shoulder
+                         + _lastFacingDir * (_visualHeight * 0.25f);
+            }
+
+            _recoilStartTime = Time.time; // recoil kick syncs to the muzzle-flash moment
             onMuzzle?.Invoke(muzzle);
 
             float impactWait = profile.ImpactDelaySeconds - profile.MuzzleDelaySeconds;
@@ -290,6 +435,124 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (_modelRoot != null)
                 _modelRoot.localPosition = Vector3.zero;
             _lungeRoutine = null;
+        }
+
+        /// <summary>Additive shoot pose, written after the Animator each frame: swing the
+        /// right arm up so the rifle levels at the victim (60-70% aim, no full IK), a
+        /// slight chest twist toward the target, and a short recoil kick on the rifle +
+        /// forearm synced to the muzzle flash. Weight eases 0→1→0 so it never pops
+        /// against idle/walk.</summary>
+        private void LateUpdate()
+        {
+            if (_dying || _handBone == null || _rifle == null)
+                return;
+
+            // The animator restores bones every frame but not our prop — re-seat the rifle
+            // on its rest grip first so recoil offsets never accumulate frame to frame.
+            _rifle.localPosition = _rifleRestLocalPosition;
+            _rifle.localRotation = _rifleRestLocalRotation;
+
+            float aim01 = ComputeAim01();
+            if (aim01 <= 0f)
+                return;
+
+            ApplyAimPose(aim01);
+            ApplyRecoil(aim01);
+        }
+
+        private float ComputeAim01()
+        {
+            float blendIn = Mathf.Clamp01(
+                (Time.time - _aimStartTime) / Mathf.Max(0.01f, aimBlendInSeconds));
+            float blendOut = Mathf.Clamp01(
+                1f - (Time.time - _aimEndTime) / Mathf.Max(0.01f, aimBlendOutSeconds));
+            return Mathf.SmoothStep(0f, 1f, Mathf.Min(blendIn, blendOut));
+        }
+
+        private void ApplyAimPose(float aim01)
+        {
+            Vector3 aimOrigin = _upperArmBone != null ? _upperArmBone.position : _handBone.position;
+            Vector3 aimDir = _aimTargetWorld - aimOrigin;
+            if (aimDir.sqrMagnitude < 0.0001f)
+                return;
+            aimDir.Normalize();
+
+            float armWeight = aim01 * aimWeight;
+
+            // Slight chest twist toward the target (facing usually covers most of it).
+            if (_spineBone != null)
+            {
+                Vector3 flat = aimDir;
+                flat.y = 0f;
+                if (flat.sqrMagnitude > 0.0001f)
+                {
+                    float yawDelta = Vector3.SignedAngle(_lastFacingDir, flat.normalized, Vector3.up);
+                    _spineBone.rotation =
+                        Quaternion.AngleAxis(yawDelta * spineTwistWeight * aim01, Vector3.up)
+                        * _spineBone.rotation;
+                }
+            }
+
+            // Raise the arm: swing the shoulder→hand line toward the aim direction.
+            if (_upperArmBone != null)
+            {
+                Vector3 armDir = _handBone.position - _upperArmBone.position;
+                if (armDir.sqrMagnitude > 0.0001f)
+                {
+                    var swing = Quaternion.FromToRotation(armDir.normalized, aimDir);
+                    _upperArmBone.rotation =
+                        Quaternion.Slerp(Quaternion.identity, swing, armWeight)
+                        * _upperArmBone.rotation;
+                }
+            }
+
+            // Straighten the forearm a touch more along the aim line.
+            if (_forearmBone != null)
+            {
+                Vector3 foreDir = _handBone.position - _forearmBone.position;
+                if (foreDir.sqrMagnitude > 0.0001f)
+                {
+                    var straighten = Quaternion.FromToRotation(foreDir.normalized, aimDir);
+                    _forearmBone.rotation =
+                        Quaternion.Slerp(Quaternion.identity, straighten, armWeight * 0.5f)
+                        * _forearmBone.rotation;
+                }
+            }
+
+            // Level the rifle at the victim by rotating the hand (rifle is its child).
+            if (_muzzlePoint != null)
+            {
+                Vector3 barrelDir = _muzzlePoint.position - _rifle.position;
+                if (barrelDir.sqrMagnitude > 0.0001f)
+                {
+                    var level = Quaternion.FromToRotation(barrelDir.normalized, aimDir);
+                    _handBone.rotation =
+                        Quaternion.Slerp(Quaternion.identity, level, armWeight)
+                        * _handBone.rotation;
+                }
+            }
+        }
+
+        private void ApplyRecoil(float aim01)
+        {
+            float t = Time.time - _recoilStartTime;
+            if (t < 0f || t >= recoilOutSeconds + recoilSettleSeconds)
+                return;
+
+            // Fast kick out, slower settle back.
+            float envelope = t < recoilOutSeconds
+                ? Mathf.Sin(Mathf.Clamp01(t / Mathf.Max(0.01f, recoilOutSeconds)) * Mathf.PI * 0.5f)
+                : 1f - Mathf.Clamp01((t - recoilOutSeconds) / Mathf.Max(0.01f, recoilSettleSeconds));
+
+            Vector3 backDir = _aimTargetWorld - _rifle.position;
+            backDir.y = 0f;
+            if (backDir.sqrMagnitude < 0.0001f)
+                return;
+
+            Vector3 kick = -backDir.normalized * (recoilDistanceMeters * envelope * aim01);
+            if (_forearmBone != null)
+                _forearmBone.position += kick * 0.6f; // carries hand + rifle back together
+            _rifle.position += kick * 0.4f;           // extra bite on the gun itself
         }
 
         private IEnumerator HurtFlashRoutine()

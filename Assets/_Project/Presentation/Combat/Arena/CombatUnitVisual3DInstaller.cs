@@ -32,6 +32,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         [SerializeField] private Material enemyUnitMaterial;
         [SerializeField] private Material playerRingMaterial;
         [SerializeField] private Material enemyRingMaterial;
+        [Tooltip("Shared rifle prop parented to each unit's right hand (optional).")]
+        [SerializeField] private GameObject riflePrefab;
         [SerializeField] private float unitHeight = 1.7f;
         [Tooltip("Extra yaw (degrees) if the model's authored forward is not +Z.")]
         [SerializeField] private float modelYawOffsetDegrees;
@@ -97,6 +99,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 controller,
                 side == CombatSide.Player ? playerUnitMaterial : enemyUnitMaterial,
                 side == CombatSide.Player ? playerRingMaterial : enemyRingMaterial,
+                riflePrefab,
                 unitHeight,
                 modelYawOffsetDegrees);
             return visual;

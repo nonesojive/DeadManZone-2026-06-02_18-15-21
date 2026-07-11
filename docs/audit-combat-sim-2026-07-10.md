@@ -273,3 +273,41 @@ Three new Meshy 12k units (image3d → remesh → rig → animate, job ids in do
 **grenade_thrower model retired**: it was an abandoned test (oversized head) — being replaced by a proper `ironclad_mortars` gen from its own ref (`tools/meshy/units/ironclad_mortars/ref.png`). Job ids: image3d 019f524e-6a9c-7649-8246-65e0afb23680 ✅, remesh 019f5252-aef2-7734-8035-b231428bdd7c ✅, rig 019f5254-6f0b-710f-9585-413d33e3de12 ✅, anims idle 019f5255-c6a1-7f38-b8ee-25506b5f9096 ✅ / die 019f5255-c9df-7823-b9f8-1096f419e550 ✅. Landed: GLBs at Assets/_Project/Combat3D/Models/ironclad_mortars/ (source tools/meshy/units/ironclad_mortars/glb12k/), archetype folder mapping updated (ironclad_mortars → ironclad_mortars), abandoned grenade_thrower model deleted from _Project, scene rebuilt, new unit verified in Play mode (normal proportions, ironclad gas-mask look), EditMode 352/352 green.
 
 **Housekeeping**: `git prune` + `gc` run; pack 97.7 MiB, 0 loose objects.
+
+## Rifles + shoot presentation (2026-07-11)
+
+Units now carry a generated rifle prop and visibly aim + recoil when they fire. All verified live in Play mode; EditMode 352/352 green.
+
+### What was built
+- **`Presentation/Editor/RiflePropBuilder.cs`** — menu `DeadManZone → Combat3D → Rebuild Rifle Prop` (also called by the scene bootstrap). Generates `Assets/_Project/Combat3D/Rifle_Prop.prefab`: ~0.73 m bolt-action silhouette from primitive cubes + a cylinder barrel (stock/receiver/forestock/barrel/bolt handle) with a `MuzzlePoint` empty at the tip. Local +Z = barrel, origin at the grip. Materials `Combat3D_Rifle{Metal,Wood}.mat` — DMZ/ToonInk with the **inverted-hull outline ON** (`_OutlineWidth` 2, clean primitive normals → crisp ink line, per outline doctrine), `_ShadowColor` = 0.55 × base, `_InkStrength` 0.25. Rebuild overwrites in place (GUID stable).
+- **`CombatUnitVisual3D`** — `Build` gained a `riflePrefab` param (fed from a new serialized `riflePrefab` on `CombatUnitVisual3DInstaller`, wired by the bootstrap). `AttachRifle` finds the right hand by case-insensitive name search (`right`+`hand`), parents the rifle there so it inherits animation and falls/dissolves with the body (its renderers join the `_HitFlash`/`_DissolveAmount` MPB list — ToonInk on both, so the whole figure flashes and dissolves together). Missing hand → one LogError, unit goes rifle-less. Muzzle flashes now spawn at `MuzzlePoint.position` (routed through the existing `onMuzzle` Vector3 seam — `Combat3DVfxPresenter` untouched); shoulder-height fallback kept for rifle-less units.
+- **Aim + recoil layer** (same file, `LateUpdate` after the Animator): swing the shoulder→hand line toward a chest-height point on the victim, straighten the forearm at half weight, small spine yaw twist, then level the barrel via the hand bone. Recoil kick (rifle + forearm back along the aim line) starts exactly at the muzzle-flash moment. Weight smoothsteps 0→1 over the blend-in, holds for the attack window, eases out after recovery — no pop against idle/walk.
+
+### Bone names (verified identical on all four Meshy rigs — do not guess on new rigs, dump first)
+`Armature/Hips/Spine02/Spine01/Spine/RightShoulder/RightArm/RightForeArm/RightHand` (+Left mirrors, neck/Head, legs). Hand bone +Y points along the fingers; bones carry ~0.01 armature scale.
+
+### Two bugs worth remembering
+1. **Bone scale**: parenting a prop under a Meshy hand bone inherits ~0.01 lossy scale — the rifle rendered at 7 mm. Fix: normalize `localScale` by `handBone.lossyScale` (and express the grip offset in world meters divided by the same).
+2. **Additive-prop drift**: the Animator restores *bones* every frame but not the prop, so `_rifle.position += kick` accumulated and rifles drifted meters away. Fix: re-seat the rifle on its rest grip pose at the top of every `LateUpdate` before applying offsets.
+
+### Tuning defaults (serialized on CombatUnitVisual3D)
+| Knob | Value |
+|---|---|
+| rifleGripOffsetMeters (hand-bone axes) | (0, 0.05, 0.02) |
+| rifleGripLocalEuler | (−90, 0, 0) — barrel along fingers |
+| rifleWorldScale | 1.0 (scaled by visualHeight/1.7 and bone scale) |
+| aimWeight | 0.65 |
+| spineTwistWeight | 0.25 |
+| aimBlendIn / aimBlendOut | 0.15 s / 0.20 s |
+| recoilDistanceMeters | 0.05 |
+| recoilOut / recoilSettle | 0.06 s / 0.15 s |
+
+### Per-archetype grip verdicts (close-up screenshots, shared default offset)
+- **rifleman / ironclad_mortars**: great — rifle across the body at rest, levels cleanly at the victim mid-volley, flash at the tip.
+- **bulwark_squad / field_medic**: sane — muzzle-down side carry at rest (arms hang lower on these rigs), levels correctly when attacking. No per-unit override needed.
+- Flash-position check: live `MuzzleFlash` measured 0.138 m from the nearest `MuzzlePoint` = exactly the presenter's 0.12 m toward-target nudge.
+
+### Needs eyes / open
+- The at-rest carry is muzzle-down at the side (barrel along fingers). Reads fine at gameplay distance; a "port arms" two-hand carry would need a left-hand IK or a different grip euler per idle pose — deferred.
+- The left hand doesn't touch the rifle (single-hand grip). Acceptable at gameplay camera; revisit with a real shoot clip.
+- MCP gotcha: `editor-application-set-state` with only `isPaused` **stops Play mode** (omitted `isPlaying` defaults false) — always pass both flags to pause.
