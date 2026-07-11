@@ -329,7 +329,7 @@ namespace DeadManZone.Presentation.Editor
             var go = new GameObject("ArenaCamera");
             go.tag = "MainCamera";
             var camera = go.AddComponent<Camera>();
-            camera.fieldOfView = 40f;
+            camera.fieldOfView = 42f;
             camera.nearClipPlane = 0.3f;
             camera.farClipPlane = 200f;
             camera.allowHDR = true;
@@ -338,10 +338,13 @@ namespace DeadManZone.Presentation.Editor
             // key-lit ground mixed with fog, so a bg at raw fog color reads as a dark seam.
             // Solid grimdark sky per arena spec; the backdrop ring anchors the horizon.
             camera.backgroundColor = new Color(0.17f, 0.19f, 0.24f);
-            // Close enough that units read as inked figures (the fullscreen interior-ink
-            // edge-detect saturates tiny characters into solid silhouettes when pulled back).
-            go.transform.position = new Vector3(0f, 8.5f, -12.0f);
-            go.transform.rotation = Quaternion.Euler(30f, 0f, 0f);
+            // Trenchworks framing (candidates in docs/framing/, 2026-07-11): pulled back
+            // from (0, 8.5, -12, pitch 30, fov 40) so the far parapets/craters/wire line
+            // sit inside the frame; the shallower pitch lifts the backdrop instead of
+            // adding dead foreground. Units stay ~80% of the old on-screen height —
+            // still well inside the readable-ink range the previous close-up protected.
+            go.transform.position = new Vector3(0f, 10f, -14f);
+            go.transform.rotation = Quaternion.Euler(29f, 0f, 0f);
 
             // Combat-only rendering: the interior-ink + SSAO features live on
             // DeadManZone_CombatRenderer, not the shared forward renderer, so

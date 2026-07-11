@@ -109,9 +109,7 @@ namespace DeadManZone.Data
         [Header("Environment — Synty")]
         [Tooltip("When enabled, uses the Synty ground prefab instead of a primitive plane.")]
         public bool useSyntyTerrain = true;
-        [Tooltip("Grim trench atmosphere profile. When set, overrides legacy environment defaults.")]
-        public CombatArenaAtmosphereProfileSO atmosphereProfile;
-        [Tooltip("Spawns bunker wall props around the board edge. Superseded by CombatArenaBackdrop when atmosphere profile enables backdrop.")]
+        [Tooltip("Spawns bunker wall props around the board edge.")]
         public bool spawnPerimeterProps = false;
         [Tooltip("When enabled, applies the Synty skybox material. Off by default — bright skydomes wash out Built-in RP combat.")]
         public bool useSyntySkybox = false;

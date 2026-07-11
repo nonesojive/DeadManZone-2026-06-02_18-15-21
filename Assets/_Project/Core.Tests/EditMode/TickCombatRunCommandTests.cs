@@ -9,9 +9,32 @@ using NUnit.Framework;
 namespace DeadManZone.Core.Tests.EditMode
 {
     /// <summary>Pause-command regressions: event segment alignment (F1), occupancy release
-    /// on ability kills (F2), and pause-granted armor buff lifetime (F6).</summary>
+    /// on ability kills (F2), pause-granted armor buff lifetime (F6), and ProtectSupport
+    /// grant idempotence (M9).</summary>
     public sealed class TickCombatRunCommandTests
     {
+        [Test]
+        public void SetPlayerTactic_ProtectSupportTwice_GrantsRearArmorOnce()
+        {
+            var player = new BoardState(TestBoards.Layout);
+            player.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(), "player_rifle");
+            Assert.IsTrue(
+                player.TryPlace(TestPieces.GasDrone(), new GridCoord(0, 0), "player_drone").Success,
+                "hybrid drone must be placeable in the rear zone");
+
+            var run = TickCombatRun.Start(player, TestBoards.WeakEnemyOnly(), seed: 9, authority: 2);
+            var drone = run.PlayerCombatantsForTests.Single(c => c.InstanceId == "player_drone");
+
+            run.SetPlayerTactic(TacticType.ProtectSupport);
+            Assert.AreEqual(TacticEffects.ProtectSupportRearArmorSteps, drone.ArmorBuffSteps,
+                "first ProtectSupport application grants the rear armor");
+
+            run.SetPlayerTactic(TacticType.ProtectSupport);
+            Assert.AreEqual(TacticEffects.ProtectSupportRearArmorSteps, drone.ArmorBuffSteps,
+                "re-applying ProtectSupport (ctor + restore path both call SetPlayerTactic) " +
+                "must not double-grant permanent fight-start armor");
+        }
+
         [Test]
         public void OpeningPauseAbilityKill_LogsKillAndFightEndInSameSegment()
         {

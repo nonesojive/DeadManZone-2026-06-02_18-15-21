@@ -20,6 +20,7 @@ namespace DeadManZone.Core.Combat
         private CombatOccupancyGrid _occupancyGrid = new();
         private bool _awaitingCommand;
         private bool _awaitingOpeningCommand;
+        private bool _protectSupportArmorGranted;
 
         public BoardState PlayerBoard => _playerBoard;
         public int Authority { get; private set; }
@@ -551,6 +552,14 @@ namespace DeadManZone.Core.Combat
         {
             _tactics.PlayerDamageBuff = TacticEffects.GetDamageBuff(_tactics.PlayerTactic);
             _tactics.EnemyDamageBuff = TacticEffects.GetDamageBuff(_tactics.EnemyTactic);
+
+            // Fight-start armor (ArmorBuffSteps) is permanent, so the ProtectSupport
+            // grant must be idempotent — a second SetPlayerTactic(ProtectSupport)
+            // (e.g. on the save-restore path) would otherwise double-grant forever.
+            if (_tactics.PlayerTactic != TacticType.ProtectSupport || _protectSupportArmorGranted)
+                return;
+
+            _protectSupportArmorGranted = true;
             TacticEffects.ApplyProtectSupportBuffs(
                 _tactics.PlayerTactic,
                 _playerCombatants,

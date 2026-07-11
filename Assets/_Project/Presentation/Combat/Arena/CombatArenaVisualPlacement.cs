@@ -19,10 +19,26 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             instance.localScale = Vector3.one * uniformScale;
 
-            instance.position = new Vector3(
-                worldCenter.x,
-                -MeasureLocalBounds(instance).min.y,
-                worldCenter.z);
+            // Seat the pivot at the anchor, then drop the measured WORLD-space renderer
+            // bounds so the feet rest exactly at the anchor's ground height. (The old code
+            // assigned a local-space bounds min to a world-space y, which floated the feet
+            // by boundsMin.y * (scale - 1) on any model whose pivot isn't at its feet.)
+            instance.position = worldCenter;
+            float footY = MeasureWorldBounds(instance).min.y;
+            instance.position += new Vector3(0f, worldCenter.y - footY, 0f);
+        }
+
+        private static Bounds MeasureWorldBounds(Transform root)
+        {
+            var renderers = root.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0)
+                return new Bounds(root.position, Vector3.zero);
+
+            var bounds = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+                bounds.Encapsulate(renderers[i].bounds);
+
+            return bounds;
         }
 
         private static bool TryMeasureLocalHeight(Transform root, out float height)

@@ -380,3 +380,38 @@ Replaced the graybox plane + sandbag boxes with a full Trenchline battlefield, a
 - **Trenchworks visibility**: the deployment-edge trenches sit just outside the tight home frame (readability camera from the interior-ink fix); they read in punch-ins near the edges and scene view. If the owner wants them in the home frame, that's a camera-pullback decision, not a dressing change.
 - Graded sky dome: unnecessary while every frame's top edge is ground crest (see lighting notes).
 - Synty meshes deliberately not used (spec direction is toon-ink primitives; ADR-0003 kitbash applies to units, not the arena).
+
+## Hover fix + cleanups (2026-07-11)
+
+Four bundled items, all verified live in the editor. EditMode **358/358** green (357 baseline + 1 new M9 regression test).
+
+### 1. Units hovering above their base rings — fixed
+- **Root cause** (`Presentation/Combat/Arena/CombatArenaVisualPlacement.PlaceOnGround`, sole caller `CombatUnitVisual3D.Build`): the helper assigned the **local-space** renderer-bounds min to a **world-space** y (`position.y = -localBounds.min.y`). Local bounds are scale-independent (`InverseTransformPoint` divides scale back out), so the feet ended up at `localMin.y * (scale − 1)` instead of 0. Meshy rigs have their pivot above the feet (`localMin.y` ≈ −0.4..−0.7) and scale to ~0.72–0.75 for the 1.7 m target height → feet floated **+0.10 m (riflemen) to +0.15 m (mortars)** above the rings. Measured in play mode: old math reproduced hover of 0.097/0.098/0.149 m per unit; the audit's "negligible at ~1.0 model scale" assumption didn't hold once real Meshy scales landed.
+- **Fix** (no fudge constants): seat the pivot at the anchor, then measure the union of **world-space** renderer bounds and shift by `worldCenter.y − worldBounds.min.y` — feet rest exactly at the anchor's ground height (y=0, ring at +0.02) for any pivot/scale. New private `MeasureWorldBounds` helper; `MeasureLocalBounds` still used for the height-ratio scale.
+- **2D path**: unaffected by construction — grep confirms `PlaceOnGround` has exactly one caller (`CombatUnitVisual3D.Build:117`); nothing 2D touches it. (`TryMeasureMeshFootprint` in the same file has zero callers — left alone, noted as dead.)
+- **Verified**: play-mode probe (feet world y at build = anchor y; live skinned-bounds wobble of −0.1 during walk cycles is AABB conservatism, not mesh position) + proof screenshot `docs/framing/04_FINAL_baked_..._units_on_rings.png` — all six units planted on their rings.
+
+### 2. M9 — ApplyProtectSupportBuffs idempotence (Core)
+- After the armor-lifetime change made `ArmorBuffSteps` permanent, every `SetPlayerTactic(ProtectSupport)` call stacked +2 rear armor forever (ctor + orchestrator both call it on the restore path; a second call double-granted permanently).
+- **Fix**: `TickCombatRun` tracks a `_protectSupportArmorGranted` flag; `ApplyTacticDamageBuffs` grants the ProtectSupport rear armor at most once per run (damage buffs still recompute every call). Switching away does not revoke (unchanged behavior — fight-start armor is permanent; mid-fight tactic changes never re-applied it anyway, `CommandProcessor` doesn't call `SetPlayerTactic`).
+- **Restore path** (`RunOrchestrator.RestoreActiveCombatFromSave`): ctor applies the default tactic (never ProtectSupport pre-grant), then `SetPlayerTactic(StartingTactic)` grants exactly once — identical to the live `BeginCombat` path. Live/restore parity preserved.
+- **Test**: `TickCombatRunCommandTests.SetPlayerTactic_ProtectSupportTwice_GrantsRearArmorOnce` (hybrid gas drone parked in the rear zone; asserts +2 after one call and still +2 after two).
+
+### 3. 2D-era dead ScriptableObjects deleted
+- Re-verified zero code readers by grep, then deleted (with `.meta`): `Data/ScriptableObjects/CombatArenaAtmosphereProfileSO.cs`, `CombatArenaBackdropRingSO.cs`, `CombatArenaBackdropSpawnPoint.cs`, **plus** `CombatArenaBackdropRing.cs` (the enum — its only two readers were the deleted files).
+- `CombatArenaConfigSO.cs`: removed the dead `atmosphereProfile` field (former line 113 — its only reference anywhere) and trimmed the stale "Superseded by CombatArenaBackdrop…" tooltip on `spawnPerimeterProps`.
+- Instances: `assets-find` found one — `Data/Resources/DeadManZone/CombatArenaAtmosphereProfile.asset`. Its GUID appears in zero scenes/prefabs/assets and no `Resources.Load` path references it → deleted with the class. No `CombatArenaBackdropRingSO` instances existed.
+- Both `CombatArenaConfigSO` assets (`CombatArena3DDemoConfig`, `Resources/DeadManZone/CombatArenaConfig`) load cleanly after the field removal (Unity drops the unknown serialized data).
+
+### 4. Camera pullback for trenchworks framing
+- Iterated three candidates from the old pose (0, 8.5, −12 / pitch 30 / fov 40), screenshots in `docs/framing/` (00 = old baseline, 01–03 = candidates, 04 = final baked pose mid-fight):
+  - **A** (0, 9.5, −13.5 / 30 / 40): wire belt + hedgehogs fully in frame, parapets still clipped.
+  - **B** (0, 10.25, −14.5 / 31 / 41): steeper pitch pushed the backdrop out and added dead foreground — worst of the three.
+  - **C — picked** (0, **10**, **−14** / **pitch 29** / **fov 42**): the shallower pitch is the trick — it lifts the parapet/crater backdrop into frame instead of buying more foreground dirt. Ruin masses, crater field, wire belt and hedgehogs all read; units keep ~80% of their old on-screen height (well above the 2/3 readability floor for the interior ink).
+- Baked into `Combat3DDemoSceneBootstrap.CreateCamera`, scene rebuilt via the menu, saved. This closes the earlier "Trenchworks visibility" deferred item.
+
+### Verification
+- assets-refresh clean (no compile errors; only pre-existing warnings).
+- Menu rebuild regenerates the scene with the new camera (pose confirmed on the saved scene's ArenaCamera).
+- Play mode end-to-end on the rebuilt scene: 3v3 fight (53 events / 2 segments), units stand ON their rings (screenshot 04), `fight_end` replayed at segment 1 tick 122, defeat banner fired.
+- EditMode 358/358 green.
