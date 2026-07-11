@@ -27,14 +27,40 @@ namespace DeadManZone.Presentation.Combat.Arena
         private const float TurnDegreesPerSecond = 720f;
         private const float AttackLungeDistance = 0.22f;
 
+        // Ring-fill health drain speed (fill units/sec): fast enough that a hit reads as an
+        // immediate response, slow enough to read as a drain rather than a pop.
+        private const float RingDrainPerSecond = 1.4f;
+
         private static readonly int HitFlashId = Shader.PropertyToID("_HitFlash");
         private static readonly int DissolveId = Shader.PropertyToID("_DissolveAmount");
+        private static readonly int RingFillId = Shader.PropertyToID("_Fill");
 
         [Header("Rifle grip (hand-bone axes, world meters; shared default across archetypes)")]
         [SerializeField] private Vector3 rifleGripOffsetMeters = new(0f, 0.05f, 0.02f);
         [SerializeField] private Vector3 rifleGripLocalEuler = new(-90f, 0f, 0f);
         [Tooltip("Rifle size relative to its authored 0.73 m (for a 1.7 m figure).")]
         [SerializeField] private float rifleWorldScale = 1f;
+
+        [Header("Port-arms rest carry (additive right-arm pose, character space; fades while aiming/dying)")]
+        [SerializeField, Range(0f, 1f)] private float portArmsArmWeight = 0.65f;
+        [SerializeField, Range(0f, 1f)] private float portArmsBarrelWeight = 0.95f;
+        [Tooltip("Where the right (grip) hand carries to, in character space meters for a 1.7 m figure.")]
+        [SerializeField] private Vector3 portArmsHandAnchorLocal = new(0.10f, 1.15f, 0.28f);
+        [Tooltip("Barrel direction at rest, character space (up-left ~45° = classic port arms).")]
+        [SerializeField] private Vector3 portArmsBarrelDirLocal = new(-0.85f, 1f, 0.25f);
+        [Tooltip("Rest-carry multiplier while the walk clip plays, so the additive doesn't fight arm swing.")]
+        [SerializeField, Range(0f, 1f)] private float portArmsMovingMultiplier = 0.75f;
+
+        [Header("Left hand on forestock (analytic two-bone IK, after aim + recoil)")]
+        [SerializeField, Range(0f, 1f)] private float leftHandIkWeight = 1f;
+        [Tooltip("Elbow pole hint, character space meters for a 1.7 m figure (down-left of the shoulder).")]
+        [SerializeField] private Vector3 leftElbowHintLocal = new(-0.38f, 0.75f, 0.10f);
+        [Tooltip("Direction the left fingers (+Y of the hand bone) wrap, in rifle-local space.")]
+        [SerializeField] private Vector3 leftHandFingersDirRifleLocal = new(0.9f, 0.45f, 0f);
+        [Tooltip("Wrist offset from ForestockPoint, rifle-local axes in world meters.")]
+        [SerializeField] private Vector3 forestockGripOffsetMeters = new(0f, -0.02f, 0.03f);
+        [Tooltip("Seconds over which the hands release the carry/IK as the die clip starts.")]
+        [SerializeField] private float deathReleaseSeconds = 0.35f;
 
         [Header("Aim & recoil (code-driven, layered after the Animator in LateUpdate)")]
         [SerializeField, Range(0f, 1f)] private float aimWeight = 0.65f;
@@ -50,6 +76,10 @@ namespace DeadManZone.Presentation.Combat.Arena
         private readonly List<Renderer> _renderers = new();
         private MaterialPropertyBlock _mpb;
         private GameObject _ring;
+        private Renderer _ringRenderer;
+        private MaterialPropertyBlock _ringMpb;
+        private float _ringTargetFill = 1f;
+        private float _ringDisplayedFill = 1f;
         private float _visualHeight = 1.7f;
         private float _dieClipSeconds = FallbackDieClipSeconds;
         private float _yawOffsetDegrees;
@@ -67,14 +97,20 @@ namespace DeadManZone.Presentation.Combat.Arena
         private Transform _upperArmBone;
         private Transform _forearmBone;
         private Transform _handBone;
+        private Transform _leftUpperArmBone;
+        private Transform _leftForearmBone;
+        private Transform _leftHandBone;
         private Transform _rifle;
         private Transform _muzzlePoint;
+        private Transform _forestockPoint;
         private Vector3 _rifleRestLocalPosition;
         private Quaternion _rifleRestLocalRotation;
         private Vector3 _aimTargetWorld;
         private float _aimStartTime = float.NegativeInfinity;
         private float _aimEndTime = float.NegativeInfinity;
         private float _recoilStartTime = float.NegativeInfinity;
+        private float _deathStartTime = float.NegativeInfinity;
+        private float _movingCarry01 = 1f;
 
         public bool IsBuilt => _modelRoot != null;
 
@@ -86,6 +122,13 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         /// <inheritdoc/>
         public bool BlocksLocomotion => _dying || Time.time < _locomotionLockUntil;
+
+        /// <summary>The base ring IS the health display in 3D — no floating overhead bar.</summary>
+        public bool DisplaysHealth => _ringRenderer != null;
+
+        /// <inheritdoc/>
+        public void SetHealthFraction(float fraction) =>
+            _ringTargetFill = Mathf.Clamp01(fraction);
 
         /// <summary>Instantiates the rigged model under this actor, applies the toon-ink
         /// material across its renderers, wires the Animator, and drops the side ring.</summary>
@@ -167,8 +210,13 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
 
             _forearmBone = FindBone(rigRoot, "forearm", "right");
-            _upperArmBone = FindRightUpperArm(rigRoot);
+            _upperArmBone = FindUpperArm(rigRoot, "right");
             _spineBone = FindSpine(rigRoot);
+
+            // Left support arm (all optional — a missing bone just skips the forestock IK).
+            _leftHandBone = FindBone(rigRoot, "hand", "left");
+            _leftForearmBone = FindBone(rigRoot, "forearm", "left");
+            _leftUpperArmBone = FindUpperArm(rigRoot, "left");
 
             var rifle = Instantiate(riflePrefab, _handBone);
             rifle.name = "Rifle";
@@ -183,6 +231,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             rifle.transform.localScale = Vector3.one * (rifleWorldScale * figureScale / boneScale);
             _rifle = rifle.transform;
             _muzzlePoint = FindBone(rifle.transform, "muzzlepoint", null);
+            _forestockPoint = FindBone(rifle.transform, "forestockpoint", null);
 
             // Fold the rifle into the status channels so hit flashes and the death
             // dissolve cover the whole figure (rifle materials are ToonInk too).
@@ -201,12 +250,12 @@ namespace DeadManZone.Presentation.Combat.Arena
             return null;
         }
 
-        private static Transform FindRightUpperArm(Transform root)
+        private static Transform FindUpperArm(Transform root, string sideToken)
         {
             foreach (var bone in root.GetComponentsInChildren<Transform>(true))
             {
                 string name = bone.name.ToLowerInvariant();
-                if (name.Contains("right") && name.Contains("arm") &&
+                if (name.Contains(sideToken) && name.Contains("arm") &&
                     !name.Contains("forearm") && !name.Contains("lowerarm") &&
                     !name.Contains("shoulder") && !name.Contains("hand"))
                     return bone;
@@ -314,7 +363,10 @@ namespace DeadManZone.Presentation.Combat.Arena
             StopTransientRoutines();
 
             _dying = true;
+            _deathStartTime = Time.time; // carry + left-hand IK release over deathReleaseSeconds
+            _aimEndTime = Mathf.Min(_aimEndTime, Time.time); // any live aim blends out now
             _locomotionLockUntil = float.MaxValue;
+            _ringTargetFill = 0f; // ring drains empty as the unit falls
             ApplyStatus(hitFlash: 0f, dissolve: 0f);
 
             if (_animator != null)
@@ -343,17 +395,26 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             _modelRoot = null;
             _ring = null;
+            _ringRenderer = null;
+            _ringTargetFill = 1f;
+            _ringDisplayedFill = 1f;
             _animator = null;
             _renderers.Clear();
             _spineBone = null;
             _upperArmBone = null;
             _forearmBone = null;
             _handBone = null;
+            _leftUpperArmBone = null;
+            _leftForearmBone = null;
+            _leftHandBone = null;
             _rifle = null;
             _muzzlePoint = null;
+            _forestockPoint = null;
             _aimStartTime = float.NegativeInfinity;
             _aimEndTime = float.NegativeInfinity;
             _recoilStartTime = float.NegativeInfinity;
+            _deathStartTime = float.NegativeInfinity;
+            _movingCarry01 = 1f;
             _dying = false;
             _locomotionLockUntil = 0f;
             _targetRotation = Quaternion.identity;
@@ -437,14 +498,18 @@ namespace DeadManZone.Presentation.Combat.Arena
             _lungeRoutine = null;
         }
 
-        /// <summary>Additive shoot pose, written after the Animator each frame: swing the
-        /// right arm up so the rifle levels at the victim (60-70% aim, no full IK), a
-        /// slight chest twist toward the target, and a short recoil kick on the rifle +
-        /// forearm synced to the muzzle flash. Weight eases 0→1→0 so it never pops
-        /// against idle/walk.</summary>
+        /// <summary>Additive pose stack, written after the Animator each frame:
+        /// 1. port-arms rest carry (right arm brings the rifle across the chest, barrel
+        ///    up-left; eases down while walking, yields 1:1 to the aim layer),
+        /// 2. the existing aim layer (swing shoulder→hand toward the victim, spine twist,
+        ///    level the barrel) + recoil kick synced to the muzzle flash,
+        /// 3. left-hand two-bone IK onto the rifle's ForestockPoint — runs LAST so the
+        ///    support hand tracks the rifle through aim blends and recoil.
+        /// Everything scales by a death fade so the hands release naturally as the die
+        /// clip starts, instead of freezing mid-carry.</summary>
         private void LateUpdate()
         {
-            if (_dying || _handBone == null || _rifle == null)
+            if (_handBone == null || _rifle == null)
                 return;
 
             // The animator restores bones every frame but not our prop — re-seat the rifle
@@ -452,12 +517,179 @@ namespace DeadManZone.Presentation.Combat.Arena
             _rifle.localPosition = _rifleRestLocalPosition;
             _rifle.localRotation = _rifleRestLocalRotation;
 
-            float aim01 = ComputeAim01();
-            if (aim01 <= 0f)
+            float deathFade = _dying
+                ? 1f - Mathf.Clamp01((Time.time - _deathStartTime) / Mathf.Max(0.01f, deathReleaseSeconds))
+                : 1f;
+            if (deathFade <= 0f)
+                return; // die clip owns the body from here; rifle stays in the grip hand
+
+            float aim01 = ComputeAim01() * deathFade;
+
+            // Rest carry yields to the aim layer 1:1 (preserves the approved aim feel at
+            // full weight) and eases down a notch while the walk clip swings the arms.
+            bool moving = !_dying && _animator != null && _animator.GetBool(MovingParam);
+            _movingCarry01 = Mathf.MoveTowards(
+                _movingCarry01, moving ? portArmsMovingMultiplier : 1f, Time.deltaTime * 4f);
+            float rest01 = (1f - aim01) * deathFade;
+            // The moving multiplier only eases the ARM swing (that's what fights the walk
+            // clip); the barrel align stays full so the muzzle never droops mid-march.
+            ApplyPortArmsPose(rest01 * _movingCarry01, rest01);
+
+            if (aim01 > 0f)
+            {
+                ApplyAimPose(aim01);
+                ApplyRecoil(aim01);
+            }
+
+            ApplyLeftHandIk(leftHandIkWeight * deathFade);
+        }
+
+        /// <summary>Character-space frame: unit yaw with the model's authored yaw offset
+        /// removed, so +Z is where the unit visually faces.</summary>
+        private Quaternion CharacterRotation() =>
+            _modelRoot.rotation * Quaternion.Euler(0f, -_yawOffsetDegrees, 0f);
+
+        /// <summary>Port-arms carry, same self-correcting math shape as the aim layer:
+        /// swing the right shoulder→hand line toward a chest-front anchor, then rotate the
+        /// hand so the barrel points up-left. World-space FromToRotations, so it lands the
+        /// same pose on all four rigs regardless of their local bone axes.</summary>
+        private void ApplyPortArmsPose(float w, float barrelW)
+        {
+            if ((w <= 0.001f && barrelW <= 0.001f) || _modelRoot == null)
                 return;
 
-            ApplyAimPose(aim01);
-            ApplyRecoil(aim01);
+            Quaternion charRot = CharacterRotation();
+            float figureScale = _visualHeight / 1.7f;
+            Vector3 anchor = transform.position + charRot * (portArmsHandAnchorLocal * figureScale);
+
+            if (_upperArmBone != null)
+            {
+                Vector3 armDir = _handBone.position - _upperArmBone.position;
+                Vector3 toAnchor = anchor - _upperArmBone.position;
+                if (armDir.sqrMagnitude > 0.0001f && toAnchor.sqrMagnitude > 0.0001f)
+                {
+                    var swing = Quaternion.FromToRotation(armDir.normalized, toAnchor.normalized);
+                    _upperArmBone.rotation =
+                        Quaternion.Slerp(Quaternion.identity, swing, w * portArmsArmWeight)
+                        * _upperArmBone.rotation;
+                }
+            }
+
+            if (_forearmBone != null)
+            {
+                Vector3 foreDir = _handBone.position - _forearmBone.position;
+                Vector3 toAnchor = anchor - _forearmBone.position;
+                if (foreDir.sqrMagnitude > 0.0001f && toAnchor.sqrMagnitude > 0.0001f)
+                {
+                    var raise = Quaternion.FromToRotation(foreDir.normalized, toAnchor.normalized);
+                    _forearmBone.rotation =
+                        Quaternion.Slerp(Quaternion.identity, raise, w * portArmsArmWeight * 0.6f)
+                        * _forearmBone.rotation;
+                }
+            }
+
+            // Barrel up-left across the chest, via the hand (rifle is its child).
+            if (_muzzlePoint != null)
+            {
+                Vector3 barrelDir = _muzzlePoint.position - _rifle.position;
+                Vector3 want = charRot * portArmsBarrelDirLocal.normalized;
+                if (barrelDir.sqrMagnitude > 0.0001f)
+                {
+                    var level = Quaternion.FromToRotation(barrelDir.normalized, want);
+                    _handBone.rotation =
+                        Quaternion.Slerp(Quaternion.identity, level, barrelW * portArmsBarrelWeight)
+                        * _handBone.rotation;
+                }
+            }
+        }
+
+        /// <summary>Left palm onto the rifle's ForestockPoint via analytic two-bone IK
+        /// (law-of-cosines bend + swing to target + pole-hint roll), then a minimal-twist
+        /// wrist align so the fingers wrap across the stock. Runs after aim + recoil, so
+        /// the support hand follows the rifle wherever the right hand takes it.</summary>
+        private void ApplyLeftHandIk(float w)
+        {
+            if (w <= 0.001f || _forestockPoint == null ||
+                _leftUpperArmBone == null || _leftForearmBone == null || _leftHandBone == null)
+                return;
+
+            Vector3 target = _forestockPoint.position + _rifle.rotation * forestockGripOffsetMeters;
+            Vector3 hint = transform.position
+                           + CharacterRotation() * (leftElbowHintLocal * (_visualHeight / 1.7f));
+            SolveTwoBoneIk(_leftUpperArmBone, _leftForearmBone, _leftHandBone, target, hint, w);
+
+            // Wrist: hand-bone +Y runs along the fingers on these rigs — wrap them across
+            // the forestock. Single-axis FromToRotation = shortest arc, no added twist.
+            Vector3 fingersNow = _leftHandBone.rotation * Vector3.up;
+            Vector3 fingersWant = _rifle.rotation * leftHandFingersDirRifleLocal.normalized;
+            var wrap = Quaternion.FromToRotation(fingersNow, fingersWant);
+            _leftHandBone.rotation =
+                Quaternion.Slerp(Quaternion.identity, wrap, w) * _leftHandBone.rotation;
+        }
+
+        /// <summary>Standard analytic two-bone IK (the two-joint solution popularized by
+        /// Ryan Juckett / Daniel Holden): clamp the target into reach, set the elbow
+        /// interior angle from the law of cosines (bend about the current bend-plane
+        /// normal), swing the whole chain so the end lands on the target, then roll the
+        /// chain about the shoulder→target axis so the elbow points at the hint. Weight
+        /// blends the solved world rotations back toward the animated pose.</summary>
+        private static void SolveTwoBoneIk(
+            Transform upper, Transform lower, Transform end,
+            Vector3 target, Vector3 hint, float weight)
+        {
+            Vector3 a = upper.position, b = lower.position, c = end.position;
+            float lab = Vector3.Distance(a, b);
+            float lcb = Vector3.Distance(b, c);
+            if (lab < 0.0001f || lcb < 0.0001f)
+                return;
+            float lat = Mathf.Clamp(Vector3.Distance(a, target), 0.001f, lab + lcb - 0.001f);
+
+            // Bend axis: current bend plane; hint plane when the arm starts out straight.
+            Vector3 axis = Vector3.Cross(c - a, b - a);
+            if (axis.sqrMagnitude < 0.000001f)
+                axis = Vector3.Cross(c - a, hint - a);
+            if (axis.sqrMagnitude < 0.000001f)
+                return;
+            axis.Normalize();
+
+            Quaternion upperPre = upper.rotation;
+            Quaternion lowerPre = lower.rotation;
+
+            float acAb0 = Vector3.Angle(c - a, b - a);
+            float baBc0 = Vector3.Angle(a - b, c - b);
+            float acAb1 = Mathf.Acos(Mathf.Clamp(
+                (lcb * lcb - lab * lab - lat * lat) / (-2f * lab * lat), -1f, 1f)) * Mathf.Rad2Deg;
+            float baBc1 = Mathf.Acos(Mathf.Clamp(
+                (lat * lat - lab * lab - lcb * lcb) / (-2f * lab * lcb), -1f, 1f)) * Mathf.Rad2Deg;
+
+            upper.rotation = Quaternion.AngleAxis(acAb1 - acAb0, axis) * upper.rotation;
+            lower.rotation = Quaternion.AngleAxis(baBc1 - baBc0, axis) * lower.rotation;
+
+            // Swing the bent chain so the end effector lands on the target.
+            Vector3 endDir = end.position - a;
+            Vector3 targetDir = target - a;
+            if (endDir.sqrMagnitude > 0.000001f && targetDir.sqrMagnitude > 0.000001f)
+                upper.rotation =
+                    Quaternion.FromToRotation(endDir.normalized, targetDir.normalized)
+                    * upper.rotation;
+
+            // Pole hint: roll about the shoulder→target axis so the elbow faces the hint.
+            Vector3 n = (target - a).normalized;
+            Vector3 elbowDir = Vector3.ProjectOnPlane(lower.position - a, n);
+            Vector3 hintDir = Vector3.ProjectOnPlane(hint - a, n);
+            if (elbowDir.sqrMagnitude > 0.000001f && hintDir.sqrMagnitude > 0.000001f)
+                upper.rotation =
+                    Quaternion.AngleAxis(Vector3.SignedAngle(elbowDir, hintDir, n), n)
+                    * upper.rotation;
+
+            if (weight < 1f)
+            {
+                // Blend solved world rotations back toward the animated pose (upper first —
+                // lower's world rotation depends on it).
+                Quaternion lowerSolved = lower.rotation;
+                upper.rotation = Quaternion.Slerp(upperPre, upper.rotation, weight);
+                lower.rotation = Quaternion.Slerp(lowerPre, lowerSolved, weight);
+            }
         }
 
         private float ComputeAim01()
@@ -604,15 +836,18 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
         }
 
+        /// <summary>Base ring = health display: a flat quad running DMZ/CombatRingFill —
+        /// the disc drains radially with HP while the outer rim stays side-colored.</summary>
         private void BuildSideRing(Material ringMaterial)
         {
-            var ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            var ring = GameObject.CreatePrimitive(PrimitiveType.Quad);
             ring.name = "SideRing";
             Destroy(ring.GetComponent<Collider>());
             ring.transform.SetParent(transform, false);
             ring.transform.localPosition = new Vector3(0f, 0.02f, 0f);
-            // Flattened disc under the feet, matching the spike's ring proportions.
-            ring.transform.localScale = new Vector3(0.9f, 0.01f, 0.9f);
+            ring.transform.localRotation = Quaternion.Euler(90f, 0f, 0f); // flat, facing up
+            // Shader draws to UV radius 0.48, so 0.95 ≈ the old 0.9-diameter spike disc.
+            ring.transform.localScale = new Vector3(0.95f, 0.95f, 1f);
 
             var ringRenderer = ring.GetComponent<MeshRenderer>();
             ringRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -621,6 +856,35 @@ namespace DeadManZone.Presentation.Combat.Arena
                 ringRenderer.sharedMaterial = ringMaterial;
 
             _ring = ring;
+            _ringRenderer = ringRenderer;
+            _ringMpb ??= new MaterialPropertyBlock();
+            _ringTargetFill = 1f;
+            _ringDisplayedFill = 1f;
+            ApplyRingFill();
+        }
+
+        /// <summary>Ease the displayed fill toward the latest replayed HP so hits read as a
+        /// short drain, not a pop. Keeps draining while dying (a kill empties the disc as
+        /// the unit falls); the ring hides when the dissolve finishes.</summary>
+        private void Update()
+        {
+            if (_ringRenderer == null ||
+                Mathf.Approximately(_ringDisplayedFill, _ringTargetFill))
+                return;
+
+            _ringDisplayedFill = Mathf.MoveTowards(
+                _ringDisplayedFill, _ringTargetFill, RingDrainPerSecond * Time.deltaTime);
+            ApplyRingFill();
+        }
+
+        private void ApplyRingFill()
+        {
+            if (_ringRenderer == null || _ringMpb == null)
+                return;
+
+            _ringRenderer.GetPropertyBlock(_ringMpb);
+            _ringMpb.SetFloat(RingFillId, _ringDisplayedFill);
+            _ringRenderer.SetPropertyBlock(_ringMpb);
         }
 
         private static float ResolveDieClipSeconds(RuntimeAnimatorController controller)

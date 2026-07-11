@@ -26,11 +26,15 @@ namespace DeadManZone.Presentation.Combat.Arena
         [SerializeField] private CombatDirector director;
         [SerializeField] private CombatArenaPresenter presenter;
         [SerializeField] private CombatArenaSceneLoader arenaLoader;
+        [SerializeField] private CombatArmyHealthHud armyHud;
         [SerializeField] private int combatSeed = 20260711;
         [Tooltip("ContentDatabase piece ids, one per unit. No grenade_thrower piece exists — ironclad_mortars wears that model.")]
         [SerializeField] private string[] playerRoster = { "conscript_rifleman", "bulwark_squad", "field_medic" };
         [SerializeField] private string[] enemyRoster = { "conscript_rifleman", "ironclad_mortars", "conscript_rifleman" };
-        [SerializeField] private float betweenSegmentsSeconds = 0.6f;
+        [Tooltip("Total length of the TACTICAL PAUSE beat shown between segments (fade in + hold + fade out).")]
+        [SerializeField] private float pauseBeatSeconds = 1.5f;
+        [Tooltip("Time dilation during the beat — the battlefield visibly holds its breath.")]
+        [SerializeField] private float pauseBeatTimeScale = 0.35f;
 
         private const string PlayerIdPrefix = "p3d_unit";
         private const string EnemyIdPrefix = "e3d_unit";
@@ -38,12 +42,15 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private bool _fightEndSeen;
         private CombatAdvanceResult _finalResult;
+        private CanvasGroup _pauseBeatGroup;
+        private bool _timeDilated;
 
         private IEnumerator Start()
         {
             director ??= GetComponent<CombatDirector>();
             presenter ??= GetComponent<CombatArenaPresenter>();
             arenaLoader ??= GetComponent<CombatArenaSceneLoader>();
+            armyHud ??= GetComponent<CombatArmyHealthHud>();
             if (director == null || presenter == null)
             {
                 Debug.LogError("[Combat3D] Demo driver needs CombatDirector + CombatArenaPresenter on the arena rig.", this);
@@ -97,18 +104,20 @@ namespace DeadManZone.Presentation.Combat.Arena
                 BuildArmy(faction, playerPieces, PlayerIdPrefix),
                 BuildArmy(faction, enemyPieces, EnemyIdPrefix));
             presenter.InitializeArena(battlefield);
+            armyHud?.Initialize(battlefield); // army bars snap to 100% before playback
 
             director.EventReplayed += OnEventReplayed;
 
-            // 3. Replay each segment at real pacing; command pauses become a short beat.
+            // 3. Replay each segment at real pacing; command pauses become a TACTICAL
+            // PAUSE beat (fight_end breaks first, so nothing shows after the final segment).
             foreach (int segment in segments)
             {
                 director.PlayLog(run.Log, segment);
                 yield return new WaitUntil(() => !director.IsPlaying);
                 if (_fightEndSeen)
                     break;
-                if (betweenSegmentsSeconds > 0f)
-                    yield return new WaitForSeconds(betweenSegmentsSeconds);
+                if (pauseBeatSeconds > 0f)
+                    yield return TacticPauseBeat();
             }
 
             director.EventReplayed -= OnEventReplayed;
@@ -121,6 +130,96 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             if (director != null)
                 director.EventReplayed -= OnEventReplayed;
+            if (_timeDilated)
+                Time.timeScale = 1f;
+        }
+
+        /// <summary>
+        /// Watchable stand-in for the real tactic pause (the demo submits no commands, so
+        /// the interactive TacticPausePanel is deliberately NOT wired): a grimdark
+        /// "TACTICAL PAUSE" band fades in over a brief time dilation, holds, and fades out
+        /// before the next segment plays. Presentation-only — the sim already ran to
+        /// completion; this paces the replay and cannot affect determinism.
+        /// </summary>
+        private IEnumerator TacticPauseBeat()
+        {
+            Debug.Log("[Combat3D] Tactic pause beat (segment boundary).");
+            EnsurePauseBeatUi();
+            _pauseBeatGroup.gameObject.SetActive(true);
+
+            Time.timeScale = Mathf.Clamp(pauseBeatTimeScale, 0.05f, 1f);
+            _timeDilated = true;
+
+            const float fadeIn = 0.25f, fadeOut = 0.35f;
+            float hold = Mathf.Max(0.1f, pauseBeatSeconds - fadeIn - fadeOut);
+
+            yield return FadePauseBeat(0f, 1f, fadeIn);
+            yield return new WaitForSecondsRealtime(hold);
+            yield return FadePauseBeat(1f, 0f, fadeOut);
+
+            Time.timeScale = 1f;
+            _timeDilated = false;
+            _pauseBeatGroup.gameObject.SetActive(false);
+        }
+
+        private IEnumerator FadePauseBeat(float from, float to, float seconds)
+        {
+            for (float t = 0f; t < seconds; t += Time.unscaledDeltaTime)
+            {
+                _pauseBeatGroup.alpha = Mathf.Lerp(from, to, t / seconds);
+                yield return null;
+            }
+
+            _pauseBeatGroup.alpha = to;
+        }
+
+        /// <summary>Same canvas approach as the result banner, styled with the shared
+        /// grimdark kit (dark band + bone lettering) so it reads as the pause panel's
+        /// non-interactive cousin. Sits above the army HUD (400), under the banner (500).</summary>
+        private void EnsurePauseBeatUi()
+        {
+            if (_pauseBeatGroup != null)
+                return;
+
+            var canvasGo = new GameObject("Combat3DTacticPauseBeat");
+            var canvas = canvasGo.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 450;
+            _pauseBeatGroup = canvasGo.AddComponent<CanvasGroup>();
+            _pauseBeatGroup.alpha = 0f;
+            _pauseBeatGroup.blocksRaycasts = false;
+            _pauseBeatGroup.interactable = false;
+
+            CombatGrimdarkSkin.AddBand(canvasGo.transform, 0.66f, 0.78f, "PauseBand");
+
+            var titleGo = new GameObject("PauseTitle");
+            titleGo.transform.SetParent(canvasGo.transform, false);
+            var title = titleGo.AddComponent<TextMeshProUGUI>();
+            title.text = "TACTICAL PAUSE";
+            title.fontSize = 40f;
+            title.alignment = TextAlignmentOptions.Center;
+            CombatGrimdarkSkin.StyleTitle(title);
+            var titleRect = title.rectTransform;
+            titleRect.anchorMin = new Vector2(0f, 0.685f);
+            titleRect.anchorMax = new Vector2(1f, 0.78f);
+            titleRect.offsetMin = Vector2.zero;
+            titleRect.offsetMax = Vector2.zero;
+
+            var subGo = new GameObject("PauseSubtitle");
+            subGo.transform.SetParent(canvasGo.transform, false);
+            var subtitle = subGo.AddComponent<TextMeshProUGUI>();
+            subtitle.text = "ORDERS HOLD — COMBAT RESUMES";
+            subtitle.fontSize = 18f;
+            subtitle.characterSpacing = 4f;
+            subtitle.alignment = TextAlignmentOptions.Center;
+            CombatGrimdarkSkin.StyleBody(subtitle);
+            var subRect = subtitle.rectTransform;
+            subRect.anchorMin = new Vector2(0f, 0.66f);
+            subRect.anchorMax = new Vector2(1f, 0.70f);
+            subRect.offsetMin = Vector2.zero;
+            subRect.offsetMax = Vector2.zero;
+
+            _pauseBeatGroup.gameObject.SetActive(false);
         }
 
         private void OnEventReplayed(CombatEvent combatEvent)

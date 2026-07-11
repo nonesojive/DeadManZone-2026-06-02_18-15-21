@@ -117,18 +117,32 @@ namespace DeadManZone.Presentation.Combat.Arena
             SnapToAnchor(anchor);
             _smoothedSimWorld = _mapper.ToWorld(anchor);
 
-            _healthBar = CombatUnitHealthBar.Attach(
-                this,
-                combatSide,
-                cameraTransform != null ? cameraTransform.GetComponent<Camera>() : null,
-                _visual != null ? _visual.VisualHeight : 1.8f);
+            // 3D visuals present HP on the base ring themselves — no floating overhead
+            // bar in the 3D arena. The 2D path keeps its bar unchanged.
+            if (_visual != null && _visual.DisplaysHealth)
+            {
+                _healthBar?.Clear();
+                _healthBar = null;
+            }
+            else
+            {
+                _healthBar = CombatUnitHealthBar.Attach(
+                    this,
+                    combatSide,
+                    cameraTransform != null ? cameraTransform.GetComponent<Camera>() : null,
+                    _visual != null ? _visual.VisualHeight : 1.8f);
+            }
         }
 
-        /// <summary>Update the unit's HP bar (0..1); hidden at full health.</summary>
+        /// <summary>Update the unit's HP display (0..1): overhead bar (2D, hidden at full
+        /// health) or the visual's own presentation (3D ring fill).</summary>
         public void SetHealthFraction(float fraction)
         {
-            if (IsAlive)
-                _healthBar?.SetFraction(fraction);
+            if (!IsAlive)
+                return;
+
+            _healthBar?.SetFraction(fraction);
+            _visual?.SetHealthFraction(fraction);
         }
 
         public void SetFrozen(bool frozen) => _frozen = frozen;

@@ -54,9 +54,15 @@ namespace DeadManZone.Presentation.Editor
         private const string PlayerMaterialPath = "Assets/_Phase0Spike/Materials/Unit_Player.mat";
         private const string EnemyMaterialPath = "Assets/_Phase0Spike/Materials/Unit_Enemy.mat";
         private const string FallbackUnitMaterialPath = "Assets/_Phase0Spike/Materials/ToonInk_Meshy.mat";
-        private const string RingBluePath = "Assets/_Phase0Spike/Materials/RingBlue.mat";
-        private const string RingRedPath = "Assets/_Phase0Spike/Materials/RingRed.mat";
         private const string GradeProfilePath = "Assets/_Phase0Spike/Materials/P0_Grade.asset";
+
+        // Ring-fill health rings (replace the spike's flat RingBlue/RingRed discs): the base
+        // ring IS the unit health display. Fill colors sampled from the spike ring palette;
+        // rims lifted slightly so a near-dead unit's side still reads. Muted per bible §3.
+        private const string RingFillShaderPath =
+            "Assets/_Project/Presentation/Combat/Arena/Shaders/CombatRingFill.shader";
+        private const string PlayerRingPath = GeneratedFolder + "/RingFill_Player.mat";
+        private const string EnemyRingPath = GeneratedFolder + "/RingFill_Enemy.mat";
 
         [MenuItem("DeadManZone/Combat3D/Build Combat3D Demo Scene")]
         public static void BuildDemoScene()
@@ -86,8 +92,7 @@ namespace DeadManZone.Presentation.Editor
                 enemyMat = fallbackMat;
             if (playerMat == null || enemyMat == null)
                 missing.Add($"{PlayerMaterialPath} / {EnemyMaterialPath} (and fallback {FallbackUnitMaterialPath})");
-            var ringBlue = LoadOrFlag<Material>(RingBluePath, missing);
-            var ringRed = LoadOrFlag<Material>(RingRedPath, missing);
+            var ringFillShader = LoadOrFlag<Shader>(RingFillShaderPath, missing);
             var gradeProfile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(GradeProfilePath);
             if (gradeProfile == null)
                 Debug.LogWarning($"[Combat3D] Grade volume profile missing at {GradeProfilePath} — scene will render ungraded.");
@@ -106,11 +111,23 @@ namespace DeadManZone.Presentation.Editor
 
             // --- Generated assets under _Project (spike stays throwaway). ---
             EnsureFolder(GeneratedFolder);
+            var ringBlue = LoadOrCreateRingFillMaterial(
+                PlayerRingPath, ringFillShader,
+                fill: new Color(0.20f, 0.28f, 0.42f),   // spike RingBlue
+                rim: new Color(0.28f, 0.40f, 0.60f),
+                empty: new Color(0.09f, 0.10f, 0.13f));
+            var ringRed = LoadOrCreateRingFillMaterial(
+                EnemyRingPath, ringFillShader,
+                fill: new Color(0.40f, 0.18f, 0.16f),   // spike RingRed
+                rim: new Color(0.56f, 0.25f, 0.21f),
+                empty: new Color(0.12f, 0.09f, 0.09f));
             var controller = BuildAnimatorController(
                 idleClip, walkClip, dieClip, IdleClipPath, WalkClipPath, DieClipPath, ControllerPath);
             var archetypes = BuildRosterArchetypes();
             var config = BuildDemoArenaConfig();
             var riflePrefab = RiflePropBuilder.EnsurePrefab();
+            // Placeholder SFX set + ambience bed (no real combat audio exists in the project yet).
+            var (audioSet, ambienceLoop) = Combat3DPlaceholderAudioBuilder.EnsureAudioSet();
 
             // --- Scene ---
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
@@ -125,7 +142,7 @@ namespace DeadManZone.Presentation.Editor
             CreateKeyLight();
             CreateGlobalVolume(gradeProfile);
             CombatEnvironmentBuilder.Build();
-            CreateArenaRig(camera, config, controller, idleModel, playerMat, enemyMat, ringBlue, ringRed, riflePrefab, archetypes);
+            CreateArenaRig(camera, config, controller, idleModel, playerMat, enemyMat, ringBlue, ringRed, riflePrefab, archetypes, audioSet, ambienceLoop);
 
             EnsureFolder("Assets/_Project/Scenes");
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -308,6 +325,31 @@ namespace DeadManZone.Presentation.Editor
             return tuned;
         }
 
+        /// <summary>Generated DMZ/CombatRingFill material for one side. Colors reset on
+        /// every build (same pattern as the tuned unit materials) so palette tweaks here
+        /// propagate through a menu rebuild.</summary>
+        private static Material LoadOrCreateRingFillMaterial(
+            string path, Shader shader, Color fill, Color rim, Color empty)
+        {
+            if (shader == null)
+                return null;
+
+            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material == null)
+            {
+                material = new Material(shader);
+                AssetDatabase.CreateAsset(material, path);
+            }
+
+            material.shader = shader;
+            material.SetColor("_FillColor", fill);
+            material.SetColor("_RimColor", rim);
+            material.SetColor("_EmptyColor", empty);
+            material.SetFloat("_Fill", 1f);
+            EditorUtility.SetDirty(material);
+            return material;
+        }
+
         // --- Scene construction (values lifted from Assets/_Phase0Spike/Scenes/Phase0_Spike.unity) ---
 
         private static void ApplyEnvironmentLighting()
@@ -329,6 +371,9 @@ namespace DeadManZone.Presentation.Editor
             var go = new GameObject("ArenaCamera");
             go.tag = "MainCamera";
             var camera = go.AddComponent<Camera>();
+            // Hand-built camera in a hand-built scene: nothing else provides a listener,
+            // and without one every AudioSource in the arena is silent.
+            go.AddComponent<AudioListener>();
             camera.fieldOfView = 42f;
             camera.nearClipPlane = 0.3f;
             camera.farClipPlane = 200f;
@@ -420,7 +465,9 @@ namespace DeadManZone.Presentation.Editor
             Material ringBlue,
             Material ringRed,
             GameObject riflePrefab,
-            List<(string pieceId, GameObject model, AnimatorController controller)> archetypes)
+            List<(string pieceId, GameObject model, AnimatorController controller)> archetypes,
+            CombatArenaAudioSetSO audioSet,
+            AudioClip ambienceLoop)
         {
             var rig = new GameObject("Combat3DArena");
 
@@ -439,7 +486,29 @@ namespace DeadManZone.Presentation.Editor
             });
 
             var director = rig.AddComponent<CombatDirector>();
-            rig.AddComponent<CombatArenaAudioPresenter>();
+
+            // One-shot SFX presenter (CombatArenaPresenter finds it on the rig and drives
+            // it from replayed muzzle/impact/death events). Demo-only placeholder set —
+            // the presenter's Resources fallback is the shared 2D asset, left untouched.
+            var arenaAudio = rig.AddComponent<CombatArenaAudioPresenter>();
+            SetSerialized(arenaAudio, so =>
+            {
+                so.FindProperty("audioSet").objectReferenceValue = audioSet;
+            });
+
+            // Ambient bed: plain looping 2D source, kept well under the SFX (bible §3 —
+            // the ambience is a floor, not a feature).
+            if (ambienceLoop != null)
+            {
+                var ambience = new GameObject("AmbienceBed");
+                ambience.transform.SetParent(rig.transform, false);
+                var ambienceSource = ambience.AddComponent<AudioSource>();
+                ambienceSource.clip = ambienceLoop;
+                ambienceSource.loop = true;
+                ambienceSource.playOnAwake = true;
+                ambienceSource.volume = 0.16f;
+                ambienceSource.spatialBlend = 0f;
+            }
 
             var presenter = rig.AddComponent<CombatArenaPresenter>();
             SetSerialized(presenter, so =>
@@ -471,12 +540,20 @@ namespace DeadManZone.Presentation.Editor
                 }
             });
 
+            // Army health HUD: two opposing top-of-screen bars fed by the replay tracker.
+            var armyHud = rig.AddComponent<CombatArmyHealthHud>();
+            SetSerialized(armyHud, so =>
+            {
+                so.FindProperty("director").objectReferenceValue = director;
+            });
+
             var driver = rig.AddComponent<Combat3DDemoDriver>();
             SetSerialized(driver, so =>
             {
                 so.FindProperty("director").objectReferenceValue = director;
                 so.FindProperty("presenter").objectReferenceValue = presenter;
                 so.FindProperty("arenaLoader").objectReferenceValue = loader;
+                so.FindProperty("armyHud").objectReferenceValue = armyHud;
             });
 
             // Feel pass: punch-in camera beats + pooled muzzle-flash VFX (arena spec §1/§6).

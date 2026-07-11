@@ -59,6 +59,12 @@ namespace DeadManZone.Presentation.Combat.Arena
         // only through the presentation profile window (or full die), not the whole strip.
         public bool BlocksLocomotion => _animated && (_dying || Time.time < _locomotionLockUntil);
 
+        /// <summary>2D units keep the floating overhead bar; HP never routes through the visual.</summary>
+        public bool DisplaysHealth => false;
+
+        /// <inheritdoc/>
+        public void SetHealthFraction(float fraction) { }
+
         public void Build(
             PieceDefinitionSO piece,
             CombatSide side,

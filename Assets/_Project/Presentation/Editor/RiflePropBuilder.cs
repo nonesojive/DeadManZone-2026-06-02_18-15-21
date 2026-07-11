@@ -51,6 +51,12 @@ namespace DeadManZone.Presentation.Editor
                 muzzle.transform.SetParent(root.transform, false);
                 muzzle.transform.localPosition = new Vector3(0f, 0.035f, 0.43f);
 
+                // Left-hand IK anchor: underside of the forestock, where the support
+                // palm rests (consumed by CombatUnitVisual3D's two-bone left-arm IK).
+                var forestock = new GameObject("ForestockPoint");
+                forestock.transform.SetParent(root.transform, false);
+                forestock.transform.localPosition = new Vector3(0f, -0.018f, 0.16f);
+
                 var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
                 Debug.Log($"[Combat3D] Rifle prop prefab saved to {PrefabPath}.");
                 return prefab;

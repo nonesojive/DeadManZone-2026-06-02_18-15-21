@@ -415,3 +415,115 @@ Four bundled items, all verified live in the editor. EditMode **358/358** green 
 - Menu rebuild regenerates the scene with the new camera (pose confirmed on the saved scene's ArenaCamera).
 - Play mode end-to-end on the rebuilt scene: 3v3 fight (53 events / 2 segments), units stand ON their rings (screenshot 04), `fight_end` replayed at segment 1 tick 122, defeat banner fired.
 - EditMode 358/358 green.
+
+## Ring health + army HUD (2026-07-11)
+
+Owner-requested redesign of health presentation in the 3D arena: the base ring IS the unit health display (no floating overhead bars), plus a top-of-screen army health HUD.
+
+### Health source (both parts)
+`ArmyHealthReplayTracker` (Core, `Assets/_Project/Core/Combat/ArmyHealthReplayTracker.cs`) — the same replay-driven tracker the 2D arena's bars consumed. `CombatArenaPresenter` already owned a per-unit instance (`_unitHealth`), fed by every replayed event in `OnEventReplayed`; `TryGetUnitFraction` drives `CombatUnitActor.SetHealthFraction` on damage/graze/gas_damage impacts and on arena (re)initialization. The army HUD reuses `ArmyHealthBarPresenter`, whose own tracker registers all Combatant-tagged units from the battlefield and aggregates per-side fractions. Presentation reads replayed state only — zero Core changes.
+
+### Part 1 — ring-fill unit health (shader/mesh approach)
+- New unlit URP shader `DMZ/CombatRingFill` (`Presentation/Combat/Arena/Shaders/CombatRingFill.shader`): flat quad at the unit's feet, circular silhouette via UV-radius clip. Pie fill by `atan2(d.x, d.y)` vs a `_Fill` float (0..1), sweeping clockwise from the far side; drained sector shows `_EmptyColor` (near-black). A thin always-on outer rim band (`_RimInnerRadius`..`_RimOuterRadius`) stays side-colored so a near-dead unit still reads blue/red. `Offset -1,-1` + 0.02 m lift avoids ground z-fighting.
+- `CombatUnitVisual3D.BuildSideRing` now creates the quad with this shader instead of the spike's flat disc; `SetHealthFraction` sets a target fill and `Update` eases the displayed fill via `MoveTowards` (1.4 fill/s) through a `MaterialPropertyBlock`, so hits read as a short drain, not a pop. `PlayDeath` drains the ring to 0 as the unit falls; the ring hides when the dissolve completes.
+- Materials are bootstrap-generated (`RingFill_Player.mat` / `RingFill_Enemy.mat` under the demo's Generated folder), colors sampled from the spike's RingBlue/RingRed palette with slightly lifted rims — muted per bible §3 saturation budget, reset on every menu rebuild.
+
+### Bar gating for 3D (2D path untouched)
+`ICombatUnitVisual.DisplaysHealth` is the seam: `CombatUnitVisual3D` returns true (ring present), `CombatUnitVisual2D` returns false. `CombatUnitActor.Initialize` only attaches `CombatUnitHealthBar` (the floating world-space bar) when the visual does NOT display health itself; `SetHealthFraction` forwards to both the bar (2D) and the visual (3D). `CombatUnitHealthBar` itself is unchanged — the 2D sprite arena keeps its overhead bars.
+
+### Part 2 — army health HUD wiring
+- `CombatArmyHealthHud` (`Presentation/Combat/Arena/CombatArmyHealthHud.cs`): own screen-space overlay canvas (sort 400, under the result banner at 500), 1920x1080-scaled — same pattern as the demo's banner canvas. Two opposing horizontal bars at the top: player left/blue filled from the left edge, enemy right/red mirrored via `Image.Type.Filled` + `OriginHorizontal.Right`, so damage widens the center gap. Ring-family muted colors, dark backing, `CombatHudChromeBuilder.AddSideLabel` for the YOUR FORCES / ENEMY FORCES tags. The 2D bar factory (`CombatHealthBarUiFactory`) was too Synty-prefab-coupled to reuse; the presenter + tracker are reused as-is.
+- Subscribes to `CombatDirector.EventReplayed` and forwards to `ArmyHealthBarPresenter.HandleReplayEvent`; `Combat3DDemoDriver` calls `armyHud.Initialize(battlefield)` right after `presenter.InitializeArena` so bars snap to 100% before playback. `Combat3DDemoSceneBootstrap` adds + wires the component on the arena rig, so a menu rebuild includes it.
+
+### Spec sections followed
+Arena spec §6 (VFX & feedback): army bars kept as ambient-tier feedback, no full-screen interrupts; punch-in camera untouched and confirmed compatible. §1 camera framing unchanged. Bible §3 saturation budget respected (muted fills, no saturated discs).
+
+### Verification
+- assets-refresh clean, zero compile errors; menu rebuild (`DeadManZone → Combat3D → Build Combat3D Demo Scene`) regenerates scene + ring materials + HUD wiring.
+- Play end-to-end (seed 20260711, defeat outcome): early — all six ring discs full, both army bars full, NO floating bars over units; mid — blue rings partially drained (pie sectors visible), player bar well below enemy bar; late (0.25x slow-mo to catch the fast kill phase) — near-dead blue units read as empty dark discs with a clearly readable thin blue rim, one unit mid-death-fall on its drained ring, punch-in camera active with the screen-space HUD unaffected; end — corpses dissolve, rings hide with them, defeated side's bar empty, banner over the intact HUD.
+- EditMode 358/358 green.
+
+### Deferred
+- This seed's fight is lopsided (~8 s of damage events) — pacing/balance is a sim/content concern, not presentation.
+- Bible §6 worn/aged chrome restyle for the HUD bars (checkpoint notches, damage pops) — flat muted quads for now.
+- 2D arena bar factory consolidation onto the new minimal chrome — YAGNI until the 2D path is revisited.
+
+## Audio + pause beat (2026-07-11)
+
+Two presentation items: the 3D demo scene gets sound (it was fully silent) and the bare 0.6 s inter-segment gap becomes a watchable TACTICAL PAUSE beat. Core untouched, 2D path untouched.
+
+### Audio — what existed vs. what was wired
+- **Audit**: `CombatArenaAudioPresenter` was already on the rig and `CombatArenaPresenter` already drives it from the replayed event seams (`PlayAttackMuzzleVfx` → rifle/cannon shot, `PlayAttackImpactVfx` → impact/explosion, `PlayDeathVfxAfterDelay` → death when the fall completes). Three gaps made the scene silent: (1) the shared `Resources/DeadManZone/CombatArenaAudioSet.asset` has **all five clip fields null**; (2) the project ships **zero usable combat SFX** (`t:AudioClip` finds only SlimUI menu clicks, Unity AI voice samples, and a menu music track); (3) the bootstrap-built camera had **no AudioListener** — even with clips, nothing would ever be audible.
+- **PLACEHOLDER clips** (per the no-real-audio contingency): new editor utility `Presentation/Editor/Combat3DPlaceholderAudioBuilder.cs` generates six deterministic (fixed seed 20260711) filtered-noise blips as 16-bit mono WAVs under `Assets/_Project/Combat3D/Audio/` — `placeholder_rifle_shot` (0.14 s crack), `placeholder_cannon_shot` (0.5 s thump), `placeholder_bullet_impact` (0.09 s tick), `placeholder_explosion` (0.8 s rumble), `placeholder_unit_death` (0.45 s body-fall thud), `placeholder_ambience_wind_loop` (6 s seamless wind bed, tail crossfaded into head, loop-periodic gust swells). All are throwaway: replace the .wav files (same names) or swap the set asset when real SFX land. Existing files are never regenerated (identical bytes anyway), so menu rebuilds don't churn OneDrive.
+- **Wiring** (bootstrap only): a demo-only `Combat3DDemoAudioSet.asset` binds the five one-shots and is serialized onto the presenter's `audioSet` field (so the shared 2D Resources fallback asset stays untouched and the 2D arena's behavior is unchanged); `AudioListener` added in `CreateCamera`; `AmbienceBed` child with a plain looping 2D `AudioSource` (vol 0.16 — a floor, not a feature, per bible §3). Presenter `masterVolume` stays 0.55; `PlayClipAtPoint` gives cheap 3D positioning per event.
+- **Verified programmatically** (can't hear in this session): injected a play-mode watcher counting `One shot audio` spawns — one full fight produced **55 one-shots** (27 rifle shots, 25 impacts, 3 death thuds landing at fall completion t=10.1/11.7/12.2), ambience source `isPlaying` through the whole run. No cannon/explosion fired this seed (all three roster archetypes resolve to the rifle presentation profile).
+
+### Tactic pause beat (Combat3DDemoDriver)
+- `betweenSegmentsSeconds` (bare 0.6 s wait) replaced by `pauseBeatSeconds = 1.5` / `pauseBeatTimeScale = 0.35`: at each segment boundary (never after the final segment — `fight_end` breaks the loop first) a screen-space canvas (sort 450: above HUD 400, under banner 500) fades in over 0.25 s, holds ~0.9 s, fades out 0.35 s. Styled with the shared `CombatGrimdarkSkin` kit (dark band upper-third, bone "TACTICAL PAUSE" title, "ORDERS HOLD — COMBAT RESUMES" subtitle) so it reads as the real pause panel's non-interactive cousin — the interactive `TacticPausePanel` is deliberately NOT wired (demo submits no commands).
+- `Time.timeScale` drops to 0.35 for the beat (battlefield holds its breath — idles/dissolves slow, audio unaffected) and is restored before the next `PlayLog`; fades/hold run on unscaled/realtime so the beat is a fixed 1.5 s. `OnDestroy` restores timeScale if the run is torn down mid-beat. Determinism untouched by construction: the sim already ran to completion before playback starts; the beat only paces the replay.
+- Verified: beat logged + screenshotted at full alpha mid-fight (band clear of units and HUD, muzzle flash frozen under it); combat resumes after; end state `banner=True beatActive=False timeScale=1.00` — including on a run where the editor itself was paused mid-beat.
+
+### Verification
+- assets-refresh clean, zero compile errors; menu rebuild regenerates scene + audio set + listener + ambience deterministically (idempotent across the script-execute retry storm — ~10 back-to-back rebuilds, identical result).
+- Play end-to-end twice (seed 20260711, defeat outcome): volley SFX + impact SFX during both segments, pause beat between segments, death thuds as bodies fall, banner + army HUD intact.
+- EditMode **358/358** green.
+
+### Deferred
+- **Real SFX**: everything generated here is a clearly-labeled placeholder — grimdark-quiet blips, not sound design. Swap-in path documented above.
+- **Cannon/explosion audibility**: wired and clip generated, but no roster piece currently resolves to the cannon/artillery presentation profile in the demo — will light up when such a piece lands.
+- **HUD pulse during the beat** (spec-optional flourish) — skipped as YAGNI; the time dilation + band already carry the moment.
+- Audio mixer / volume settings plumbing — single hardcoded volumes are fine for a demo scene.
+
+## Two-hand carry (2026-07-11)
+
+Closes both "needs eyes" items from the rifles pass: the limp one-hand muzzle-down side carry is now a **port-arms rest carry** (rifle diagonal across the chest, barrel up-left ~45°), and the **left hand rides the forestock** via code-driven two-bone IK. All in the same `CombatUnitVisual3D.LateUpdate` additive stack — no authored clips, no animation-rigging package, Core/2D untouched. Verified live across all four archetypes; EditMode 358/358 green.
+
+### Approach (LateUpdate order matters)
+1. **Re-seat rifle** on its rest grip local pose (unchanged — kills recoil accumulation).
+2. **Port-arms rest layer** — same self-correcting world-space math shape as the aim layer, so it lands the same pose on all four rigs regardless of local bone axes: swing the right shoulder→hand line toward a chest-front anchor (character space, scaled by `visualHeight/1.7`), forearm at 0.6× that weight, then rotate the *hand* (rifle is its child) so the barrel points up-left along `portArmsBarrelDirLocal`. Character space = `modelRoot.rotation * Euler(0,-yawOffset,0)` (authored yaw offset removed).
+3. **Aim + recoil** — untouched. Rest layer scales by `(1-aim01)` so at full aim the pose is exactly the previously approved aim feel.
+4. **Left-hand two-bone IK** onto a new `ForestockPoint` empty on the rifle prop (`RiflePropBuilder`, prefab regenerated in place) — runs LAST so the support hand tracks the rifle through aim blend-in/out AND recoil (recoil moves the rifle before the solve; hand follows automatically, no elbow pop seen at pause-frame inspection).
+5. **Death fade** — everything above scales by `1 - clamp01((t-deathStart)/deathReleaseSeconds)`; `PlayDeath` also clamps `_aimEndTime` to now. Hands release over 0.35 s as the die clip starts, then the layer goes fully silent (die clip owns the body; rifle stays parented to the grip hand and falls/dissolves with it). The old `if (_dying) return` guard is gone — that's what let the release blend run.
+
+### IK math shape (`SolveTwoBoneIk`, static, ~40 lines)
+Standard analytic two-joint solution (Ryan Juckett / Daniel Holden form), world-rotation composition:
+- clamp target distance into `[eps, L1+L2-eps]`;
+- law-of-cosines for the new shoulder/elbow interior angles; rotate upper and lower about the **current bend-plane normal** (`cross(c-a, b-a)`, hint-plane fallback when the arm starts straight) by the angle deltas;
+- `FromToRotation` swing on the upper arm so the wrist lands on the target;
+- pole step: project elbow and hint onto the plane ⊥ shoulder→target, roll the upper arm by their signed angle (hint = character-space point down-left of the shoulder);
+- weight <1 slerps both solved world rotations back toward the animated pose (upper first — lower depends on it).
+Wrist after the solve: single `FromToRotation` (shortest arc, no added twist) taking hand +Y (fingers on these rigs) to `leftHandFingersDirRifleLocal` in rifle space — fingers wrap across the stock.
+
+### Walk integration gotcha (iteration 2 of 3)
+First pass scaled the whole rest layer by `portArmsMovingMultiplier` while Moving — on the low-hanging-arm rigs (bulwark/medic) the leftover 36% of a ~140° barrel arc read as a drooping muzzle mid-march. Fix: the moving multiplier now eases only the **arm swing** (that's what fights the walk clip's arm swing); the **barrel align stays full weight**, so the muzzle never droops. Walk still reads — the multiplier plus the hand-anchor swing leaves the torso bob and leg work fully visible.
+
+### Live-tuning workflow (worth repeating)
+Pose numbers were iterated **in Play mode via reflection** (script-execute setting the private serialized fields on live units + `screenshot-camera` on a spawned `InspectCam`), then baked into code defaults — three visual iterations without a single recompile. Freeze-frames via `EditorApplication.update` watches that pause exactly when a unit is mid-aim (`_aimStartTime/_aimEndTime` window) or mid-death-release.
+
+### Knob defaults (serialized on CombatUnitVisual3D)
+| Knob | Value |
+|---|---|
+| portArmsArmWeight / portArmsBarrelWeight | 0.65 / 0.95 |
+| portArmsHandAnchorLocal (char space, 1.7 m figure) | (0.10, 1.15, 0.28) |
+| portArmsBarrelDirLocal | (−0.85, 1, 0.25) — ~45° up-left, tilted forward to clear the shoulder |
+| portArmsMovingMultiplier (arm swing only) | 0.75 |
+| leftHandIkWeight | 1.0 |
+| leftElbowHintLocal (char space) | (−0.38, 0.75, 0.10) |
+| leftHandFingersDirRifleLocal | (0.9, 0.45, 0) |
+| forestockGripOffsetMeters (rifle axes) | (0, −0.02, 0.03) |
+| deathReleaseSeconds | 0.35 |
+| ForestockPoint (rifle prefab local) | (0, −0.018, 0.16) |
+
+### Per-archetype verdicts (close-up pause-frame screenshots)
+- **conscript_rifleman**: rest, walk, and mid-volley aim all read — rifle levels at the victim with the left hand tracking the forestock; no wrist twist artifacts at aim blend boundaries.
+- **bulwark_squad**: was the droop case (see gotcha); after the barrel-weight split it holds a textbook 45° port arms at rest and mid-march.
+- **field_medic**: clean two-hand march carry; left-hand reach is comfortable (targetDist ~0.26 m vs 0.49 m arm length).
+- **ironclad_mortars**: reads correctly front and back (barrel visible over the shoulder line from behind).
+- Left-hand reach margin measured on all rigs (0.15–0.32 m target distance vs 0.47–0.49 m arm length) — nobody needed the "blend IK down for hopeless proportions" escape hatch.
+- Gameplay-distance wide shot: three survivors at port arms read MORE soldierly, not noisier; full play-through completes (banner + army HUD fine, zero errors).
+
+### Deferred
+- Fingers don't articulate (rigid glove mesh) — palm-on-forestock contact is approximate by design; a few cm invisible at gameplay distance.
+- Rest grip euler still the shared (−90,0,0) default — the barrel-align step makes per-archetype grip overrides unnecessary so far.
+- Die-clip rifle flail: during some death frames the rifle (still hand-parented) swings past the torso; reads as losing grip at speed, revisit only if a slow-mo kill cam ever lands.
+- The transient mid-turn frame where the carry crosses high (arm swing + facing ease) — visible only in freeze-frame, not at speed.

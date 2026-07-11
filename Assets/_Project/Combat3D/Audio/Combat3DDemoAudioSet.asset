@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7d8e9f0a1b2c3d4e5f6789012345678, type: 3}
+  m_Name: Combat3DDemoAudioSet
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatArenaAudioSetSO
+  rifleShot: {fileID: 8300000, guid: 6bea41749a1b9ae4a800e6022166866d, type: 3}
+  cannonShot: {fileID: 8300000, guid: 5e3d5d5fcbc058a4ba7cea43f38885fc, type: 3}
+  bulletImpact: {fileID: 8300000, guid: bf964eafbd38e334e8d771a75b7657f3, type: 3}
+  explosion: {fileID: 8300000, guid: e063aaab510c6914589b6365891cc5c0, type: 3}
+  unitDeath: {fileID: 8300000, guid: 9e0a21b26aad5f74e9e96673ccc4810b, type: 3}
