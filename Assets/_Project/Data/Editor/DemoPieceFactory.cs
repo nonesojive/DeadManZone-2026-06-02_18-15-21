@@ -110,7 +110,6 @@ namespace DeadManZone.Data.Editor
             SaveMappedPiece("field_medic", "Field Medic", PieceCategory.Unit, ShopLane.Defensive,
                 DemoSandboxShapes.Single, "neutral",
                 maxHp: 40, baseDamage: 0, manpowerCost: 4, goldCost: 5,
-                grantedAbility: GrantedAbility.ShieldAllies,
                 synergyTags: new[] { GameTagIds.Medic },
                 attackType: AttackType.None, armorType: ArmorType.Light),
             SaveMappedPiece("neutral_supply_depot", "Neutral Supply Depot", PieceCategory.Building, ShopLane.Defensive,

@@ -33,8 +33,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         [SerializeField] private CombatArenaSceneLoader arenaLoader;
         [SerializeField] private CombatArmyHealthHud armyHud;
         [SerializeField] private int combatSeed = 20260711;
-        [Tooltip("ContentDatabase piece ids, one per unit. Optional ':Ability' suffix (testing aid) overrides the piece's grantedAbility via a runtime SO clone; assets untouched. Content now ships real grants (field_medic: ShieldAllies, ironclad_mortars: MortarShot), so the defaults are plain ids.")]
-        [SerializeField] private string[] playerRoster = { "conscript_rifleman", "field_medic", "ironclad_mortars" };
+        [Tooltip("ContentDatabase piece ids, one per unit. Optional ':Ability' suffix (testing aid) overrides the piece's grantedAbility via a runtime SO clone; assets untouched. Content ships real grants (armored_transport: ShieldAllies, ironclad_mortars: MortarShot), so the defaults are plain ids.")]
+        [SerializeField] private string[] playerRoster = { "conscript_rifleman", "armored_transport", "ironclad_mortars" };
         // Showcase default: the three new Meshy faces (marksman/field marshal/surgeon) on the enemy side.
         [SerializeField] private string[] enemyRoster = { "ironclad_marksman", "ironclad_field_marshal", "ironmarch_surgeon" };
         [Tooltip("Command pauses open the interactive tactics window. Off = the old auto path (no commands, pause beat between segments).")]

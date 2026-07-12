@@ -16,9 +16,9 @@
 4. Environment/bootstrap: the demo scene builder must become a runtime-or-prefab arena the Run flow can instantiate (bootstrap is editor-only today — likely convert generated scene to a prefab or keep a dedicated combat scene in build settings).
 5. Keep 2D path deletable-but-present until the port is verified; then the switchover deletion list in the audit doc applies (17 CombatArena2D files + CombatUnitVisual2D + bar factory).
 
-## Open items / owner decisions pending
-- armored_transport, ironmarch_iron_horse, machine_gun_nest: no ref images, non-humanoid — need refs + a non-humanoid treatment (static mesh + slide/track movement? no rig). Currently rifleman-fallback.
-- armored_transport originally had ShieldAllies before the content pass wiped it — restore?
+## Open items (owner decisions now RESOLVED — see audit doc "Ability swap-back + non-humanoid treatment spec")
+- ShieldAllies: RESOLVED — armored_transport grants it (restored, original design); field_medic has no granted ability.
+- Non-humanoid trio: treatment SPECIFIED (MG nest static + shoot/destroyed anims; iron horse animated treads as walk; transport spinning wheels; built-in weapon muzzle points, no rifle prop; skip rig pipeline). Still need ref images + a vehicle mode in generate_unit.py + a vehicle variant of CombatUnitVisual3D.
 - Real SFX to replace placeholder WAVs (same filenames under Assets/_Project/Combat3D/Audio/).
 - New units: `python tools/meshy/generate_unit.py <unit>` (skill: docs/skills/meshy-unit-pipeline/SKILL.md).
 

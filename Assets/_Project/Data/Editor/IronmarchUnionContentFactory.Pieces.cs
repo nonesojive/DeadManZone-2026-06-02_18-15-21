@@ -49,7 +49,7 @@ namespace DeadManZone.Data.Editor
                 AttackSpeedTier.Slow, AttackRangeTier.Short, 0, musterPerShop: 1, flavorTags: new[] { GameTagIds.Logistics }),
             SavePiece("field_medic", "Field Medic", PieceCategory.Unit, DemoSandboxShapes.Single,
                 GameTagIds.Infantry, GameTagIds.Support, "neutral", 10, 30, 3, 1, AttackType.Ballistic, ArmorType.Light,
-                AttackSpeedTier.Slow, AttackRangeTier.Short, 2, grantedAbility: GrantedAbility.ShieldAllies,
+                AttackSpeedTier.Slow, AttackRangeTier.Short, 2,
                 synergyTags: new[] { GameTagIds.Medic }, flavorTags: new[] { GameTagIds.SmallArms },
                 customAbilities: new[]
                 {
@@ -61,7 +61,8 @@ namespace DeadManZone.Data.Editor
                 AttackSpeedTier.Slow, AttackRangeTier.Medium, 2, flavorTags: new[] { GameTagIds.SmallArms }),
             SavePiece("armored_transport", "Armored Transport", PieceCategory.Unit, DemoSandboxShapes.TransportL,
                 GameTagIds.Vehicle, GameTagIds.Defender, "neutral", 18, 75, 2, 3, AttackType.Ballistic, ArmorType.Light,
-                AttackSpeedTier.Slow, AttackRangeTier.Short, 4, synergyTags: new[] { GameTagIds.Convoy }, flavorTags: new[] { GameTagIds.Support }),
+                AttackSpeedTier.Slow, AttackRangeTier.Short, 4, grantedAbility: GrantedAbility.ShieldAllies,
+                synergyTags: new[] { GameTagIds.Convoy }, flavorTags: new[] { GameTagIds.Support }),
             SavePiece("ironmarch_surgeon", "Ironmarch Surgeon", PieceCategory.Unit, DemoSandboxShapes.Single,
                 GameTagIds.Infantry, GameTagIds.Support, FactionIds.IronmarchUnion, 15, 40, 3, 1, AttackType.Ballistic, ArmorType.Light,
                 AttackSpeedTier.Slow, AttackRangeTier.Short, 2, synergyTags: new[] { GameTagIds.Medic },

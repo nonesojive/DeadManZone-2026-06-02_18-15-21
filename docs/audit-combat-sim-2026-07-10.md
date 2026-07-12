@@ -416,16 +416,16 @@ Four bundled items, all verified live in the editor. EditMode **358/358** green 
 - Play mode end-to-end on the rebuilt scene: 3v3 fight (53 events / 2 segments), units stand ON their rings (screenshot 04), `fight_end` replayed at segment 1 tick 122, defeat banner fired.
 - EditMode 358/358 green.
 
-## Ring health + army HUD (2026-07-11)
+## Ability swap-back + non-humanoid treatment spec (2026-07-11, owner decisions)
 
-Owner-requested redesign of health presentation in the 3D arena: the base ring IS the unit health display (no floating overhead bars), plus a top-of-screen army health HUD.
+**ShieldAllies restored to its original granter**: armored_transport grants ShieldAllies (it always did — DemoPieceFactory line ~102 was the original design; the IronMarch content pass dropped it). field_medic reverted to no granted ability (keeps its heal aura custom ability). Changed in IronmarchUnionContentFactory.Pieces.cs, DemoPieceFactory.cs (agent-added medic grant removed), and both .asset files. Demo player roster default: conscript_rifleman, armored_transport, ironclad_mortars (transport renders as rifleman fallback until its model exists).
 
-### Health source (both parts)
-`ArmyHealthReplayTracker` (Core, `Assets/_Project/Core/Combat/ArmyHealthReplayTracker.cs`) — the same replay-driven tracker the 2D arena's bars consumed. `CombatArenaPresenter` already owned a per-unit instance (`_unitHealth`), fed by every replayed event in `OnEventReplayed`; `TryGetUnitFraction` drives `CombatUnitActor.SetHealthFraction` on damage/graze/gas_damage impacts and on arena (re)initialization. The army HUD reuses `ArmyHealthBarPresenter`, whose own tracker registers all Combatant-tagged units from the battlefield and aggregates per-side fractions. Presentation reads replayed state only — zero Core changes.
-
-### Part 1 — ring-fill unit health (shader/mesh approach)
-- New unlit URP shader `DMZ/CombatRingFill` (`Presentation/Combat/Arena/Shaders/CombatRingFill.shader`): flat quad at the unit's feet, circular silhouette via UV-radius clip. Pie fill by `atan2(d.x, d.y)` vs a `_Fill` float (0..1), sweeping clockwise from the far side; drained sector shows `_EmptyColor` (near-black). A thin always-on outer rim band (`_RimInnerRadius`..`_RimOuterRadius`) stays side-colored so a near-dead unit still reads blue/red. `Offset -1,-1` + 0.02 m lift avoids ground z-fighting.
-- `CombatUnitVisual3D.BuildSideRing` now creates the quad with this shader instead of the spike's flat disc; `SetHealthFraction` sets a target fill and `Update` eases the displayed fill via `MoveTowards` (1.4 fill/s) through a `MaterialPropertyBlock`, so hits read as a short drain, not a pop. `PlayDeath` drains the ring to 0 as the unit falls; the ring hides when the dissolve completes.
+**Non-humanoid unit treatment (owner spec, for when refs/models exist):**
+- **machine_gun_nest** — static emplacement: NO walk/movement animation. Needs a shoot animation and a death/destroyed state. No rifle prop (weapon is built in); muzzle flash/tracers from the built-in gun's muzzle point.
+- **ironmarch_iron_horse** — tank: "walk" = animated rotating treads (code-driven UV scroll or tread-mesh rotation; no humanoid rig). Built-in weapon muzzle point for fire VFX.
+- **armored_transport** — wheeled vehicle: "walk" = spinning wheels (code-driven wheel rotation). Built-in weapon muzzle point.
+- Common: skip Meshy rig/animate stages (image3d + remesh only once refs exist — generate_unit.py will need a --no-rig vehicle mode); no rifle attach; CombatUnitVisual3D needs a vehicle variant or archetype flag (no port-arms/IK/aim layers; movement bob/tread/wheel spin instead; death = collapse/smoke/dissolve rather than die clip).
+ fill and `Update` eases the displayed fill via `MoveTowards` (1.4 fill/s) through a `MaterialPropertyBlock`, so hits read as a short drain, not a pop. `PlayDeath` drains the ring to 0 as the unit falls; the ring hides when the dissolve completes.
 - Materials are bootstrap-generated (`RingFill_Player.mat` / `RingFill_Enemy.mat` under the demo's Generated folder), colors sampled from the spike's RingBlue/RingRed palette with slightly lifted rims — muted per bible §3 saturation budget, reset on every menu rebuild.
 
 ### Bar gating for 3D (2D path untouched)
