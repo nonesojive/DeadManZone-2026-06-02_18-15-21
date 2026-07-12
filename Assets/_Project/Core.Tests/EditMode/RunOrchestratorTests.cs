@@ -37,12 +37,29 @@ namespace DeadManZone.Core.Tests
             SaveManager.DeleteSave();
         }
 
+        /// <summary>Strips the faction starting loadout so board-mechanics tests keep
+        /// their original blank-slate premises.</summary>
+        private void RemoveStartingLoadout()
+        {
+            var combat = _orchestrator.GetCombatBoard();
+            foreach (var piece in combat.Pieces.Where(p => p.InstanceId.StartsWith("start_")).ToList())
+                combat.TryRemove(piece.InstanceId, out _);
+            _orchestrator.SaveCombatBoard(combat);
+
+            var hq = _orchestrator.GetHqBoard();
+            foreach (var piece in hq.Pieces.Where(p => p.InstanceId.StartsWith("start_")).ToList())
+                hq.TryRemove(piece.InstanceId, out _);
+            _orchestrator.SaveHqBoard(hq);
+        }
+
         [Test]
-        public void StartNewRun_CreatesEmptyCombatAndHqBoards()
+        public void StartNewRun_BoardsCarryOnlyTheStartingLoadout()
         {
             _orchestrator.StartNewRun(FactionIds.IronmarchUnion);
-            Assert.IsEmpty(_orchestrator.GetCombatBoard().Pieces);
-            Assert.IsEmpty(_orchestrator.GetHqBoard().Pieces);
+            Assert.IsTrue(_orchestrator.GetCombatBoard().Pieces.All(p => p.InstanceId.StartsWith("start_")),
+                "fresh combat board holds only starting-loadout pieces");
+            Assert.IsTrue(_orchestrator.GetHqBoard().Pieces.All(p => p.InstanceId.StartsWith("start_")),
+                "fresh HQ board holds only starting-loadout pieces");
             Assert.AreEqual(6, _orchestrator.GetCombatBoard().Layout.Width);
             Assert.AreEqual(3, _orchestrator.GetHqBoard().Layout.Width);
             Assert.AreEqual(6, _orchestrator.GetHqBoard().Layout.Height);
@@ -102,7 +119,8 @@ namespace DeadManZone.Core.Tests
             int refund = rifle.GoldCost / 2;
             Assert.IsTrue(_orchestrator.TrySellPlacedPiece("rifle_1"));
             Assert.AreEqual(startingSupplies + refund, _orchestrator.State.Supplies);
-            Assert.IsEmpty(_orchestrator.GetCombatBoard().Pieces);
+            Assert.IsFalse(_orchestrator.GetCombatBoard().Pieces.Any(p => p.InstanceId == "rifle_1"),
+                "the sold piece is gone (starting-loadout pieces remain)");
         }
 
         [Test]
@@ -196,6 +214,7 @@ namespace DeadManZone.Core.Tests
         public void TryMovePlacedPiece_RelocatesOnBoard()
         {
             _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 505);
+            RemoveStartingLoadout();
             var board = _orchestrator.GetHqBoard();
             var radio = GetPiece("command_outpost");
             Assert.IsTrue(board.TryPlace(radio, new Core.Common.GridCoord(1, 0), "radio_1").Success);
@@ -213,6 +232,7 @@ namespace DeadManZone.Core.Tests
         public void TryMoveBoardToReserves_RemovesFromBoardAndPlacesOnReserves()
         {
             _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 606);
+            RemoveStartingLoadout();
             var board = _orchestrator.GetHqBoard();
             var radio = GetPiece("command_outpost");
             Assert.IsTrue(board.TryPlace(radio, new Core.Common.GridCoord(1, 0), "radio_1").Success);
@@ -290,6 +310,7 @@ namespace DeadManZone.Core.Tests
         public void DefeatReport_CarriesDamageTablesFromSim()
         {
             _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
+            RemoveStartingLoadout(); // the loss-staging premise needs a blank board
 
             // Stack the deck for a loss: field only the single cheapest offer.
             var cheapest = _orchestrator.State.Shop.Offers

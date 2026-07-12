@@ -199,6 +199,17 @@ namespace DeadManZone.Data.Editor
                 TacticType.Advance,
                 TacticType.DisciplinedFire
             };
+
+            // Starting loadout: the faction's opening hand, nudging players toward its
+            // identity (economy + supported infantry line). Anchors are preferences —
+            // the orchestrator scans forward if a cell turns out illegal.
+            faction.startingPieces = new[]
+            {
+                new FactionSO.StartingPieceEntry { pieceId = "supply_depot", anchor = new Vector2Int(0, 0) },
+                new FactionSO.StartingPieceEntry { pieceId = "command_outpost", anchor = new Vector2Int(0, 3) },
+                new FactionSO.StartingPieceEntry { pieceId = "field_medic", anchor = new Vector2Int(2, 2) },
+                new FactionSO.StartingPieceEntry { pieceId = "conscript_rifleman", anchor = new Vector2Int(3, 2) },
+            };
             EditorUtility.SetDirty(faction);
             return faction;
         }

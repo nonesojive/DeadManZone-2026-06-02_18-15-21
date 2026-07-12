@@ -40,6 +40,10 @@ _Avoid_: Retreat (implies an order), death, despawn (presentation word)
 Run health. Combat deaths deduct it directly; the run is lost when an army can no longer be fielded. Pieces and effects that grant Manpower are the game's heals.
 _Avoid_: Lives, HP (reserve for units), morale (the retired run resource)
 
+**Starting Loadout**:
+The few pieces a faction begins every run with, pre-placed on their boards (buildings → HQ, units → combat) — free, upkeep applies. The faction's opening hand: it shapes early-game combat feel and nudges players toward the faction's identity (IronMarch: supply depot + command outpost, field medic + conscript rifleman). Authored per faction on its definition; anchors are preferences, not guarantees.
+_Avoid_: Starter deck (no cards), preset army, default board
+
 **Rarity**:
 A piece's design role, not its raw power: Common = line units, Uncommon = synergy enablers and support, Rare = build-arounds (ability granters, vehicles). Three tiers (enum leaves room for a fourth, unauthored). Gates shop offer odds (weighted by Dread) and salvage quality; price stays authored per piece.
 _Avoid_: Tier (reserve for boss stages), quality, power level

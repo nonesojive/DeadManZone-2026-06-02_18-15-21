@@ -55,6 +55,19 @@ namespace DeadManZone.Data
             TacticType.DisciplinedFire
         };
 
+        [Header("Starting loadout")]
+        [Tooltip("Pieces pre-placed at run start — the faction's opening hand, hinting its " +
+                 "strengths. Board resolves from the piece's category (buildings → HQ, units → " +
+                 "combat); the anchor is a preference and placement scans forward if it's illegal.")]
+        public StartingPieceEntry[] startingPieces = System.Array.Empty<StartingPieceEntry>();
+
+        [System.Serializable]
+        public class StartingPieceEntry
+        {
+            public string pieceId;
+            public Vector2Int anchor;
+        }
+
         [Header("Salvage")]
         [Range(0, 50)]
         public int baseSalvageChancePercent = 10;

@@ -22,7 +22,11 @@ namespace DeadManZone.Core.Tests.EditMode
             SaveManager.DeleteSave();
             var orchestrator = new RunOrchestrator(database);
             orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 1);
-            Assert.IsEmpty(orchestrator.GetCombatBoard().Pieces);
+            // Since the starting-loadout feature, a fresh combat board carries ONLY the
+            // faction's authored starting units — nothing bought, nothing else.
+            Assert.IsTrue(
+                orchestrator.GetCombatBoard().Pieces.All(p => p.InstanceId.StartsWith("start_")),
+                "a fresh combat board holds only starting-loadout pieces");
         }
 
         [Test]
@@ -40,8 +44,15 @@ namespace DeadManZone.Core.Tests.EditMode
             orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 1);
             var buildingBoard = orchestrator.GetHqBoard();
             var outpost = database.Pieces.First(p => p.id == "command_outpost").ToCore();
-            Assert.IsTrue(buildingBoard.TryPlace(outpost, new Core.Common.GridCoord(1, 0), "outpost_test").Success);
-            Assert.IsFalse(orchestrator.GetCombatBoard().TryPlace(outpost, new Core.Common.GridCoord(1, 0), "outpost_fail").Success);
+            // Find a free HQ anchor — starting-loadout buildings occupy authored cells.
+            Core.Common.GridCoord? free = null;
+            for (int y = 0; y < buildingBoard.Layout.Height && free == null; y++)
+                for (int x = 0; x < buildingBoard.Layout.Width && free == null; x++)
+                    if (buildingBoard.CanPlace(outpost, new Core.Common.GridCoord(x, y)))
+                        free = new Core.Common.GridCoord(x, y);
+            Assert.IsTrue(free.HasValue, "the HQ board should still have room for another building");
+            Assert.IsTrue(buildingBoard.TryPlace(outpost, free.Value, "outpost_test").Success);
+            Assert.IsFalse(orchestrator.GetCombatBoard().TryPlace(outpost, free.Value, "outpost_fail").Success);
         }
     }
 }

@@ -62,6 +62,10 @@ Shipped same-day: `Rarity` enum (append-only) on PieceDefinition/SO with all pie
 - Pity: counter per generated offer batch (initial roll and each reroll both count), +step to rare odds per rare-less batch, reset on rare APPEARING, hard guarantee at the cap, rare-or-above satisfies. State on RunState (seeded).
 - Card template redesign with rarity frames (saturation budget; frames lean brass/bone, never near side-channel blue/red) + shop skin sweep — cards and rarity ship together.
 
+## M3.5 — Faction starting loadouts — **DONE 2026-07-12** (owner addition)
+
+Each faction opens every run with a few pre-placed pieces (free; upkeep applies) — early-game combat feel + a nudge toward faction identity. `FactionSO.startingPieces` (pieceId + preferred anchor; board resolved by piece category; orchestrator scans forward from illegal anchors, never blocks a run), applied in StartNewRun BEFORE muster so economy pieces can feed the first muster. IronMarch authored: supply_depot + command_outpost (HQ), field_medic + conscript_rifleman adjacent (combat). Plumbed through the content factory AND stamped on the shipped asset. Side effect: the Front Report strength band works from round one (a real army to measure against). Blank-slate test premises updated (`RemoveStartingLoadout` helper); suites 408 EditMode green. Dust Scourge / Cartel loadouts: author with their content passes.
+
 ## M4 — Arena Themes wave 1 (independent after M0)
 
 - Theme framework: pool → home-theme-set keying; theme rolls seeded from the chosen option's pool; bosses on their pool's signature ground. Scene-per-theme via the existing `ResolveCombatArenaScene` branch point; `CombatEnvironmentBuilder` parameterized per theme.

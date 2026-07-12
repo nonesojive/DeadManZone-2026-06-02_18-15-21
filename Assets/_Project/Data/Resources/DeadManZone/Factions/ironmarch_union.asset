@@ -35,6 +35,15 @@ MonoBehaviour:
   startingAuthority: 2
   startingMorale: 30
   startingTactics: 020000000100000000000000
+  startingPieces:
+  - pieceId: supply_depot
+    anchor: {x: 0, y: 0}
+  - pieceId: command_outpost
+    anchor: {x: 0, y: 3}
+  - pieceId: field_medic
+    anchor: {x: 2, y: 2}
+  - pieceId: conscript_rifleman
+    anchor: {x: 3, y: 2}
   baseSalvageChancePercent: 1
   shopOverride: {fileID: 0}
   tokenBackgroundColor: {r: 0.22, g: 0.28, b: 0.38, a: 0.45}

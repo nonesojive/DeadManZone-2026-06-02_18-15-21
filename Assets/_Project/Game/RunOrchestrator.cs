@@ -72,7 +72,10 @@ namespace DeadManZone.Game
                 Faction.startingMorale);
             State.CombatBoard = Faction.CreateEmptyCombatBoardSnapshot();
             State.HqBoard = Faction.CreateEmptyHqBoardSnapshot();
+            ApplyStartingLoadout();
             State.RerollCountThisRound = 0;
+            // Muster runs AFTER the loadout on purpose: a starting supply depot feeds the
+            // first muster — the faction's economic identity shows from round one.
             ApplyMuster();
             ResetAuthorityForBuildRound();
             ResetMetaForNewRun();
@@ -80,6 +83,51 @@ namespace DeadManZone.Game
             GenerateFightOptions();
             _activeCombat = null;
             Persist();
+        }
+
+        /// <summary>Pre-places the faction's starting pieces (FactionSO.startingPieces) on
+        /// their category-resolved boards. Free — no supplies/authority; upkeep applies as
+        /// usual. Authored anchors are preferences: if occupied/illegal, placement scans
+        /// forward for the first legal cell; a piece with no legal cell logs and is skipped
+        /// (never blocks the run).</summary>
+        private void ApplyStartingLoadout()
+        {
+            var entries = Faction.startingPieces;
+            if (entries == null || entries.Length == 0)
+                return;
+
+            var combat = GetCombatBoard();
+            var hq = GetHqBoard();
+
+            foreach (var entry in entries)
+            {
+                if (entry == null || string.IsNullOrEmpty(entry.pieceId) ||
+                    !_registry.TryGetById(entry.pieceId, out var piece))
+                {
+                    UnityEngine.Debug.LogWarning(
+                        $"[StartingLoadout] Unknown starting piece '{entry?.pieceId}' on {Faction.factionId} — skipped.");
+                    continue;
+                }
+
+                var board = BoardPlacementRules.ResolveTargetBoard(piece) == BoardKind.Hq ? hq : combat;
+                string instanceId = $"start_{entry.pieceId}";
+                var preferred = new GridCoord(entry.anchor.x, entry.anchor.y);
+
+                if (board.TryPlace(piece, preferred, instanceId).Success)
+                    continue;
+
+                bool placed = false;
+                for (int y = 0; y < board.Layout.Height && !placed; y++)
+                    for (int x = 0; x < board.Layout.Width && !placed; x++)
+                        placed = board.TryPlace(piece, new GridCoord(x, y), instanceId).Success;
+
+                if (!placed)
+                    UnityEngine.Debug.LogWarning(
+                        $"[StartingLoadout] No legal cell for '{entry.pieceId}' on {Faction.factionId} — skipped.");
+            }
+
+            State.CombatBoard = BoardSnapshotMapper.FromBoard(combat);
+            State.HqBoard = BoardSnapshotMapper.FromBoard(hq);
         }
 
         public ReservesState GetReserves()
