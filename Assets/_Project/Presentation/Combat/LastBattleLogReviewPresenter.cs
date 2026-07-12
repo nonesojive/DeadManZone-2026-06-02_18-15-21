@@ -17,7 +17,34 @@ namespace DeadManZone.Presentation.Combat
         {
             if (closeButton != null)
                 closeButton.onClick.AddListener(Close);
+
+            ApplyGrimdarkSkin();
             Close();
+        }
+
+        /// <summary>M6: grimdark kit over the scene-authored review sheet. The dim
+        /// backdrop image on the root is left alone (it is an overlay scrim, not chrome).</summary>
+        private void ApplyGrimdarkSkin()
+        {
+            if (overlayRoot != null)
+            {
+                var sheet = overlayRoot.transform.Find("LastBattleLogSheet");
+                if (sheet != null)
+                {
+                    CombatGrimdarkSkin.StyleFrame(sheet.GetComponent<Image>());
+                    var scrollImage = sheet.Find("LogScroll")?.GetComponent<Image>();
+                    if (scrollImage != null)
+                    {
+                        // Darker band inside the card so the log region stays legible.
+                        scrollImage.sprite = null;
+                        scrollImage.color = CombatGrimdarkSkin.BandDark;
+                    }
+                    CombatGrimdarkSkin.StylePanelText(sheet.gameObject, titleFontSize: 20f);
+                }
+            }
+
+            CombatGrimdarkSkin.StyleBody(logText);
+            CombatGrimdarkSkin.StyleButton(closeButton);
         }
 
         public void Open()

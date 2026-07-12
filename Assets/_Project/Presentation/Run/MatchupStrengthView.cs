@@ -1,4 +1,5 @@
 using DeadManZone.Core.Combat;
+using DeadManZone.Presentation.Combat;
 using DeadManZone.Presentation.Visual;
 using TMPro;
 using UnityEngine;
@@ -37,10 +38,11 @@ namespace DeadManZone.Presentation.Run
         private static string FormatSide(int total, int synergyBonus) =>
             synergyBonus > 0 ? $"{total:N0} (+{synergyBonus:N0})" : $"{total:N0}";
 
+        /// <summary>Grimdark kit body text (M6); theme param kept for caller compatibility.</summary>
         public void ApplyTheme(UiThemeSO theme)
         {
-            if (matchupText != null && theme != null)
-                UiThemeApplicator.ApplyLabel(matchupText, secondary: true, theme);
+            if (matchupText != null)
+                matchupText.color = CombatGrimdarkSkin.BodyText;
         }
     }
 }

@@ -1,3 +1,4 @@
+using DeadManZone.Presentation.Combat;
 using DeadManZone.Presentation.Settings;
 using TMPro;
 using UnityEngine;
@@ -44,7 +45,19 @@ namespace DeadManZone.Presentation.MainMenu
             if (postFxButton != null)
                 postFxButton.onClick.AddListener(TogglePostFx);
 
+            ApplyGrimdarkSkin();
             RefreshLabels();
+        }
+
+        /// <summary>M6: grimdark kit for the option rows. Runs after the controller's
+        /// panel-wide StyleCard pass (this panel wakes on first activation), restoring
+        /// slider track/fill visibility with kit colors.</summary>
+        private void ApplyGrimdarkSkin()
+        {
+            CombatGrimdarkSkin.StyleSlider(musicSlider);
+            CombatGrimdarkSkin.StyleSlider(sfxSlider);
+            CombatGrimdarkSkin.StyleButton(fullscreenButton);
+            CombatGrimdarkSkin.StyleButton(postFxButton);
         }
 
         private void OnEnable() => RefreshLabels();

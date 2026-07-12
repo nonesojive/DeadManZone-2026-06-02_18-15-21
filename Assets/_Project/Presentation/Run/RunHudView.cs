@@ -2,6 +2,7 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Run;
 using DeadManZone.Data;
+using DeadManZone.Presentation.Combat;
 using DeadManZone.Presentation.Visual;
 using TMPro;
 using UnityEngine;
@@ -29,7 +30,7 @@ namespace DeadManZone.Presentation.Run
 
         // Runtime-built M1 meta strip (Dread clock + run seed) — its own small overlay
         // canvas so the hand-authored top bar's layout is never touched. Same pattern as
-        // CombatArmyHealthHud. Restyled properly in the M6 UI sweep.
+        // CombatArmyHealthHud. Grimdark kit colors as of M6.
         private TMP_Text _dreadText;
         private TMP_Text _seedText;
 
@@ -108,7 +109,9 @@ namespace DeadManZone.Presentation.Run
             if (fightTitleText != null)
             {
                 fightTitleText.text = bossPending ? "BOSS" : "Fight";
-                fightTitleText.color = bossPending ? new Color(1f, 0.42f, 0.38f) : Color.white;
+                fightTitleText.color = bossPending
+                    ? CombatGrimdarkSkin.DefeatRed
+                    : CombatGrimdarkSkin.Bone;
                 fightTitleText.textWrappingMode = TextWrappingModes.NoWrap; // narrow chip
             }
 
@@ -125,8 +128,8 @@ namespace DeadManZone.Presentation.Run
                 else
                     _dreadText.text = $"DREAD {state.Dread}/{threshold}";
                 _dreadText.color = bossPending
-                    ? new Color(1f, 0.42f, 0.38f)
-                    : new Color(0.78f, 0.74f, 0.66f);
+                    ? CombatGrimdarkSkin.DefeatRed
+                    : CombatGrimdarkSkin.BodyText;
             }
 
             if (_seedText != null)
@@ -214,7 +217,10 @@ namespace DeadManZone.Presentation.Run
             _seedText = CreateMetaLabel(canvasGo.transform, "SeedLabel",
                 anchorMin: new Vector2(0.55f, 0f), anchorMax: new Vector2(0.99f, 0.045f),
                 TextAlignmentOptions.BottomRight);
-            _seedText.color = new Color(0.55f, 0.52f, 0.47f);
+            // Kit body text, deliberately dimmer — the seed is reference info, not signal.
+            _seedText.color = new Color(
+                CombatGrimdarkSkin.BodyText.r, CombatGrimdarkSkin.BodyText.g,
+                CombatGrimdarkSkin.BodyText.b, 0.6f);
         }
 
         private static TMP_Text CreateMetaLabel(
@@ -258,30 +264,30 @@ namespace DeadManZone.Presentation.Run
             salvageIndicatorText.text = $"Salvage: {displayName} — {FormatSalvageChance(state.SalvageChancePercent)}";
         }
 
+        /// <summary>Grimdark kit colors (M6). Theme param kept for caller compatibility;
+        /// label colors now come from CombatGrimdarkSkin, not the theme SO.</summary>
         public void ApplyTheme(UiThemeSO theme)
         {
-            if (theme == null)
-                return;
-
-            ApplyLabel(fightTitleText, false, theme);
-            ApplyLabel(fightIndexText, false, theme);
-            ApplyLabel(gateMessageText, true, theme);
-            ApplyLabel(salvageIndicatorText, true, theme);
-            ApplyLabel(suppliesValueText, false, theme);
-            ApplyLabel(manpowerValueText, false, theme);
-            ApplyLabel(authorityValueText, false, theme);
-            ApplyLabel(suppliesIncomeText, true, theme);
-            ApplyLabel(manpowerIncomeText, true, theme);
-            ApplyLabel(authorityIncomeText, true, theme);
-            ApplyLabel(salvageNumberText, false, theme);
-            ApplyLabel(strengthValueText, false, theme);
+            EnsureHudTextsWired(); // callers may run before Awake (bootstrap skin pass)
+            ApplyLabel(fightTitleText, false);
+            ApplyLabel(fightIndexText, false);
+            ApplyLabel(gateMessageText, true);
+            ApplyLabel(salvageIndicatorText, true);
+            ApplyLabel(suppliesValueText, false);
+            ApplyLabel(manpowerValueText, false);
+            ApplyLabel(authorityValueText, false);
+            ApplyLabel(suppliesIncomeText, true);
+            ApplyLabel(manpowerIncomeText, true);
+            ApplyLabel(authorityIncomeText, true);
+            ApplyLabel(salvageNumberText, false);
+            ApplyLabel(strengthValueText, false);
             matchupStrengthView?.ApplyTheme(theme);
         }
 
-        private static void ApplyLabel(TMP_Text label, bool secondary, UiThemeSO theme)
+        private static void ApplyLabel(TMP_Text label, bool secondary)
         {
             if (label != null)
-                UiThemeApplicator.ApplyLabel(label, secondary, theme);
+                label.color = secondary ? CombatGrimdarkSkin.BodyText : CombatGrimdarkSkin.Bone;
         }
 
         private void EnsureHudTextsWired()

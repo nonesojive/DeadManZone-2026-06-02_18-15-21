@@ -3,6 +3,7 @@ using DeadManZone.Core.Meta;
 using DeadManZone.Core.Run;
 using DeadManZone.Data;
 using DeadManZone.Game;
+using DeadManZone.Presentation.Combat;
 using DeadManZone.Presentation.Visual;
 using TMPro;
 using UnityEngine;
@@ -72,6 +73,49 @@ namespace DeadManZone.Presentation.MainMenu
 
             achievementsPanel?.SetBackHandler(ShowMainPanel);
             leaderboardPanel?.SetBackHandler(ShowMainPanel);
+
+            ApplyGrimdarkSkin();
+        }
+
+        /// <summary>M6: runtime grimdark-kit pass over the scene-authored menu (same
+        /// pattern as BattleReportPresenter.Awake). Colors/typography only — every
+        /// anchor and flow stays authored. MenuOptionsPanel re-skins its own sliders
+        /// in its Awake, which runs on first panel activation (after this pass).</summary>
+        private void ApplyGrimdarkSkin()
+        {
+            // Sub-panels: flatten frames to the smoky card surface, leather the buttons.
+            CombatGrimdarkSkin.StyleCard(optionsPanel);
+            CombatGrimdarkSkin.StyleCard(factionPanel);
+            CombatGrimdarkSkin.StylePanelText(optionsPanel);
+            CombatGrimdarkSkin.StylePanelText(factionPanel);
+            CombatGrimdarkSkin.StyleBody(factionDetailText);
+
+            // Main panel: title band + bone lettering, leather buttons.
+            if (mainPanel != null)
+            {
+                CombatGrimdarkSkin.StylePanelText(mainPanel);
+                CombatGrimdarkSkin.AddBand(mainPanel.transform, 0.73f, 0.83f, "TitleBand");
+            }
+            CombatGrimdarkSkin.StyleBody(subtitleText);
+
+            CombatGrimdarkSkin.StyleButton(continueButton);
+            CombatGrimdarkSkin.StyleButton(newRunButton);
+            CombatGrimdarkSkin.StyleButton(achievementsButton);
+            CombatGrimdarkSkin.StyleButton(leaderboardButton);
+            CombatGrimdarkSkin.StyleButton(optionsButton);
+            CombatGrimdarkSkin.StyleButton(exitButton);
+
+            // Primary CTAs keep the brass accent on their labels.
+            AccentLabel(continueButton);
+            AccentLabel(newRunButton);
+            AccentLabel(ironmarchUnionButton);
+        }
+
+        private static void AccentLabel(Button button)
+        {
+            var label = button != null ? button.GetComponentInChildren<TMP_Text>(true) : null;
+            if (label != null)
+                label.color = CombatGrimdarkSkin.VictoryGold;
         }
 
         private void OnEnable()

@@ -1,5 +1,6 @@
 using DeadManZone.Core.Run;
 using DeadManZone.Game;
+using DeadManZone.Presentation.Combat;
 using DeadManZone.Presentation.Visual;
 using TMPro;
 using UnityEngine;
@@ -18,6 +19,23 @@ namespace DeadManZone.Presentation.Run
         {
             if (mainMenuButton != null)
                 mainMenuButton.onClick.AddListener(() => GameScenes.LoadMainMenu());
+
+            ApplyGrimdarkSkin();
+        }
+
+        /// <summary>M6: runtime grimdark-kit pass over the scene-authored overlay
+        /// (same pattern as BattleReportPresenter.Awake). Show() picks the outcome
+        /// accent: victory bone/brass, defeat red/rust.</summary>
+        private void ApplyGrimdarkSkin()
+        {
+            if (root != null)
+                CombatGrimdarkSkin.StyleFrame(root.transform.Find("Card")?.GetComponent<Image>());
+
+            CombatGrimdarkSkin.StyleTitle(titleText, characterSpacing: 12f);
+            if (titleText != null)
+                titleText.fontStyle |= FontStyles.UpperCase;
+            CombatGrimdarkSkin.StyleBody(bodyText);
+            CombatGrimdarkSkin.StyleButton(mainMenuButton);
         }
 
         public void Show(RunPhase phase, RunState state = null)
@@ -27,7 +45,12 @@ namespace DeadManZone.Presentation.Run
 
             bool victory = phase == RunPhase.Victory;
             if (titleText != null)
+            {
                 titleText.text = victory ? "Victory" : "Defeat";
+                titleText.color = victory
+                    ? CombatGrimdarkSkin.VictoryGold
+                    : CombatGrimdarkSkin.DefeatRed;
+            }
 
             if (bodyText != null)
             {
@@ -56,19 +79,8 @@ namespace DeadManZone.Presentation.Run
                 root.SetActive(false);
         }
 
-        public void ApplyTheme(UiThemeSO theme)
-        {
-            if (theme == null || root == null)
-                return;
-
-            var panel = root.transform.Find("Card")?.GetComponent<Image>();
-            if (panel != null)
-                UiThemeApplicator.ApplyModalFrame(panel, theme);
-
-            UiThemeApplicator.ApplyLabel(titleText, false, theme);
-            UiThemeApplicator.ApplyLabel(bodyText, true, theme);
-            if (mainMenuButton != null)
-                UiThemeApplicator.ApplyAccentButton(mainMenuButton, theme);
-        }
+        /// <summary>Grimdark kit (M6); theme param kept so editor bake callers compile.
+        /// Same visuals whether applied by editor setup or the Awake pass.</summary>
+        public void ApplyTheme(UiThemeSO theme) => ApplyGrimdarkSkin();
     }
 }

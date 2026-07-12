@@ -1,4 +1,5 @@
 using DeadManZone.Core.Meta;
+using DeadManZone.Presentation.Combat;
 using DeadManZone.Presentation.Visual;
 using TMPro;
 using UnityEngine;
@@ -16,6 +17,10 @@ namespace DeadManZone.Presentation.MainMenu
         {
             if (backButton != null)
                 backButton.onClick.AddListener(Hide);
+
+            // M6: grimdark kit (frame + buttons via StyleCard, kit typography).
+            CombatGrimdarkSkin.StyleCard(root);
+            CombatGrimdarkSkin.StylePanelText(root);
         }
 
         /// <summary>Replaces default back handler (e.g. to return to main menu).</summary>
@@ -58,14 +63,11 @@ namespace DeadManZone.Presentation.MainMenu
             listText.text = lines.ToString();
         }
 
+        /// <summary>Grimdark kit (M6); theme param kept so editor bake callers compile.</summary>
         public void ApplyTheme(UiThemeSO theme)
         {
-            if (theme == null)
-                return;
-
-            UiThemeApplicator.ApplyLabel(listText, secondary: true, theme);
-            if (backButton != null)
-                UiThemeApplicator.ApplyAccentButton(backButton, theme);
+            CombatGrimdarkSkin.StyleCard(root);
+            CombatGrimdarkSkin.StylePanelText(root);
         }
     }
 }

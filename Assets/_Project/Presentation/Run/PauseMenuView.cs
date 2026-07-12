@@ -45,7 +45,40 @@ namespace DeadManZone.Presentation.Run
             if (exitButton != null)
                 exitButton.onClick.AddListener(OnExit);
 
+            ApplyGrimdarkSkin();
             Hide();
+        }
+
+        /// <summary>M6: runtime grimdark-kit pass over the scene-authored pause menu
+        /// (same pattern as BattleReportPresenter.Awake). Colors/typography only —
+        /// anchors and flow untouched.</summary>
+        private void ApplyGrimdarkSkin()
+        {
+            StyleCard(mainPanel);
+            StyleCard(optionsPanel);
+
+            CombatGrimdarkSkin.StyleButton(resumeButton);
+            CombatGrimdarkSkin.StyleButton(optionsButton);
+            CombatGrimdarkSkin.StyleButton(battleReportButton);
+            CombatGrimdarkSkin.StyleButton(mainMenuButton);
+            CombatGrimdarkSkin.StyleButton(exitButton);
+            CombatGrimdarkSkin.StyleButton(optionsBackButton);
+
+            // Resume is the primary CTA — brass accent on the label.
+            var resumeLabel = resumeButton != null
+                ? resumeButton.GetComponentInChildren<TMP_Text>(true)
+                : null;
+            if (resumeLabel != null)
+                resumeLabel.color = CombatGrimdarkSkin.VictoryGold;
+        }
+
+        private static void StyleCard(GameObject panel)
+        {
+            if (panel == null)
+                return;
+
+            CombatGrimdarkSkin.StyleFrame(panel.GetComponent<Image>());
+            CombatGrimdarkSkin.StylePanelText(panel);
         }
 
         public void Open()
@@ -66,26 +99,9 @@ namespace DeadManZone.Presentation.Run
 
         public void Hide() => Close();
 
-        public void ApplyTheme(UiThemeSO theme)
-        {
-            if (theme == null)
-                return;
-
-            var card = mainPanel != null ? mainPanel.GetComponent<Image>() : null;
-            if (card != null)
-                UiThemeApplicator.ApplyModalFrame(card, theme);
-
-            var optionsCard = optionsPanel != null ? optionsPanel.GetComponent<Image>() : null;
-            if (optionsCard != null)
-                UiThemeApplicator.ApplyModalFrame(optionsCard, theme);
-
-            UiThemeApplicator.ApplyAccentButton(resumeButton, theme);
-            UiThemeApplicator.ApplyButton(optionsButton, theme);
-            UiThemeApplicator.ApplyButton(battleReportButton, theme);
-            UiThemeApplicator.ApplyButton(mainMenuButton, theme);
-            UiThemeApplicator.ApplyButton(exitButton, theme);
-            UiThemeApplicator.ApplyButton(optionsBackButton, theme);
-        }
+        /// <summary>Grimdark kit (M6); theme param kept so editor bake callers compile.
+        /// Same visuals whether applied by editor setup or the Awake pass.</summary>
+        public void ApplyTheme(UiThemeSO theme) => ApplyGrimdarkSkin();
 
         private void ShowMain()
         {

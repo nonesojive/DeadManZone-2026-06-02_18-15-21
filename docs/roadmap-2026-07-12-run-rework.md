@@ -97,9 +97,22 @@ Each faction opens every run with a few pre-placed pieces (free; upkeep applies)
 - The pre-fight HUD income preview shows the UNSCALED salvage chance (next fight's kill share is unknowable) — annotate in M6 if it confuses.
 - Cartel terror identity content still pending its faction pass (mg nest carries the channel until then).
 
-## M6 — UI restyle sweep (anytime after M0; cards/shop already done in M3)
+## M6 — UI restyle sweep (anytime after M0; cards/shop already done in M3) — **DONE 2026-07-12**
 
 - Promote `CombatGrimdarkSkin` to the game-wide kit; sweep main menu, settings/options, run HUD, battle report. Restyle, not redesign — layouts and flows keep.
+
+**DONE notes (2026-07-12).** `CombatGrimdarkSkin` stays in place (name/namespace kept — moving it churned 12 combat call sites for nothing) but is now declared THE game-wide kit, with new `StylePanelText`/`StyleFrame`/`StyleSlider` helpers. Restyled: main menu (title band, leather buttons, brass CTAs, options sliders), pause menu, run HUD, run end overlay (victory brass / defeat rust), front report (was already kit), pause-menu battle-log review sheet. Pattern: runtime skin pass in each view's Awake (the combat pattern); `ApplyTheme(UiThemeSO)` entry points kept source-compatible but internally redirected to the kit, so editor Setup rebakes match runtime. RunHudPanelBuilder PanelVersion 5→6.
+
+**Judgment calls & flags:**
+- The Run scene's `RunUiAuthoringLock` blocked the whole migration pass, so the run HUD kept the old theme on first smoke. Resolution: a RECOLOR-ONLY pass (`ApplyGrimdarkSkin` in `RunBuildUiBootstrap.Apply`) now runs at runtime BEFORE the preserve gate — colors/sprites only, zero geometry, structural migration stays locked. `RunUiAuthoringLock.ShouldSkipVisualMigration`'s isPlaying parameter is dead (alias for ShouldPreserve) — don't trust its name.
+- Strip icons: the first recolor flattened the resource icons into the boxes (bare numbers, no glyphs). Small square sprites (≤72px, ~square) are now kept and tinted bone; wide sprites flatten. Heuristic — if a future authored icon is oblong it will flatten; name it "Rule"/"Divider"-style exempt or squarify.
+- Accepted stragglers (out of scope): shop-panel REROLL keeps its authored metal plate (not in the chrome bars), critical-mass drawer header still theme-colored, sell zone untouched (M3 chrome).
+
+## Balance pass wave 1 (owner-requested) — **DONE 2026-07-12**
+
+Enemy templates re-authored so the synergy engines actually fire (fights 3+ all activate at least one aura — medics healing lines, bulwark phalanx pairs, iron-horse HP clusters, the fight-9/10 command wedge); EffectiveTotal curve 138→804, strictly non-decreasing, knee at 5→6. Boss stage-3 loadouts trimmed one identity-preserving piece each (Warden/Harbinger lose the iron horse, Crimson Marshal loses the field marshal): 703/663/634 vs the old ~735-804. `DeathShockDamage` 8→6 (34-unit cascade smoke — blobs bleed, don't domino). New `DeadManZone → Content → Regenerate Enemy Templates Only` stamps fight_N.assets WITHOUT touching pieces (full Generate wipes post-gen icon/model refs — never use it for template-only changes). `BalancePassTests` locks curve monotonicity, synergy activation, boss stage escalation, shock golden.
+
+**Director decisions (this pass):** template pool ids STAY `ironmarch_union` — re-pooling onto neutral/crimson/ash breaks salvage targeting until those pools own pieces (faction content passes); mutual-annihilation draws STAY player wins incl. boss credit (documented at the CombatWinChecker branch, "do not fix"); DreadRules/RarityWeights/piece stats untouched — owner playtest territory.
 
 ## Standing rules
 

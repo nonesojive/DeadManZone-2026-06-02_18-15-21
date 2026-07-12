@@ -15,12 +15,11 @@ namespace DeadManZone.Presentation.Run
     /// hard shows its Battle Condition up front (consent, not gotcha). Click chooses;
     /// COMBAT stays gated until a front is chosen. Boss rounds replace the cards with a
     /// single red boss report. Runtime-built on a TOP-LEVEL overlay canvas (nested
-    /// canvases inherit the parent rect — the recurring lesson), grimdark kit, restyled
-    /// properly in M6.
+    /// canvases inherit the parent rect — the recurring lesson), grimdark kit (M6).
     /// </summary>
     public sealed class FrontReportPanel : MonoBehaviour
     {
-        private static readonly Color CardBody = new(0.075f, 0.066f, 0.055f, 0.94f);
+        private static readonly Color CardBody = CombatGrimdarkSkin.CardBody;
         private static readonly Color SelectedLeather = new(0.30f, 0.245f, 0.16f, 0.98f);
         private static readonly Color BossRed = new(0.45f, 0.16f, 0.14f, 0.96f);
         private static readonly Color WarningRed = new(1f, 0.42f, 0.38f);

@@ -1,4 +1,5 @@
 using DeadManZone.Presentation.Board;
+using DeadManZone.Presentation.Combat;
 using DeadManZone.Presentation.Reserves;
 using DeadManZone.Presentation.Visual;
 using TMPro;
@@ -32,7 +33,16 @@ namespace DeadManZone.Presentation.Run
                 return;
 
             if (RunUiAuthoringLock.ShouldPreserve(buildPanel))
+            {
+                // M6 restyle-not-redesign: the authoring lock protects hand-authored
+                // LAYOUT, not the old palette. At runtime the pure-recolor kit pass
+                // still runs; in the editor the lock keeps full authority so Setup
+                // menu passes never dirty an authored scene. Everything below the
+                // gate (controllers, rebuilds, fitters) stays structural-only.
+                if (Application.isPlaying)
+                    ApplyGrimdarkSkin();
                 return;
+            }
 
             if (boardView == null)
                 boardView = FindFirstObjectByType<BoardView>();
@@ -54,7 +64,141 @@ namespace DeadManZone.Presentation.Run
             ApplySellZoneSize();
             ApplyCenterColumnLayout();
             ApplyCombatButtonLabel();
+            ApplyGrimdarkSkin();
             DualBoardBootstrap.EnsureHqBoardView(boardView, buildPanel.Find("MainRow/BoardArea") ?? buildPanel);
+        }
+
+        /// <summary>M6 skin-only pass: pure recolor onto the grimdark kit. Must stay safe
+        /// on a hand-authored panel (it also runs under the authoring lock): null-tolerant
+        /// lookups, Image color/sprite + TMP color only — no anchors, sizes, hierarchy,
+        /// or component additions.</summary>
+        private void ApplyGrimdarkSkin()
+        {
+            ApplyGrimdarkChrome();
+            ApplyGrimdarkResourceStrip();
+            StyleBarBackground(buildPanel.Find("TopBar"));
+            StyleBarBackground(buildPanel.Find("BottomBar"));
+        }
+
+        /// <summary>Recolor only the bar's own background Image (if authored) to the
+        /// kit's dark band — children are handled by the button/strip passes.</summary>
+        private static void StyleBarBackground(Transform bar)
+        {
+            var image = bar != null ? bar.GetComponent<Image>() : null;
+            if (image == null)
+                return;
+
+            image.sprite = null;
+            image.color = CombatGrimdarkSkin.BandDark;
+        }
+
+        /// <summary>M6: restyle the scene-authored chrome buttons (COMBAT, REROLL, MENU,
+        /// Last Log, emergency Draft) into the grimdark kit at runtime. Matched by label —
+        /// the scene bakes theme styling; this pass overrides it without touching layout.</summary>
+        private void ApplyGrimdarkChrome()
+        {
+            StyleBarButtons(buildPanel.Find("BottomBar"));
+            StyleBarButtons(buildPanel.Find("TopBar"));
+        }
+
+        /// <summary>M6: pull the top resource strip (authored TopResourcePanel or an old
+        /// builder RunHudPanel kept by the lock) onto the kit: white sprite boxes become
+        /// flat smoky CardBody, value labels bone, captions/deltas body text. The kit has
+        /// no positive-delta green, so income deltas land on dim bone (BodyText). The Dread
+        /// strip needs nothing — RunHudView builds and colors it with kit colors already.</summary>
+        private void ApplyGrimdarkResourceStrip()
+        {
+            StyleResourceStrip(FindTopStrip("TopResourcePanel"));
+            StyleResourceStrip(FindTopStrip(RunHudPanelBuilder.PanelName));
+
+            // RunHudView.ApplyTheme is kit-colors-only since M6; let it refine whatever
+            // labels it has wired (serialized authored refs win over the name heuristic).
+            var topBar = buildPanel.Find("TopBar");
+            var hud = topBar != null ? topBar.GetComponent<RunHudView>() : null;
+            if (hud != null)
+                hud.ApplyTheme(UiThemeProvider.Current);
+        }
+
+        private Transform FindTopStrip(string name)
+        {
+            var strip = buildPanel.Find(name);
+            if (strip == null)
+                strip = buildPanel.Find("TopBar/" + name);
+            return strip;
+        }
+
+        /// <summary>Names RunHudView/RunHudPanelBuilder use for primary values — these
+        /// read in bone; everything else in the strip reads as secondary body text.</summary>
+        private static readonly string[] StripValueNames =
+        {
+            "FightTitle", "FightLabel", "FightNumber", "FightIndex",
+            "SuppliesNumber", "ManpowerNumber", "AuthorityNumber",
+            "SalvageNumber", "StrengthNumber",
+        };
+
+        internal static void StyleResourceStrip(Transform strip) // internal for EditMode test
+        {
+            if (strip == null)
+                return;
+
+            foreach (var image in strip.GetComponentsInChildren<Image>(true))
+            {
+                if (image.GetComponentInParent<Button>(true) != null)
+                    continue;
+
+                if (image.name == "Rule" || image.name == "Divider")
+                    continue; // keep the builder panel's bone hairlines
+
+                // Resource ICONS survive the flatten: killing every sprite stripped the
+                // strip's information scent (bare numbers, no glyphs — 2026-07-12 smoke).
+                // Small square sprites are icons — keep the sprite, tint to bone; wide
+                // sprites are the white boxes this pass exists to flatten.
+                var rect = image.rectTransform.rect;
+                bool looksLikeIcon = image.sprite != null
+                    && rect.width <= 72f
+                    && Mathf.Abs(rect.width - rect.height) <= rect.width * 0.5f;
+                if (looksLikeIcon)
+                {
+                    image.color = CombatGrimdarkSkin.Bone;
+                    continue;
+                }
+
+                CombatGrimdarkSkin.StyleFrame(image); // recolor only: sprite -> null, CardBody
+            }
+
+            foreach (var label in strip.GetComponentsInChildren<TMP_Text>(true))
+            {
+                if (label.GetComponentInParent<Button>(true) != null)
+                    continue;
+
+                label.color = System.Array.IndexOf(StripValueNames, label.name) >= 0
+                    ? CombatGrimdarkSkin.Bone
+                    : CombatGrimdarkSkin.BodyText;
+            }
+        }
+
+        private static void StyleBarButtons(Transform bar)
+        {
+            if (bar == null)
+                return;
+
+            foreach (var button in bar.GetComponentsInChildren<Button>(true))
+            {
+                var label = button.GetComponentInChildren<TMP_Text>(true);
+                if (label == null)
+                    continue;
+
+                string text = label.text ?? string.Empty;
+                bool isCombat = text.Contains("COMBAT") || text.Contains("Begin Fight");
+                bool known = isCombat || text.Contains("REROLL") || text.Contains("MENU")
+                    || text.Contains("Last Log") || text.Contains("Draft");
+                if (!known)
+                    continue;
+
+                CombatGrimdarkSkin.StyleButton(button);
+                if (isCombat)
+                    label.color = CombatGrimdarkSkin.VictoryGold; // primary CTA keeps the brass accent
+            }
         }
 
         private void ApplyCenterColumnLayout()

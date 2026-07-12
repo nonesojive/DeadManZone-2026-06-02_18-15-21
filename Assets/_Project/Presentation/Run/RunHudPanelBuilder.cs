@@ -1,3 +1,4 @@
+using DeadManZone.Presentation.Combat;
 using DeadManZone.Presentation.Visual;
 using TMPro;
 using UnityEngine;
@@ -7,13 +8,13 @@ namespace DeadManZone.Presentation.Run
 {
     /// <summary>
     /// Builds the structured run HUD (fight header + three resource columns).
-    /// Run-level Morale is gone (ADR-0005: Manpower is run health) — version 5
-    /// forces authored panels to rebuild without the dead Morale column.
+    /// Version 6 forces authored panels to rebuild with the game-wide grimdark kit
+    /// (CombatGrimdarkSkin, M6): bone/body-text labels, flat smoky frame.
     /// </summary>
     public static class RunHudPanelBuilder
     {
         public const string PanelName = "RunHudPanel";
-        public const int PanelVersion = 5;
+        public const int PanelVersion = 6;
 
         public sealed class BuiltPanel
         {
@@ -140,13 +141,15 @@ namespace DeadManZone.Presentation.Run
                 panel.MatchupStrength);
         }
 
+        /// <summary>Grimdark kit frame: flat smoky dark, no themed sprite. Theme param
+        /// kept so editor/bootstrap callers stay source-compatible.</summary>
         public static void ApplyFrameStyle(Image frame, UiThemeSO theme)
         {
-            if (frame == null || theme == null)
+            if (frame == null)
                 return;
 
-            UiThemeApplicator.ApplyStorageSlotEmpty(frame, theme);
-            frame.color = theme.GetReserveSlotColor();
+            frame.sprite = null;
+            frame.color = CombatGrimdarkSkin.CardBody;
             frame.raycastTarget = false;
         }
 
@@ -180,7 +183,7 @@ namespace DeadManZone.Presentation.Run
             var rect = rule.GetComponent<RectTransform>();
             rect.sizeDelta = new Vector2(0f, 1f);
             var image = rule.AddComponent<Image>();
-            image.color = new Color(theme.textPrimary.r, theme.textPrimary.g, theme.textPrimary.b, 0.22f);
+            image.color = RuleColor;
             image.raycastTarget = false;
         }
 
@@ -190,7 +193,7 @@ namespace DeadManZone.Presentation.Run
             var rect = rule.GetComponent<RectTransform>();
             rect.sizeDelta = new Vector2(1f, 0f);
             var image = rule.AddComponent<Image>();
-            image.color = new Color(theme.textPrimary.r, theme.textPrimary.g, theme.textPrimary.b, 0.22f);
+            image.color = RuleColor;
             image.raycastTarget = false;
         }
 
@@ -223,9 +226,12 @@ namespace DeadManZone.Presentation.Run
             label.fontStyle = style;
             label.alignment = alignment;
             label.raycastTarget = false;
-            UiThemeApplicator.ApplyLabel(label, secondary, theme);
+            label.color = secondary ? CombatGrimdarkSkin.BodyText : CombatGrimdarkSkin.Bone;
             return label;
         }
+
+        private static Color RuleColor => new(
+            CombatGrimdarkSkin.Bone.r, CombatGrimdarkSkin.Bone.g, CombatGrimdarkSkin.Bone.b, 0.22f);
 
         private static GameObject CreateRegion(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax)
         {

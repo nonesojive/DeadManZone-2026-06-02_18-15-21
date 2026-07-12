@@ -4,10 +4,13 @@ using UnityEngine.UI;
 
 namespace DeadManZone.Presentation.Combat
 {
-    /// <summary>Shared combat-ceremony styling: the FIGHT banner's language (smoky
-    /// dark bands, bone lettering, warm accents) applied to the tactics pause and
-    /// battle report so the whole fight loop reads as one grimdark kit instead of
-    /// mixed sci-fi/theme leftovers.</summary>
+    /// <summary>THE game-wide grimdark UI kit (M6): the FIGHT banner's language (smoky
+    /// dark bands, bone lettering, warm accents) applied to every screen — main menu,
+    /// pause/options, run HUD, front report, run end, battle report — so the whole game
+    /// reads as one kit instead of mixed sci-fi/theme leftovers.
+    /// Deliberately NOT renamed/moved out of the Combat namespace: the kit was born in
+    /// the fight loop, a dozen combat call sites already use this name, and a rename or
+    /// alias buys no behavior — laziest option that reads clean (see ponytail rules).</summary>
     public static class CombatGrimdarkSkin
     {
         public static readonly Color Bone = new(0.92f, 0.87f, 0.74f, 1f);
@@ -56,6 +59,69 @@ namespace DeadManZone.Presentation.Combat
             var label = button.GetComponentInChildren<TMP_Text>(true);
             if (label != null)
                 label.color = Bone;
+        }
+
+        /// <summary>Kit typography sweep for a scene-authored panel: big bold labels read
+        /// as titles (bone + letter-spacing), everything else outside buttons as body text.
+        /// Button labels are left to <see cref="StyleButton"/>.</summary>
+        public static void StylePanelText(GameObject panelRoot, float titleFontSize = 30f)
+        {
+            if (panelRoot == null)
+                return;
+
+            foreach (var label in panelRoot.GetComponentsInChildren<TMP_Text>(true))
+            {
+                if (label.GetComponentInParent<Button>(true) != null)
+                    continue;
+
+                if (label.fontSize >= titleFontSize)
+                    StyleTitle(label);
+                else
+                    StyleBody(label);
+            }
+        }
+
+        /// <summary>Flatten a single panel/frame image into the kit's smoky card surface
+        /// (for scene-authored cards where a blanket <see cref="StyleCard"/> would also
+        /// eat sliders or dim overlays).</summary>
+        public static void StyleFrame(Image image)
+        {
+            if (image == null)
+                return;
+
+            image.sprite = null;
+            image.color = CardBody;
+        }
+
+        /// <summary>Kit treatment for sliders (options volume rows): leather track,
+        /// bone fill/handle. Finds parts through the Slider's own references plus the
+        /// conventional "Background" child.</summary>
+        public static void StyleSlider(Slider slider)
+        {
+            if (slider == null)
+                return;
+
+            var background = slider.transform.Find("Background");
+            var backgroundImage = background != null ? background.GetComponent<Image>() : null;
+            if (backgroundImage != null)
+            {
+                backgroundImage.sprite = null;
+                backgroundImage.color = ButtonLeather;
+            }
+
+            var fillImage = slider.fillRect != null ? slider.fillRect.GetComponent<Image>() : null;
+            if (fillImage != null)
+            {
+                fillImage.sprite = null;
+                fillImage.color = Bone;
+            }
+
+            var handleImage = slider.handleRect != null ? slider.handleRect.GetComponent<Image>() : null;
+            if (handleImage != null)
+            {
+                handleImage.sprite = null;
+                handleImage.color = Bone;
+            }
         }
 
         /// <summary>Insert a full-width dark band behind a vertical anchor slice —
