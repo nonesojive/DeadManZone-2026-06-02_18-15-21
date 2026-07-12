@@ -162,11 +162,19 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (config == null)
                 return;
 
+            // A 3D arena scene carries its own audio presenter (3D SFX set, positional
+            // one-shots) on the bootstrap rig; prefer it over the flow-side default.
+            // The 2D arena rig has none, so the 2D path is unchanged.
+            var sceneAudio = bootstrap.GetComponent<CombatArenaAudioPresenter>();
+            if (sceneAudio != null)
+                audio = sceneAudio;
+
             _activeVfx = ResolveVfxPresenter();
 
             _mapper = new CombatGridMapper(battlefield.Layout, config.cellWidth, config.cellDepth);
             _battlefield = battlefield;
             bootstrap.FrameBattlefield(battlefield.Layout);
+            bootstrap.FrameBattlefield3D(battlefield, _mapper); // no-op in 2D mode
             _arenaCameraTransform = bootstrap.ArenaCamera != null ? bootstrap.ArenaCamera.transform : null;
 
             EnsureChaseController();
@@ -639,12 +647,24 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private ICombatArenaVfxPresenter ResolveVfxPresenter()
         {
+            // In 3D mode the flow object may still carry the (idle) 2D VFX component; the
+            // active backend is the one on the arena scene's bootstrap rig.
+            var bootstrap = CombatArenaBootstrap.Instance;
+            if (bootstrap != null
+                && bootstrap.Config != null
+                && bootstrap.Config.visualMode == CombatArenaVisualMode.ToonInk3D)
+            {
+                var sceneVfx = bootstrap.GetComponent<ICombatArenaVfxPresenter>();
+                if (sceneVfx != null)
+                    return sceneVfx;
+            }
+
             if (vfx2D == null)
                 vfx2D = GetComponent<CombatArena2DVfx>();
             if (vfx2D != null)
                 return vfx2D;
 
-            // 3D arenas have no 2D VFX component; their backend plugs in through the seam.
+            // Embedded 3D scenes (demo) put the backend on the presenter's own rig.
             return GetComponent<ICombatArenaVfxPresenter>();
         }
 

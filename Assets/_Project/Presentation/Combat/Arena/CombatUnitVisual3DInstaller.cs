@@ -23,6 +23,15 @@ namespace DeadManZone.Presentation.Combat.Arena
             public string pieceId;
             public GameObject model;
             public RuntimeAnimatorController controller;
+            [Tooltip("Non-humanoid (tank/transport/emplacement): static mesh, code-driven " +
+                     "motion via CombatUnitVisual3DVehicle — no controller required.")]
+            public bool isVehicle;
+            [Tooltip("Vehicle silhouette height in meters (vehicles are not 1.7 m infantry). " +
+                     "0 = fall back to the installer's unitHeight.")]
+            public float vehicleHeight;
+            [Tooltip("Per-model facing correction (degrees) — Meshy vehicle gens from " +
+                     "side-view refs come out with arbitrary authored forward axes.")]
+            public float vehicleYawOffsetDegrees;
         }
 
         [SerializeField] private GameObject unitModel;
@@ -67,14 +76,29 @@ namespace DeadManZone.Presentation.Combat.Arena
             {
                 for (int i = 0; i < archetypes.Length; i++)
                 {
-                    if (archetypes[i].pieceId == piece.id &&
-                        archetypes[i].model != null &&
-                        archetypes[i].controller != null)
+                    if (archetypes[i].pieceId != piece.id || archetypes[i].model == null)
+                        continue;
+
+                    // Vehicles are static meshes with code-driven motion — no controller.
+                    if (archetypes[i].isVehicle)
+                    {
+                        var vehicleVisual = actor.gameObject.AddComponent<CombatUnitVisual3DVehicle>();
+                        vehicleVisual.Build(
+                            archetypes[i].model,
+                            side == CombatSide.Player ? playerUnitMaterial : enemyUnitMaterial,
+                            side == CombatSide.Player ? playerRingMaterial : enemyRingMaterial,
+                            archetypes[i].vehicleHeight > 0f ? archetypes[i].vehicleHeight : unitHeight,
+                            archetypes[i].vehicleYawOffsetDegrees);
+                        return vehicleVisual;
+                    }
+
+                    if (archetypes[i].controller != null)
                     {
                         model = archetypes[i].model;
                         controller = archetypes[i].controller;
-                        break;
                     }
+
+                    break;
                 }
             }
 

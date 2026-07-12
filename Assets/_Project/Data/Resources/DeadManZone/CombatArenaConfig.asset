@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8f2a1b3d4e5678901234567890abcde, type: 3}
   m_Name: CombatArenaConfig
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.CombatArenaConfigSO
-  visualMode: 1
+  visualMode: 2
   cellWidth: 1.8
   cellDepth: 1.8
   useTopTroopsProceduralBattlefield: 0
@@ -59,7 +59,6 @@ MonoBehaviour:
   defaultUnitModelHeight: 2.1
   defaultVehicleModelHeight: 1.8
   useSyntyTerrain: 1
-  atmosphereProfile: {fileID: 0}
   spawnPerimeterProps: 0
   useSyntySkybox: 0
   groundPadding: 1.4

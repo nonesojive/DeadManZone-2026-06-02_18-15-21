@@ -59,6 +59,10 @@ UPSTREAM = {
     "anim_die": ("image3d", "remesh", "rig"),
 }
 FINAL_GLBS = ("idle.glb", "walk.glb", "die.glb")
+# --vehicle mode (tanks/transports/emplacements): no humanoid rig, no animations —
+# a single static mesh; motion/death are code-driven in CombatUnitVisual3D's
+# vehicle mode. Named model.glb so the Unity bootstrap can tell the modes apart.
+VEHICLE_GLBS = ("model.glb",)
 
 
 # ---------------------------------------------------------------- state file
@@ -199,28 +203,36 @@ def pick_url(task, want, reject=()):
              f"available keys: {sorted(urls)}")
 
 
-def download_outputs(state, unit_dir, out_dir, dry):
+def download_outputs(state, unit_dir, out_dir, dry, vehicle=False):
+    final = VEHICLE_GLBS if vehicle else FINAL_GLBS
     if state["stages"].get("download", {}).get("status") == "SUCCEEDED" and \
-            all(os.path.exists(os.path.join(out_dir, f)) for f in FINAL_GLBS):
+            all(os.path.exists(os.path.join(out_dir, f)) for f in final):
         print("[download] already complete - skipping")
         return
     stages = state["stages"]
     # Both anim tasks expose the SAME remote filename (animation_glb.glb) - the
     # manual flow collided when downloading them into one dir. Avoided here by
     # streaming each URL straight to its final local name, sequentially.
-    targets = [
-        ("idle.glb", "anim",
-         require_id(stages.get("anim_idle", {}).get("task_id"), "anim_idle"),
-         ("animation", "glb"), ("fbx",)),
-        ("die.glb", "anim",
-         require_id(stages.get("anim_die", {}).get("task_id"), "anim_die"),
-         ("animation", "glb"), ("fbx",)),
-        # walk comes free with the rig task; real key is
-        # result.basic_animations.walking_glb_url (dot-separated)
-        ("walk.glb", "rig",
-         require_id(stages.get("rig", {}).get("task_id"), "rig"),
-         ("walking", "glb"), ("armature", "fbx", "running")),
-    ]
+    if vehicle:
+        targets = [
+            ("model.glb", "remesh",
+             require_id(stages.get("remesh", {}).get("task_id"), "remesh"),
+             ("glb",), ("fbx", "usdz", "obj", "mtl")),
+        ]
+    else:
+        targets = [
+            ("idle.glb", "anim",
+             require_id(stages.get("anim_idle", {}).get("task_id"), "anim_idle"),
+             ("animation", "glb"), ("fbx",)),
+            ("die.glb", "anim",
+             require_id(stages.get("anim_die", {}).get("task_id"), "anim_die"),
+             ("animation", "glb"), ("fbx",)),
+            # walk comes free with the rig task; real key is
+            # result.basic_animations.walking_glb_url (dot-separated)
+            ("walk.glb", "rig",
+             require_id(stages.get("rig", {}).get("task_id"), "rig"),
+             ("walking", "glb"), ("armature", "fbx", "running")),
+        ]
     if not dry:
         os.makedirs(out_dir, exist_ok=True)
     for fname, kind, task_id, want, reject in targets:
@@ -241,22 +253,23 @@ def download_outputs(state, unit_dir, out_dir, dry):
                         "rigged_character", "basic_animations")
         for entry in os.listdir(out_dir):
             low = entry.lower()
-            if entry in FINAL_GLBS or not os.path.isfile(os.path.join(out_dir, entry)):
+            if entry in final or not os.path.isfile(os.path.join(out_dir, entry)):
                 continue
             if any(m in low for m in junk_markers):
                 os.remove(os.path.join(out_dir, entry))
                 print(f"[download] pruned extra {entry}")
-    state["stages"]["download"] = {"status": "SUCCEEDED", "files": list(FINAL_GLBS)}
+    state["stages"]["download"] = {"status": "SUCCEEDED", "files": list(final)}
     save_state(unit_dir, state, dry)
 
 
-def copy_to_unity(state, unit_dir, unit, out_dir, dry):
+def copy_to_unity(state, unit_dir, unit, out_dir, dry, vehicle=False):
+    final = VEHICLE_GLBS if vehicle else FINAL_GLBS
     dest_dir = os.path.join(UNITY_MODELS_DIR, unit)
     if dry:
-        print(f"[unity] DRY RUN: would copy {', '.join(FINAL_GLBS)} -> {dest_dir}")
+        print(f"[unity] DRY RUN: would copy {', '.join(final)} -> {dest_dir}")
         return
     os.makedirs(dest_dir, exist_ok=True)
-    for fname in FINAL_GLBS:
+    for fname in final:
         shutil.copy2(os.path.join(out_dir, fname), os.path.join(dest_dir, fname))
         print(f"[unity] copied {fname} -> {dest_dir}")
     state["stages"]["unity_copy"] = {"status": "SUCCEEDED", "dest": dest_dir}
@@ -283,9 +296,23 @@ def resolve_piece_id(unit):
     return (close[0] if close else "<piece_id>"), False
 
 
-def print_manual_checklist(unit):
+def print_manual_checklist(unit, vehicle=False):
     piece_id, exact = resolve_piece_id(unit)
     note = "" if exact else "   # piece id guessed - VERIFY (see warning above)"
+    if vehicle:
+        print(f"""
+================ REMAINING MANUAL STEPS (Unity, vehicle) ================
+1. Add the VEHICLE archetype mapping to VehicleUnits in
+   {BOOTSTRAP_CS}:
+       ("{unit}", "{piece_id}"),{note}
+2. In Unity: assets-refresh, then rebuild BOTH scenes via
+   DeadManZone -> Combat3D -> Build Combat3D Demo Scene  and
+   DeadManZone -> Combat3D -> Build CombatArena3D Scene (Run Flow).
+3. Enter Play mode and verify: proportions/texture sane (per-gen roulette),
+   mesh seated on the base ring, movement bob while marching, muzzle flash
+   from the built-in weapon, collapse+dissolve on death.
+==========================================================================""")
+        return
     print(f"""
 ================ REMAINING MANUAL STEPS (Unity) ================
 1. Add the archetype mapping to RosterUnits in
@@ -317,6 +344,10 @@ def main():
                    help="walk the chain with zero API calls / zero writes")
     p.add_argument("--no-unity-copy", action="store_true",
                    help="skip copying GLBs into Assets/_Project/Combat3D/Models/")
+    p.add_argument("--vehicle", action="store_true",
+                   help="non-humanoid unit (tank/transport/emplacement): "
+                        "image3d + remesh only, single static model.glb — "
+                        "no rig, no animations (~half the credits)")
     args = p.parse_args()
 
     unit = args.unit_name
@@ -369,27 +400,31 @@ def main():
                                                   args.polycount), dry)
     finish_task(state, unit_dir, "remesh", dry)
 
-    rig_id = ensure_task(state, unit_dir, "rig",
-                         lambda: create_rig(require_id(remesh_id, "remesh"),
-                                            args.height), dry)
-    finish_task(state, unit_dir, "rig", dry)
+    if args.vehicle:
+        print("[vehicle] non-humanoid mode: skipping rig + animations "
+              "(motion/death are code-driven in Unity).")
+    else:
+        rig_id = ensure_task(state, unit_dir, "rig",
+                             lambda: create_rig(require_id(remesh_id, "remesh"),
+                                                args.height), dry)
+        finish_task(state, unit_dir, "rig", dry)
 
-    # create both anim tasks up front so they cook in parallel, then wait each
-    ensure_task(state, unit_dir, "anim_idle",
-                lambda: create_animate(require_id(rig_id, "rig"), ACTION_IDLE), dry)
-    ensure_task(state, unit_dir, "anim_die",
-                lambda: create_animate(require_id(rig_id, "rig"), ACTION_DEAD), dry)
-    finish_task(state, unit_dir, "anim_idle", dry)
-    finish_task(state, unit_dir, "anim_die", dry)
+        # create both anim tasks up front so they cook in parallel, then wait each
+        ensure_task(state, unit_dir, "anim_idle",
+                    lambda: create_animate(require_id(rig_id, "rig"), ACTION_IDLE), dry)
+        ensure_task(state, unit_dir, "anim_die",
+                    lambda: create_animate(require_id(rig_id, "rig"), ACTION_DEAD), dry)
+        finish_task(state, unit_dir, "anim_idle", dry)
+        finish_task(state, unit_dir, "anim_die", dry)
 
-    download_outputs(state, unit_dir, out_dir, dry)
+    download_outputs(state, unit_dir, out_dir, dry, vehicle=args.vehicle)
 
     if args.no_unity_copy:
         print("[unity] skipped (--no-unity-copy)")
     else:
-        copy_to_unity(state, unit_dir, unit, out_dir, dry)
+        copy_to_unity(state, unit_dir, unit, out_dir, dry, vehicle=args.vehicle)
 
-    print_manual_checklist(unit)
+    print_manual_checklist(unit, vehicle=args.vehicle)
 
 
 if __name__ == "__main__":

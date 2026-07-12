@@ -46,6 +46,17 @@ namespace DeadManZone.Core.Combat
 
         public IReadOnlyList<CombatantState> EnemyCombatantsForTests => _enemyCombatants;
 
+        /// <summary>Cells the ability executor will honor as explicit targets right now —
+        /// live enemy anchors, per <see cref="CombatAbilityExecutor.IsValidTargetCell"/>.
+        /// Surfaced to the pause UI via <see cref="Run.CombatPauseContext.EnemyTargetCells"/>
+        /// so the target picker validates against the same rule execution applies.</summary>
+        public IReadOnlyList<GridCoord> GetLiveEnemyTargetCells() =>
+            _enemyCombatants
+                .Where(e => e.IsAlive)
+                .Select(e => e.AnchorPosition)
+                .Distinct()
+                .ToList();
+
         public IReadOnlyDictionary<GridCoord, string> OccupancySnapshotForTests => _occupancyGrid.Snapshot();
 
         private TickCombatRun(

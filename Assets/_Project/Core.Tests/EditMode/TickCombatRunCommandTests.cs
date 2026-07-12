@@ -36,6 +36,34 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
+        public void GetLiveEnemyTargetCells_MatchesExecutorTargetRule()
+        {
+            var run = TickCombatRun.Start(
+                TestBoards.StandardPlayer(), TestBoards.StandardEnemy(), seed: 13, authority: 2);
+
+            var cells = run.GetLiveEnemyTargetCells();
+            var enemies = run.EnemyCombatantsForTests;
+
+            Assert.IsNotEmpty(cells, "a fresh fight has live enemies to target");
+            Assert.AreEqual(cells.Count, cells.Distinct().Count(), "no duplicate cells");
+
+            // Both directions: every surfaced cell is honored by the executor, and every
+            // cell the executor would honor is surfaced. Widening OccupiesCell (e.g. to
+            // footprints) must update GetLiveEnemyTargetCells in the same change.
+            foreach (var cell in cells)
+                Assert.IsTrue(CombatAbilityExecutor.IsValidTargetCell(enemies, cell),
+                    $"surfaced cell {cell} must satisfy the executor's target rule");
+
+            var honoredAnchors = enemies
+                .Where(e => e.IsAlive)
+                .Select(e => e.AnchorPosition)
+                .Distinct()
+                .ToList();
+            CollectionAssert.AreEquivalent(honoredAnchors, cells,
+                "the pause UI must see exactly the cells the executor honors");
+        }
+
+        [Test]
         public void OpeningPauseAbilityKill_LogsKillAndFightEndInSameSegment()
         {
             var player = new BoardState(TestBoards.Layout);

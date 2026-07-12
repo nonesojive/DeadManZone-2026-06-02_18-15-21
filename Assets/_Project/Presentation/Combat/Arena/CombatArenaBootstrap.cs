@@ -55,6 +55,34 @@ namespace DeadManZone.Presentation.Combat.Arena
                 Instance = null;
         }
 
+        private Vector3? _authoredCameraHome;
+
+        /// <summary>3D fight-start framing: dolly/shift from the scene-authored pose (kept
+        /// as the minimum) so every occupied cell is on screen — real deployments can span
+        /// the full 17-column strip, which the authored close framing does not cover.
+        /// No-op in 2D mode (the orthographic framer owns that path).</summary>
+        public void FrameBattlefield3D(BattlefieldState battlefield, CombatGridMapper mapper)
+        {
+            if (!Is3DMode || arenaCamera == null || battlefield == null || mapper == null)
+                return;
+
+            _authoredCameraHome ??= arenaCamera.transform.position;
+
+            var points = new System.Collections.Generic.List<Vector3>();
+            foreach (var cell in battlefield.Cells)
+            {
+                if (cell?.Definition == null)
+                    continue;
+
+                var ground = mapper.ToWorld(cell.Position);
+                points.Add(ground);
+                points.Add(ground + Vector3.up * 2.2f); // unit head height incl. tall rigs
+            }
+
+            arenaCamera.transform.position = CombatArena3DCameraFramer.ComputeFramedPosition(
+                arenaCamera, _authoredCameraHome.Value, points);
+        }
+
         public void FrameBattlefield(BattlefieldLayout layout)
         {
             if (layout == null || config == null)

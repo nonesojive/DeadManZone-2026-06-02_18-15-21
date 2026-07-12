@@ -675,3 +675,60 @@ Every folder (6 archetypes + rifleman copies): skinned mesh present, 24-bone rig
 - assets-refresh clean, zero compile errors; menu rebuild deterministic (idempotent through the script-execute retry storm), `archetypes` array serialized with all 6 entries, saved.
 - Headless play-through (`interactivePauses` flipped to false in the serialized field for one run, restored to true + scene saved after): fight completes (`fight_end` at segment 1 tick 128, 74 events, playerWon=True), VICTORY banner, army HUD drains correctly, zero runtime errors/exceptions. Second run screenshotted mid-fight: all three new units advancing/aiming on their rings with rifles.
 - EditMode **366/366** green.
+
+## Main-build port (2026-07-12)
+
+The 3D arena + interactive tactics window now run in the REAL game flow (Run scene / RunOrchestrator). Owner decisions: dedicated additively-loaded `CombatArena3D` scene (not embed/prefab — per-theme scenes own their lighting/fog RenderSettings, and future battlefield themes become scene variants resolved in `ResolveCombatArenaScene`); mode-gated TacticPausePanel→CombatTacticOrdersWindow swap; CombatArmyHealthHud replaces the Synty bars in 3D. **THE 2D/3D switch is `CombatArenaConfig.visualMode` (shared asset)** — menus `DeadManZone → Combat3D → Switch Combat To 3D/2D Arena`. Currently switched to 3D; the 2D path stays deletable-but-present behind the switch.
+
+### Core (EditMode 367/367)
+- `CombatAbilityExecutor.IsValidTargetCell` — the honored-target rule extracted public (anchor-equality today); `ResolveTargetCell` defers to it so UI pickers can never drift from execution.
+- `TickCombatRun.GetLiveEnemyTargetCells()` → new `CombatPauseContext.EnemyTargetCells` (filled by `RunOrchestrator.GetCombatPauseContext`) — closes the handoff's "surface enemy anchors through the pause context" item; the window's target predicate reads it instead of `EnemyCombatantsForTests`.
+- Test `GetLiveEnemyTargetCells_MatchesExecutorTargetRule` asserts both directions — widening `OccupiesCell` (e.g. to footprints) must update the accessor in the same change or it fails loudly.
+
+### Arena delivery
+- `GameScenes.ResolveCombatArenaScene` branches on `config.visualMode == ToonInk3D` → `"CombatArena3D"`; comment marks it as the future per-theme branch point.
+- `CombatArenaSceneLoader`: remembers the loaded scene name (unload no longer hardcodes CombatArena2D); for the 3D scene only, `SetActiveScene(arena)` after load (per-scene fog/ambient apply) and restores the previous active scene on unload. Verified live: fog 0.035 (MainMenu) → 0.022 (arena) → restored on unload.
+- `CombatArenaPresenter`: prefers a bootstrap-rig `CombatArenaAudioPresenter` and (in 3D mode) a bootstrap-rig `ICombatArenaVfxPresenter` — the 2D arena rig carries neither, so the 2D path is untouched.
+- `CombatArenaPunchInCamera.Configure(director, presenter)` — runtime wiring for cross-scene refs; called from `CombatFlowPresenter.WireArenaSceneComponents()` after `LoadAsync`.
+- NEW `Presentation/Editor/CombatArena3DSceneBootstrap.cs`: menu `DeadManZone → Combat3D → Build CombatArena3D Scene (Run Flow)` builds `Assets/_Project/Scenes/CombatArena3D.unity` from `Combat3DDemoSceneBootstrap.PrepareSceneAssets()` (demo build refactored to share asset generation). Scene-side rig ONLY: bootstrap (demo 3D config asset, shared with the demo scene)/installer/Combat3DVfxPresenter/punch-in/audio+ambience. NO director/presenter/loader/driver/HUD (those live on the Run scene's CombatFlow object). Camera has NO AudioListener — `EnterArenaMode` moves the Run listener over. Adds the scene to Build Settings.
+
+### CombatFlowPresenter (mode-gated; 2D branch byte-identical)
+- `ArenaIs3D()` reads the shared config — the same asset the scene resolver reads.
+- Pause UI: `ShowPauseUi(context)` shows the orders window in 3D (opening-pause branch AND `OnPausedForCommands`), panel in 2D. Window resume → `RunManager.SubmitCombatCommands` + `ContinueCombat` (exact panel shape). Mapper from the stashed battlefield layout + bootstrap config; camera from bootstrap; target predicate = `context.EnemyTargetCells.Contains(cell)`.
+- Draft persistence: new `CombatTacticOrdersWindow.DraftChanged` event → `SavePauseDraft(tactic, queued abilities)`; window `PauseContext` gained `PendingSelectedTactic/PendingSelectedAbilities` and `SeedFromPendingDraft()` restores them through normal draft validation (stale saves silently dropped). **Targeted abilities don't restore** — the save schema has no target cells; the player re-picks (schema change deferred as YAGNI).
+- Army HUD: the 3D branch of `EnsureHealthBarPresenter` hides the scene-serialized `ArmyHealthBars` (they'd sit full forever — found live) and drives `CombatArmyHealthHud.EnsurePresenter()` (new accessor) through the existing `healthBarPresenter` seam, so the restore path (`InitializeFromBattlefield`/`ApplyEventStateOnly`/`SnapBars`) works unchanged. HUD root is a TOP-LEVEL GameObject — two hard-won constraints: nesting under the Run UI canvas collapses its ScreenSpaceOverlay rect to zero (found live: invisible bars), and it must not share a GameObject with a CombatDirector or the HUD's OnEnable self-subscription double-applies every event.
+
+### Verified live (editor session, real run flow)
+- Two full runs: `StartNewRun` → shop purchases placed on the board → `BeginCombat` → CombatArena3D loads additively (active-scene + fog switch) → 3D actors on side rings → orders window at the opening pause (authority, locked doctrines, queued list) → resume through the window's real submit path → segment playback → ORGANIC mid-fight pause ("YOUR FORCES AT 60%") with live-draining HUD bars → completion → Aftermath, arena unloaded, active scene + fog restored. Zero runtime errors.
+- EditMode 367/367. PlayMode 16 pass + 1 skip: `CombatArena2D_SceneLoads_WithBootstrap` Assume-skips while combat resolves 3D (reactivates on switch-back). `CombatArenaReplayPlayModeTests` now pins the shared config to TopTroops2D per-test (in-memory only, restored in teardown) — it loads the 2D scene explicitly, whose bootstrap reads the shared config.
+
+### Still open after the port
+- **Fight-1 framing**: player units at low board columns spawn near the left edge of the home frame; fine at 2v2 but check bigger armies (camera pose is scene-authored — tune in `Combat3DDemoSceneBootstrap.CreateCamera`, shared by both scene builds).
+- Smoke screenshots read flatter than the demo scene (grade/ink) — compare side-by-side with `Combat3D_Demo.unity`; the audit's "P0_Grade components list looked empty" risk is still unretired.
+- The 2D switchover deletion list (§6) is now unblocked once the owner signs off on the 3D flow; the replay tests' 2D-config pin dies with it.
+- Smoke runs wrote a test save (fight 1, Aftermath) to `%LOCALAPPDATA%/DeadManZone/` — start a fresh run or delete it before playtesting.
+
+## Post-port fixes + vehicle treatment (2026-07-12, owner-reported issues)
+
+Three owner reports from first hands-on: arena visible behind the shop after defeat, units clipping off-screen at the frame edge, and the three non-humanoid units still rendering as rifleman fallbacks. All fixed/landed; EditMode **371/371** (367 + 4 framer tests).
+
+### 1. Defeat-path teardown (arena + HUD behind the shop)
+- **Root cause**: `CombatArenaSession.IsSceneLoaded` hardcoded `CombatArena2D` — RunSceneController's inBuild unload gate (the one built for exactly this defeat path) always saw "not loaded" with the 3D arena up, so RequestUnload/ExitArenaMode never ran (which is also why the shop backdrop stayed transparent). Fixed: checks/unloads BOTH scene names (both, not config-resolved — a config switch mid-session must not strand a loaded arena).
+- The 3D army HUD is a top-level overlay canvas (CombatPanel's phase SetActive never reaches it): now hidden by CombatFlowPresenter on Build phase, re-shown by EnsureHealthBarPresenter at the next fight.
+- Verified live: fight → aftermath → dismiss → shop clean (arena unloaded, active scene Run, HUD inactive, opaque backdrop).
+
+### 2. Fight-start camera framing (units clipped at frame edge)
+- The authored home pose (0,10,−14 / 29° / fov 42) covers ~±14 m at center depth; real deployments reach x≈±15.3 (rear-zone support sits at low columns) — the owner's screenshot showed a unit half off-screen.
+- New `CombatArena3DCameraFramer` (+4 EditMode tests): at fight start, shift laterally to the occupied hull's x-center and dolly back along camera forward — authored pose is the MINIMUM (small center fights keep the close framing), rotation/fov untouched, binary-searched smallest pullback with a 6% viewport margin. Fight-start hull contains the whole fight (player marches +x, enemy −x, converging). Wired via `CombatArenaBootstrap.FrameBattlefield3D` from `CombatArenaPresenter.InitializeArena`; the punch-in camera already absorbs external reframing while idle.
+- Verified live: rear-corner deployment fully in frame (bonus: the deployment-edge trenchworks now read in the home frame).
+
+### 3. Vehicle/emplacement treatment (owner spec implemented)
+- **Pipeline**: `generate_unit.py --vehicle` — image3d → remesh only (~half credits), single static `model.glb`, vehicle checklist. Refs: the ShopV2 card icons (tank/transport side views used as-is; machine_gun_nest CROPPED to remove the gunner — the first gen latched onto the soldier and produced a lone trooper; the cropped re-gen produced the proper MG + shield + sandbag ring).
+- **`CombatUnitVisual3DVehicle`** (new, behind ICombatUnitVisual): no rig/clips/rifle/aim layers. March = engine-rumble bob + pitch rock (code-driven, recomputed per frame — nothing accumulates); attack = recoil kick synced to muzzle flash, muzzle = bounds-front at 70% height (no per-archetype muzzle authoring); death = sink/list collapse → linger → shared dissolve; same _HitFlash + side-ring orb drain (ring 1.35×).
+- **Installer/bootstrap**: `ArchetypeVisual` gained isVehicle/vehicleHeight/vehicleYawOffsetDegrees; `VehicleUnits` table in Combat3DDemoSceneBootstrap (iron_horse 2.4 m/−90°, transport 2.5 m/−90°, mg_nest 1.6 m/+90°) — yaws verified per gen via isolated probes at identity rotation (Meshy side-view refs come out with arbitrary authored forward: both vehicles +X, nest barrel −X). Archetype serialization shared via `WriteArchetypes` (demo + run-flow builders). Missing model.glb → warning + rifleman fallback (unchanged behavior).
+- **Verified live** (demo scene, default roster carries armored_transport): transport spawns on its ring at proper scale, marches with rumble, fights, correct facing after the yaw fix (first run confirmed 90°-off before it), fight completes VICTORY, zero errors. Meshy jobs logged in tools/meshy/units/*/pipeline_state.json + gen_*.log.
+
+### Deferred
+- Iron horse / MG nest not yet eyeballed in a fight (same code path as the verified transport; both piece ids need to appear in a roster — buy them in a run or set demo roster). Nest muzzle = bounds-front heuristic; check tracer origin vs the gun barrel when it first fights.
+- Wheel/tread spin: single static remesh has no separate submeshes — rumble bob stands in per spec fallback; revisit only if the read fails at gameplay distance.
+- machine_gun_nest is static in presentation only if the sim never moves it — if it ever pathfinds, it will rumble-march like a vehicle (harmless, but a dedicated "emplacement" flag could pin it).

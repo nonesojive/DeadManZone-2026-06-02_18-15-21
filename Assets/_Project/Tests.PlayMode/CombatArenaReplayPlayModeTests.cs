@@ -18,6 +18,8 @@ namespace DeadManZone.PlayMode.Tests
     public sealed class CombatArenaReplayPlayModeTests
     {
         private GameObject _root;
+        private CombatArenaVisualMode _savedVisualMode;
+        private CombatArenaConfigSO _sharedConfig;
 
         private sealed class ArenaHarness
         {
@@ -32,11 +34,25 @@ namespace DeadManZone.PlayMode.Tests
         {
             PlayModeTestHelpers.CleanupPersistentManagers();
             CombatArenaSession.ResetForTests();
+
+            // These tests cover the 2D arena path and load the 2D scene explicitly, but its
+            // bootstrap reads the SHARED config — pin it to 2D for the test's lifetime so
+            // the suite stays green while the game itself runs the 3D arena. In-memory only
+            // (no SetDirty), restored in teardown.
+            _sharedConfig = Resources.Load<CombatArenaConfigSO>("DeadManZone/CombatArenaConfig");
+            if (_sharedConfig != null)
+            {
+                _savedVisualMode = _sharedConfig.visualMode;
+                _sharedConfig.visualMode = CombatArenaVisualMode.TopTroops2D;
+            }
         }
 
         [TearDown]
         public void TearDown()
         {
+            if (_sharedConfig != null)
+                _sharedConfig.visualMode = _savedVisualMode;
+
             if (_root != null)
                 Object.DestroyImmediate(_root);
 

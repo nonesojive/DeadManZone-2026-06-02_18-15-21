@@ -1,5 +1,11 @@
 # Main-build port handoff — 3D combat arena → Run flow (2026-07-11)
 
+> **STATUS (2026-07-12): PORTED.** See "## Main-build port (2026-07-12)" at the bottom of
+> docs/audit-combat-sim-2026-07-10.md for what landed, live verification, and remaining
+> open items (fight-1 framing, grade/ink comparison, 2D deletion list sign-off).
+> Combat is switched to 3D via the shared CombatArenaConfig.visualMode; switch back any
+> time with `DeadManZone → Combat3D → Switch Combat To 2D Arena`.
+
 **Goal:** replace the 2D sprite combat arena in the real game flow (Run scene / RunOrchestrator) with the proven 3D toon-ink arena + interactive tactics window from `Combat3D_Demo.unity`.
 
 **Read first:** CLAUDE.md, then docs/audit-combat-sim-2026-07-10.md BOTTOM-UP (every section from "Combat3D wiring" down is current state), especially "## Interactive tactics window" (porting notes) and "## Full roster".

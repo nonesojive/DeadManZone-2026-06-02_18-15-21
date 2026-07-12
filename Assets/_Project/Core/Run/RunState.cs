@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
+using DeadManZone.Core.Common;
 using DeadManZone.Core.Shop;
 
 namespace DeadManZone.Core.Run
@@ -16,6 +17,11 @@ namespace DeadManZone.Core.Run
         public TacticType? PendingSelectedTactic { get; init; }
         public IReadOnlyList<GrantedAbility> PendingSelectedAbilities { get; init; }
         public TacticType[] StartingTactics { get; init; }
+
+        /// <summary>Cells a targeted ability may aim at right now (live enemy positions,
+        /// mirroring <see cref="Combat.CombatAbilityExecutor.IsValidTargetCell"/>). Null on
+        /// contexts built before combat state exists.</summary>
+        public IReadOnlyList<GridCoord> EnemyTargetCells { get; init; }
     }
 
     public sealed class CombatSaveState

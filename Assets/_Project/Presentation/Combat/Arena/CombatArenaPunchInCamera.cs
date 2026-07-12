@@ -81,6 +81,25 @@ namespace DeadManZone.Presentation.Combat.Arena
                 director.EventReplayed += OnEventReplayed;
         }
 
+        /// <summary>Runtime wiring for the additively loaded arena scene, where director and
+        /// presenter live in the Run scene (cross-scene refs can't be serialized). Safe to
+        /// call any time after the scene loads; re-subscribes cleanly.</summary>
+        public void Configure(CombatDirector runDirector, CombatArenaPresenter runPresenter)
+        {
+            if (runDirector == null)
+                return;
+
+            if (isActiveAndEnabled && director != null)
+                director.EventReplayed -= OnEventReplayed;
+
+            director = runDirector;
+            if (runPresenter != null)
+                presenter = runPresenter;
+
+            if (isActiveAndEnabled)
+                director.EventReplayed += OnEventReplayed;
+        }
+
         private void OnDisable()
         {
             if (director != null)

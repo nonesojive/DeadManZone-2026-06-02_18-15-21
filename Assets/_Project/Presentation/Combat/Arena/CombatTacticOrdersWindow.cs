@@ -38,7 +38,16 @@ namespace DeadManZone.Presentation.Combat.Arena
             public Camera ArenaCamera;
             /// <summary>Mirrors what the Core executor will honor (alive enemy anchor at the cell).</summary>
             public Func<GridCoord, bool> IsValidAbilityTarget;
+            /// <summary>Saved pause draft (run flow's SavePauseDraft) to restore on open.
+            /// Targeted abilities are not restorable — the save schema has no target cells —
+            /// so only the tactic and untargeted abilities re-seed.</summary>
+            public TacticType? PendingSelectedTactic;
+            public IReadOnlyList<GrantedAbility> PendingSelectedAbilities;
         }
+
+        /// <summary>Fires after any draft edit (tactic, queue, cancel). The run flow uses
+        /// this to persist the pause draft; the demo leaves it unsubscribed.</summary>
+        public event Action DraftChanged;
 
         private static readonly Color PanelBody = new(0.075f, 0.066f, 0.055f, 0.96f);
         private static readonly Color DimColor = new(0.02f, 0.02f, 0.025f, 0.55f);
@@ -103,9 +112,32 @@ namespace DeadManZone.Presentation.Combat.Arena
             _subtitleText.text = BuildSubtitle(_ctx);
             _reasonText.text = string.Empty;
 
+            SeedFromPendingDraft();
             BuildTacticButtons();
             BuildAbilityButtons();
             Refresh();
+        }
+
+        /// <summary>Restore a previously saved pause draft: tactic + untargeted abilities.
+        /// Every seed goes through the draft's normal validation, so a stale save (e.g. an
+        /// ability whose piece died) is silently dropped rather than trusted.</summary>
+        private void SeedFromPendingDraft()
+        {
+            if (_ctx.PendingSelectedTactic.HasValue)
+                _draft.TrySelectTactic(_ctx.PendingSelectedTactic.Value, out _);
+
+            if (_ctx.PendingSelectedAbilities == null || _ctx.AvailableAbilities == null)
+                return;
+
+            foreach (var ability in _ctx.PendingSelectedAbilities)
+            {
+                if (RequiresTarget(ability))
+                    continue; // target cells are not persisted; the player re-picks
+
+                var command = _ctx.AvailableAbilities.FirstOrDefault(c => c.Ability == ability);
+                if (command != null)
+                    _draft.TryQueueAbility(command, null, out _);
+            }
         }
 
         public void Hide()
@@ -250,6 +282,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 .Select(q => q.TargetCell.Value));
 
             _resumeButton.interactable = _draft.Validate(out _);
+            DraftChanged?.Invoke();
         }
 
         private void RebuildQueuedList()

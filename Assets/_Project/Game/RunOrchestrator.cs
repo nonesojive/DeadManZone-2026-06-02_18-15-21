@@ -222,7 +222,8 @@ namespace DeadManZone.Game
                 AvailableAbilities = abilities,
                 PendingSelectedTactic = State.Combat.PendingSelectedTactic,
                 PendingSelectedAbilities = State.Combat.PendingSelectedAbilities,
-                StartingTactics = Faction?.startingTactics
+                StartingTactics = Faction?.startingTactics,
+                EnemyTargetCells = _activeCombat.GetLiveEnemyTargetCells()
             };
         }
 

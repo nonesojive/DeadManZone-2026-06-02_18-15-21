@@ -56,6 +56,21 @@ namespace DeadManZone.Presentation.Editor
             ("ironmarch_surgeon", "ironmarch_surgeon"),
         };
 
+        // Non-humanoid units (owner spec, audit "non-humanoid treatment"): single static
+        // model.glb from generate_unit.py --vehicle, rendered by CombatUnitVisual3DVehicle
+        // (code-driven rumble/recoil/collapse — no rig, no clips, no rifle). Height =
+        // authored silhouette height in meters (these are not 1.7 m infantry).
+        // yaw = per-gen facing correction (Meshy side-view refs come out with arbitrary
+        // authored forward); tuned live in Play mode, baked here.
+        private static readonly (string folder, string pieceId, float height, float yaw)[] VehicleUnits =
+        {
+            // Facing verified per gen via isolated probes (identity rotation, Front view):
+            // tank/transport authored +X → -90; nest barrel authored -X → +90.
+            ("ironmarch_iron_horse", "ironmarch_iron_horse", 2.4f, -90f),
+            ("armored_transport", "armored_transport", 2.5f, -90f),
+            ("machine_gun_nest", "machine_gun_nest", 1.6f, 90f),
+        };
+
         private static string RosterModelFolder(string unitFolder) =>
             GeneratedFolder + "/Models/" + unitFolder;
 
@@ -80,15 +95,40 @@ namespace DeadManZone.Presentation.Editor
         private const string PlayerRingPath = GeneratedFolder + "/RingFill_Player.mat";
         private const string EnemyRingPath = GeneratedFolder + "/RingFill_Enemy.mat";
 
-        [MenuItem("DeadManZone/Combat3D/Build Combat3D Demo Scene")]
-        public static void BuildDemoScene()
+        /// <summary>Everything a Combat3D scene build needs, generated/validated once.
+        /// Shared by the demo scene and the run-flow CombatArena3D scene builders.</summary>
+        /// <summary>One installer archetype entry: humanoid (model + controller) or vehicle
+        /// (static model, code-driven motion, per-unit silhouette height).</summary>
+        internal struct ArchetypeSpec
         {
-            if (EditorApplication.isPlaying)
-            {
-                Debug.LogError("[Combat3D] Exit Play mode before building the demo scene.");
-                return;
-            }
+            public string PieceId;
+            public GameObject Model;
+            public AnimatorController Controller;
+            public bool IsVehicle;
+            public float VehicleHeight;
+            public float VehicleYawOffsetDegrees;
+        }
 
+        internal sealed class SceneAssets
+        {
+            public GameObject IdleModel;
+            public Material PlayerMat;
+            public Material EnemyMat;
+            public Material RingBlue;
+            public Material RingRed;
+            public VolumeProfile GradeProfile;
+            public AnimatorController Controller;
+            public List<ArchetypeSpec> Archetypes;
+            public CombatArenaConfigSO Config;
+            public GameObject RiflePrefab;
+            public CombatArenaAudioSetSO AudioSet;
+            public AudioClip AmbienceLoop;
+        }
+
+        /// <summary>Validate the spike/model assets and (re)generate the derived assets
+        /// (materials, controllers, config, rifle, audio). Null + logged error on failure.</summary>
+        internal static SceneAssets PrepareSceneAssets()
+        {
             // --- Validate spike assets up front; friendly abort if the spike moved. ---
             var missing = new List<string>();
             var idleModel = LoadOrFlag<GameObject>(IdleGlbPath, missing);
@@ -122,28 +162,51 @@ namespace DeadManZone.Presentation.Editor
                 Debug.LogError(
                     "[Combat3D] Aborting — required Phase-0 spike assets are missing:\n - " +
                     string.Join("\n - ", missing));
-                return;
+                return null;
             }
 
             // --- Generated assets under _Project (spike stays throwaway). ---
             EnsureFolder(GeneratedFolder);
-            var ringBlue = LoadOrCreateRingFillMaterial(
-                PlayerRingPath, ringFillShader,
-                fill: new Color(0.20f, 0.28f, 0.42f),   // spike RingBlue
-                rim: new Color(0.28f, 0.40f, 0.60f),
-                empty: new Color(0.09f, 0.10f, 0.13f));
-            var ringRed = LoadOrCreateRingFillMaterial(
-                EnemyRingPath, ringFillShader,
-                fill: new Color(0.40f, 0.18f, 0.16f),   // spike RingRed
-                rim: new Color(0.56f, 0.25f, 0.21f),
-                empty: new Color(0.12f, 0.09f, 0.09f));
-            var controller = BuildAnimatorController(
-                idleClip, walkClip, dieClip, IdleClipPath, WalkClipPath, DieClipPath, ControllerPath);
-            var archetypes = BuildRosterArchetypes();
-            var config = BuildDemoArenaConfig();
-            var riflePrefab = RiflePropBuilder.EnsurePrefab();
             // Placeholder SFX set + ambience bed (no real combat audio exists in the project yet).
             var (audioSet, ambienceLoop) = Combat3DPlaceholderAudioBuilder.EnsureAudioSet();
+            return new SceneAssets
+            {
+                IdleModel = idleModel,
+                PlayerMat = playerMat,
+                EnemyMat = enemyMat,
+                GradeProfile = gradeProfile,
+                RingBlue = LoadOrCreateRingFillMaterial(
+                    PlayerRingPath, ringFillShader,
+                    fill: new Color(0.20f, 0.28f, 0.42f),   // spike RingBlue
+                    rim: new Color(0.28f, 0.40f, 0.60f),
+                    empty: new Color(0.09f, 0.10f, 0.13f)),
+                RingRed = LoadOrCreateRingFillMaterial(
+                    EnemyRingPath, ringFillShader,
+                    fill: new Color(0.40f, 0.18f, 0.16f),   // spike RingRed
+                    rim: new Color(0.56f, 0.25f, 0.21f),
+                    empty: new Color(0.12f, 0.09f, 0.09f)),
+                Controller = BuildAnimatorController(
+                    idleClip, walkClip, dieClip, IdleClipPath, WalkClipPath, DieClipPath, ControllerPath),
+                Archetypes = BuildRosterArchetypes(),
+                Config = BuildDemoArenaConfig(),
+                RiflePrefab = RiflePropBuilder.EnsurePrefab(),
+                AudioSet = audioSet,
+                AmbienceLoop = ambienceLoop
+            };
+        }
+
+        [MenuItem("DeadManZone/Combat3D/Build Combat3D Demo Scene")]
+        public static void BuildDemoScene()
+        {
+            if (EditorApplication.isPlaying)
+            {
+                Debug.LogError("[Combat3D] Exit Play mode before building the demo scene.");
+                return;
+            }
+
+            var assets = PrepareSceneAssets();
+            if (assets == null)
+                return;
 
             // --- Scene ---
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
@@ -154,11 +217,13 @@ namespace DeadManZone.Presentation.Editor
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             ApplyEnvironmentLighting();
-            var camera = CreateCamera();
+            var camera = CreateCamera(includeAudioListener: true);
             CreateKeyLight();
-            CreateGlobalVolume(gradeProfile);
+            CreateGlobalVolume(assets.GradeProfile);
             CombatEnvironmentBuilder.Build();
-            CreateArenaRig(camera, config, controller, idleModel, playerMat, enemyMat, ringBlue, ringRed, riflePrefab, archetypes, audioSet, ambienceLoop);
+            CreateArenaRig(camera, assets.Config, assets.Controller, assets.IdleModel, assets.PlayerMat,
+                assets.EnemyMat, assets.RingBlue, assets.RingRed, assets.RiflePrefab, assets.Archetypes,
+                assets.AudioSet, assets.AmbienceLoop);
 
             EnsureFolder("Assets/_Project/Scenes");
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -201,11 +266,11 @@ namespace DeadManZone.Presentation.Editor
 
         /// <summary>One archetype entry per roster unit whose GLBs imported cleanly:
         /// generated looped .anim copies + AnimatorController (same logic as the rifleman)
-        /// living next to the unit's GLBs under Combat3D/Models/&lt;unit&gt;/.</summary>
-        private static List<(string pieceId, GameObject model, AnimatorController controller)>
-            BuildRosterArchetypes()
+        /// living next to the unit's GLBs under Combat3D/Models/&lt;unit&gt;/. Vehicle units
+        /// append after: static model.glb only, no controller.</summary>
+        private static List<ArchetypeSpec> BuildRosterArchetypes()
         {
-            var archetypes = new List<(string, GameObject, AnimatorController)>();
+            var archetypes = new List<ArchetypeSpec>();
             foreach (var (unitFolder, pieceId) in RosterUnits)
             {
                 string folder = RosterModelFolder(unitFolder);
@@ -229,7 +294,34 @@ namespace DeadManZone.Presentation.Editor
                     $"{folder}/{unitFolder}_Walk.anim",
                     $"{folder}/{unitFolder}_Die.anim",
                     $"{folder}/{unitFolder}Combat3D.controller");
-                archetypes.Add((pieceId, model, controller));
+                archetypes.Add(new ArchetypeSpec
+                {
+                    PieceId = pieceId,
+                    Model = model,
+                    Controller = controller,
+                });
+            }
+
+            foreach (var (unitFolder, pieceId, height, yaw) in VehicleUnits)
+            {
+                string path = RosterModelFolder(unitFolder) + "/model.glb";
+                var model = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (model == null)
+                {
+                    Debug.LogWarning(
+                        $"[Combat3D] Vehicle unit '{unitFolder}' skipped — no {path} yet " +
+                        "(run tools/meshy/generate_unit.py <unit> --vehicle); falls back to rifleman visuals.");
+                    continue;
+                }
+
+                archetypes.Add(new ArchetypeSpec
+                {
+                    PieceId = pieceId,
+                    Model = model,
+                    IsVehicle = true,
+                    VehicleHeight = height,
+                    VehicleYawOffsetDegrees = yaw,
+                });
             }
 
             return archetypes;
@@ -368,7 +460,7 @@ namespace DeadManZone.Presentation.Editor
 
         // --- Scene construction (values lifted from Assets/_Phase0Spike/Scenes/Phase0_Spike.unity) ---
 
-        private static void ApplyEnvironmentLighting()
+        internal static void ApplyEnvironmentLighting()
         {
             RenderSettings.ambientMode = AmbientMode.Trilight;
             // Lifted from the spike, then brightened so ToonInk's SampleSH term keeps
@@ -382,14 +474,16 @@ namespace DeadManZone.Presentation.Editor
             RenderSettings.fogDensity = 0.022f; // spike used 0.028 on a smaller field; 0.022 sells backdrop depth without eating units (~20% fog at the far lane)
         }
 
-        private static Camera CreateCamera()
+        /// <param name="includeAudioListener">Demo scene: true (nothing else provides one).
+        /// Run-flow arena scene: false — CombatArenaUiController.EnterArenaMode moves the
+        /// Run scene's listener onto the arena camera; a serialized one would duplicate.</param>
+        internal static Camera CreateCamera(bool includeAudioListener)
         {
             var go = new GameObject("ArenaCamera");
             go.tag = "MainCamera";
             var camera = go.AddComponent<Camera>();
-            // Hand-built camera in a hand-built scene: nothing else provides a listener,
-            // and without one every AudioSource in the arena is silent.
-            go.AddComponent<AudioListener>();
+            if (includeAudioListener)
+                go.AddComponent<AudioListener>();
             camera.fieldOfView = 42f;
             camera.nearClipPlane = 0.3f;
             camera.farClipPlane = 200f;
@@ -441,7 +535,7 @@ namespace DeadManZone.Presentation.Editor
             return -1;
         }
 
-        private static void CreateKeyLight()
+        internal static void CreateKeyLight()
         {
             var go = new GameObject("Key Light");
             var light = go.AddComponent<Light>();
@@ -462,7 +556,7 @@ namespace DeadManZone.Presentation.Editor
             fillGo.transform.rotation = Quaternion.Euler(25f, 160f, 0f);
         }
 
-        private static void CreateGlobalVolume(VolumeProfile profile)
+        internal static void CreateGlobalVolume(VolumeProfile profile)
         {
             var go = new GameObject("Global Volume");
             var volume = go.AddComponent<Volume>();
@@ -481,7 +575,7 @@ namespace DeadManZone.Presentation.Editor
             Material ringBlue,
             Material ringRed,
             GameObject riflePrefab,
-            List<(string pieceId, GameObject model, AnimatorController controller)> archetypes,
+            List<ArchetypeSpec> archetypes,
             CombatArenaAudioSetSO audioSet,
             AudioClip ambienceLoop)
         {
@@ -545,15 +639,7 @@ namespace DeadManZone.Presentation.Editor
                 so.FindProperty("enemyRingMaterial").objectReferenceValue = ringRed;
                 so.FindProperty("riflePrefab").objectReferenceValue = riflePrefab;
 
-                var archetypeArray = so.FindProperty("archetypes");
-                archetypeArray.arraySize = archetypes.Count;
-                for (int i = 0; i < archetypes.Count; i++)
-                {
-                    var element = archetypeArray.GetArrayElementAtIndex(i);
-                    element.FindPropertyRelative("pieceId").stringValue = archetypes[i].pieceId;
-                    element.FindPropertyRelative("model").objectReferenceValue = archetypes[i].model;
-                    element.FindPropertyRelative("controller").objectReferenceValue = archetypes[i].controller;
-                }
+                WriteArchetypes(so, archetypes);
             });
 
             // Army health HUD: two opposing top-of-screen bars fed by the replay tracker.
@@ -588,14 +674,33 @@ namespace DeadManZone.Presentation.Editor
             });
         }
 
-        private static void SetSerialized(Component component, Action<SerializedObject> apply)
+        /// <summary>Serialize the installer's archetypes array (shared by the demo and the
+        /// run-flow scene builders — keep the field writes in one place).</summary>
+        internal static void WriteArchetypes(SerializedObject so, List<ArchetypeSpec> archetypes)
+        {
+            var archetypeArray = so.FindProperty("archetypes");
+            archetypeArray.arraySize = archetypes.Count;
+            for (int i = 0; i < archetypes.Count; i++)
+            {
+                var element = archetypeArray.GetArrayElementAtIndex(i);
+                element.FindPropertyRelative("pieceId").stringValue = archetypes[i].PieceId;
+                element.FindPropertyRelative("model").objectReferenceValue = archetypes[i].Model;
+                element.FindPropertyRelative("controller").objectReferenceValue = archetypes[i].Controller;
+                element.FindPropertyRelative("isVehicle").boolValue = archetypes[i].IsVehicle;
+                element.FindPropertyRelative("vehicleHeight").floatValue = archetypes[i].VehicleHeight;
+                element.FindPropertyRelative("vehicleYawOffsetDegrees").floatValue =
+                    archetypes[i].VehicleYawOffsetDegrees;
+            }
+        }
+
+        internal static void SetSerialized(Component component, Action<SerializedObject> apply)
         {
             var serialized = new SerializedObject(component);
             apply(serialized);
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        private static void EnsureFolder(string path)
+        internal static void EnsureFolder(string path)
         {
             if (AssetDatabase.IsValidFolder(path))
                 return;

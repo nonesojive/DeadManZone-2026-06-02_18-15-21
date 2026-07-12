@@ -40,6 +40,18 @@ namespace DeadManZone.Presentation.Combat.Arena
             Subscribe();
         }
 
+        /// <summary>Externally driven mode (run flow): build the HUD chrome and hand back the
+        /// inner <see cref="ArmyHealthBarPresenter"/> so the caller feeds it replay events
+        /// itself. Put this component on a GameObject WITHOUT a CombatDirector, or the
+        /// OnEnable self-subscription will double-apply every event.</summary>
+        public ArmyHealthBarPresenter EnsurePresenter()
+        {
+            if (_canvasRoot == null)
+                BuildHud();
+
+            return _presenter;
+        }
+
         private void OnEnable() => Subscribe();
 
         private void OnDisable() => Unsubscribe();

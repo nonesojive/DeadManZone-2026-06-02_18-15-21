@@ -124,10 +124,15 @@ namespace DeadManZone.Core.Combat
             return CommandResult.Ok();
         }
 
+        /// <summary>The exact rule an explicit target cell must satisfy to be honored
+        /// (a live enemy occupies it). UI target pickers must defer to this so their
+        /// valid-cell highlighting can never drift from what execution accepts.</summary>
+        public static bool IsValidTargetCell(IEnumerable<CombatantState> enemies, GridCoord cell) =>
+            enemies != null && enemies.Any(e => e != null && e.IsAlive && OccupiesCell(e, cell));
+
         private static GridCoord? ResolveTargetCell(IList<CombatantState> enemies, GridCoord? targetCell)
         {
-            if (targetCell.HasValue &&
-                enemies.Any(e => e.IsAlive && OccupiesCell(e, targetCell.Value)))
+            if (targetCell.HasValue && IsValidTargetCell(enemies, targetCell.Value))
                 return targetCell;
 
             return enemies.Where(e => e.IsAlive).OrderBy(e => e.AnchorPosition.X).ThenBy(e => e.InstanceId).FirstOrDefault()?.AnchorPosition;
