@@ -34,9 +34,11 @@ namespace DeadManZone.Core.Run
         {
             if (snapshot.Width != ReservesState.Width || snapshot.Height != ReservesState.Height)
             {
-                if (snapshot.Width == 9 && ReservesState.Width == 8 && snapshot.Height == ReservesState.Height)
+                // Older saves were authored on wider reserves (9x2, then 8x2). Migrate by
+                // keeping anchors that still fit and repacking the rest instead of failing.
+                if (snapshot.Width > ReservesState.Width && snapshot.Height == ReservesState.Height)
                 {
-                    return ToReservesFromLegacyNineWide(snapshot, registry);
+                    return ToReservesFromLegacyWide(snapshot, registry);
                 }
 
                 throw new System.InvalidOperationException(
@@ -61,7 +63,7 @@ namespace DeadManZone.Core.Run
             return reserves;
         }
 
-        private static ReservesState ToReservesFromLegacyNineWide(
+        private static ReservesState ToReservesFromLegacyWide(
             ReservesSnapshot snapshot,
             ContentRegistry registry)
         {
@@ -71,29 +73,35 @@ namespace DeadManZone.Core.Run
                 var definition = registry.GetById(record.PieceId);
                 var rotation = RotationFromDegrees(record.RotationDegrees);
                 var anchor = new GridCoord(record.AnchorX, record.AnchorY);
-                if (!WouldFitLegacyPiece(definition, anchor, rotation))
+
+                // Keep the authored spot when it still fits on the narrower board.
+                if (reserves.TryPlace(definition, anchor, record.InstanceId, rotation).Success)
                     continue;
 
-                var result = reserves.TryPlace(definition, anchor, record.InstanceId, rotation);
-                if (!result.Success)
-                    continue;
+                // Otherwise repack: first free anchor that accepts the piece. Only a
+                // fully packed board drops a piece (16 -> 12 cells can overflow).
+                TryRepack(reserves, definition, record.InstanceId, rotation);
             }
 
             return reserves;
         }
 
-        private static bool WouldFitLegacyPiece(
+        private static bool TryRepack(
+            ReservesState reserves,
             PieceDefinition definition,
-            GridCoord anchor,
+            string instanceId,
             PieceRotation rotation)
         {
-            foreach (var cell in definition.Shape.GetCells(anchor, rotation))
+            for (int y = 0; y < ReservesState.Height; y++)
             {
-                if (cell.X < 0 || cell.Y < 0 || cell.X >= ReservesState.Width || cell.Y >= ReservesState.Height)
-                    return false;
+                for (int x = 0; x < ReservesState.Width; x++)
+                {
+                    if (reserves.TryPlace(definition, new GridCoord(x, y), instanceId, rotation).Success)
+                        return true;
+                }
             }
 
-            return true;
+            return false;
         }
 
         private static PieceRotation RotationFromDegrees(int degrees) =>

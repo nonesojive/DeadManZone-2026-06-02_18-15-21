@@ -19,9 +19,10 @@ namespace DeadManZone.Core.Tests
         };
 
         [Test]
-        public void GridDimensions_Are8By2()
+        public void GridDimensions_Are6By2()
         {
-            Assert.AreEqual(8, ReservesState.Width);
+            // 6 wide to line up with the 6x6 combat board (shop visual rework).
+            Assert.AreEqual(6, ReservesState.Width);
             Assert.AreEqual(2, ReservesState.Height);
         }
 

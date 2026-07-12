@@ -307,6 +307,24 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
+        public void SetLockedOffer_ToggleOff_UnpinsSlotOnNextReroll()
+        {
+            _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 505);
+            var offer = _orchestrator.State.Shop.Offers.First(o => o.SlotIndex == 0);
+            _orchestrator.SetLockedOffer(offer, locked: true);
+            Assert.IsTrue(_orchestrator.IsOfferLocked(offer));
+
+            _orchestrator.SetLockedOffer(offer, locked: false);
+            Assert.IsFalse(_orchestrator.IsOfferLocked(offer));
+            Assert.AreEqual(0, _orchestrator.State.LockedOffers.Count);
+            Assert.AreEqual(0, _orchestrator.ComputeRerollLockAuthorityCost());
+
+            // slot 0 is free to change again — reroll must not re-pin the old piece
+            Assert.IsTrue(_orchestrator.TryRerollShop());
+            Assert.IsFalse(_orchestrator.State.LockedOffers.Any());
+        }
+
+        [Test]
         public void DefeatReport_CarriesDamageTablesFromSim()
         {
             _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);

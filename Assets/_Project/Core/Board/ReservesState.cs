@@ -6,7 +6,7 @@ namespace DeadManZone.Core.Board
 {
     public sealed class ReservesState
     {
-        public const int Width = 8;
+        public const int Width = 6;
         public const int Height = 2;
 
         private readonly Dictionary<string, PlacedPiece> _pieces = new();
