@@ -14,26 +14,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.BoardTerrainArtSO
   battlefieldBackdrop: {fileID: 0}
   cellSprite: {fileID: 0}
-  # Coherence pass (L4): each board now uses a single material instead of a
-  # scattered grab-bag of props. Combat = wood duckboard (combat_00-05),
-  # Hq = concrete bunker floor (combat_08-11), Reserves = matching metal grates.
   combatBoardTiles:
-  - {fileID: 21300000, guid: 1f52185117c9b2d4ea6209a9e49b45ff, type: 3}
-  - {fileID: 21300000, guid: 3e1638326f4b1104ca9526225507b898, type: 3}
-  - {fileID: 21300000, guid: 57eeb4698d236f745ae7756859d87956, type: 3}
-  - {fileID: 21300000, guid: 9fbf66217d00f1c4081c30075f5910a5, type: 3}
-  - {fileID: 21300000, guid: 274df1ea1c648b34d81e40d9539077e3, type: 3}
-  - {fileID: 21300000, guid: 8d204c2bc5247d34e8f03f3859d4dd0e, type: 3}
-  combatFrontColumnTiles: []
+  - {fileID: 21300000, guid: 6b0072b5a4e802545ac91ef45573c876, type: 3}
+  - {fileID: 21300000, guid: 1dedf1dcee32f3f4c96cd25337eca9ba, type: 3}
+  - {fileID: 21300000, guid: 02e46fe741bd45d4487a7ae699a0ea45, type: 3}
+  - {fileID: 21300000, guid: c95ae59d18a54644380f8e5ec57e246f, type: 3}
+  - {fileID: 21300000, guid: baa037d145554d34a8724fe4b336caca, type: 3}
+  - {fileID: 21300000, guid: 8327109ce73819b448b6556f7577324f, type: 3}
+  - {fileID: 21300000, guid: 5259b9d989bcf074ba7a4564acf8f1cf, type: 3}
+  - {fileID: 21300000, guid: aa3269e863b586243ac6810cfec67220, type: 3}
+  combatFrontColumnTiles:
+  - {fileID: 21300000, guid: 4f61d79ed1b4b134eafaf17d91286270, type: 3}
+  - {fileID: 21300000, guid: 9cf3d2583b268cd44a706c66864ea599, type: 3}
+  - {fileID: 21300000, guid: 01b3a88ef4ee2b3409bd29b68c138813, type: 3}
+  - {fileID: 21300000, guid: ec7d5cea98345e14faca374ff1080e0b, type: 3}
   hqBoardTiles:
-  - {fileID: 21300000, guid: 8d2c84ea926093044ad42bca43d67584, type: 3}
-  - {fileID: 21300000, guid: 20cbeab1989b9a049bdf28ec240e829c, type: 3}
-  - {fileID: 21300000, guid: 07324a15dcc221d47a83bf2bab803495, type: 3}
-  - {fileID: 21300000, guid: 022a94843a0ab4041a2381fb09efb42d, type: 3}
+  - {fileID: 21300000, guid: 96f0d39b5276df643936194f398dd137, type: 3}
+  - {fileID: 21300000, guid: a775bf83b4227ed4fb6a9f1602b71e28, type: 3}
+  - {fileID: 21300000, guid: fbf5bf11fa297fb40b821479ebf27302, type: 3}
+  - {fileID: 21300000, guid: f0a2c0ba1b09931499505ab50d372640, type: 3}
+  - {fileID: 21300000, guid: 3f48e67c96534da4c92c75ee911ef041, type: 3}
+  - {fileID: 21300000, guid: 95a05da10631f464dba02fbbf9febdbe, type: 3}
   rearTiles: []
   supportTiles: []
   frontTiles: []
   neutralTiles: []
   reserveSlotTiles:
-  - {fileID: 21300000, guid: 4da85861ee8215f47a6435fdc00575a6, type: 3}
-  - {fileID: 21300000, guid: f9ad78ed375a7b24c935d5478d55e9f3, type: 3}
+  - {fileID: 21300000, guid: 115d3ffcc12ec804f988b8e059393a69, type: 3}
+  - {fileID: 21300000, guid: f552b45d93f14774a9b11c3af75d00ba, type: 3}
+  - {fileID: 21300000, guid: ec97dc2eed304e74e9cc0be629245645, type: 3}

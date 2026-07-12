@@ -216,6 +216,10 @@ namespace DeadManZone.Presentation.Combat.Arena
             _walking = walking;
         }
 
+        /// <summary>Spawn facing snaps (see CombatUnitVisual3D._hasFacing — armies were
+        /// swiveling from screen-north at fight start).</summary>
+        private bool _hasFacing;
+
         /// <inheritdoc/>
         public void FaceDirection(Vector3 worldDirection)
         {
@@ -226,6 +230,12 @@ namespace DeadManZone.Presentation.Combat.Arena
             _lastFacingDir = worldDirection.normalized;
             _targetRotation = Quaternion.LookRotation(_lastFacingDir, Vector3.up)
                               * Quaternion.Euler(0f, _yawOffsetDegrees, 0f);
+
+            if (!_hasFacing)
+            {
+                _currentYaw = _targetRotation;
+                _hasFacing = true;
+            }
         }
 
         /// <inheritdoc/>
@@ -319,6 +329,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _dying = false;
             _locomotionLockUntil = 0f;
             _recoilStartTime = float.NegativeInfinity;
+            _hasFacing = false; // pooled reuse: next spawn's first facing snaps again
         }
 
         // ------------------------------------------------------------- motion & attack

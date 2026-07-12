@@ -368,6 +368,11 @@ namespace DeadManZone.Presentation.Combat.Arena
             _animator.SetBool(MovingParam, walking);
         }
 
+        /// <summary>True once the first FaceDirection after Configure has snapped the
+        /// model. Spawn facing must be instant — easing from the fresh root's identity
+        /// (+z) made whole armies swivel from north at fight start.</summary>
+        private bool _hasFacing;
+
         /// <inheritdoc/>
         public void FaceDirection(Vector3 worldDirection)
         {
@@ -379,6 +384,12 @@ namespace DeadManZone.Presentation.Combat.Arena
             _targetRotation =
                 Quaternion.LookRotation(_lastFacingDir, Vector3.up)
                 * Quaternion.Euler(0f, _yawOffsetDegrees, 0f);
+
+            if (!_hasFacing && _modelRoot != null)
+            {
+                _modelRoot.rotation = _targetRotation;
+                _hasFacing = true;
+            }
         }
 
         /// <inheritdoc/>
@@ -506,6 +517,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _locomotionLockUntil = 0f;
             _targetRotation = Quaternion.identity;
             _lastFacingDir = Vector3.forward;
+            _hasFacing = false; // pooled reuse: next spawn's first facing snaps again
             _dieClipSeconds = FallbackDieClipSeconds;
         }
 

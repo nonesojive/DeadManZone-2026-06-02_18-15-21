@@ -118,6 +118,12 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             SnapToAnchor(anchor);
             _smoothedSimWorld = _mapper.ToWorld(anchor);
+
+            // Face the enemy line from the first frame. A fresh visual's target rotation
+            // is identity (+z / screen-north), and nothing else faces a unit until it
+            // moves or attacks — so idle armies stood staring north through the opening
+            // tactical pause, and 0-speed units held north all fight (2026-07-12 playtest).
+            _visual?.FaceDirection(combatSide == CombatSide.Player ? Vector3.right : Vector3.left);
         }
 
         /// <summary>Update the unit's HP display (0..1) — the visual's own presentation

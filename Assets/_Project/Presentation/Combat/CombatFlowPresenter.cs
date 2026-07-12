@@ -33,6 +33,7 @@ namespace DeadManZone.Presentation.Combat
         // Runtime-built pause/HUD UI for the 3D arena (the orders window IS the pause UI).
         private CombatTacticOrdersWindow _ordersWindow3D;
         private CombatArmyHealthHud _armyHud3D;
+        private CombatPlaybackSpeedControl _speedControl;
         private BattlefieldLayout _battlefieldLayout;
 
         private void Awake()
@@ -156,6 +157,11 @@ namespace DeadManZone.Presentation.Combat
             // when the next fight initializes.
             if (state?.Phase == RunPhase.Build && _armyHud3D != null)
                 _armyHud3D.gameObject.SetActive(false);
+
+            // Same top-level-overlay reasoning as the army HUD (its OnDisable also
+            // guarantees timeScale returns to 1x whenever the shop is the surface).
+            if (state?.Phase == RunPhase.Build && _speedControl != null)
+                _speedControl.gameObject.SetActive(false);
         }
 
         private void OnCombatPresentationCompleted()
@@ -312,6 +318,16 @@ namespace DeadManZone.Presentation.Combat
 
             _armyHud3D.gameObject.SetActive(true); // hidden on return to shop
             healthBarPresenter = _armyHud3D.EnsurePresenter();
+
+            if (_speedControl == null)
+            {
+                // Top-level for the same rect-inheritance reason as the army HUD.
+                var speedRoot = new GameObject("Combat3DSpeedControl");
+                _speedControl = speedRoot.AddComponent<CombatPlaybackSpeedControl>();
+            }
+
+            _speedControl.Configure(combatDirector);
+            _speedControl.gameObject.SetActive(true); // hidden on return to shop
         }
 
         private void EnsureArenaComponents()
