@@ -16,6 +16,9 @@ namespace DeadManZone.Game
     /// <summary>Pure run flow logic used by RunManager and tests.</summary>
     public sealed partial class RunOrchestrator
     {
+        /// <summary>Authored normal-fight template count. Since M1 this is NOT the run
+        /// length — the Dread clock (ADR-0004) decides when the run ends; difficulty
+        /// clamps to this last authored template.</summary>
         public const int MaxFights = 10;
         public const int BaseRerollCost = 1;
 
@@ -107,9 +110,52 @@ namespace DeadManZone.Game
             return false;
         }
 
+        // ---- Dread clock / boss framework (M1, ADR-0004) ----
+
+        /// <summary>True when the next combat is a mandatory Boss Fight.</summary>
+        public bool IsBossFightPending =>
+            State != null && DreadRules.IsBossPending(State.Dread, State.BossesDefeated);
+
+        /// <summary>Dread level that triggers the next boss (for the HUD meter).</summary>
+        public int NextDreadThreshold => DreadRules.NextThreshold(State?.BossesDefeated ?? 0);
+
+        /// <summary>Seeded hidden boss order — derived from the run seed, never persisted.</summary>
+        public string[] GetBossOrder() => BossRoster.GetBossOrder(State.RunSeed);
+
+        /// <summary>The boss the next combat will be, or null when no boss is pending.</summary>
+        public BossDefinition GetPendingBoss() =>
+            IsBossFightPending
+                ? BossRoster.Get(GetBossOrder()[State.BossesDefeated])
+                : null;
+
+        /// <summary>
+        /// Normal-fight enemy template keyed on the Dread difficulty clock, CLAMPED to the
+        /// last authored template — variable-length runs exceed the authored 10 fights and
+        /// the old modulo wrap in ContentDatabase.GetEnemyTemplate would reset difficulty
+        /// to fight 1. M2's Fight Options replace this seam wholesale.
+        /// </summary>
+        private EnemyTemplateSO GetEnemyTemplateForDifficulty()
+        {
+            int maxFight = _content.EnemyTemplates
+                .Where(e => e != null)
+                .Select(e => e.fightNumber)
+                .DefaultIfEmpty(0)
+                .Max();
+            if (maxFight <= 0)
+                return null;
+
+            int fightEquivalent = DreadRules.FightEquivalent(State.Dread);
+            return _content.GetEnemyTemplate(Math.Min(fightEquivalent, maxFight));
+        }
+
         public BoardState GetUpcomingEnemyBoard()
         {
-            var enemyTemplate = _content.GetEnemyTemplate(State.FightIndex);
+            var pendingBoss = GetPendingBoss();
+            if (pendingBoss != null)
+                return BossRoster.BuildStageBoard(
+                    pendingBoss, State.BossesDefeated, _registry, Faction.combatBoardSize);
+
+            var enemyTemplate = GetEnemyTemplateForDifficulty();
             if (enemyTemplate == null)
                 return null;
             return enemyTemplate.BuildBoard(Faction, _registry);
@@ -127,11 +173,30 @@ namespace DeadManZone.Game
             _fightStartCombatBoard = playerBoard;
             RecordCriticalMassIfTriggered();
 
-            var enemyTemplate = _content.GetEnemyTemplate(State.FightIndex);
-            if (enemyTemplate == null)
-                throw new InvalidOperationException($"No enemy template for fight {State.FightIndex}.");
+            // Dread threshold crossed → the next fight is the pending boss at the stage
+            // matching how many bosses already fell. Normal fights keep the template path.
+            BoardState enemyBoard;
+            string bossId = null;
+            string activeTwistId = null;
+            var pendingBoss = GetPendingBoss();
+            if (pendingBoss != null)
+            {
+                enemyBoard = BossRoster.BuildStageBoard(
+                    pendingBoss, State.BossesDefeated, _registry, Faction.combatBoardSize);
+                bossId = pendingBoss.BossId;
+                activeTwistId = pendingBoss.TwistId;
+                // Salvage targeting works on bosses too.
+                State.LastEnemyFactionId = pendingBoss.EnemyFactionId;
+            }
+            else
+            {
+                var enemyTemplate = GetEnemyTemplateForDifficulty();
+                if (enemyTemplate == null)
+                    throw new InvalidOperationException($"No enemy template for fight {State.FightIndex}.");
 
-            var enemyBoard = enemyTemplate.BuildBoard(Faction, _registry);
+                enemyBoard = enemyTemplate.BuildBoard(Faction, _registry);
+            }
+
             ResetAuthorityForBuildRound();
             var buildBoards = GetBuildBoards();
             var criticalMassSnapshot = CriticalMassEngine.Evaluate(buildBoards);
@@ -146,6 +211,8 @@ namespace DeadManZone.Game
             {
                 CombatSeed = combatSeed,
                 EnemyBoard = BoardSnapshotMapper.FromBoard(enemyBoard),
+                BossId = bossId,
+                ActiveTwistId = activeTwistId,
                 Requisition = State.Authority,
                 Authority = State.Authority,
                 PlayerTactic = defaultTactic,
@@ -159,7 +226,8 @@ namespace DeadManZone.Game
                 enemyBoard,
                 combatSeed,
                 State.Authority,
-                buildBoards);
+                buildBoards,
+                ResolveActiveCombatModifiers());
             _activeCombat.SetPlayerTactic(defaultTactic);
             State.Combat.AwaitingCommand = _activeCombat.AwaitingCommand;
             State.Combat.CheckpointsFired = _activeCombat.CheckpointsFired;
@@ -379,14 +447,26 @@ namespace DeadManZone.Game
 
         public string GetNextEnemyPreviewTag()
         {
-            var next = _content.GetEnemyTemplate(State.FightIndex);
+            var pendingBoss = GetPendingBoss();
+            if (pendingBoss != null)
+                return pendingBoss.DisplayName;
+
+            var next = GetEnemyTemplateForDifficulty();
             return next?.previewTag;
         }
+
+        /// <summary>Rule modifiers for the active combat (the boss twist, resolved by id).
+        /// Used by both BeginCombat and the save-restore path so replays stay identical.</summary>
+        private IReadOnlyList<ICombatRuleModifier> ResolveActiveCombatModifiers() =>
+            string.IsNullOrEmpty(State?.Combat?.ActiveTwistId)
+                ? null
+                : new[] { TwistCatalog.Resolve(State.Combat.ActiveTwistId) };
 
         private void CompleteCombat(CombatAdvanceResult result)
         {
             State.LastCombatLogText = CombatLogFormatter.FormatAll(result.EventLog?.Events);
             _activeCombat = null;
+            bool isBossFight = State.Combat?.BossId != null;
             bool playerWon = result.PlayerWon;
             bool isDraw = result.IsDraw;
             var playerCombatants = result.PlayerCombatantsAtEnd ?? Array.Empty<CombatantState>();
@@ -397,7 +477,7 @@ namespace DeadManZone.Game
             if (!playerWon)
             {
                 int moraleLoss = MoraleCalculator.ComputeLoss(
-                    State.FightIndex,
+                    DreadRules.FightEquivalent(State.Dread),
                     result.PlayerCombatantsLost,
                     result.PlayerCombatantsTotal);
                 State.Morale -= moraleLoss;
@@ -424,9 +504,11 @@ namespace DeadManZone.Game
                         TopDamageTaken = result.BattleReport.TopDamageTaken
                     };
                 }
-                ApplySalvageAftermath();
+                ApplySalvageAftermath(isBossFight);
                 State.Combat = null;
 
+                // Losses grant no Dread, and a pending boss stays pending — the boss
+                // simply awaits the next combat.
                 if (State.Morale <= 0)
                 {
                     State.Phase = RunPhase.Defeat;
@@ -465,15 +547,25 @@ namespace DeadManZone.Game
                 };
             }
 
-            ApplySalvageAftermath();
+            ApplySalvageAftermath(isBossFight);
             State.Combat = null;
 
-            if (State.FightIndex >= MaxFights)
+            // Dread clock resolution (ADR-0004): boss wins advance the boss track and
+            // grant no Dread; the third boss win ends the run. Normal wins tick Dread.
+            if (isBossFight)
             {
-                State.Phase = RunPhase.Victory;
-                ProcessRunEndMeta(victory: true);
-                SaveManager.DeleteSave();
-                return;
+                State.BossesDefeated++;
+                if (State.BossesDefeated >= DreadRules.BossCount)
+                {
+                    State.Phase = RunPhase.Victory;
+                    ProcessRunEndMeta(victory: true);
+                    SaveManager.DeleteSave();
+                    return;
+                }
+            }
+            else
+            {
+                State.Dread += DreadRules.DreadPerWin;
             }
 
             State.FightIndex++;
@@ -484,9 +576,17 @@ namespace DeadManZone.Game
             Persist();
         }
 
-        private void ApplySalvageAftermath()
+        private void ApplySalvageAftermath(bool isBossFight)
         {
-            var enemyTemplate = _content.GetEnemyTemplate(State.FightIndex);
+            // Boss fights already stamped LastEnemyFactionId with the boss's pool
+            // at BeginCombat — don't overwrite it with a normal template's faction.
+            if (isBossFight)
+            {
+                SyncSalvageChancePercent();
+                return;
+            }
+
+            var enemyTemplate = GetEnemyTemplateForDifficulty();
             if (enemyTemplate == null)
                 return;
 
@@ -546,7 +646,8 @@ namespace DeadManZone.Game
                 enemyBoard,
                 State.Combat.CombatSeed,
                 State.Combat.Authority > 0 ? State.Combat.Authority : State.Combat.Requisition,
-                buildBoards);
+                buildBoards,
+                ResolveActiveCombatModifiers());
 
             // Re-apply the FIGHT-START tactic before fast-forwarding; the saved
             // PlayerTactic may be a mid-fight change, which must replay through

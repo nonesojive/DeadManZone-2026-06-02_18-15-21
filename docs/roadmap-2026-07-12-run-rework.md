@@ -13,7 +13,17 @@ Shipped same-day: 51 files deleted (2D renderer stack, TacticPausePanel, Synty b
 - **Named RNG sub-streams** in Core: `hash(RunSeed, systemName, roundIndex)` per consumer (shop, options, themes, boss permutation, pity, combat). Order-independent determinism — every later milestone consumes this. Grep-and-fix any `UnityEngine.Random` feeding gameplay decisions.
 - Exit: suites green, a full run plays with zero 2D-path code.
 
-## M1 — Dread run skeleton
+## M1 — Dread run skeleton — **DONE 2026-07-12**
+
+Shipped same-day: Dread + BossesDefeated on RunState (schema stays v9, additive), `DreadRules` (per-win 2 interim, thresholds 6/12/18, `FightEquivalent` difficulty mapping), `ICombatRuleModifier` seam in TickCombatRun (applied after fight-start engines; restore path re-applies via `CombatSaveState.ActiveTwistId`), `TwistCatalog` (endless_muster +30% HP / iron_discipline +1 armor step / deathless_cold +60% front-rank HP), `BossRoster` (3 code-authored bosses × 3 stage loadouts from proven template placements; seeded Fisher-Yates order derived from RunSeed, never persisted), boss branch in BeginCombat + win/loss resolution in CompleteCombat (3rd boss → Victory via the old machinery; the fixed 10-fight victory check is deleted), template clamp (the old lookup silently WRAPPED difficulty to fight 1 past fight 10), morale/shop difficulty migrated to FightEquivalent, run HUD meta strip (Dread clock bottom-left, red boss warning, seed bottom-right; BOSS chip on boss rounds), GUID leak fixed in the orders window (`AvailableCommand.SourceDisplayName`). Suites 355 EditMode / 14 PlayMode; live-verified: normal win → Dread 4→6 → boss pending revealed (Crimson Marshal) → boss fight begun with twist + salvage keyed to crimson_legion.
+
+**Flags for later milestones:**
+- **Boss loadouts run HOT**: a probed max-strength combined-arms player board only *drew* with the stage-3 army (mono-unit walls lose outright). Tune stage strengths against real player boards in the M2 balance pass.
+- **Draw semantics**: mutual annihilation reports `PlayerWon=true` — pre-existing Core semantics; decide whether a drawn boss counts as defeated (currently: yes).
+- Crimson Legion / Ash Wraith bosses wear IronMarch pieces and have **empty salvage pools** until their piece content lands.
+- Enter-seed UI deferred to the M6 menu restyle (seed display shipped); CombatFightBanner still says "FIGHT N" on boss rounds — boss banner is M2/M6 polish.
+
+### Original scope (for reference)
 
 - Dread on RunState; thresholds (tune from 6/12/18); threshold ⇒ mandatory Boss Fight; third boss ⇒ Victory. Losses/bosses grant no Dread.
 - FightIndex → Dread migration everywhere difficulty-curves (enemy strength, muster/salvage scaling; `MoraleCalculator`'s fightIndex scale until M5 deletes it).

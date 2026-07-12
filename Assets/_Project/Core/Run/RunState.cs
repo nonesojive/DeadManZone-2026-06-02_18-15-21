@@ -28,6 +28,12 @@ namespace DeadManZone.Core.Run
     {
         public int CombatSeed { get; set; }
         public BoardSnapshot EnemyBoard { get; set; }
+
+        /// <summary>Boss fight marker; null for normal fights. Restore resolves
+        /// <see cref="ActiveTwistId"/> through TwistCatalog and re-applies it, so a
+        /// restored boss fight replays identically to the live one.</summary>
+        public string BossId { get; set; }
+        public string ActiveTwistId { get; set; }
         public int CheckpointsFired { get; set; }
         public int GlobalTick { get; set; }
         public int LastSegmentIndex { get; set; }
@@ -60,7 +66,16 @@ namespace DeadManZone.Core.Run
         // v9 (2026-07-12, M0): dropped obsolete PlayerBoard + singular LockedOffer
         // (v8 JSON migrates: LockedOffer folds into LockedOffers, stale keys ignored).
         public int SaveSchemaVersion { get; set; } = 9;
+
+        /// <summary>Plain fight counter (banner, logs, combat-seed index). Since M1 it no
+        /// longer drives difficulty — that's <see cref="Dread"/> via DreadRules.FightEquivalent.</summary>
         public int FightIndex { get; set; } = 1;
+
+        // M1 Dread clock (ADR-0004). Schema stays v9: these are additive fields that
+        // deserialize to 0 on older v9 saves — acceptable pre-release (such a save just
+        // restarts its escalation clock).
+        public int Dread { get; set; }
+        public int BossesDefeated { get; set; }
         public int Supplies { get; set; }
         public int Manpower { get; set; }
         public int Authority { get; set; }

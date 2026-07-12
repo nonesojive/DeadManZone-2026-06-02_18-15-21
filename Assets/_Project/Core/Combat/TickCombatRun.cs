@@ -64,7 +64,8 @@ namespace DeadManZone.Core.Combat
             BoardState enemyBoard,
             int seed,
             int authority,
-            BuildBoardSet playerBuildBoards)
+            BuildBoardSet playerBuildBoards,
+            IReadOnlyList<ICombatRuleModifier> modifiers)
         {
             _playerBoard = playerBoard;
             _battlefield = BattlefieldState.FromBoards(playerBoard, enemyBoard);
@@ -82,6 +83,16 @@ namespace DeadManZone.Core.Combat
             PieceAbilityEngine.ApplyToCombatants(playerSynergySnapshot, _playerCombatants);
             PieceAbilityEngine.ApplyToCombatants(enemySynergySnapshot, _enemyCombatants);
             ApplyTacticDamageBuffs();
+
+            // Rule modifiers (boss Twists now, Battle Conditions in M2) apply AFTER the
+            // standard fight-start engines so a twist reads final fight-start state. The
+            // restore path passes the same modifiers into Start, keeping replays identical.
+            if (modifiers != null)
+            {
+                foreach (var modifier in modifiers)
+                    modifier?.OnFightStart(_playerCombatants, _enemyCombatants);
+            }
+
             _awaitingOpeningCommand = true;
             _awaitingCommand = true;
             LastPauseTrigger = new PauseTriggerContext
@@ -97,8 +108,9 @@ namespace DeadManZone.Core.Combat
             BoardState enemyBoard,
             int seed,
             int authority = 0,
-            BuildBoardSet playerBuildBoards = null) =>
-            new TickCombatRun(playerBoard, enemyBoard, seed, authority, playerBuildBoards);
+            BuildBoardSet playerBuildBoards = null,
+            IReadOnlyList<ICombatRuleModifier> modifiers = null) =>
+            new TickCombatRun(playerBoard, enemyBoard, seed, authority, playerBuildBoards, modifiers);
 
         public CombatAdvanceResult Continue(IReadOnlyList<PhaseCommand> commands)
         {

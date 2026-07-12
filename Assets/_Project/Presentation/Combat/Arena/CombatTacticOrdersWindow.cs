@@ -594,7 +594,11 @@ namespace DeadManZone.Presentation.Combat.Arena
         private static string BuildAbilityLabel(AvailableCommand command, bool queued)
         {
             string state = queued ? "  — QUEUED" : string.Empty;
-            return $"{FormatAbility(command.Ability)}  ·  {command.SourcePieceId}  ({command.RequisitionCost}A){state}";
+            // Run-flow instance ids are GUIDs — only readable names reach the screen.
+            string source = string.IsNullOrEmpty(command.SourceDisplayName)
+                ? command.SourcePieceId
+                : command.SourceDisplayName;
+            return $"{FormatAbility(command.Ability)}  ·  {source}  ({command.RequisitionCost}A){state}";
         }
 
         private static string FormatTactic(TacticType tactic) =>

@@ -275,12 +275,15 @@ namespace DeadManZone.Game
         {
             SyncSalvageChancePercent();
             var board = GetShopBoard();
+            // Seed indexes on FightIndex (counter semantics: a fresh roll per round);
+            // the generator's round parameter is DIFFICULTY (price scaling), so it keys
+            // on the Dread clock (M1, ADR-0004).
             int shopSeed = SeedStreams.Derive(
                 State.RunSeed, "shop", State.FightIndex, State.RerollCountThisRound);
             var shop = _shopGenerator.Generate(
                 board,
                 State.FactionId,
-                State.FightIndex,
+                DreadRules.FightEquivalent(State.Dread),
                 shopSeed,
                 State.LastEnemyFactionId,
                 State.SalvageChancePercent,
@@ -319,7 +322,7 @@ namespace DeadManZone.Game
                 State.FactionId,
                 modifiers,
                 shopSeed,
-                State.FightIndex,
+                DreadRules.FightEquivalent(State.Dread),
                 fixedSlots,
                 State.LastEnemyFactionId,
                 State.SalvageChancePercent,

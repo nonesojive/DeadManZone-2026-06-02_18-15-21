@@ -35,6 +35,9 @@ namespace DeadManZone.Core.Combat
     {
         public CommandType Type { get; init; }
         public string SourcePieceId { get; init; }
+        /// <summary>Human-readable source piece name for pause UI labels — run-flow
+        /// instance ids are GUIDs and must never reach the screen.</summary>
+        public string SourceDisplayName { get; init; }
         public int RequisitionCost { get; init; }
         public GrantedAbility Ability { get; init; }
     }

@@ -28,6 +28,7 @@ namespace DeadManZone.Core.Combat
                     {
                         Type = CommandType.UseAbility,
                         SourcePieceId = piece.InstanceId,
+                        SourceDisplayName = piece.Definition.DisplayName,
                         Ability = ability,
                         RequisitionCost = CombatAbilityExecutor.GetAuthorityCost(ability, checkpointIndex)
                     });
