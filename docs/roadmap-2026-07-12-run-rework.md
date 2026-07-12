@@ -79,6 +79,7 @@ Each faction opens every run with a few pre-placed pieces (free; upkeep applies)
 - Home-set ORDER is roll-visible (seeded index) — reordering a set changes every seed's themes; append only.
 - Visual-iteration gotcha: the Game View screenshot tool can serve a STALE buffer after editor-script scene rebuilds — trust `screenshot-camera`.
 - Theme palette lesson ×2: anything mid-frame under the 1.7x warm key must sit at/below the ground's dry tone (town bags needed a theme-local dimmed material; shared sandbag/crate colors only survive at frame edges).
+- Post-ship regression (fixed same day, `dabc7ee0`): every "is the arena loaded" check must scan ALL arena scenes — `CombatArenaSession` still checked only `CombatArena3D`, so a themed arena survived a missed Build unload and the next fight stacked a second arena (two listeners, frozen presentation). The loader now also sweeps stale arena scenes on load; if a future system asks "is combat rendered", go through `CombatArenaSession`, never a scene-name literal.
 
 ## M5 — Morale & rout (own milestone, after M1/M2 stabilize; ADR-0005)
 
