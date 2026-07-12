@@ -183,7 +183,7 @@ namespace DeadManZone.Presentation.ShopV2
                 slot.Background.color = locked ? LockedGoldTint : slot.OriginalColor;
             }
 
-            slot.Input.Bind(offer, locked);
+            slot.Input.Bind(offer, locked, definition);
         }
 
         private static void ClearAuthoredMockCells(Slot slot)
@@ -245,17 +245,29 @@ namespace DeadManZone.Presentation.ShopV2
         }
     }
 
-    /// <summary>Per-slot click input: left-click acquires the offer to reserves, right-click toggles its lock — both routed straight to RunManager.</summary>
-    public sealed class ShopV2OfferSlotInput : MonoBehaviour, IPointerClickHandler
+    /// <summary>Per-slot input: left-click acquires the offer to reserves, right-click toggles its lock,
+    /// hover shows the piece hovercard — all routed straight to RunManager / the hovercard presenter.</summary>
+    public sealed class ShopV2OfferSlotInput : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
     {
         private ShopOffer _offer;
         private bool _locked;
+        private PieceDefinition _definition;
 
-        public void Bind(ShopOffer offer, bool locked)
+        public void Bind(ShopOffer offer, bool locked, PieceDefinition definition = null)
         {
             _offer = offer;
             _locked = locked;
+            _definition = definition;
         }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (_definition != null)
+                ShopV2HovercardPresenter.Instance?.Show(_definition, eventData.position);
+        }
+
+        public void OnPointerExit(PointerEventData eventData) =>
+            ShopV2HovercardPresenter.Instance?.Hide();
 
         public void OnPointerClick(PointerEventData eventData)
         {
