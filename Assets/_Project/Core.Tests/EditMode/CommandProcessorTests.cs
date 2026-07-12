@@ -12,15 +12,15 @@ namespace DeadManZone.Core.Tests
         public void GrantedAbility_AppearsWhenPieceHasAbility()
         {
             var board = new BoardState(TestBoards.Layout);
-            var grenadeThrower = TestPieces.With(
+            var mortarPiece = TestPieces.With(
                 TestPieces.RifleSquad(),
-                grantedAbility: GrantedAbility.GrenadeLob);
-            board.TryPlace(grenadeThrower, TestBoards.FrontLineAnchor());
+                grantedAbility: GrantedAbility.MortarShot);
+            board.TryPlace(mortarPiece, TestBoards.FrontLineAnchor());
 
             var processor = new CommandProcessor();
             var available = processor.GetAvailableCommands(board, requisition: 2, checkpointIndex: 0);
 
-            Assert.That(available.Any(c => c.Type == CommandType.UseAbility && c.Ability == GrantedAbility.GrenadeLob), Is.True);
+            Assert.That(available.Any(c => c.Type == CommandType.UseAbility && c.Ability == GrantedAbility.MortarShot), Is.True);
         }
 
         [Test]

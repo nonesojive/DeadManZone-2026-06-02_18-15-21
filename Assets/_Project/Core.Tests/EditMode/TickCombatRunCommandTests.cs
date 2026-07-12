@@ -40,7 +40,7 @@ namespace DeadManZone.Core.Tests.EditMode
         {
             var player = new BoardState(TestBoards.Layout);
             player.TryPlace(
-                TestPieces.With(TestPieces.RifleSquad(), grantedAbility: GrantedAbility.GrenadeLob),
+                TestPieces.With(TestPieces.RifleSquad(), grantedAbility: GrantedAbility.MortarShot),
                 TestBoards.FrontLineAnchor(3),
                 "player_grenadier");
             var enemy = TestBoards.WeakEnemyOnly();
@@ -54,7 +54,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 {
                     AfterCheckpoint = 0,
                     Type = CommandType.UseAbility,
-                    Ability = GrantedAbility.GrenadeLob,
+                    Ability = GrantedAbility.MortarShot,
                     SourcePieceId = "player_grenadier",
                     TargetCell = weakAnchor
                 }
@@ -89,7 +89,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 {
                     AfterCheckpoint = 1,
                     Type = CommandType.UseAbility,
-                    Ability = GrantedAbility.GrenadeLob,
+                    Ability = GrantedAbility.MortarShot,
                     SourcePieceId = "player_grenadier",
                     TargetCell = weak.AnchorPosition
                 }
@@ -121,13 +121,13 @@ namespace DeadManZone.Core.Tests.EditMode
                 {
                     AfterCheckpoint = 1,
                     Type = CommandType.UseAbility,
-                    Ability = GrantedAbility.GrenadeLob,
+                    Ability = GrantedAbility.MortarShot,
                     SourcePieceId = "player_grenadier",
                     TargetCell = weak.AnchorPosition
                 }
             });
 
-            Assert.IsFalse(weak.IsAlive, "grenade should kill the 3hp conscript");
+            Assert.IsFalse(weak.IsAlive, "mortar shot should kill the 3hp conscript");
             Assert.IsFalse(
                 run.OccupancySnapshotForTests.Values.Contains("enemy_weak"),
                 "ability kill must free the victim's cells for pathfinding");
@@ -181,7 +181,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 {
                     AfterCheckpoint = 1,
                     Type = CommandType.UseAbility,
-                    Ability = GrantedAbility.GrenadeLob,
+                    Ability = GrantedAbility.MortarShot,
                     SourcePieceId = "player_grenadier"
                 }
             });
@@ -202,14 +202,14 @@ namespace DeadManZone.Core.Tests.EditMode
                 {
                     AfterCheckpoint = 0,
                     Type = CommandType.UseAbility,
-                    Ability = GrantedAbility.GrenadeLob,
+                    Ability = GrantedAbility.MortarShot,
                     SourcePieceId = "player_grenadier"
                 },
                 new PhaseCommand
                 {
                     AfterCheckpoint = 1,
                     Type = CommandType.UseAbility,
-                    Ability = GrantedAbility.GrenadeLob,
+                    Ability = GrantedAbility.MortarShot,
                     SourcePieceId = "player_grenadier"
                 }
             };
@@ -325,13 +325,13 @@ namespace DeadManZone.Core.Tests.EditMode
 
         /// <summary>Matched rifle lines (fires the 60% mid pause) plus an immobile 3hp
         /// conscript parked deep in the enemy support zone (the deepest zone that accepts
-        /// Units) — away from the front through segment 0, a deterministic grenade victim
-        /// at the mid pause (GrenadeLob costs 3 there).</summary>
+        /// Units) — away from the front through segment 0, a deterministic mortar victim
+        /// at the mid pause (MortarShot costs 3 there).</summary>
         private static TickCombatRun StartMatchedFightWithRearConscript(int authority)
         {
             var player = new BoardState(TestBoards.Layout);
             player.TryPlace(
-                TestPieces.With(TestPieces.RifleSquad(), grantedAbility: GrantedAbility.GrenadeLob),
+                TestPieces.With(TestPieces.RifleSquad(), grantedAbility: GrantedAbility.MortarShot),
                 TestBoards.FrontLineAnchor(3),
                 "player_grenadier");
             player.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(6), "player_rifle_2");
@@ -375,7 +375,7 @@ namespace DeadManZone.Core.Tests.EditMode
 
             var player = new BoardState(TestBoards.Layout);
             player.TryPlace(
-                TestPieces.With(TestPieces.RifleSquad(), grantedAbility: GrantedAbility.GrenadeLob),
+                TestPieces.With(TestPieces.RifleSquad(), grantedAbility: GrantedAbility.MortarShot),
                 TestBoards.FrontLineAnchor(3),
                 "player_grenadier");
             player.TryPlace(TestPieces.RifleSquad(), TestBoards.FrontLineAnchor(6), "player_rifle_2");

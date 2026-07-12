@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 namespace DeadManZone.Presentation.Combat.Arena
 {
     /// <summary>
-    /// Battlefield target selection for targeted pause abilities (e.g. GrenadeLob):
+    /// Battlefield target selection for targeted pause abilities (e.g. MortarShot):
     /// while picking, the mouse ray is intersected with the ground plane (the arena has
     /// no colliders by design), converted to a grid cell via <see cref="CombatGridMapper"/>,
     /// validated by the caller-supplied predicate (which mirrors what the Core executor

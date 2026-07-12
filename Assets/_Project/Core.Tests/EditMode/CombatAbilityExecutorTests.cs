@@ -10,12 +10,12 @@ namespace DeadManZone.Core.Tests.EditMode
     public sealed class CombatAbilityExecutorTests
     {
         [Test]
-        public void GrenadeLob_DealsExplosiveAoE()
+        public void MortarShot_DealsExplosiveAoE()
         {
             var source = new CombatantState
             {
-                InstanceId = "grenade_1",
-                Definition = TestPieces.With(TestPieces.RifleSquad(), grantedAbility: GrantedAbility.GrenadeLob),
+                InstanceId = "mortar_1",
+                Definition = TestPieces.With(TestPieces.RifleSquad(), grantedAbility: GrantedAbility.MortarShot),
                 AnchorPosition = new GridCoord(0, 0),
                 CurrentHp = 100
             };
@@ -30,7 +30,7 @@ namespace DeadManZone.Core.Tests.EditMode
             var board = TestBoards.StandardPlayer();
 
             var result = CombatAbilityExecutor.Execute(
-                GrantedAbility.GrenadeLob,
+                GrantedAbility.MortarShot,
                 source.InstanceId,
                 board,
                 new[] { source },
@@ -41,7 +41,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 targetCell: enemy.AnchorPosition);
 
             Assert.IsTrue(result.Success);
-            Assert.IsTrue(log.Events.Exists(e => e.ActionType == "grenade_lob"));
+            Assert.IsTrue(log.Events.Exists(e => e.ActionType == "mortar_shot"));
         }
 
         [Test]

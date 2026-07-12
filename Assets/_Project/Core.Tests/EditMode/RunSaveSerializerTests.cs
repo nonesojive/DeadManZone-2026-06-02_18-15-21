@@ -127,7 +127,7 @@ namespace DeadManZone.Core.Tests
                     PendingSelectedTactic = TacticType.Advance,
                     PendingSelectedAbilities = new System.Collections.Generic.List<GrantedAbility>
                     {
-                        GrantedAbility.GrenadeLob
+                        GrantedAbility.MortarShot
                     },
                     SubmittedCommands = new System.Collections.Generic.List<PhaseCommand>
                     {
@@ -161,7 +161,7 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(0, loaded.Combat.LastSegmentIndex);
             Assert.AreEqual(TacticType.StandGround, loaded.Combat.PlayerTactic);
             Assert.AreEqual(TacticType.Advance, loaded.Combat.PendingSelectedTactic);
-            Assert.AreEqual(GrantedAbility.GrenadeLob, loaded.Combat.PendingSelectedAbilities[0]);
+            Assert.AreEqual(GrantedAbility.MortarShot, loaded.Combat.PendingSelectedAbilities[0]);
             Assert.AreEqual(1, loaded.Combat.SubmittedCommands.Count);
             Assert.AreEqual(TacticType.Advance, loaded.Combat.SubmittedCommands[0].Tactic);
             Assert.AreEqual(1, loaded.Combat.EventLog.Count);
@@ -200,6 +200,30 @@ namespace DeadManZone.Core.Tests
         public void TryFromJson_ReturnsFalseOnCorruptData()
         {
             Assert.IsFalse(RunSaveSerializer.TryFromJson("{ not valid json", out _));
+        }
+
+        [Test]
+        public void FromJson_MigratesGrenadeLobSavesToMortarShot()
+        {
+            // Pre-rename v8 save: string enums ("GrenadeLob") + replay event strings ("grenade_lob").
+            const string oldJson =
+                "{\n" +
+                "  \"SaveSchemaVersion\": 8,\n" +
+                "  \"Phase\": \"Combat\",\n" +
+                "  \"Combat\": {\n" +
+                "    \"AwaitingCommand\": true,\n" +
+                "    \"PendingSelectedAbilities\": [\"GrenadeLob\", \"ShieldAllies\"],\n" +
+                "    \"SubmittedCommands\": [{ \"AfterCheckpoint\": 0, \"Type\": \"UseAbility\", \"Ability\": \"GrenadeLob\", \"SourcePieceId\": \"p1\" }],\n" +
+                "    \"EventLog\": [{ \"Segment\": 0, \"Tick\": 3, \"ActorId\": \"p1\", \"ActionType\": \"grenade_lob\", \"TargetId\": \"e1\", \"Value\": 30 }]\n" +
+                "  }\n" +
+                "}";
+
+            var loaded = RunSaveSerializer.FromJson(oldJson);
+
+            Assert.AreEqual(GrantedAbility.MortarShot, loaded.Combat.PendingSelectedAbilities[0]);
+            Assert.AreEqual(GrantedAbility.ShieldAllies, loaded.Combat.PendingSelectedAbilities[1]);
+            Assert.AreEqual(GrantedAbility.MortarShot, loaded.Combat.SubmittedCommands[0].Ability);
+            Assert.AreEqual("mortar_shot", loaded.Combat.EventLog[0].ActionType);
         }
     }
 }

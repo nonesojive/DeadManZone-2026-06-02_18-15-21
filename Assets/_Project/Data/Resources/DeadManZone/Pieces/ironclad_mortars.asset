@@ -50,7 +50,7 @@ MonoBehaviour:
   movementSpeed: 1
   armorType: 1
   attackType: 3
-  grantedAbility: 0
+  grantedAbility: 1
   accuracyOverride: 0
   factionId: ironmarch_union
   icon: {fileID: 21300000, guid: 81a4f6eede4e4db2a887db361ef0c0b6, type: 3}

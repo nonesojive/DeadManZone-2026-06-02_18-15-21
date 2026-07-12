@@ -35,7 +35,7 @@ namespace DeadManZone.Core.Combat
                 case "damage":
                 case "graze":
                 case "gas_damage":
-                case "grenade_lob":
+                case "mortar_shot":
                 case "cannon_blast":
                 case "cannon_blast_splash":
                 case "call_strike":

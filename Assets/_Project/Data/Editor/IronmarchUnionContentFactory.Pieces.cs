@@ -49,7 +49,8 @@ namespace DeadManZone.Data.Editor
                 AttackSpeedTier.Slow, AttackRangeTier.Short, 0, musterPerShop: 1, flavorTags: new[] { GameTagIds.Logistics }),
             SavePiece("field_medic", "Field Medic", PieceCategory.Unit, DemoSandboxShapes.Single,
                 GameTagIds.Infantry, GameTagIds.Support, "neutral", 10, 30, 3, 1, AttackType.Ballistic, ArmorType.Light,
-                AttackSpeedTier.Slow, AttackRangeTier.Short, 2, synergyTags: new[] { GameTagIds.Medic }, flavorTags: new[] { GameTagIds.SmallArms },
+                AttackSpeedTier.Slow, AttackRangeTier.Short, 2, grantedAbility: GrantedAbility.ShieldAllies,
+                synergyTags: new[] { GameTagIds.Medic }, flavorTags: new[] { GameTagIds.SmallArms },
                 customAbilities: new[]
                 {
                     Ability("field_medic_adjacent_infantry_hp", PieceAbilityTrigger.AdjacentAura, SynergyStat.MaxHp, SynergyModType.Flat, 10,
@@ -98,7 +99,8 @@ namespace DeadManZone.Data.Editor
                 }),
             SavePiece("ironclad_mortars", "Ironclad Mortars", PieceCategory.Unit, DemoSandboxShapes.VerticalPair,
                 GameTagIds.Infantry, GameTagIds.Artillery, FactionIds.IronmarchUnion, 20, 25, 8, 3, AttackType.Piercing, ArmorType.Light,
-                AttackSpeedTier.Slow, AttackRangeTier.Long, 1, abilityTags: new[] { GameTagIds.Ironclad }, flavorTags: new[] { GameTagIds.Shells, GameTagIds.Siege }),
+                AttackSpeedTier.Slow, AttackRangeTier.Long, 1, grantedAbility: GrantedAbility.MortarShot,
+                abilityTags: new[] { GameTagIds.Ironclad }, flavorTags: new[] { GameTagIds.Shells, GameTagIds.Siege }),
             SavePiece("ironclad_marksman", "IronClad Marksman", PieceCategory.Unit, DemoSandboxShapes.Single,
                 GameTagIds.Infantry, GameTagIds.Sniper, FactionIds.IronmarchUnion, 20, 35, 6, 2, AttackType.Piercing, ArmorType.Light,
                 AttackSpeedTier.Slow, AttackRangeTier.Long, 3, abilityTags: new[] { GameTagIds.Ironclad, GameTagIds.Stealth }),

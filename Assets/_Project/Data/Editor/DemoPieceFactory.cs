@@ -93,7 +93,7 @@ namespace DeadManZone.Data.Editor
             SaveMappedPiece("grenade_thrower", "Grenade Thrower", PieceCategory.Unit, ShopLane.Offensive,
                 DemoSandboxShapes.VerticalPair, "neutral",
                 maxHp: 70, baseDamage: 24, cooldownTicks: 4, goldCost: 5, manpowerCost: 8,
-                grantedAbility: GrantedAbility.GrenadeLob,
+                grantedAbility: GrantedAbility.MortarShot,
                 abilityTags: new[] { GameTagIds.Grenadier },
                 attackType: AttackType.Explosive, armorType: ArmorType.Light),
             SaveMappedPiece("armored_transport", "Armored Transport", PieceCategory.Unit, ShopLane.Offensive,
@@ -110,6 +110,7 @@ namespace DeadManZone.Data.Editor
             SaveMappedPiece("field_medic", "Field Medic", PieceCategory.Unit, ShopLane.Defensive,
                 DemoSandboxShapes.Single, "neutral",
                 maxHp: 40, baseDamage: 0, manpowerCost: 4, goldCost: 5,
+                grantedAbility: GrantedAbility.ShieldAllies,
                 synergyTags: new[] { GameTagIds.Medic },
                 attackType: AttackType.None, armorType: ArmorType.Light),
             SaveMappedPiece("neutral_supply_depot", "Neutral Supply Depot", PieceCategory.Building, ShopLane.Defensive,
@@ -151,7 +152,7 @@ namespace DeadManZone.Data.Editor
             SaveMappedPiece("toxin_launcher", "Toxin Launcher", PieceCategory.Hybrid, ShopLane.Specialty,
                 DemoSandboxShapes.Single, FactionIds.DustScourge,
                 maxHp: 100, baseDamage: 32, goldCost: 9, requisitionCost: 2,
-                grantedAbility: GrantedAbility.GrenadeLob,
+                grantedAbility: GrantedAbility.MortarShot,
                 attackType: AttackType.Gas, armorType: ArmorType.Light)
         };
 

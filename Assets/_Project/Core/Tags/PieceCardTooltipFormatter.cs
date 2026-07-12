@@ -59,7 +59,7 @@ namespace DeadManZone.Core.Tags
         public static string BuildAbilityText(GrantedAbility ability) =>
             ability switch
             {
-                GrantedAbility.GrenadeLob => "Grenade Lob — Area damage at pause 0.",
+                GrantedAbility.MortarShot => "Mortar Shot — Area damage at pause 0.",
                 GrantedAbility.ShieldAllies => "Shield Allies — Protect nearby allies at pause.",
                 GrantedAbility.CannonBlast => "Cannon Blast — Heavy blast at pause 1.",
                 _ => string.Empty

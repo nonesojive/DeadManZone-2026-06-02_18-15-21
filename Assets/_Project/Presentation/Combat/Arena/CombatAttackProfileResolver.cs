@@ -15,7 +15,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             if (piece == null)
                 return CombatAttackPresentationProfile.InfantryRifle;
 
-            if (piece.grantedAbility == GrantedAbility.GrenadeLob
+            if (piece.grantedAbility == GrantedAbility.MortarShot
                 || piece.attackType == AttackType.Explosive)
                 return CombatAttackPresentationProfile.InfantryGrenade;
 

@@ -123,6 +123,28 @@ namespace DeadManZone.Core.Run
 
             if (combat["Authority"] == null && combat["Requisition"] != null)
                 combat["Authority"] = combat["Requisition"];
+
+            MigrateGrenadeLobRename(combat);
+        }
+
+        /// <summary>GrenadeLob was renamed to MortarShot (2026-07-11); saves serialize enums
+        /// as strings and replay event ActionType strings, so rewrite both in-place.</summary>
+        private static void MigrateGrenadeLobRename(JObject combat)
+        {
+            if (combat["PendingSelectedAbilities"] is JArray pending)
+                foreach (var token in pending)
+                    if (token is JValue { Value: "GrenadeLob" } ability)
+                        ability.Value = "MortarShot";
+
+            if (combat["SubmittedCommands"] is JArray commands)
+                foreach (var token in commands)
+                    if (token is JObject command && command["Ability"]?.Value<string>() == "GrenadeLob")
+                        command["Ability"] = "MortarShot";
+
+            if (combat["EventLog"] is JArray events)
+                foreach (var token in events)
+                    if (token is JObject record && record["ActionType"]?.Value<string>() == "grenade_lob")
+                        record["ActionType"] = "mortar_shot";
         }
     }
 }

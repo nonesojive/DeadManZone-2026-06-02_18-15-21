@@ -7,7 +7,7 @@ namespace DeadManZone.Core.Combat
 {
     public static class CombatAbilityExecutor
     {
-        public const int GrenadeLobDamage = 30;
+        public const int MortarShotDamage = 30;
         public const int CannonBlastPrimaryDamage = 50;
         public const int CannonBlastSplashDamage = 25;
 
@@ -21,8 +21,8 @@ namespace DeadManZone.Core.Combat
         public static int GetAuthorityCost(GrantedAbility ability, int checkpointIndex) =>
             ability switch
             {
-                GrantedAbility.GrenadeLob when checkpointIndex == 0 => 2,
-                GrantedAbility.GrenadeLob => 3,
+                GrantedAbility.MortarShot when checkpointIndex == 0 => 2,
+                GrantedAbility.MortarShot => 3,
                 GrantedAbility.ShieldAllies => 2,
                 GrantedAbility.CannonBlast => 4,
                 _ => 0
@@ -49,8 +49,8 @@ namespace DeadManZone.Core.Combat
 
             switch (ability)
             {
-                case GrantedAbility.GrenadeLob:
-                    return ExecuteGrenadeLob(sourceCombatant, enemyCombatants, log, logSegment, logTick, targetCell);
+                case GrantedAbility.MortarShot:
+                    return ExecuteMortarShot(sourceCombatant, enemyCombatants, log, logSegment, logTick, targetCell);
                 case GrantedAbility.ShieldAllies:
                     return ExecuteShieldAllies(sourceCombatant, playerCombatants, log, logSegment, logTick);
                 case GrantedAbility.CannonBlast:
@@ -60,7 +60,7 @@ namespace DeadManZone.Core.Combat
             }
         }
 
-        private static CommandResult ExecuteGrenadeLob(
+        private static CommandResult ExecuteMortarShot(
             CombatantState source,
             IList<CombatantState> enemies,
             CombatEventLog log,
@@ -70,19 +70,19 @@ namespace DeadManZone.Core.Combat
         {
             var target = ResolveTargetCell(enemies, targetCell);
             if (target == null)
-                return CommandResult.Fail("No valid grenade target");
+                return CommandResult.Fail("No valid mortar target");
 
             ApplyAreaDamage(
                 source,
                 enemies,
                 target.Value,
                 radius: 1,
-                GrenadeLobDamage,
+                MortarShotDamage,
                 AttackType.Explosive,
                 log,
                 logSegment,
                 logTick,
-                "grenade_lob");
+                "mortar_shot");
             return CommandResult.Ok();
         }
 

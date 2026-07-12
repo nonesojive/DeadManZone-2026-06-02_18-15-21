@@ -27,7 +27,7 @@ namespace DeadManZone.Core.Combat
 
         public static float GetAbilityFlatBonus(GrantedAbility ability) => ability switch
         {
-            GrantedAbility.GrenadeLob => 25f,
+            GrantedAbility.MortarShot => 25f,
             GrantedAbility.ShieldAllies => 20f,
             GrantedAbility.CannonBlast => 35f,
             _ => 0f

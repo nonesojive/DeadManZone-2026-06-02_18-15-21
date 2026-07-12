@@ -37,11 +37,11 @@ namespace DeadManZone.Presentation.Tests
             var draft = NewDraft(authority: 8);
 
             Assert.IsTrue(draft.TryQueueAbility(
-                Ability(GrantedAbility.GrenadeLob, 0, "p3d_unit_3"), new GridCoord(12, 2), out _));
+                Ability(GrantedAbility.MortarShot, 0, "p3d_unit_3"), new GridCoord(12, 2), out _));
             Assert.IsTrue(draft.TryQueueAbility(
                 Ability(GrantedAbility.ShieldAllies, 0, "p3d_unit_2"), null, out _));
 
-            // GrenadeLob at pause 0 costs 2, ShieldAllies 2 (CombatAbilityExecutor authority table).
+            // MortarShot at pause 0 costs 2, ShieldAllies 2 (CombatAbilityExecutor authority table).
             Assert.AreEqual(4, draft.TotalCost);
             Assert.AreEqual(4, draft.AuthorityRemaining);
             Assert.IsTrue(draft.Validate(out _));
@@ -52,7 +52,7 @@ namespace DeadManZone.Presentation.Tests
         {
             var draft = NewDraft(authority: 3);
             Assert.IsTrue(draft.TryQueueAbility(
-                Ability(GrantedAbility.GrenadeLob, 0, "p3d_unit_3"), new GridCoord(12, 2), out _));
+                Ability(GrantedAbility.MortarShot, 0, "p3d_unit_3"), new GridCoord(12, 2), out _));
 
             Assert.IsFalse(draft.TryQueueAbility(
                 Ability(GrantedAbility.ShieldAllies, 0, "p3d_unit_2"), null, out string reason));
@@ -77,7 +77,7 @@ namespace DeadManZone.Presentation.Tests
         public void RemoveQueued_RefundsCost()
         {
             var draft = NewDraft(authority: 4);
-            draft.TryQueueAbility(Ability(GrantedAbility.GrenadeLob, 0, "p3d_unit_3"), new GridCoord(12, 2), out _);
+            draft.TryQueueAbility(Ability(GrantedAbility.MortarShot, 0, "p3d_unit_3"), new GridCoord(12, 2), out _);
             draft.TryQueueAbility(Ability(GrantedAbility.ShieldAllies, 0, "p3d_unit_2"), null, out _);
             Assert.AreEqual(0, draft.AuthorityRemaining);
 
@@ -85,7 +85,7 @@ namespace DeadManZone.Presentation.Tests
 
             Assert.AreEqual(1, draft.Queued.Count);
             Assert.AreEqual(2, draft.AuthorityRemaining);
-            Assert.IsFalse(draft.IsAbilityQueued(GrantedAbility.GrenadeLob));
+            Assert.IsFalse(draft.IsAbilityQueued(GrantedAbility.MortarShot));
         }
 
         [Test]
@@ -124,7 +124,7 @@ namespace DeadManZone.Presentation.Tests
             var draft = NewDraft(authority: 8);
             draft.TrySelectTactic(TacticType.Advance, out _);
             var target = new GridCoord(12, 2);
-            draft.TryQueueAbility(Ability(GrantedAbility.GrenadeLob, 0, "p3d_unit_3"), target, out _);
+            draft.TryQueueAbility(Ability(GrantedAbility.MortarShot, 0, "p3d_unit_3"), target, out _);
 
             var commands = draft.BuildCommands();
 
@@ -135,7 +135,7 @@ namespace DeadManZone.Presentation.Tests
             Assert.AreEqual("player_tactic", commands[0].SourcePieceId); // same marker the live panel submits
 
             Assert.AreEqual(CommandType.UseAbility, commands[1].Type);
-            Assert.AreEqual(GrantedAbility.GrenadeLob, commands[1].Ability);
+            Assert.AreEqual(GrantedAbility.MortarShot, commands[1].Ability);
             Assert.AreEqual("p3d_unit_3", commands[1].SourcePieceId);
             Assert.AreEqual(2, commands[1].Cost);
             Assert.IsTrue(commands[1].TargetCell.HasValue);

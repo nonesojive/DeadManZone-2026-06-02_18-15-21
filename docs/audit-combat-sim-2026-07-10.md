@@ -602,3 +602,76 @@ Muted grimdark kit throughout (`CombatGrimdarkSkin` bands/leather/bone — no ne
 - Hover tooltips / ability descriptions on buttons (label carries name·source·cost only).
 - Gamepad/keyboard navigation of the window (mouse + Space/Esc only, per demo scope).
 - The 2D `TacticPausePanel` still runs the live game unchanged; consolidating it onto the draft class is a port-time decision.
+
+## Ability rework: MortarShot + real grants (2026-07-11)
+
+Owner-decided follow-up to the content gotcha above: GrenadeLob is now **MortarShot** everywhere, and two shipped pieces carry real grants — the demo no longer needs the `:Ability` roster overrides (the suffix syntax survives as a testing aid).
+
+### Rename scope (pure rename — damage 30, costs 2/3 unchanged)
+- **Enum**: `GrantedAbility.GrenadeLob → MortarShot` (`Core/Board/CombatStatEnums.cs`). Ordering untouched, so every member keeps its numeric value (None=0, MortarShot=1, ShieldAllies=2, CannonBlast=3) — the piece assets serialize the ability as an **int**, so no asset value shifted.
+- **Core**: `CombatAbilityExecutor` (`GrenadeLobDamage → MortarShotDamage`, `ExecuteGrenadeLob → ExecuteMortarShot`, cost-table cases, fail string, event action `"grenade_lob" → "mortar_shot"`), `ArmyHealthReplayTracker` (case label), `CombatStrengthConfig`, `PieceCardTooltipFormatter` ("Mortar Shot — Area damage at pause 0."), `CombatLogFormatter` (the damage-line catch-all matched `Contains("lob")` — now `Contains("mortar")`, otherwise mortar events would have dropped to the valueless default line).
+- **Presentation**: `TacticPausePanel` ("Mortar Shot"), `CombatTacticOrdersWindow` (`RequiresTarget`, "MORTAR SHOT"), `CombatTacticTargetPicker` (doc comment), `CombatAttackProfileResolver` (still maps the ability to the `InfantryGrenade` presentation profile — the lobbed-arc visual is unchanged and its name is presentation-internal, left alone).
+- **Tests**: `CombatAbilityExecutorTests` (`MortarShot_DealsExplosiveAoE`), `TickCombatRunCommandTests`, `CommandProcessorTests`, `RunSaveSerializerTests`, `CombatTacticOrdersDraftTests` — all enum refs + event-string assertions.
+- **Save-string hazard (found + covered)**: `RunSaveSerializer` uses `StringEnumConverter`, so v8 saves under `%LOCALAPPDATA%/DeadManZone/` store `"GrenadeLob"` (in `Combat.PendingSelectedAbilities` and `SubmittedCommands[].Ability`) and `"grenade_lob"` (in `Combat.EventLog[].ActionType`, which restore replays). A new `MigrateGrenadeLobRename` step in `MigrateCombatSave` rewrites all three in-place; covered by `FromJson_MigratesGrenadeLobSavesToMortarShot`. Piece/scene YAML serializes the enum numerically — the only text occurrence was the demo driver's roster override string, gone with the new defaults.
+- Docs and `grenade_thrower`/`Grenadier` piece-id/tag mentions left as-is (piece ids were not in scope).
+
+### Generator root cause: why every piece shipped `grantedAbility: 0`
+`IronmarchUnionContentFactory.SavePiece` (the IronMarch pass's wrapper) simply **had no `grantedAbility` parameter** — every piece it authored fell through to `DemoContentGenerator.SavePiece`'s default `GrantedAbility.None`. And `Generate()` starts with `DeleteExistingPieces()` (wipes `Resources/DeadManZone/Pieces/*`), so the pass replaced the old `DemoPieceFactory` roster wholesale. Pieces that lost intended abilities in that replacement:
+- **armored_transport** — had ShieldAllies in `DemoPieceFactory`, re-authored by the IronMarch pass without it (still shipped, still ability-less; owner scoped this change to the two pieces below, so left as-is).
+- **grenade_thrower** (GrenadeLob), **mobile_cannon** (CannonBlast), **toxin_launcher** (GrenadeLob) — deleted outright by the pass; they only exist in `DemoPieceFactory`'s 5-faction set now.
+
+Fix: `SavePiece` now plumbs `grantedAbility` through to the generator, and the roster sets **field_medic → ShieldAllies** and **ironclad_mortars → MortarShot**. `DemoPieceFactory`'s field_medic got the same ShieldAllies grant (both menus write the same `field_medic.asset`), and its GrenadeLob refs were renamed — so regeneration from **either** menu preserves the grants.
+
+### On-disk asset update method
+Full regen was skipped deliberately: `Generate()` deletes and rewrites all 17 piece assets, and post-generation passes (icon importers etc.) may have touched them since. Instead the two fields were set via `script-execute` (`grantedAbility = ShieldAllies/MortarShot` + `EditorUtility.SetDirty` + `AssetDatabase.SaveAssets`); verified on disk: `field_medic.asset → grantedAbility: 2`, `ironclad_mortars.asset → grantedAbility: 1`. The generator fix makes the next deliberate regen produce the same values.
+
+### Demo driver defaults
+`Combat3DDemoDriver.playerRoster` is now plain ids — `conscript_rifleman, field_medic, ironclad_mortars` (enemy unchanged); the `:Ability` override syntax and its runtime-clone path are kept for testing. Scene rebuilt via `DeadManZone → Combat3D → Build Combat3D Demo Scene` — the serialized `ironclad_mortars:GrenadeLob` entry is gone from `Combat3D_Demo.unity`.
+
+### Verification (2026-07-11)
+- EditMode **366/366** green (365 baseline; renamed tests carried over 1:1, +1 new save-migration test).
+- Interactive Play run (seed 20260711, authority 8, real content grants — no overrides): window opened at the opening pause showing **SHIELD ALLIES · p3d_unit_2 (2A)** and **MORTAR SHOT · p3d_unit_3 (2A)**; both queued through the real onClick handlers (8→6→4 shown live), MortarShot targeted at enemy anchor (12,1) via `TryPickTargetAtWorldPoint`; resumed; one empty mid-pause; fight completed **VICTORY**, 38 events incl. `mortar_shot:2, shield_allies:2, tactic_set:2`, authority left 4 (matches 2+2 spend). Screenshots of the window (fresh + queued state) captured during the run.
+- Note: field_medic's ShieldAllies makes the demo's opening pause slightly stronger than the old `armored_transport:ShieldAllies` override configuration only in *source* (different unit casts it); costs and effects are identical.
+
+## Full roster (2026-07-11)
+
+All 11 combat-eligible (category Unit) pieces now have an explicit 3D story. Three fresh Meshy 12k sets (idle/walk/die) landed for field marshal / marksman / surgeon; `RosterUnits` in `Combat3DDemoSceneBootstrap` covers every modeled piece; the three non-humanoid pieces are documented as intentional fallbacks pending owner decision.
+
+### Coverage table (piece id → model source → status)
+
+| Piece id | Model source | Status |
+|---|---|---|
+| conscript_rifleman | default rifleman (`Combat3D/Models/enlisted_rifleman/`, copied from Phase-0 spike) | ✅ intentional default (documented in `RosterUnits` comment) |
+| enlisted_rifleman | same as above | ✅ intentional default (the default model IS this unit) |
+| bulwark_squad | `Combat3D/Models/bulwark_squad/` | ✅ archetype (existing) |
+| field_medic | `Combat3D/Models/field_medic/` | ✅ archetype (existing) |
+| ironclad_mortars | `Combat3D/Models/ironclad_mortars/` | ✅ archetype (existing) |
+| ironclad_field_marshal | `Combat3D/Models/ironclad_field_marshal/` | ✅ archetype (NEW this pass) |
+| ironclad_marksman | `Combat3D/Models/ironclad_marksman/` | ✅ archetype (NEW this pass) |
+| ironmarch_surgeon | `Combat3D/Models/ironmarch_surgeon/` | ✅ archetype (NEW this pass) |
+| armored_transport | — (falls back to rifleman) | ⏳ awaiting refs; non-humanoid (vehicle) — humanoid rig pipeline unsuitable, owner decision pending |
+| ironmarch_iron_horse | — (falls back to rifleman) | ⏳ awaiting refs; non-humanoid (vehicle) — same |
+| machine_gun_nest | — (falls back to rifleman) | ⏳ awaiting refs; non-humanoid (emplacement) — same |
+
+### Rifleman mapping choice + spike decoupling
+- The spike rifleman GLBs (`_Phase0Spike/Models/enlisted_rifleman_12k*.glb`) were **copied** (AssetDatabase.CopyAsset, import settings preserved) to `Assets/_Project/Combat3D/Models/enlisted_rifleman/{idle,walk,die}.glb` and the bootstrap's default `IdleGlbPath`/`WalkGlbPath`/`DieGlbPath` now point at the copies — `_Project` no longer depends on the spike folder for **models**. (Materials `Unit_Player/Unit_Enemy/ToonInk_Meshy` and the `P0_Grade` volume profile are still spike-sourced — noted in the bootstrap comment.)
+- `conscript_rifleman` + `enlisted_rifleman` are intentionally NOT `RosterUnits` entries: the default fallback model/controller IS their visual, and archetype entries would duplicate the exact same generated assets (and the per-entry `DeleteAsset`+recreate in `BuildRosterArchetypes` would even invalidate the first entry's controller reference). Zero code, documented in the `RosterUnits` comment block.
+
+### Import verification (all 21 GLBs)
+Every folder (6 archetypes + rifleman copies): skinned mesh present, 24-bone rig, ~13.3–15.4k verts, 1.80 m bounds height, 2048² texture, clips named `Armature|Idle|baselayer` (4.0 s) / `Armature|walking_man|baselayer` (1.1 s) / `Armature|Dead|baselayer` (3.0 s) — all match the FindClip keywords. Zero glTFast errors on import.
+
+### Per-new-unit visual verdicts (isolated renders + in-fight screenshots)
+- **ironclad_field_marshal**: officer greatcoat, epaulettes, cross-strap harness, peaked cap. Clean skinning, proportions correct, feet on ring, rifle attached, walk clip reads mid-march. Accepted.
+- **ironclad_marksman**: hooded tattered ghillie-style cloak with rifle slung across the back — strong sniper silhouette. Clean skinning; two-hand carry/aim reads at gameplay distance. Accepted.
+- **ironmarch_surgeon**: pale blood-stained apron-coat over harness, dark cap — proper grimdark medic. Meshy texture roulette note: the blood-splatter distribution is a bit noisy up close, but non-broken and it reads as intentional gore at gameplay distance. Accepted.
+- No unit pulled from `RosterUnits` — no mangled skinning anywhere.
+- (The raw glTFast materials render shiny-metallic in isolated previews; in-scene the installer swaps to the tuned ToonInk materials, so this is preview-only.)
+
+### Showcase rosters (driver defaults, serialized in the rebuilt scene)
+- player: `conscript_rifleman, field_medic, ironclad_mortars` (keeps both real ability grants)
+- enemy: `ironclad_marksman, ironclad_field_marshal, ironmarch_surgeon` (the three new faces)
+
+### Verification
+- assets-refresh clean, zero compile errors; menu rebuild deterministic (idempotent through the script-execute retry storm), `archetypes` array serialized with all 6 entries, saved.
+- Headless play-through (`interactivePauses` flipped to false in the serialized field for one run, restored to true + scene saved after): fight completes (`fight_end` at segment 1 tick 128, 74 events, playerWon=True), VICTORY banner, army HUD drains correctly, zero runtime errors/exceptions. Second run screenshotted mid-fight: all three new units advancing/aiming on their rings with rifles.
+- EditMode **366/366** green.

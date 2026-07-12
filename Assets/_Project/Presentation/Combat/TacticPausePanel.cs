@@ -334,7 +334,7 @@ namespace DeadManZone.Presentation.Combat
         private static string FormatAbility(GrantedAbility ability) =>
             ability switch
             {
-                GrantedAbility.GrenadeLob => "Grenade Lob",
+                GrantedAbility.MortarShot => "Mortar Shot",
                 GrantedAbility.ShieldAllies => "Shield Allies",
                 GrantedAbility.CannonBlast => "Cannon Blast",
                 _ => ability.ToString()

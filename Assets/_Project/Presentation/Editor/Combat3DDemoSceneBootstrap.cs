@@ -37,20 +37,36 @@ namespace DeadManZone.Presentation.Editor
         // one rig per unit), mapped to the ContentDatabase piece id the sim uses.
         // A unit with broken/missing GLBs is skipped with a warning - actors with its piece id
         // fall back to the default rifleman visuals instead of blocking the scene build.
+        //
+        // Coverage of the 11 combat-eligible (category Unit) pieces:
+        // - conscript_rifleman + enlisted_rifleman: intentionally NOT listed. The default
+        //   rifleman model/controller (IdleGlbPath etc., Models/enlisted_rifleman/) IS their
+        //   visual; archetype entries would just duplicate those same assets.
+        // - armored_transport, ironmarch_iron_horse, machine_gun_nest: awaiting reference
+        //   images AND non-humanoid (vehicles/emplacement) — the Meshy humanoid rig pipeline
+        //   doesn't fit them. They fall back to rifleman visuals by design until the owner
+        //   decides their treatment.
         private static readonly (string folder, string pieceId)[] RosterUnits =
         {
             ("bulwark_squad", "bulwark_squad"),
             ("field_medic", "field_medic"),
             ("ironclad_mortars", "ironclad_mortars"),
+            ("ironclad_field_marshal", "ironclad_field_marshal"),
+            ("ironclad_marksman", "ironclad_marksman"),
+            ("ironmarch_surgeon", "ironmarch_surgeon"),
         };
 
         private static string RosterModelFolder(string unitFolder) =>
             GeneratedFolder + "/Models/" + unitFolder;
 
+        // Default rifleman GLBs: _Project copies of the proven Phase-0 spike set
+        // (enlisted_rifleman_12k*.glb), so the scene's models no longer depend on the
+        // throwaway spike folder. Materials/grade below are still spike-sourced.
+        private const string IdleGlbPath = GeneratedFolder + "/Models/enlisted_rifleman/idle.glb";
+        private const string WalkGlbPath = GeneratedFolder + "/Models/enlisted_rifleman/walk.glb";
+        private const string DieGlbPath = GeneratedFolder + "/Models/enlisted_rifleman/die.glb";
+
         // Proven Phase-0 spike assets (referenced, never modified).
-        private const string IdleGlbPath = "Assets/_Phase0Spike/Models/enlisted_rifleman_12k.glb";
-        private const string WalkGlbPath = "Assets/_Phase0Spike/Models/enlisted_rifleman_12k_walk.glb";
-        private const string DieGlbPath = "Assets/_Phase0Spike/Models/enlisted_rifleman_12k_die.glb";
         private const string PlayerMaterialPath = "Assets/_Phase0Spike/Materials/Unit_Player.mat";
         private const string EnemyMaterialPath = "Assets/_Phase0Spike/Materials/Unit_Enemy.mat";
         private const string FallbackUnitMaterialPath = "Assets/_Phase0Spike/Materials/ToonInk_Meshy.mat";

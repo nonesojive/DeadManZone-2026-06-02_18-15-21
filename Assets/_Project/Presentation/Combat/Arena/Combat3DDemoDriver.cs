@@ -33,9 +33,10 @@ namespace DeadManZone.Presentation.Combat.Arena
         [SerializeField] private CombatArenaSceneLoader arenaLoader;
         [SerializeField] private CombatArmyHealthHud armyHud;
         [SerializeField] private int combatSeed = 20260711;
-        [Tooltip("ContentDatabase piece ids, one per unit. Optional ':Ability' suffix (demo-only) grants a pause ability the current content pass doesn't ship — no IronMarch piece carries one — so the tactics window has real ShieldAllies/GrenadeLob commands to exercise. Overrides clone the SO at runtime; assets untouched.")]
-        [SerializeField] private string[] playerRoster = { "conscript_rifleman", "armored_transport:ShieldAllies", "ironclad_mortars:GrenadeLob" };
-        [SerializeField] private string[] enemyRoster = { "conscript_rifleman", "ironclad_mortars", "conscript_rifleman" };
+        [Tooltip("ContentDatabase piece ids, one per unit. Optional ':Ability' suffix (testing aid) overrides the piece's grantedAbility via a runtime SO clone; assets untouched. Content now ships real grants (field_medic: ShieldAllies, ironclad_mortars: MortarShot), so the defaults are plain ids.")]
+        [SerializeField] private string[] playerRoster = { "conscript_rifleman", "field_medic", "ironclad_mortars" };
+        // Showcase default: the three new Meshy faces (marksman/field marshal/surgeon) on the enemy side.
+        [SerializeField] private string[] enemyRoster = { "ironclad_marksman", "ironclad_field_marshal", "ironmarch_surgeon" };
         [Tooltip("Command pauses open the interactive tactics window. Off = the old auto path (no commands, pause beat between segments).")]
         [SerializeField] private bool interactivePauses = true;
         [Tooltip("Authority budget for the fight's command pauses (the real flow feeds this from the run's round pool).")]
@@ -331,8 +332,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         }
 
         /// <summary>Roster ids → piece definitions; null (with a warning per missing id) if any
-        /// is unknown. "id:Ability" grants a pause ability via a runtime SO clone (demo-only —
-        /// the shipped content pass has no ability-granting pieces to cast from).</summary>
+        /// is unknown. "id:Ability" overrides the piece's grantedAbility via a runtime SO clone
+        /// (testing aid — content ships real grants; the clone leaves assets untouched).</summary>
         private PieceDefinitionSO[] ResolveRoster(ContentDatabase database, string[] roster)
         {
             if (database?.Pieces == null || roster == null || roster.Length == 0)

@@ -46,7 +46,7 @@ namespace DeadManZone.Core.Board
     public enum GrantedAbility
     {
         None,
-        GrenadeLob,
+        MortarShot,
         ShieldAllies,
         CannonBlast
     }
