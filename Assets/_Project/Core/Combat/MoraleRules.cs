@@ -7,7 +7,9 @@ namespace DeadManZone.Core.Combat
         /// <summary>Chebyshev radius a death shocks living unbroken allies within. M5 initial, tune in playtest.</summary>
         public const int DeathShockRadius = 2;
 
-        /// <summary>Morale damage each shocked ally takes when a unit dies. M5 initial, tune in playtest.</summary>
-        public const int DeathShockDamage = 8;
+        /// <summary>Morale damage each shocked ally takes when a unit dies. Softened
+        /// 8 → 6 after the 2026-07-12 34-unit cascade smoke — packed blobs should
+        /// bleed morale, not domino.</summary>
+        public const int DeathShockDamage = 6;
     }
 }

@@ -12,6 +12,10 @@ namespace DeadManZone.Core.Combat
             bool enemyAlive = HasActiveFighters(enemyCombatants);
             bool playerAlive = HasActiveFighters(playerCombatants);
 
+            // Mutual annihilation is a DRAW that counts as a player WIN — including
+            // boss credit. Director decision 2026-07-12: burning your whole army to
+            // stop the enemy's is a pyrrhic victory, not a stalemate. Intentional; do
+            // not "fix" playerWon here.
             if (!enemyAlive && !playerAlive)
                 return (true, true, true);
 

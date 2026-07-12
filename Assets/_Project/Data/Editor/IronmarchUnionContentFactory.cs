@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
@@ -59,6 +60,44 @@ namespace DeadManZone.Data.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"IronMarch Union content pass generated ({pieces.Length} pieces, 1 faction, {enemies.Length} fights).");
+        }
+
+        /// <summary>
+        /// Rewrites ONLY the fight_N.asset enemy templates from the current
+        /// IronmarchEnemyFactory compositions, stamping over the existing template
+        /// assets in place. Loads the EXISTING piece assets by id — no
+        /// DeleteExistingPieces, no piece regeneration — so post-gen icon/model
+        /// references on pieces survive (the stamp-don't-regen rule; full Generate()
+        /// wipes them). The ContentDatabase keeps its already-registered pieces and
+        /// factions verbatim; only the enemyTemplates array is refreshed.
+        /// </summary>
+        [MenuItem(DeadManZoneEditorMenus.Content + "Regenerate Enemy Templates Only")]
+        public static void RegenerateEnemyTemplatesOnly()
+        {
+            var pieces = new PieceDefinitionSO[PieceIds.Length];
+            for (int i = 0; i < PieceIds.Length; i++)
+            {
+                pieces[i] = AssetDatabase.LoadAssetAtPath<PieceDefinitionSO>($"{PiecesRoot}/{PieceIds[i]}.asset");
+                if (pieces[i] == null)
+                    throw new InvalidOperationException(
+                        $"Missing piece asset '{PieceIds[i]}' under {PiecesRoot}. " +
+                        "Run 'Generate IronMarch Union Content Pass' once before regenerating templates.");
+            }
+
+            var database = AssetDatabase.LoadAssetAtPath<ContentDatabase>($"{Root}/ContentDatabase.asset");
+            if (database == null)
+                throw new InvalidOperationException(
+                    $"No ContentDatabase at {Root}. Run 'Generate IronMarch Union Content Pass' first.");
+
+            var enemies = IronmarchEnemyFactory.CreateAll(pieces);
+            DemoContentDatabaseWriter.Write(
+                database.Pieces.ToArray(),
+                database.Factions.ToArray(),
+                enemies);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"IronMarch enemy templates regenerated in place ({enemies.Length} fights; pieces and factions untouched).");
         }
 
         private static void DeleteExistingPieces()

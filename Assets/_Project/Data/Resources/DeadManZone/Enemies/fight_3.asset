@@ -27,6 +27,5 @@ MonoBehaviour:
     anchor: {x: 4, y: 5}
     instanceId: 
   - piece: {fileID: 11400000, guid: e10a0eb33766a3647af92eddfc733c09, type: 2}
-    anchor: {x: 0, y: 4}
+    anchor: {x: 4, y: 3}
     instanceId: 
-

@@ -225,7 +225,8 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         /// <summary>One-shot killer vs a pack: killing enemy_a_dies shocks the two allies one
-        /// cell away (morale 8, so the shock routs both) but not the ally four cells away.</summary>
+        /// cell away (morale == DeathShockDamage, so one shock routs both) but not the ally
+        /// four cells away.</summary>
         private static TickCombatRun StartKillerVsDeathShockPack()
         {
             var player = new BoardState(TestBoards.Layout);

@@ -25,8 +25,10 @@ namespace DeadManZone.Core.Run
 
     /// <summary>
     /// Boss identity (commander name, twist, enemy pool) decoupled from boss stage:
-    /// three stage loadouts of escalating strength (≈ old fights 4 / 7 / 10). The run
-    /// meets bosses in a seeded hidden order; the stage is how many bosses fell before.
+    /// three stage loadouts of escalating strength (≈ fights 4 / 6-7 / 8-9 after the
+    /// 2026-07-12 balance pass trimmed stage-3 heat — a probed max-strength player
+    /// board only DREW against the old fight-10-sized loadouts). The run meets
+    /// bosses in a seeded hidden order; the stage is how many bosses fell before.
     /// </summary>
     public sealed class BossDefinition
     {
@@ -40,11 +42,12 @@ namespace DeadManZone.Core.Run
     }
 
     /// <summary>
-    /// Code-authored boss roster v1 (no SO pipeline). Loadouts recombine placements
-    /// from the shipped IronMarch enemy templates, so every (piece, anchor) pair is
-    /// known-good on the 6x6 combat board. Crimson Legion / Ash Wraiths have faction
-    /// assets but no pieces of their own yet, so their armies are rifleman-fallback
-    /// compositions until their content passes land.
+    /// Code-authored boss roster v1 (no SO pipeline). Loadouts follow the same
+    /// anchor-legality rules as the IronMarch enemy templates (6x6 unzoned combat
+    /// board; BuildStageBoard throws on any illegal placement, and BalancePassTests
+    /// builds every stage). Crimson Legion / Ash Wraiths have faction assets but no
+    /// pieces of their own yet, so their armies are rifleman-fallback compositions
+    /// until their content passes land.
     /// </summary>
     public static class BossRoster
     {
@@ -67,20 +70,21 @@ namespace DeadManZone.Core.Run
                         P("conscript_rifleman", 3, 4), P("conscript_rifleman", 4, 4),
                         P("conscript_rifleman", 5, 4), P("field_medic", 4, 5),
                         P("machine_gun_nest", 0, 4)),
-                    // ≈ fight 7: the line plus veterans and mortars.
+                    // ≈ fight 6-7: the line plus veterans and mortars.
                     Loadout(
                         P("conscript_rifleman", 3, 4), P("conscript_rifleman", 4, 4),
                         P("conscript_rifleman", 5, 4), P("field_medic", 4, 5),
                         P("machine_gun_nest", 0, 4), P("enlisted_rifleman", 3, 5),
                         P("bulwark_squad", 5, 5), P("ironclad_mortars", 0, 0)),
-                    // ≈ fight 10: the full march.
+                    // ≈ fight 8-9: the full muster on foot. Balance pass 2026-07-12:
+                    // dropped the iron horse — a militia mass fields no armor, and the
+                    // old fight-10-sized loadout left no win line for a strong player.
                     Loadout(
                         P("conscript_rifleman", 3, 4), P("conscript_rifleman", 4, 4),
                         P("conscript_rifleman", 5, 4), P("field_medic", 2, 5),
                         P("machine_gun_nest", 0, 4), P("enlisted_rifleman", 3, 5),
                         P("bulwark_squad", 5, 5), P("ironclad_mortars", 0, 0),
-                        P("ironmarch_iron_horse", 2, 0), P("ironclad_marksman", 4, 5),
-                        P("ironclad_field_marshal", 2, 4))
+                        P("ironclad_marksman", 4, 5), P("ironclad_field_marshal", 2, 4))
                 }
             },
             new BossDefinition
@@ -96,19 +100,22 @@ namespace DeadManZone.Core.Run
                         P("conscript_rifleman", 4, 4), P("conscript_rifleman", 5, 4),
                         P("enlisted_rifleman", 3, 5), P("bulwark_squad", 5, 5),
                         P("machine_gun_nest", 0, 4)),
-                    // ≈ fight 7: armor joins the push.
+                    // ≈ fight 5-6: armor joins the push.
                     Loadout(
                         P("conscript_rifleman", 3, 4), P("conscript_rifleman", 5, 4),
                         P("field_medic", 4, 5), P("machine_gun_nest", 0, 4),
                         P("enlisted_rifleman", 3, 5), P("bulwark_squad", 5, 5),
                         P("ironmarch_iron_horse", 2, 0)),
-                    // ≈ fight 10: the legion in full battle order.
+                    // ≈ fight 8: the legion in battle order behind its armor.
+                    // Balance pass 2026-07-12: dropped the field marshal — the Marshal
+                    // IS the commander; the iron horse stays because armor is the
+                    // legion's identity.
                     Loadout(
                         P("conscript_rifleman", 3, 4), P("conscript_rifleman", 4, 4),
                         P("conscript_rifleman", 5, 4), P("field_medic", 2, 5),
                         P("machine_gun_nest", 0, 4), P("enlisted_rifleman", 3, 5),
                         P("bulwark_squad", 5, 5), P("ironclad_mortars", 0, 0),
-                        P("ironmarch_iron_horse", 2, 0), P("ironclad_field_marshal", 2, 4))
+                        P("ironmarch_iron_horse", 2, 0))
                 }
             },
             new BossDefinition
@@ -124,19 +131,21 @@ namespace DeadManZone.Core.Run
                         P("conscript_rifleman", 3, 4), P("conscript_rifleman", 4, 4),
                         P("conscript_rifleman", 5, 4), P("field_medic", 4, 5),
                         P("ironclad_marksman", 1, 5)),
-                    // ≈ fight 7: long guns behind the line.
+                    // ≈ fight 5-6: long guns behind the line.
                     Loadout(
                         P("conscript_rifleman", 3, 4), P("conscript_rifleman", 4, 4),
                         P("conscript_rifleman", 5, 4), P("field_medic", 4, 5),
                         P("machine_gun_nest", 0, 4), P("ironclad_marksman", 1, 5),
                         P("ironclad_mortars", 0, 0)),
-                    // ≈ fight 9-10: the cold host entire.
+                    // ≈ fight 7-8: the cold host — long guns and a screen. Balance
+                    // pass 2026-07-12: dropped the iron horse; wraiths field ghosts
+                    // and rifles, not armor, and stage 3 ran too hot with it.
                     Loadout(
                         P("conscript_rifleman", 3, 4), P("conscript_rifleman", 5, 4),
                         P("field_medic", 2, 5), P("machine_gun_nest", 0, 4),
                         P("enlisted_rifleman", 3, 5), P("bulwark_squad", 5, 5),
-                        P("ironclad_mortars", 0, 0), P("ironmarch_iron_horse", 2, 0),
-                        P("ironclad_marksman", 1, 5), P("ironclad_field_marshal", 4, 4))
+                        P("ironclad_mortars", 0, 0), P("ironclad_marksman", 1, 5),
+                        P("ironclad_field_marshal", 4, 4))
                 }
             }
         };
