@@ -13,12 +13,13 @@ namespace DeadManZone.Presentation.Combat.Arena
     /// director is actually replaying a segment: Update polls <see cref="CombatDirector.IsPlaying"/>
     /// so tactical pauses, the battle report and the shop always run at 1x with no
     /// event bookkeeping to leak — a stuck 2x world is the failure mode this design
-    /// exists to make impossible. Lives on its OWN top-level overlay canvas (nesting
-    /// under any UI transform inherits the parent rect — see CombatArmyHealthHud).
+    /// exists to make impossible. Every fight opens at 1x — the choice deliberately
+    /// does NOT persist (a fight STARTING at 4x reads as a bug, not a preference).
+    /// Lives on its OWN top-level overlay canvas (nesting under any UI transform
+    /// inherits the parent rect — see CombatArmyHealthHud).
     /// </summary>
     public sealed class CombatPlaybackSpeedControl : MonoBehaviour
     {
-        private const string PrefsKey = "dmz_combat_speed";
         private static readonly float[] Speeds = { 1f, 2f, 4f };
 
         private CombatDirector _director;
@@ -30,8 +31,16 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private void Awake()
         {
-            _speedIndex = Mathf.Clamp(PlayerPrefs.GetInt(PrefsKey, 0), 0, Speeds.Length - 1);
             BuildUi();
+            RefreshLabel();
+        }
+
+        private void OnEnable()
+        {
+            // Every fight opens at 1x (2026-07-12 playtest: persisting the choice made
+            // combat START fast, which reads as a bug, not a preference). The button
+            // only holds its speed within the current fight.
+            _speedIndex = 0;
             RefreshLabel();
         }
 
@@ -55,7 +64,6 @@ namespace DeadManZone.Presentation.Combat.Arena
         private void Cycle()
         {
             _speedIndex = (_speedIndex + 1) % Speeds.Length;
-            PlayerPrefs.SetInt(PrefsKey, _speedIndex);
             RefreshLabel();
             if (_scaling)
                 Time.timeScale = Speeds[_speedIndex];

@@ -20,10 +20,27 @@ namespace DeadManZone.Presentation.Run
             if (existing != null)
             {
                 existing.transform.SetAsLastSibling();
+                EnsureSortingIsland(existing.gameObject); // scene-baked drawers predate it
                 return existing;
             }
 
             return CreateDrawer(buildPanel);
+        }
+
+        /// <summary>The Front Report band is its own overlay canvas at sortingOrder 250,
+        /// so it painted OVER the open drawer (which inherited the base run canvas's
+        /// order). A nested-canvas sorting override lifts the whole drawer above the
+        /// report but under the run meta strip (300). Layout untouched — not a new
+        /// top-level canvas, just a sorting island (2026-07-12 playtest).</summary>
+        private static void EnsureSortingIsland(GameObject drawerGo)
+        {
+            var drawerCanvas = drawerGo.GetComponent<Canvas>();
+            if (drawerCanvas == null)
+                drawerCanvas = drawerGo.AddComponent<Canvas>();
+            drawerCanvas.overrideSorting = true;
+            drawerCanvas.sortingOrder = 260;
+            if (drawerGo.GetComponent<GraphicRaycaster>() == null)
+                drawerGo.AddComponent<GraphicRaycaster>();
         }
 
         public static CriticalMassDrawerView CreateDrawer(Transform buildPanel)
@@ -39,6 +56,8 @@ namespace DeadManZone.Presentation.Run
             drawerRect.anchorMax = Vector2.one;
             drawerRect.offsetMin = Vector2.zero;
             drawerRect.offsetMax = Vector2.zero;
+
+            EnsureSortingIsland(drawerGo);
 
             var backdropGo = CreateStretchChild(drawerGo.transform, "Backdrop");
             var backdropImage = backdropGo.AddComponent<Image>();
