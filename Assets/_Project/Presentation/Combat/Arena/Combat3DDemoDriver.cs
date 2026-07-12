@@ -14,12 +14,17 @@ using UnityEngine;
 namespace DeadManZone.Presentation.Combat.Arena
 {
     /// <summary>
-    /// Play-mode harness for the Combat3D demo scene: builds two real 3-unit armies from
-    /// ContentDatabase pieces, runs the fight to completion through the Core sim
-    /// (<see cref="TickCombatRun"/> — full rules, deterministic seed, no house sim), then
-    /// replays the event log segment-by-segment through <see cref="CombatDirector"/> onto
-    /// the 3D actors. Command pauses are skipped (no commands submitted), the win banner
-    /// fires from the real fight_end event. No RunManager/meta flow involved.
+    /// Play-mode harness for the Combat3D demo scene: builds two real armies from
+    /// ContentDatabase pieces and runs the fight INTERLEAVED through the Core sim
+    /// (<see cref="TickCombatRun"/> — full rules, deterministic seed): each Continue
+    /// produces one segment, the segment replays through <see cref="CombatDirector"/>
+    /// onto the 3D actors, and every command pause opens the real interactive tactics
+    /// window (<see cref="CombatTacticOrdersWindow"/>) whose PhaseCommands feed the next
+    /// Continue — the reference implementation for the main-build port. The sim is
+    /// offline, so holding at a pause is pure presentation and cannot affect determinism.
+    /// With <see cref="interactivePauses"/> off, pauses submit no commands and show the
+    /// old TACTICAL PAUSE beat instead (headless-verification path). No RunManager/meta
+    /// flow involved.
     /// </summary>
     public sealed class Combat3DDemoDriver : MonoBehaviour
     {
@@ -28,22 +33,37 @@ namespace DeadManZone.Presentation.Combat.Arena
         [SerializeField] private CombatArenaSceneLoader arenaLoader;
         [SerializeField] private CombatArmyHealthHud armyHud;
         [SerializeField] private int combatSeed = 20260711;
-        [Tooltip("ContentDatabase piece ids, one per unit. No grenade_thrower piece exists — ironclad_mortars wears that model.")]
-        [SerializeField] private string[] playerRoster = { "conscript_rifleman", "bulwark_squad", "field_medic" };
+        [Tooltip("ContentDatabase piece ids, one per unit. Optional ':Ability' suffix (demo-only) grants a pause ability the current content pass doesn't ship — no IronMarch piece carries one — so the tactics window has real ShieldAllies/GrenadeLob commands to exercise. Overrides clone the SO at runtime; assets untouched.")]
+        [SerializeField] private string[] playerRoster = { "conscript_rifleman", "armored_transport:ShieldAllies", "ironclad_mortars:GrenadeLob" };
         [SerializeField] private string[] enemyRoster = { "conscript_rifleman", "ironclad_mortars", "conscript_rifleman" };
-        [Tooltip("Total length of the TACTICAL PAUSE beat shown between segments (fade in + hold + fade out).")]
+        [Tooltip("Command pauses open the interactive tactics window. Off = the old auto path (no commands, pause beat between segments).")]
+        [SerializeField] private bool interactivePauses = true;
+        [Tooltip("Authority budget for the fight's command pauses (the real flow feeds this from the run's round pool).")]
+        [SerializeField] private int startingAuthority = 8;
+        [Tooltip("Non-interactive only: total length of the TACTICAL PAUSE beat shown between segments.")]
         [SerializeField] private float pauseBeatSeconds = 1.5f;
-        [Tooltip("Time dilation during the beat — the battlefield visibly holds its breath.")]
+        [Tooltip("Non-interactive only: time dilation during the beat.")]
         [SerializeField] private float pauseBeatTimeScale = 0.35f;
 
         private const string PlayerIdPrefix = "p3d_unit";
         private const string EnemyIdPrefix = "e3d_unit";
         private const int MaxContinueCalls = 8;
 
+        private readonly CommandProcessor _commandProcessor = new();
+        private TickCombatRun _run;
+        private FactionSO _faction;
+        private CombatGridMapper _mapper;
+        private CombatTacticOrdersWindow _ordersWindow;
         private bool _fightEndSeen;
         private CombatAdvanceResult _finalResult;
         private CanvasGroup _pauseBeatGroup;
         private bool _timeDilated;
+
+        /// <summary>Verification seams (script-execute drives the window through these).</summary>
+        public TickCombatRun ActiveRun => _run;
+        public CombatTacticOrdersWindow OrdersWindow => _ordersWindow;
+        public CombatGridMapper Mapper => _mapper;
+        public bool IsAwaitingOrders => _ordersWindow != null && _ordersWindow.IsOpen;
 
         private IEnumerator Start()
         {
@@ -58,10 +78,10 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
 
             var database = ContentDatabase.Load();
-            var faction = database != null ? database.GetFaction(FactionIds.IronmarchUnion) : null;
+            _faction = database != null ? database.GetFaction(FactionIds.IronmarchUnion) : null;
             var playerPieces = ResolveRoster(database, playerRoster);
             var enemyPieces = ResolveRoster(database, enemyRoster);
-            if (faction == null || playerPieces == null || enemyPieces == null)
+            if (_faction == null || playerPieces == null || enemyPieces == null)
             {
                 Debug.LogError(
                     $"[Combat3D] ContentDatabase missing faction '{FactionIds.IronmarchUnion}' or a roster " +
@@ -73,21 +93,53 @@ namespace DeadManZone.Presentation.Combat.Arena
             // embeds the arena instead of additively loading the 2D arena scene.
             arenaLoader?.MarkEmbeddedArenaLoaded();
 
-            // 1. Run the REAL fight through Core, offline, submitting no pause commands.
-            var segments = new List<int>();
-            var run = TickCombatRun.Start(
-                BuildArmy(faction, playerPieces, PlayerIdPrefix),
-                BuildArmy(faction, enemyPieces, EnemyIdPrefix),
-                combatSeed);
+            // 1. The REAL fight through Core, offline. Mirrors RunOrchestrator.BeginCombat:
+            // authority budget + default tactic applied before the opening pause.
+            _run = TickCombatRun.Start(
+                BuildArmy(_faction, playerPieces, PlayerIdPrefix),
+                BuildArmy(_faction, enemyPieces, EnemyIdPrefix),
+                combatSeed,
+                startingAuthority);
+            _run.SetPlayerTactic(ResolveDefaultTactic(_faction));
 
-            for (int i = 0; i < MaxContinueCalls; i++)
+            // 2. Spawn 3D actors from an identical battlefield (same instance ids/anchors).
+            var battlefield = BattlefieldState.FromBoards(
+                BuildArmy(_faction, playerPieces, PlayerIdPrefix),
+                BuildArmy(_faction, enemyPieces, EnemyIdPrefix));
+            presenter.InitializeArena(battlefield);
+            armyHud?.Initialize(battlefield); // army bars snap to 100% before playback
+
+            var config = CombatArenaBootstrap.Instance != null ? CombatArenaBootstrap.Instance.Config : null;
+            if (config != null)
+                _mapper = new CombatGridMapper(battlefield.Layout, config.cellWidth, config.cellDepth);
+
+            director.EventReplayed += OnEventReplayed;
+
+            // 3. Interleaved loop: collect orders at every pause, Continue, replay the
+            // produced segment at real pacing, repeat until the fight completes.
+            var pending = new List<PhaseCommand>();
+            for (int i = 0; i < MaxContinueCalls && !_fightEndSeen; i++)
             {
-                _finalResult = run.Continue(Array.Empty<PhaseCommand>());
-                if (!segments.Contains(_finalResult.SegmentIndex))
-                    segments.Add(_finalResult.SegmentIndex);
-                if (_finalResult.Status == CombatAdvanceStatus.Completed)
+                if (_run.AwaitingCommand && interactivePauses)
+                    yield return CollectOrders(pending);
+
+                var result = _run.Continue(pending);
+                pending.Clear();
+
+                director.PlayLog(_run.Log, result.SegmentIndex);
+                yield return new WaitUntil(() => !director.IsPlaying);
+
+                if (result.Status == CombatAdvanceStatus.Completed)
+                {
+                    _finalResult = result;
                     break;
+                }
+
+                if (!interactivePauses && pauseBeatSeconds > 0f)
+                    yield return TacticPauseBeat();
             }
+
+            director.EventReplayed -= OnEventReplayed;
 
             if (_finalResult == null || _finalResult.Status != CombatAdvanceStatus.Completed)
             {
@@ -96,31 +148,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
 
             Debug.Log(
-                $"[Combat3D] Sim complete: {run.Log.Events.Count} events over {segments.Count} segment(s), " +
-                $"playerWon={_finalResult.PlayerWon}, draw={_finalResult.IsDraw}.");
-
-            // 2. Spawn 3D actors from an identical battlefield (same instance ids/anchors).
-            var battlefield = BattlefieldState.FromBoards(
-                BuildArmy(faction, playerPieces, PlayerIdPrefix),
-                BuildArmy(faction, enemyPieces, EnemyIdPrefix));
-            presenter.InitializeArena(battlefield);
-            armyHud?.Initialize(battlefield); // army bars snap to 100% before playback
-
-            director.EventReplayed += OnEventReplayed;
-
-            // 3. Replay each segment at real pacing; command pauses become a TACTICAL
-            // PAUSE beat (fight_end breaks first, so nothing shows after the final segment).
-            foreach (int segment in segments)
-            {
-                director.PlayLog(run.Log, segment);
-                yield return new WaitUntil(() => !director.IsPlaying);
-                if (_fightEndSeen)
-                    break;
-                if (pauseBeatSeconds > 0f)
-                    yield return TacticPauseBeat();
-            }
-
-            director.EventReplayed -= OnEventReplayed;
+                $"[Combat3D] Fight complete: {_run.Log.Events.Count} events, " +
+                $"playerWon={_finalResult.PlayerWon}, draw={_finalResult.IsDraw}, " +
+                $"authorityLeft={_run.Requisition}.");
 
             yield return presenter.WaitForPendingDeathPresentations();
             ShowResultBanner(_finalResult);
@@ -134,12 +164,81 @@ namespace DeadManZone.Presentation.Combat.Arena
                 Time.timeScale = 1f;
         }
 
+        /// <summary>Open the tactics window for the current pause and wait for RESUME.
+        /// The window's commands land in <paramref name="pending"/> for the next Continue.</summary>
+        private IEnumerator CollectOrders(List<PhaseCommand> pending)
+        {
+            EnsureOrdersWindow();
+
+            bool submitted = false;
+            _ordersWindow.Show(BuildPauseContext(), commands =>
+            {
+                pending.AddRange(commands);
+                submitted = true;
+            });
+
+            Debug.Log($"[Combat3D] Tactics window open (pause {_run.CurrentPauseIndex}, authority {_run.Requisition}).");
+            yield return new WaitUntil(() => submitted);
+            Debug.Log($"[Combat3D] Orders submitted: {pending.Count} command(s).");
+        }
+
+        /// <summary>Snapshot of the run's pause state, shaped like the live flow's
+        /// CombatPauseContext (RunOrchestrator.GetCombatPauseContext).</summary>
+        private CombatTacticOrdersWindow.PauseContext BuildPauseContext()
+        {
+            var abilities = _commandProcessor
+                .GetAvailableCommands(_run.PlayerBoard, _run.Requisition, _run.CurrentPauseIndex)
+                .Where(c => c.Type == CommandType.UseAbility)
+                .ToList();
+
+            bool hasCommandPiece = _run.PlayerBoard.Pieces.Any(p =>
+                p.Definition.CommandActions.HasFlag(CommandActionFlags.ChangeStance));
+
+            return new CombatTacticOrdersWindow.PauseContext
+            {
+                CheckpointIndex = _run.CurrentPauseIndex,
+                Authority = _run.Requisition,
+                ActiveTactic = _run.PlayerTactic,
+                HasCommandPiece = hasCommandPiece,
+                StartingTactics = _faction != null ? _faction.startingTactics : null,
+                AvailableAbilities = abilities,
+                Trigger = _run.LastPauseTrigger,
+                Mapper = _mapper,
+                ArenaCamera = CombatArenaBootstrap.Instance != null ? CombatArenaBootstrap.Instance.ArenaCamera : null,
+                // Mirrors CombatAbilityExecutor's honored-target rule (alive enemy anchor
+                // at the cell). Demo-only read of the ForTests accessor; the main build
+                // should surface enemy anchors through its pause context instead.
+                IsValidAbilityTarget = cell => _run.EnemyCombatantsForTests.Any(e =>
+                    e.IsAlive && e.AnchorPosition.Equals(cell))
+            };
+        }
+
+        private void EnsureOrdersWindow()
+        {
+            if (_ordersWindow != null)
+                return;
+
+            _ordersWindow = GetComponent<CombatTacticOrdersWindow>();
+            if (_ordersWindow == null)
+                _ordersWindow = gameObject.AddComponent<CombatTacticOrdersWindow>();
+        }
+
+        private static TacticType ResolveDefaultTactic(FactionSO faction)
+        {
+            const TacticType preferred = TacticType.DisciplinedFire;
+            if (TacticUnlockRules.IsUnlocked(faction, preferred))
+                return preferred;
+
+            if (faction?.startingTactics != null && faction.startingTactics.Length > 0)
+                return faction.startingTactics[0];
+
+            return preferred;
+        }
+
         /// <summary>
-        /// Watchable stand-in for the real tactic pause (the demo submits no commands, so
-        /// the interactive TacticPausePanel is deliberately NOT wired): a grimdark
-        /// "TACTICAL PAUSE" band fades in over a brief time dilation, holds, and fades out
-        /// before the next segment plays. Presentation-only — the sim already ran to
-        /// completion; this paces the replay and cannot affect determinism.
+        /// Non-interactive stand-in for the tactics window: a grimdark "TACTICAL PAUSE"
+        /// band fades in over a brief time dilation, holds, and fades out before the next
+        /// segment plays. Presentation-only pacing.
         /// </summary>
         private IEnumerator TacticPauseBeat()
         {
@@ -174,7 +273,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         }
 
         /// <summary>Same canvas approach as the result banner, styled with the shared
-        /// grimdark kit (dark band + bone lettering) so it reads as the pause panel's
+        /// grimdark kit (dark band + bone lettering) so it reads as the tactics window's
         /// non-interactive cousin. Sits above the army HUD (400), under the banner (500).</summary>
         private void EnsurePauseBeatUi()
         {
@@ -231,7 +330,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             Debug.Log($"[Combat3D] fight_end replayed at segment {combatEvent.Segment}, tick {combatEvent.Tick}.");
         }
 
-        /// <summary>Roster ids → piece definitions; null (with a warning per missing id) if any is unknown.</summary>
+        /// <summary>Roster ids → piece definitions; null (with a warning per missing id) if any
+        /// is unknown. "id:Ability" grants a pause ability via a runtime SO clone (demo-only —
+        /// the shipped content pass has no ability-granting pieces to cast from).</summary>
         private PieceDefinitionSO[] ResolveRoster(ContentDatabase database, string[] roster)
         {
             if (database?.Pieces == null || roster == null || roster.Length == 0)
@@ -241,12 +342,35 @@ namespace DeadManZone.Presentation.Combat.Arena
             bool complete = true;
             for (int i = 0; i < roster.Length; i++)
             {
-                pieces[i] = database.Pieces.FirstOrDefault(p => p != null && p.id == roster[i]);
-                if (pieces[i] == null)
+                string entry = roster[i];
+                string id = entry;
+                GrantedAbility? abilityOverride = null;
+                int split = entry.IndexOf(':');
+                if (split > 0)
                 {
-                    Debug.LogWarning($"[Combat3D] Roster piece id '{roster[i]}' not found in ContentDatabase.", this);
-                    complete = false;
+                    id = entry[..split];
+                    if (Enum.TryParse(entry[(split + 1)..], out GrantedAbility parsed))
+                        abilityOverride = parsed;
+                    else
+                        Debug.LogWarning($"[Combat3D] Unknown ability override in roster entry '{entry}' — ignored.", this);
                 }
+
+                var piece = database.Pieces.FirstOrDefault(p => p != null && p.id == id);
+                if (piece == null)
+                {
+                    Debug.LogWarning($"[Combat3D] Roster piece id '{id}' not found in ContentDatabase.", this);
+                    complete = false;
+                    continue;
+                }
+
+                if (abilityOverride.HasValue && piece.grantedAbility != abilityOverride.Value)
+                {
+                    piece = Instantiate(piece); // runtime clone; the asset stays untouched
+                    piece.name = $"{id} (demo {abilityOverride.Value})";
+                    piece.grantedAbility = abilityOverride.Value;
+                }
+
+                pieces[i] = piece;
             }
 
             return complete ? pieces : null;
