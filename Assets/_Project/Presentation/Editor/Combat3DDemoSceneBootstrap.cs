@@ -460,18 +460,23 @@ namespace DeadManZone.Presentation.Editor
 
         // --- Scene construction (values lifted from Assets/_Phase0Spike/Scenes/Phase0_Spike.unity) ---
 
-        internal static void ApplyEnvironmentLighting()
+        /// <summary>Per-theme RenderSettings (M4). Null = Trenchline, whose values were
+        /// lifted from the spike then brightened so ToonInk's SampleSH term keeps
+        /// shadow-side unit detail readable at gameplay camera distance. Ambient mode and
+        /// fog mode are law across themes; only the colors/density are theme knobs.</summary>
+        internal static void ApplyEnvironmentLighting(ArenaThemeProfile profile = null)
         {
+            profile ??= CombatArenaThemeProfiles.Trenchline;
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            // Lifted from the spike, then brightened so ToonInk's SampleSH term keeps
-            // shadow-side unit detail readable at gameplay camera distance.
-            RenderSettings.ambientSkyColor = new Color(0.38f, 0.44f, 0.56f);
-            RenderSettings.ambientEquatorColor = new Color(0.42f, 0.40f, 0.38f);
-            RenderSettings.ambientGroundColor = new Color(0.24f, 0.21f, 0.19f);
+            RenderSettings.ambientSkyColor = profile.AmbientSky;
+            RenderSettings.ambientEquatorColor = profile.AmbientEquator;
+            RenderSettings.ambientGroundColor = profile.AmbientGround;
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
-            RenderSettings.fogColor = new Color(0.14f, 0.16f, 0.20f);
-            RenderSettings.fogDensity = 0.022f; // spike used 0.028 on a smaller field; 0.022 sells backdrop depth without eating units (~20% fog at the far lane)
+            RenderSettings.fogColor = profile.FogColor;
+            // Trenchline 0.022: spike used 0.028 on a smaller field; 0.022 sells backdrop
+            // depth without eating units (~20% fog at the far lane).
+            RenderSettings.fogDensity = profile.FogDensity;
         }
 
         /// <param name="includeAudioListener">Demo scene: true (nothing else provides one).

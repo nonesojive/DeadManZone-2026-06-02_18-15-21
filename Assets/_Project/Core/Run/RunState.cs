@@ -42,6 +42,11 @@ namespace DeadManZone.Core.Run
         /// <summary>Fight Option tier this combat was begun at (M2). Null on boss fights
         /// and legacy saves — treated as Normal (no enemy-engine suppression).</summary>
         public FightOptionTier? ActiveTier { get; set; }
+
+        /// <summary>Arena Theme this combat renders on (M4): the chosen option's roll, or
+        /// the boss pool's signature ground. Additive on v9 — null on older saves; resolve
+        /// via ArenaThemes.Normalize so a restored fight reloads the same arena scene.</summary>
+        public string ArenaThemeId { get; set; }
         public int CheckpointsFired { get; set; }
         public int GlobalTick { get; set; }
         public int LastSegmentIndex { get; set; }

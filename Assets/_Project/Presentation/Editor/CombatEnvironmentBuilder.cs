@@ -6,35 +6,32 @@ using UnityEngine;
 namespace DeadManZone.Presentation.Editor
 {
     /// <summary>
-    /// Builds the Combat3D battlefield environment (arena spec §2/§5 "Trenchline" theme):
-    /// broken-earth ground mesh with shell craters outside the combat strip, sandbag/duckboard/
-    /// timber trenchworks along both deployment edges, barbed-wire lines and scatter props,
-    /// and a fog-faded ridge/ruin backdrop ring. Called by Combat3DDemoSceneBootstrap; fully
-    /// deterministic (fixed seed + hash noise) so the scene regenerates identically.
+    /// Builds a Combat3D battlefield environment for one Arena Theme (M4): broken-earth
+    /// ground mesh with shell craters outside the combat strip, plus the theme's prop sets
+    /// (ArenaThemeProfile toggles shared machinery — trenchworks, wire, tank traps, poles,
+    /// ruin backdrop — and per-theme extras dispatch on ThemeId). Called by the scene
+    /// bootstraps; fully deterministic (fixed seed + hash noise) so every theme's scene
+    /// regenerates identically.
     ///
-    /// Grounding contract: CombatArenaVisualPlacement.PlaceOnGround puts unit feet at world
-    /// y = 0, so the combat strip (17x6 cells at 1.8 m = +/-15.3 x +/-5.4, plus margin) is
-    /// kept EXACTLY flat — displacement only ramps in outside it (asserted every build).
-    /// Environment is static-batching friendly: shared primitive meshes + a handful of
-    /// materials, no colliders, no runtime scripts.
+    /// Grounding contract (ALL themes): CombatArenaVisualPlacement.PlaceOnGround puts unit
+    /// feet at world y = 0, so the combat strip (17x6 cells at 1.8 m = +/-15.3 x +/-5.4,
+    /// plus margin) is kept EXACTLY flat — displacement only ramps in outside it (asserted
+    /// every build). Environment is static-batching friendly: shared primitive meshes + a
+    /// handful of materials, no colliders, no runtime scripts.
     /// </summary>
     public static class CombatEnvironmentBuilder
     {
         private const int Seed = 20260711;
 
-        private const string EnvFolder = "Assets/_Project/Combat3D/Environment";
-        private const string GroundMeshPath = EnvFolder + "/Combat3D_GroundMesh.asset";
-        private const string GroundAlbedoPath = EnvFolder + "/Combat3D_GroundAlbedo.asset";
-        private const string DetailNoisePath = EnvFolder + "/Combat3D_GroundDetail.asset";
-        private const string RidgeMeshPath = EnvFolder + "/Combat3D_RidgeMesh.asset";
-        private const string GroundMaterialPath = "Assets/_Project/Combat3D/Combat3D_Ground.mat";
-        private const string SandbagMaterialPath = "Assets/_Project/Combat3D/Combat3D_Sandbag.mat";
-        private const string TimberMaterialPath = "Assets/_Project/Combat3D/Combat3D_Timber.mat";
-        private const string CrateMaterialPath = "Assets/_Project/Combat3D/Combat3D_Crate.mat";
-        private const string WireMaterialPath = "Assets/_Project/Combat3D/Combat3D_Wire.mat";
-        private const string SteelMaterialPath = "Assets/_Project/Combat3D/Combat3D_Steel.mat";
-        private const string BarrelMaterialPath = "Assets/_Project/Combat3D/Combat3D_Barrel.mat";
-        private const string BackdropMaterialPath = "Assets/_Project/Combat3D/Combat3D_Backdrop.mat";
+        /// <summary>Active theme for the current Build() — editor-time single-threaded;
+        /// set first thing in Build and read by GroundHeight/paths (threading it through
+        /// every helper signature bought nothing but noise).</summary>
+        private static ArenaThemeProfile _p;
+
+        private static string GroundMeshPath => _p.EnvFolder + "/Combat3D_GroundMesh.asset";
+        private static string GroundAlbedoPath => _p.EnvFolder + "/Combat3D_GroundAlbedo.asset";
+        private static string DetailNoisePath => _p.EnvFolder + "/Combat3D_GroundDetail.asset";
+        private static string RidgeMeshPath => _p.EnvFolder + "/Combat3D_RidgeMesh.asset";
 
         // Combat strip: 17x6 cells at 1.8 m, centered at origin, + safety margin.
         private const float StripHalfX = 16.4f;
@@ -46,45 +43,69 @@ namespace DeadManZone.Presentation.Editor
         private const float GroundMinX = -70f, GroundMaxX = 70f;
         private const float GroundMinZ = -40f, GroundMaxZ = 60f;
 
-        // Shell craters (x, z, radius, depth) — all outside the flat strip + trench band.
-        private static readonly Vector4[] Craters =
+        /// <summary>Builds one theme's Environment root in the active scene and returns it.
+        /// Null profile = Trenchline (pre-M4 callers: the Combat3D demo scene).</summary>
+        public static GameObject Build(ArenaThemeProfile profile = null)
         {
-            new(-9f, 15f, 3.2f, 0.9f), new(4f, 19f, 4.0f, 1.1f), new(14f, 14f, 2.6f, 0.7f),
-            new(-20f, 22f, 3.4f, 1.0f), new(24f, 24f, 4.4f, 1.2f), new(-2f, 28f, 3.0f, 0.8f),
-            new(10f, 31f, 3.6f, 1.0f), new(-13f, 34f, 4.2f, 1.1f),
-            new(-26f, 6f, 3.0f, 0.9f), new(27f, 2f, 3.4f, 1.0f),
-            new(-24f, -6f, 2.8f, 0.8f), new(25f, -9f, 3.0f, 0.9f),
-            new(-8f, -14f, 3.2f, 0.9f), new(7f, -16f, 3.8f, 1.0f),
-        };
-
-        /// <summary>Builds the Environment root in the active scene and returns it.</summary>
-        public static GameObject Build()
-        {
-            EnsureFolder(EnvFolder);
+            _p = profile ?? CombatArenaThemeProfiles.Trenchline;
+            _ridgeMesh = null; // per-theme asset path — never reuse across builds
+            EnsureFolder(_p.EnvFolder);
+            // One sequential rng per build: within a theme the step list is fixed, so
+            // regeneration is exact. Different themes consume differently — that's fine,
+            // determinism is per-theme.
             var rng = new System.Random(Seed);
 
             var groundMat = EnsureGroundMaterial();
-            var sandbag = EnsureToonInkMaterial(SandbagMaterialPath, new Color(0.42f, 0.37f, 0.27f), outline: 2f);
+            var sandbag = EnsureToonInkMaterial(_p.MaterialPath("Sandbag"), new Color(0.42f, 0.37f, 0.27f), outline: 2f);
             // Kept dark: under the 1.7x warm key anything brighter reads as the most
             // saturated thing on screen, and that budget belongs to VFX (bible §3).
-            var timber = EnsureToonInkMaterial(TimberMaterialPath, new Color(0.16f, 0.12f, 0.08f), outline: 2f);
-            var crate = EnsureToonInkMaterial(CrateMaterialPath, new Color(0.35f, 0.28f, 0.18f), outline: 2f);
-            var wire = EnsureToonInkMaterial(WireMaterialPath, new Color(0.10f, 0.10f, 0.11f), outline: 0f);
-            var steel = EnsureToonInkMaterial(SteelMaterialPath, new Color(0.17f, 0.18f, 0.20f), outline: 2f);
-            var barrel = EnsureToonInkMaterial(BarrelMaterialPath, new Color(0.30f, 0.17f, 0.10f), outline: 2f);
+            var timber = EnsureToonInkMaterial(_p.MaterialPath("Timber"), new Color(0.16f, 0.12f, 0.08f), outline: 2f);
+            var crate = EnsureToonInkMaterial(_p.MaterialPath("Crate"), new Color(0.35f, 0.28f, 0.18f), outline: 2f);
+            var wire = EnsureToonInkMaterial(_p.MaterialPath("Wire"), new Color(0.10f, 0.10f, 0.11f), outline: 0f);
+            var steel = EnsureToonInkMaterial(_p.MaterialPath("Steel"), new Color(0.17f, 0.18f, 0.20f), outline: 2f);
+            var barrel = EnsureToonInkMaterial(_p.MaterialPath("Barrel"), new Color(0.30f, 0.17f, 0.10f), outline: 2f);
             // Backdrop must be URP/Lit: DMZ/ToonInk does not apply scene fog, and the whole
             // point of the ring is fog-faded silhouettes (ToonInk rendered it pitch black).
             // Value sits above the ground mud so ruins read as hazed masses, not black cutouts.
-            var backdrop = EnsureLitMaterial(BackdropMaterialPath, new Color(0.135f, 0.128f, 0.118f));
+            var backdrop = EnsureLitMaterial(_p.MaterialPath("Backdrop"), new Color(0.135f, 0.128f, 0.118f));
 
             var root = new GameObject("Environment");
             BuildGround(root.transform, groundMat);
-            BuildTrenchworks(root.transform, sandbag, timber, crate, barrel, -1f, rng);
-            BuildTrenchworks(root.transform, sandbag, timber, crate, barrel, +1f, rng);
-            BuildWireLines(root.transform, timber, wire, rng);
-            BuildTankTraps(root.transform, steel, rng);
+            if (_p.Trenchworks)
+            {
+                BuildTrenchworks(root.transform, sandbag, timber, crate, barrel, -1f, rng);
+                BuildTrenchworks(root.transform, sandbag, timber, crate, barrel, +1f, rng);
+            }
+
+            if (_p.WireLines)
+                BuildWireLines(root.transform, timber, wire, rng);
+            if (_p.TankTraps)
+                BuildTankTraps(root.transform, steel, rng);
             BuildMidgroundScatter(root.transform, timber, rng);
-            BuildBackdrop(root.transform, backdrop, rng);
+            if (_p.RuinBackdrop)
+                BuildBackdrop(root.transform, backdrop, rng);
+
+            // Per-theme dressing on top of the shared sets.
+            switch (_p.ThemeId)
+            {
+                case Core.Run.ArenaThemes.FogField:
+                    BuildFogFieldRemnants(root.transform, timber, steel, rng);
+                    break;
+                case Core.Run.ArenaThemes.RavagedTown:
+                    // Theme-local dimmed bags: the shared sandbag color sits mid-frame
+                    // here (not at Trenchline's cropped top edge) and read as the most
+                    // saturated thing on screen — that budget belongs to VFX (bible §3).
+                    // 0.30 still read pale under the 1.7x key — bags must sit BELOW the
+                    // ground's dry tone, or they're the frame's brightest mass.
+                    var dustBag = EnsureToonInkMaterial(
+                        _p.MaterialPath("SandbagDust"), new Color(0.205f, 0.185f, 0.150f), outline: 2f);
+                    BuildTownRuins(root.transform, backdrop, timber, dustBag, rng);
+                    break;
+                case Core.Run.ArenaThemes.WartornForest:
+                    BuildForestDeadfall(root.transform, timber, backdrop, rng);
+                    break;
+            }
+
             MarkStatic(root);
 
             AssertLanesFlat();
@@ -123,7 +144,7 @@ namespace DeadManZone.Presentation.Editor
             // fog-line silhouette reads broken/churned instead of a smooth lump.
             h += rise * (ValueNoise(x * 0.18f + 53f, z * 0.18f + 27f) - 0.5f) * 2.6f;
 
-            foreach (var c in Craters)
+            foreach (var c in _p.Craters)
             {
                 float r = Vector2.Distance(new Vector2(x, z), new Vector2(c.x, c.y)) / c.z;
                 if (r < 1f)
@@ -189,11 +210,12 @@ namespace DeadManZone.Presentation.Editor
         {
             var albedo = BakeGroundAlbedo();
             var detail = BakeDetailNoise();
-            var material = AssetDatabase.LoadAssetAtPath<Material>(GroundMaterialPath);
+            string groundPath = _p.MaterialPath("Ground");
+            var material = AssetDatabase.LoadAssetAtPath<Material>(groundPath);
             if (material == null)
             {
                 material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-                AssetDatabase.CreateAsset(material, GroundMaterialPath);
+                AssetDatabase.CreateAsset(material, groundPath);
             }
 
             material.shader = Shader.Find("Universal Render Pipeline/Lit");
@@ -264,9 +286,9 @@ namespace DeadManZone.Presentation.Editor
                 anisoLevel = 4, // ground is always viewed obliquely
             };
 
-            var mud = new Color(0.105f, 0.088f, 0.068f);
-            var dry = new Color(0.255f, 0.22f, 0.155f);
-            var scorch = new Color(0.075f, 0.066f, 0.058f);
+            var mud = _p.Mud;
+            var dry = _p.Dry;
+            var scorch = _p.Scorch;
             var pixels = new Color[size * size];
 
             for (int py = 0; py < size; py++)
@@ -283,7 +305,7 @@ namespace DeadManZone.Presentation.Editor
                         0.15f + patchTone * 0.5f + tone * 0.35f + (fine - 0.5f) * 0.28f));
 
                     // Crater interiors darken toward scorched centers.
-                    foreach (var cr in Craters)
+                    foreach (var cr in _p.Craters)
                     {
                         float r = Vector2.Distance(new Vector2(x, z), new Vector2(cr.x, cr.y)) / (cr.z * 1.3f);
                         if (r < 1f)
@@ -495,26 +517,32 @@ namespace DeadManZone.Presentation.Editor
             group.transform.SetParent(parent, false);
 
             // Leaning telegraph poles in the visible mid-ground band.
-            foreach (var (x, z, lean) in new[] { (-12f, 13f, 8f), (3f, 17f, -12f), (18f, 12f, 6f) })
+            if (_p.TelegraphPoles)
             {
-                float h = GroundHeight(x, z);
-                var pole = new GameObject("Telegraph_Pole");
-                pole.transform.SetParent(group.transform, false);
-                pole.transform.position = new Vector3(x, h, z);
-                pole.transform.rotation = Quaternion.Euler(lean, Range(rng, 0f, 180f), 0f);
-                AddCylinder(pole.transform, "Pole", timber,
-                    new Vector3(x, h, z) + pole.transform.up * 1.6f, pole.transform.eulerAngles,
-                    new Vector3(0.07f, 1.6f, 0.07f));
-                AddBox(pole.transform, "Crossarm", timber,
-                    new Vector3(x, h, z) + pole.transform.up * 2.85f, pole.transform.eulerAngles,
-                    new Vector3(0.9f, 0.07f, 0.07f));
+                foreach (var (x, z, lean) in new[] { (-12f, 13f, 8f), (3f, 17f, -12f), (18f, 12f, 6f) })
+                {
+                    float h = GroundHeight(x, z);
+                    var pole = new GameObject("Telegraph_Pole");
+                    pole.transform.SetParent(group.transform, false);
+                    pole.transform.position = new Vector3(x, h, z);
+                    pole.transform.rotation = Quaternion.Euler(lean, Range(rng, 0f, 180f), 0f);
+                    AddCylinder(pole.transform, "Pole", timber,
+                        new Vector3(x, h, z) + pole.transform.up * 1.6f, pole.transform.eulerAngles,
+                        new Vector3(0.07f, 1.6f, 0.07f));
+                    AddBox(pole.transform, "Crossarm", timber,
+                        new Vector3(x, h, z) + pole.transform.up * 2.85f, pole.transform.eulerAngles,
+                        new Vector3(0.9f, 0.07f, 0.07f));
+                }
             }
 
-            // Debris planks near far-side craters.
+            // Debris planks near far-side craters (picks skip indexes past a theme's
+            // smaller crater field — the pick list was authored on Trenchline's 14).
             int[] craterPicks = { 0, 1, 2, 5, 6, 8, 9, 12, 13 };
             foreach (int ci in craterPicks)
             {
-                var c = Craters[ci];
+                if (ci >= _p.Craters.Length)
+                    continue;
+                var c = _p.Craters[ci];
                 float ang = Range(rng, 0f, Mathf.PI * 2f);
                 float d = c.z * Range(rng, 1.15f, 1.7f);
                 float x = c.x + Mathf.Cos(ang) * d;
@@ -610,8 +638,14 @@ namespace DeadManZone.Presentation.Editor
             }
         }
 
+        /// <summary>Cached per Build(): SaveAsset delete-and-recreates, so a second call
+        /// in the same build would orphan every earlier instance's mesh reference.</summary>
+        private static Mesh _ridgeMesh;
+
         private static Mesh BuildRidgeMesh()
         {
+            if (_ridgeMesh != null)
+                return _ridgeMesh;
             const int segs = 26;
             float[] cross = { -9f, -4.2f, 0f, 4.2f, 9f };
             float[] heightFactor = { 0f, 0.55f, 1f, 0.55f, 0f };
@@ -644,7 +678,238 @@ namespace DeadManZone.Presentation.Editor
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             SaveAsset(mesh, RidgeMeshPath);
+            _ridgeMesh = mesh;
             return mesh;
+        }
+
+        // ------------------------------------------------------------------ theme extras
+
+        /// <summary>Fog Field: burnt stakes, collapsed fence runs, and a pair of
+        /// abandoned hedgehogs — remnants dissolving into the murk. Sparse on purpose:
+        /// the fog is the theme; props only give it depth cues.</summary>
+        private static void BuildFogFieldRemnants(
+            Transform parent, Material timber, Material steel, System.Random rng)
+        {
+            var group = new GameObject("FogRemnants");
+            group.transform.SetParent(parent, false);
+
+            // Burnt stakes: lone tilted posts at staggered depths (fog reads distance
+            // off them). All well outside the flat strip.
+            (float x, float z)[] stakes =
+            {
+                (-13f, 9.5f), (-6f, 12f), (1f, 9f), (7.5f, 13.5f), (14f, 10f),
+                (-19f, 16f), (10f, 19f), (-3f, 22f), (19f, 15f), (-10f, 27f),
+                (-20f, -9f), (-4f, -10f), (9f, -9.5f), (21f, -8.5f),
+            };
+            foreach (var (x, z) in stakes)
+            {
+                float h = GroundHeight(x, z);
+                AddCylinder(group.transform, "Burnt_Stake", timber,
+                    new Vector3(x + Range(rng, -0.4f, 0.4f), h + Range(rng, 0.35f, 0.6f), z + Range(rng, -0.4f, 0.4f)),
+                    new Vector3(Range(rng, -14f, 14f), Range(rng, 0f, 180f), Range(rng, -14f, 14f)),
+                    new Vector3(Range(rng, 0.07f, 0.12f), Range(rng, 0.45f, 0.85f), Range(rng, 0.07f, 0.12f)));
+            }
+
+            // Collapsed fence runs: two posts + a fallen rail.
+            foreach (var (x, z, yaw) in new[] { (-16f, 12f, 20f), (5f, 16f, -35f), (17f, -9f, 70f) })
+            {
+                float h = GroundHeight(x, z);
+                AddCylinder(group.transform, "Fence_Post", timber,
+                    new Vector3(x, h + 0.4f, z), new Vector3(Range(rng, -8f, 8f), yaw, Range(rng, -8f, 8f)),
+                    new Vector3(0.06f, 0.42f, 0.06f));
+                AddCylinder(group.transform, "Fence_Post", timber,
+                    new Vector3(x + 1.6f, h + 0.28f, z + 0.3f), new Vector3(Range(rng, 15f, 30f), yaw, 0f),
+                    new Vector3(0.06f, 0.34f, 0.06f));
+                AddBox(group.transform, "Fence_Rail", timber,
+                    new Vector3(x + 0.8f, h + 0.12f, z + 0.2f),
+                    new Vector3(Range(rng, -6f, 6f), yaw + 90f, Range(rng, -8f, 8f)),
+                    new Vector3(0.07f, 0.07f, 2.1f));
+            }
+
+            // Two hedgehogs half-lost in the fog band (steel remnants, not a defense line).
+            foreach (var (x, z) in new[] { (-8f, 15f), (12f, 16.5f) })
+            {
+                float h = GroundHeight(x, z);
+                var beamScale = new Vector3(0.10f, 0.10f, 1.4f);
+                AddBox(group.transform, "Beam", steel, new Vector3(x, h + 0.4f, z),
+                    new Vector3(52f, Range(rng, 0f, 120f), 0f), beamScale);
+                AddBox(group.transform, "Beam", steel, new Vector3(x, h + 0.4f, z),
+                    new Vector3(-48f, Range(rng, 120f, 240f), 0f), beamScale);
+            }
+        }
+
+        /// <summary>Ravaged Town: a shelled streetfront ACROSS the far visible band (the
+        /// camera's wedge never sees the strip's flanks — Trenchline's trenchworks taught
+        /// the same lesson), rubble at its feet, sandbag barricades, gutted blocks behind.
+        /// The strip itself stays an open road — combat readability owns it.</summary>
+        private static void BuildTownRuins(
+            Transform parent, Material backdrop, Material timber, Material sandbag, System.Random rng)
+        {
+            var group = new GameObject("TownRuins");
+            group.transform.SetParent(parent, false);
+            var ridgeMesh = BuildRidgeMesh();
+
+            // Streetfront: battered facades facing the camera along z ~10.5-13, with a
+            // central breach (|x| < 3 stays empty — the eye exits the street there).
+            // Backdrop (Lit) material: fog fades them, and the fullscreen edge pass owns
+            // their line work.
+            foreach (var (x, w, hgt) in new[]
+            {
+                (-19f, 4.2f, 4.6f), (-13.5f, 3.4f, 3.4f), (-8f, 4.0f, 5.4f), (-4.2f, 2.2f, 2.6f),
+                (4.5f, 2.6f, 3.0f), (8.5f, 4.2f, 5.0f), (14f, 3.6f, 3.8f), (19.5f, 4.0f, 4.4f),
+            })
+            {
+                float z = Range(rng, 10.5f, 13f);
+                float gh = GroundHeight(x, z);
+                AddBox(group.transform, "Facade_Wall", backdrop,
+                    new Vector3(x + Range(rng, -0.4f, 0.4f), gh + hgt * 0.5f - 0.4f, z),
+                    new Vector3(Range(rng, -2f, 2f), Range(rng, -10f, 10f), Range(rng, -3f, 3f)),
+                    new Vector3(w, hgt, 0.5f));
+                // Second storey fragment on the taller shells.
+                if (hgt > 4f)
+                    AddBox(group.transform, "Facade_Fragment", backdrop,
+                        new Vector3(x + Range(rng, -0.8f, 0.8f), gh + hgt + 0.6f, z + Range(rng, -0.3f, 0.3f)),
+                        new Vector3(Range(rng, -6f, 6f), Range(rng, -12f, 12f), Range(rng, -8f, 8f)),
+                        new Vector3(w * Range(rng, 0.3f, 0.55f), Range(rng, 0.9f, 1.7f), 0.45f));
+                // Chimney stub against some facades.
+                if (w > 3.5f)
+                    AddBox(group.transform, "Facade_Chimney", backdrop,
+                        new Vector3(x + Range(rng, -w * 0.3f, w * 0.3f), gh + hgt * 0.9f, z + 0.7f),
+                        new Vector3(0f, Range(rng, 0f, 45f), Range(rng, -3f, 3f)),
+                        new Vector3(0.65f, hgt * Range(rng, 1.3f, 1.6f), 0.65f));
+
+                // Rubble spilling from the facade toward (never onto) the strip.
+                float rz = z - Range(rng, 1.6f, 2.6f);
+                var mound = new GameObject("Rubble_Mound");
+                mound.transform.SetParent(group.transform, false);
+                mound.transform.position = new Vector3(x + Range(rng, -1f, 1f), GroundHeight(x, rz) - 0.25f, rz);
+                mound.transform.rotation = Quaternion.Euler(0f, Range(rng, 60f, 120f), 0f);
+                mound.transform.localScale = new Vector3(Range(rng, 0.07f, 0.11f), Range(rng, 0.09f, 0.15f), 0.08f);
+                mound.AddComponent<MeshFilter>().sharedMesh = ridgeMesh;
+                mound.AddComponent<MeshRenderer>().sharedMaterial = backdrop;
+            }
+
+            // Near-side wall stubs (home frame crops them; punch-ins see them).
+            foreach (var (x, z) in new[] { (-12f, -9.2f), (3f, -9.8f), (14f, -9f) })
+            {
+                float gh = GroundHeight(x, z);
+                AddBox(group.transform, "Wall_Stub", backdrop,
+                    new Vector3(x, gh + Range(rng, 0.7f, 1.2f), z),
+                    new Vector3(Range(rng, -4f, 4f), Range(rng, 0f, 180f), Range(rng, -6f, 6f)),
+                    new Vector3(Range(rng, 2.2f, 3.6f), Range(rng, 1.6f, 2.6f), 0.45f));
+            }
+
+            // Street barricades: sandbag stacks + a timber beam (muted palette — the v1
+            // crate stacks were the most saturated thing on screen, which is VFX budget).
+            foreach (var (x, z) in new[] { (-11f, 9f), (12.5f, 9.3f), (-6f, -8.8f), (8f, -9f) })
+            {
+                float h = GroundHeight(x, z);
+                for (int b = 0; b < 4; b++)
+                    AddBox(group.transform, "Barricade_Sandbag", sandbag,
+                        new Vector3(x + (b % 2) * 0.5f - 0.25f + Range(rng, -0.06f, 0.06f),
+                            h + 0.16f + (b / 2) * 0.29f, z + Range(rng, -0.1f, 0.1f)),
+                        new Vector3(0f, Range(rng, -8f, 8f), Range(rng, -3f, 3f)),
+                        new Vector3(0.5f * Range(rng, 0.9f, 1.1f), 0.3f, 0.62f));
+                AddBox(group.transform, "Barricade_Beam", timber,
+                    new Vector3(x + 0.2f, h + 0.75f, z),
+                    new Vector3(Range(rng, -6f, 6f), Range(rng, 20f, 70f), Range(rng, -10f, 10f)),
+                    new Vector3(0.12f, 0.12f, 2.2f));
+            }
+
+            // Gutted blocks behind the streetfront — the town has depth, not one wall.
+            foreach (var (x, z) in new[] { (-22f, 19f), (-9f, 21f), (5f, 18.5f), (16f, 22f), (25f, 17f) })
+            {
+                float h = GroundHeight(x, z);
+                float mainH = Range(rng, 5f, 7.5f);
+                AddBox(group.transform, "Block_Shell", backdrop,
+                    new Vector3(x, h + mainH * 0.5f - 0.5f, z), new Vector3(0f, Range(rng, 0f, 90f), 0f),
+                    new Vector3(Range(rng, 4.5f, 6.5f), mainH, Range(rng, 3.5f, 5f)));
+                AddBox(group.transform, "Block_Chimney", backdrop,
+                    new Vector3(x + Range(rng, 1.5f, 3f), h + mainH * 0.75f, z + Range(rng, -1f, 1f)),
+                    new Vector3(0f, Range(rng, 0f, 45f), Range(rng, -3f, 3f)),
+                    new Vector3(0.7f, mainH * 1.5f, 0.7f));
+            }
+        }
+
+        /// <summary>Wartorn Forest: shattered standing trunks with splintered crowns,
+        /// stumps and fallen logs, and a fog-faded tree-line ring for the horizon.
+        /// Trunks keep clear of the strip so unit silhouettes never fight them.</summary>
+        private static void BuildForestDeadfall(
+            Transform parent, Material timber, Material backdrop, System.Random rng)
+        {
+            var group = new GameObject("ForestDeadfall");
+            group.transform.SetParent(parent, false);
+
+            // Standing shattered trunks (visible band + flanks).
+            (float x, float z)[] trunks =
+            {
+                (-14f, 10f), (-7f, 13f), (-1.5f, 10.5f), (5f, 15f), (11f, 9.5f), (16.5f, 13f),
+                (-20f, 19f), (-12f, 24f), (2f, 26f), (9f, 21f), (20f, 18f), (-26f, 9f), (25f, 7f),
+                (-18f, -9f), (-8f, -10f), (4f, -9.2f), (13f, -10f), (22f, -8.5f),
+            };
+            foreach (var (x, z) in trunks)
+            {
+                float h = GroundHeight(x, z);
+                // Fat and broken-short: v1's 0.12-0.24 radius at full height read as
+                // telegraph poles, not shattered trees (cylinder scale y = half-height).
+                float trunkH = Range(rng, 0.9f, 2.2f);
+                float radius = Range(rng, 0.28f, 0.46f);
+                float leanX = Range(rng, -7f, 7f);
+                float leanZ = Range(rng, -7f, 7f);
+                AddCylinder(group.transform, "Shattered_Trunk", timber,
+                    new Vector3(x, h + trunkH, z), new Vector3(leanX, Range(rng, 0f, 180f), leanZ),
+                    new Vector3(radius, trunkH, radius));
+                // Splintered crown: jagged shards past the break, sized to read at range.
+                for (int s = 0; s < 3; s++)
+                    AddBox(group.transform, "Splinter", timber,
+                        new Vector3(x + Range(rng, -0.25f, 0.25f), h + trunkH * 2f + Range(rng, 0.1f, 0.5f), z + Range(rng, -0.25f, 0.25f)),
+                        new Vector3(Range(rng, -30f, 30f), Range(rng, 0f, 180f), Range(rng, -30f, 30f)),
+                        new Vector3(Range(rng, 0.09f, 0.16f), Range(rng, 0.5f, 1.1f), Range(rng, 0.09f, 0.16f)));
+            }
+
+            // Stumps and fallen logs in the same band.
+            foreach (var (x, z) in new[] { (-10f, 8.8f), (7f, 11f), (18f, 16f), (-16f, 15f), (0f, -9.5f), (15f, -9f) })
+            {
+                float h = GroundHeight(x, z);
+                AddCylinder(group.transform, "Stump", timber,
+                    new Vector3(x, h + Range(rng, 0.18f, 0.32f), z),
+                    new Vector3(Range(rng, -5f, 5f), 0f, Range(rng, -5f, 5f)),
+                    new Vector3(Range(rng, 0.2f, 0.32f), Range(rng, 0.2f, 0.35f), Range(rng, 0.2f, 0.32f)));
+                AddCylinder(group.transform, "Fallen_Log", timber,
+                    new Vector3(x + Range(rng, 0.8f, 1.8f), h + 0.2f, z + Range(rng, -0.8f, 0.8f)),
+                    new Vector3(90f + Range(rng, -6f, 6f), Range(rng, 0f, 180f), 0f),
+                    new Vector3(0.22f, Range(rng, 1.2f, 2.2f), 0.22f));
+            }
+
+            // Tree-line horizon: dark canopy masses INSIDE the visible band (the frame-top
+            // ray lands at ground z~36; v1's ring at 33-42 was cropped to nothing). Own
+            // green-grey Lit material — fog fades it into a ragged silhouette (single
+            // grey boxes read as distant RUINS, not trees); doctrine same as ridges.
+            var canopyMat = EnsureLitMaterial(
+                _p.MaterialPath("Canopy"), new Color(0.105f, 0.125f, 0.095f));
+            for (int i = 0; i < 12; i++)
+            {
+                float bearing = -72f + i * 13f + Range(rng, -4f, 4f);
+                float radius = Range(rng, 24f, 33f);
+                float rad = bearing * Mathf.Deg2Rad;
+                float x = Mathf.Sin(rad) * radius;
+                float z = Mathf.Cos(rad) * radius;
+                float h = GroundHeight(x, z);
+                float treeH = Range(rng, 4.5f, 7f);
+                AddCylinder(group.transform, "TreeLine_Trunk", backdrop,
+                    new Vector3(x, h + treeH * 0.5f - 0.4f, z),
+                    new Vector3(Range(rng, -4f, 4f), 0f, Range(rng, -4f, 4f)),
+                    new Vector3(Range(rng, 0.6f, 1.0f), treeH * 0.5f, Range(rng, 0.6f, 1.0f)));
+                // Ragged crown: a wide low mass + a smaller offset cap, both tilted.
+                AddBox(group.transform, "TreeLine_Canopy", canopyMat,
+                    new Vector3(x + Range(rng, -0.8f, 0.8f), h + treeH * Range(rng, 0.65f, 0.8f), z),
+                    new Vector3(Range(rng, -12f, 12f), Range(rng, 0f, 90f), Range(rng, -12f, 12f)),
+                    new Vector3(Range(rng, 3.2f, 5.2f), Range(rng, 1.6f, 2.4f), Range(rng, 2.6f, 4.2f)));
+                AddBox(group.transform, "TreeLine_CanopyCap", canopyMat,
+                    new Vector3(x + Range(rng, -1.2f, 1.2f), h + treeH * Range(rng, 0.9f, 1.05f), z + Range(rng, -0.8f, 0.8f)),
+                    new Vector3(Range(rng, -18f, 18f), Range(rng, 0f, 90f), Range(rng, -18f, 18f)),
+                    new Vector3(Range(rng, 1.6f, 2.8f), Range(rng, 1.0f, 1.8f), Range(rng, 1.4f, 2.4f)));
+            }
         }
 
         // ------------------------------------------------------------------ helpers

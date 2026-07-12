@@ -28,6 +28,10 @@ namespace DeadManZone.Core.Run
         /// <summary>Battle Condition id (hard tier only, else null).</summary>
         public string ConditionId { get; set; }
 
+        /// <summary>Arena Theme rolled from this option's pool (M4). Additive on v9 —
+        /// null on older saves; consumers resolve via ArenaThemes.Normalize.</summary>
+        public string ThemeId { get; set; }
+
         /// <summary>Army effective strength (ArmyStrengthCalculator EffectiveTotal — the
         /// same number the matchup HUD shows) for the report's strength band.</summary>
         public int StrengthPreview { get; set; }

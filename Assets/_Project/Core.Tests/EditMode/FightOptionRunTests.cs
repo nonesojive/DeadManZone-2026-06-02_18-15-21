@@ -228,6 +228,50 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
+        public void BeginCombat_StampsTheChosenOptionsArenaTheme_AndItSurvivesReload()
+        {
+            var orchestrator = StartRun(runSeed: 4242);
+            orchestrator.ChooseFightOption(1);
+            SaveSteamrollerBoard(orchestrator);
+            var chosen = orchestrator.State.FightOptions[1];
+            orchestrator.BeginCombat();
+
+            Assert.AreEqual(ArenaThemes.Normalize(chosen.ThemeId), orchestrator.State.Combat.ArenaThemeId,
+                "combat renders on the chosen front's rolled theme (M4)");
+            CollectionAssert.Contains(
+                ArenaThemes.HomeThemes(chosen.EnemyFactionId).ToList(),
+                orchestrator.State.Combat.ArenaThemeId,
+                "the stamped theme must come from the pool's home set");
+
+            orchestrator.SaveAndExit();
+            var reloaded = new RunOrchestrator(_database);
+            Assert.IsTrue(reloaded.TryLoadSavedRun());
+            Assert.AreEqual(chosen.ThemeId, reloaded.State.Combat.ArenaThemeId,
+                "a restored fight must reload the same arena");
+        }
+
+        [Test]
+        public void BossFight_LandsOnItsPoolsSignatureGround()
+        {
+            var orchestrator = StartRun(runSeed: 888);
+            orchestrator.State.Dread = DreadRules.NextThreshold(0) - DreadRules.DreadFor(FightOptionTier.Normal);
+            orchestrator.ChooseFightOption(1);
+            SaveSteamrollerBoard(orchestrator);
+            Assert.IsTrue(RunFightToCompletion(orchestrator), "steamroller board should win");
+            Assert.IsTrue(orchestrator.IsBossFightPending);
+
+            orchestrator.DismissAftermath();
+            orchestrator.State.Manpower = 9999;
+            orchestrator.BeginCombat();
+
+            var boss = BossRoster.Get(orchestrator.State.Combat.BossId);
+            Assert.AreEqual(
+                ArenaThemes.SignatureTheme(boss.EnemyFactionId),
+                orchestrator.State.Combat.ArenaThemeId,
+                "boss fights ignore the roll — signature ground only (M4)");
+        }
+
+        [Test]
         public void HardConditionFight_RestoreReproducesIdenticalEventLog()
         {
             var live = RunOptionFightLog(runSeed: 4242, optionIndex: 2, reloadMidFight: false);

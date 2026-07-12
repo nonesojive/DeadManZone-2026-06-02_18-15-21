@@ -26,12 +26,14 @@ namespace DeadManZone.Presentation.Editor
         private const string SharedConfigPath =
             "Assets/_Project/Data/Resources/DeadManZone/CombatArenaConfig.asset";
 
-        [MenuItem("DeadManZone/Combat3D/Build CombatArena3D Scene (Run Flow)")]
+        /// <summary>Builds every Arena Theme scene (M4). Idempotent — safe under the
+        /// script-execute retry gotcha; each scene fully regenerates from its profile.</summary>
+        [MenuItem("DeadManZone/Combat3D/Build CombatArena3D Scenes (All Themes)")]
         public static void BuildArenaScene()
         {
             if (EditorApplication.isPlaying)
             {
-                Debug.LogError("[Combat3D] Exit Play mode before building the arena scene.");
+                Debug.LogError("[Combat3D] Exit Play mode before building the arena scenes.");
                 return;
             }
 
@@ -45,20 +47,49 @@ namespace DeadManZone.Presentation.Editor
                 return;
             }
 
+            foreach (var profile in CombatArenaThemeProfiles.All)
+                BuildThemeScene(profile, assets);
+            AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>Single-theme rebuild for visual iteration (script-execute friendly —
+        /// building all four costs ~4 texture bakes per tweak otherwise).</summary>
+        public static void BuildThemeScene(string themeId)
+        {
+            foreach (var profile in CombatArenaThemeProfiles.All)
+            {
+                if (profile.ThemeId != themeId)
+                    continue;
+                var assets = Combat3DDemoSceneBootstrap.PrepareSceneAssets();
+                if (assets == null)
+                    return;
+                BuildThemeScene(profile, assets);
+                AssetDatabase.SaveAssets();
+                return;
+            }
+
+            Debug.LogError($"[Combat3D] Unknown arena theme '{themeId}'.");
+        }
+
+        private static void BuildThemeScene(
+            ArenaThemeProfile profile, Combat3DDemoSceneBootstrap.SceneAssets assets)
+        {
+            string scenePath = $"Assets/_Project/Scenes/{profile.SceneName}.unity";
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            Combat3DDemoSceneBootstrap.ApplyEnvironmentLighting();
+            Combat3DDemoSceneBootstrap.ApplyEnvironmentLighting(profile);
             // No AudioListener: EnterArenaMode moves the Run scene's listener here at load.
             var camera = Combat3DDemoSceneBootstrap.CreateCamera(includeAudioListener: false);
+            camera.backgroundColor = profile.CameraBackground;
             Combat3DDemoSceneBootstrap.CreateKeyLight();
             Combat3DDemoSceneBootstrap.CreateGlobalVolume(assets.GradeProfile);
-            CombatEnvironmentBuilder.Build();
+            CombatEnvironmentBuilder.Build(profile);
             CreateArenaRig(camera, assets);
 
             Combat3DDemoSceneBootstrap.EnsureFolder("Assets/_Project/Scenes");
-            EditorSceneManager.SaveScene(scene, ScenePath);
-            EnsureSceneInBuildSettings();
-            AssetDatabase.SaveAssets();
-            Debug.Log($"[Combat3D] Run-flow arena scene saved to {ScenePath} and added to Build Settings.");
+            EditorSceneManager.SaveScene(scene, scenePath);
+            EnsureSceneInBuildSettings(scenePath);
+            Debug.Log($"[Combat3D] Arena theme scene '{profile.ThemeId}' saved to {scenePath} " +
+                      "and added to Build Settings.");
         }
 
         /// <summary>Scene-side rig only — see class summary for what stays in the Run scene.</summary>
@@ -147,7 +178,7 @@ namespace DeadManZone.Presentation.Editor
             config.visualMode = CombatArenaVisualMode.ToonInk3D;
             EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssets();
-            EnsureSceneInBuildSettings();
+            EnsureSceneInBuildSettings(ScenePath);
             Debug.Log("[Combat3D] Shared CombatArenaConfig set to ToonInk3D — run combat loads " +
                       $"{GameScenes.CombatArena3D}.");
         }
@@ -160,18 +191,17 @@ namespace DeadManZone.Presentation.Editor
             return config;
         }
 
-        private static void EnsureSceneInBuildSettings()
+        private static void EnsureSceneInBuildSettings(string scenePath)
         {
             var scenes = new System.Collections.Generic.List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             foreach (var entry in scenes)
             {
-                if (entry.path == ScenePath)
+                if (entry.path == scenePath)
                     return;
             }
 
-            scenes.Add(new EditorBuildSettingsScene(ScenePath, true));
+            scenes.Add(new EditorBuildSettingsScene(scenePath, true));
             EditorBuildSettings.scenes = scenes.ToArray();
-            Debug.Log("[Combat3D] CombatArena3D added to Build Settings.");
         }
     }
 }

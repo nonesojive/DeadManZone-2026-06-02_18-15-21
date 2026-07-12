@@ -66,10 +66,19 @@ Shipped same-day: `Rarity` enum (append-only) on PieceDefinition/SO with all pie
 
 Each faction opens every run with a few pre-placed pieces (free; upkeep applies) — early-game combat feel + a nudge toward faction identity. `FactionSO.startingPieces` (pieceId + preferred anchor; board resolved by piece category; orchestrator scans forward from illegal anchors, never blocks a run), applied in StartNewRun BEFORE muster so economy pieces can feed the first muster. IronMarch authored: supply_depot + command_outpost (HQ), field_medic + conscript_rifleman adjacent (combat). Plumbed through the content factory AND stamped on the shipped asset. Side effect: the Front Report strength band works from round one (a real army to measure against). Blank-slate test premises updated (`RemoveStartingLoadout` helper); suites 408 EditMode green. Dust Scourge / Cartel loadouts: author with their content passes.
 
-## M4 — Arena Themes wave 1 (independent after M0)
+## M4 — Arena Themes wave 1 (independent after M0) — **DONE 2026-07-12**
 
 - Theme framework: pool → home-theme-set keying; theme rolls seeded from the chosen option's pool; bosses on their pool's signature ground. Scene-per-theme via the existing `ResolveCombatArenaScene` branch point; `CombatEnvironmentBuilder` parameterized per theme.
 - Ship 3–4 of the canonical six (Trenchline exists; pick from Forest / Ravaged Town / Trench-dressing / Siege Ground / Fog Field). All dressings — camera, flat strip, value structure never change.
+
+**DONE notes (2026-07-12).** Shipped four: Trenchline + Fog Field + Ravaged Town + Wartorn Forest. Core: `ArenaThemes` (ids, pool→home set, pool→signature, seeded `Roll` on its own "arenaTheme" sub-stream keyed (round, slot) so pre-M4 seeds' army/condition rolls are untouched, `Normalize` for legacy nulls). Theme rolls at Front Report generation, stamped additively on `FightOptionRecord.ThemeId`; `BeginCombat` stamps `CombatSaveState.ArenaThemeId` (boss = signature ground); schema stays v9. `GameScenes.ResolveCombatArenaScene(themeId)` maps theme→scene (`CombatArena3D` stays Trenchline; `CombatArena3D_<Theme>` for the rest, all in Build Settings); the loader falls back to Trenchline if a theme scene is missing from a build, and unloads by scanning `AllCombatArenaScenes` (re-resolving from run state could pick the wrong lingering scene on the defeat path). Editor: `ArenaThemeProfile`/`CombatArenaThemeProfiles` (lighting/fog/palette/craters/prop toggles — the profile deliberately has NO camera/strip/value knobs), builder dispatches per-theme extras on ThemeId; the menu item builds all four scenes; `BuildThemeScene(themeId)` is public for one-theme iteration. Suites 423 EditMode / 14 PlayMode green; live smoke: seed 20260712's normal front rolled ravaged_town, loaded `CombatArena3D_RavagedTown`, fight played through a checkpoint pause.
+
+**Judgment calls & flags:**
+- The 11 shipped enemy templates ALL carry pool id `ironmarch_union` (the canonical pools exist only on bosses), so `ironmarch_union` got a home set (Trenchline/Ravaged Town/Wartorn Forest) to keep wave 1 visible in normal fights. When the balance pass re-authors templates onto neutral/crimson_legion/ash_wraiths, drop that entry.
+- Keying: neutral → Trenchline (signature) + Ravaged Town; crimson_legion → Ravaged Town (signature) + Trenchline/Wartorn Forest; ash_wraiths → Fog Field (signature) + Wartorn Forest.
+- Home-set ORDER is roll-visible (seeded index) — reordering a set changes every seed's themes; append only.
+- Visual-iteration gotcha: the Game View screenshot tool can serve a STALE buffer after editor-script scene rebuilds — trust `screenshot-camera`.
+- Theme palette lesson ×2: anything mid-frame under the 1.7x warm key must sit at/below the ground's dry tone (town bags needed a theme-local dimmed material; shared sandbag/crate colors only survive at frame edges).
 
 ## M5 — Morale & rout (own milestone, after M1/M2 stabilize; ADR-0005)
 

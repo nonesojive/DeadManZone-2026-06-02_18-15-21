@@ -34,7 +34,21 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public IEnumerator LoadAsync()
         {
-            string sceneName = GameScenes.ResolveCombatArenaScene();
+            // The active fight's Arena Theme (M4) picks the scene; BeginCombat stamped it
+            // before presentation loads, and a restored fight reloads the same arena.
+            string themeId = RunManager.Instance?.State?.Combat?.ArenaThemeId;
+            string sceneName = GameScenes.ResolveCombatArenaScene(themeId);
+
+            // A theme whose scene isn't shipped (mid-milestone, or a build missing a
+            // scene) degrades to the Trenchline arena instead of a failed load.
+            if (sceneName != GameScenes.CombatArena3D
+                && !Application.CanStreamedLevelBeLoaded(sceneName))
+            {
+                Debug.LogWarning(
+                    $"[Arena] Theme scene '{sceneName}' is not in Build Settings — " +
+                    "falling back to the Trenchline arena.");
+                sceneName = GameScenes.CombatArena3D;
+            }
 
             if (!SceneManager.GetSceneByName(sceneName).isLoaded)
                 IsLoaded = false;
@@ -83,9 +97,11 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             // Trust the actual scene state, not just the flag: on the defeat→new-run path the
             // flag can desync while the additive scene lingers behind the shop. When the flag
-            // desynced before this loader ever loaded, fall back to the resolved name.
-            string sceneName = _loadedSceneName ?? GameScenes.ResolveCombatArenaScene();
-            bool sceneLoaded = SceneManager.GetSceneByName(sceneName).isLoaded;
+            // desynced before this loader ever loaded, find whichever arena scene actually
+            // lingers (with per-theme scenes, re-resolving from run state could pick the
+            // wrong one — the combat save may already be gone).
+            string sceneName = _loadedSceneName ?? FindLoadedArenaScene();
+            bool sceneLoaded = sceneName != null && SceneManager.GetSceneByName(sceneName).isLoaded;
             if (!IsLoaded && !sceneLoaded)
                 yield break;
 
@@ -111,6 +127,18 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
 
             runSceneController?.RefreshCombatPresentation();
+        }
+
+        /// <summary>Whichever arena scene is additively loaded right now, else null.</summary>
+        private static string FindLoadedArenaScene()
+        {
+            foreach (var candidate in GameScenes.AllCombatArenaScenes)
+            {
+                if (SceneManager.GetSceneByName(candidate).isLoaded)
+                    return candidate;
+            }
+
+            return null;
         }
     }
 }

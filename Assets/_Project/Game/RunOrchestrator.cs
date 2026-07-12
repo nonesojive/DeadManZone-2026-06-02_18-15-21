@@ -311,6 +311,7 @@ namespace DeadManZone.Game
             string bossId = null;
             string activeModifierId = null;
             FightOptionTier? activeTier = null;
+            string arenaThemeId;
             var pendingBoss = GetPendingBoss();
             if (pendingBoss != null)
             {
@@ -320,6 +321,8 @@ namespace DeadManZone.Game
                 activeModifierId = pendingBoss.TwistId;
                 // Salvage targeting works on bosses too.
                 State.LastEnemyFactionId = pendingBoss.EnemyFactionId;
+                // A boss always fights on its pool's signature ground (M4).
+                arenaThemeId = ArenaThemes.SignatureTheme(pendingBoss.EnemyFactionId);
             }
             else
             {
@@ -337,6 +340,9 @@ namespace DeadManZone.Game
                     throw new InvalidOperationException($"No enemy template for fight {State.FightIndex}.");
 
                 enemyBoard = enemyTemplate.BuildBoard(Faction, _registry);
+                // Normalize covers the legacy no-options fallback AND pre-M4 option
+                // records (null ThemeId) — both land on the default theme.
+                arenaThemeId = ArenaThemes.Normalize(chosenOption?.ThemeId);
                 if (chosenOption != null)
                 {
                     activeTier = chosenOption.Tier;
@@ -374,6 +380,7 @@ namespace DeadManZone.Game
                 BossId = bossId,
                 ActiveTwistId = activeModifierId,
                 ActiveTier = activeTier,
+                ArenaThemeId = arenaThemeId,
                 Requisition = State.Authority,
                 Authority = State.Authority,
                 PlayerTactic = defaultTactic,

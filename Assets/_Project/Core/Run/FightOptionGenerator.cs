@@ -76,6 +76,9 @@ namespace DeadManZone.Core.Run
                     ConditionId = tier == FightOptionTier.Hard
                         ? ConditionCatalog.Ids[rng.NextInt(0, ConditionCatalog.Ids.Count)]
                         : null,
+                    // Own "arenaTheme" stream cell — must not draw from `rng`, or the
+                    // theme roll would shift every pre-M4 seed's condition rolls.
+                    ThemeId = ArenaThemes.Roll(runSeed, roundIndex, slot, army.EnemyFactionId),
                     StrengthPreview = ArmyStrengthCalculator.Evaluate(army.BuildBoard()).EffectiveTotal
                 });
             }
