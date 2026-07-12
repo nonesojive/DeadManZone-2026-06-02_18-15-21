@@ -44,6 +44,10 @@ namespace DeadManZone.Data
         public int salvageChanceBonus;
 
         [Header("Combat Stats")]
+        [Tooltip("Per-unit combat Morale (ADR-0005, M5). 0 = morale-immune, never breaks (structures). Missing on pre-M5 assets → 0 until the content stamp runs.")]
+        public int maxMorale;
+        [Tooltip("Morale damage dealt on every damaging hit (ADR-0005, M5). Terror builds rout instead of kill: faster, safer, poorer.")]
+        public int terrorDamage;
         public AttackSpeedTier attackSpeed = AttackSpeedTier.Medium;
         public AttackRangeTier attackRange = AttackRangeTier.Medium;
         [Range(0, 4)]
@@ -134,7 +138,9 @@ namespace DeadManZone.Data
                     flavorTags ?? System.Array.Empty<string>(),
                     tags ?? System.Array.Empty<string>()),
                 MaxHp = maxHp,
+                MaxMorale = maxMorale,
                 BaseDamage = baseDamage,
+                TerrorDamage = terrorDamage,
                 CooldownTicks = cooldownTicks,
                 GoldCost = goldCost,
                 RequisitionCost = requisitionCost,

@@ -43,8 +43,10 @@ namespace DeadManZone.Core.Combat
                         hit.CurrentHp = System.Math.Max(0, hit.CurrentHp - combatEvent.Value);
                     break;
 
-                // "destroyed" events carry the victim in ActorId.
+                // "destroyed" and "rout" events carry the victim in ActorId; a routed
+                // unit reads as dead on the army bar (ADR-0005).
                 case "destroyed":
+                case "rout":
                     if (_units.TryGetValue(combatEvent.ActorId ?? string.Empty, out var dead))
                         dead.CurrentHp = 0;
                     break;

@@ -47,14 +47,26 @@ namespace DeadManZone.Core.Tests
             _orchestrator.State.Manpower = startingManpower;
             int expectedShortfall = upkeep - startingManpower;
 
-            Assert.IsFalse(_orchestrator.CanStartBattle(out _));
             Assert.IsTrue(_orchestrator.TryEmergencyDraft());
             Assert.AreEqual(startingManpower + expectedShortfall, _orchestrator.State.Manpower);
             Assert.AreEqual(upkeep, _orchestrator.State.Manpower);
             Assert.IsTrue(_orchestrator.State.EmergencyDraftUsed);
-            Assert.IsTrue(_orchestrator.CanStartBattle(out _));
             Assert.IsFalse(_orchestrator.TryEmergencyDraft());
             Assert.AreEqual(upkeep, _orchestrator.State.Manpower);
+        }
+
+        [Test]
+        public void CanStartBattle_HasNoManpowerGate()
+        {
+            _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 777);
+            var board = _orchestrator.GetPlayerBoard();
+            var rifle = _database.Pieces.First(p => p.id == "conscript_rifleman").ToCore();
+            Assert.IsTrue(board.TryPlace(rifle, TestBoards.CombatBoardAnchor(5, 3), "rifle_1").Success);
+            _orchestrator.SaveCombatBoard(board);
+
+            // ADR-0005: Manpower is run health, not a fielding budget — you always march.
+            _orchestrator.State.Manpower = 1;
+            Assert.IsTrue(_orchestrator.CanStartBattle(out string reason), reason);
         }
     }
 }

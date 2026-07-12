@@ -78,7 +78,11 @@ namespace DeadManZone.Core.Run
     {
         // v9 (2026-07-12, M0): dropped obsolete PlayerBoard + singular LockedOffer
         // (v8 JSON migrates: LockedOffer folds into LockedOffers, stale keys ignored).
-        public int SaveSchemaVersion { get; set; } = 9;
+        // v10 (2026-07-12, M5): run-level Morale deleted — Manpower is run health
+        // (ADR-0005). v8/v9 JSON migrates: stray Morale keys ignored (member removed),
+        // version stamped 10 on load; LastFightSalvageKillPercent is additive and
+        // defaults to the neutral 100 on older saves.
+        public int SaveSchemaVersion { get; set; } = 10;
 
         /// <summary>Plain fight counter (banner, logs, combat-seed index). Since M1 it no
         /// longer drives difficulty — that's <see cref="Dread"/> via DreadRules.FightEquivalent.</summary>
@@ -112,7 +116,11 @@ namespace DeadManZone.Core.Run
         public int Supplies { get; set; }
         public int Manpower { get; set; }
         public int Authority { get; set; }
-        public int Morale { get; set; }
+
+        /// <summary>Last fight's kill share of removed enemies, 0–100 (ADR-0005): routed
+        /// enemies escaped with their gear, so the post-fight build round's salvage
+        /// chance scales by this. 100 = neutral (fresh runs, rounds without a fight).</summary>
+        public int LastFightSalvageKillPercent { get; set; } = 100;
         public int LastMusterGained { get; set; }
         public bool EmergencyDraftUsed { get; set; }
         public int RerollCountThisRound { get; set; }
@@ -138,8 +146,7 @@ namespace DeadManZone.Core.Run
             int runSeed,
             int startingSupplies,
             int startingManpower,
-            int startingAuthority,
-            int startingMorale)
+            int startingAuthority)
         {
             return new RunState
             {
@@ -148,10 +155,9 @@ namespace DeadManZone.Core.Run
                 Supplies = startingSupplies,
                 Manpower = startingManpower,
                 Authority = startingAuthority,
-                Morale = startingMorale,
                 Phase = RunPhase.Build,
                 FightIndex = 1,
-                SaveSchemaVersion = 9,
+                SaveSchemaVersion = 10,
                 Reserves = new ReservesSnapshot
                 {
                     Width = ReservesState.Width,

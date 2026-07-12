@@ -21,6 +21,10 @@ namespace DeadManZone.Core.Combat
         public CombatEventLog EventLog { get; init; }
         public int PlayerCombatantsTotal { get; init; }
         public int PlayerCombatantsLost { get; init; }
+        /// <summary>Enemy units dead at fight end. Kills feed salvage; routs don't (ADR-0005).</summary>
+        public int EnemyKilled { get; init; }
+        /// <summary>Enemy units broken-but-alive at fight end — they escaped with their gear.</summary>
+        public int EnemyRouted { get; init; }
         public IReadOnlyList<string> SurvivingPlayerCombatantIds { get; init; } =
             System.Array.Empty<string>();
         public IReadOnlyList<CombatantState> PlayerCombatantsAtEnd { get; init; } =

@@ -16,7 +16,7 @@ namespace DeadManZone.Core.Combat
                 return null;
 
             var alive = enemies
-                .Where(e => e != null && e.IsAlive && CombatStealthRules.IsTargetableByEnemies(e, tacticsCheckpointIndex))
+                .Where(e => e != null && e.IsActive && CombatStealthRules.IsTargetableByEnemies(e, tacticsCheckpointIndex))
                 .ToList();
             if (alive.Count == 0)
                 return null;

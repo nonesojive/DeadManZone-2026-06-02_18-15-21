@@ -60,12 +60,7 @@ namespace DeadManZone.Presentation.Combat
             }
 
             if (summaryText != null)
-            {
-                summaryText.text =
-                    $"Casualties: −{report.ManpowerCasualties}\n" +
-                    $"Supplies: {report.SuppliesEarned}\n" +
-                    $"Morale: {report.MoraleDelta:+#;-#;0}";
-            }
+                summaryText.text = FormatSummary(report);
 
             if (dealtText != null)
                 dealtText.text = FormatTopList("Damage Dealt", report.TopDamageDealt);
@@ -85,6 +80,37 @@ namespace DeadManZone.Presentation.Combat
                 ? RunManager.Instance.Orchestrator.State?.LastBattleReport
                 : null;
             Show(report);
+        }
+
+        /// <summary>Casualties/supplies plus the rout economy lines (ADR-0005): routed
+        /// enemies granted no salvage roll, routed player units come back next round.</summary>
+        internal static string FormatSummary(BattleReport report)
+        {
+            var summary = new System.Text.StringBuilder();
+            summary.Append($"Casualties: −{report.ManpowerCasualties}\n");
+            summary.Append($"Supplies: {report.SuppliesEarned}");
+
+            if (report.EnemyRouted > 0)
+                summary.Append($"\nEnemy broken: {report.EnemyRouted} routed / {report.EnemyKilled} killed");
+
+            if (report.PlayerRouted > 0)
+                summary.Append($"\nYour routed units return next round ({report.PlayerRouted})");
+
+            return summary.ToString();
+        }
+
+        internal void InitializeForTests(
+            GameObject testPanelRoot,
+            TMP_Text outcome,
+            TMP_Text summary,
+            TMP_Text dealt,
+            TMP_Text taken)
+        {
+            panelRoot = testPanelRoot;
+            outcomeText = outcome;
+            summaryText = summary;
+            dealtText = dealt;
+            takenText = taken;
         }
 
         private static string FormatTopList(string title, System.Collections.Generic.IReadOnlyList<BattleReportEntry> entries)

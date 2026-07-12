@@ -53,6 +53,33 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
+        public void CompleteFight_ScalesSalvageChanceByKillShare()
+        {
+            _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
+            VerticalSliceTestFixtures.SaveGauntletToOrchestrator(_orchestrator, _database);
+
+            _orchestrator.ChooseFightOption(1);
+            _orchestrator.BeginCombat();
+            var final = RunCombatToCompletion();
+            Assert.IsNotNull(final, "combat must complete");
+
+            // CompleteCombat stamps the fight's kill share; SyncSalvageChancePercent
+            // (re-run by every RefreshShop) applies it on top of the board-derived
+            // chance — routed enemies escaped with their gear (ADR-0005).
+            int expectedShare = SalvageChanceCalculator.KillSharePercent(
+                final.EnemyKilled, final.EnemyRouted);
+            Assert.AreEqual(expectedShare, _orchestrator.State.LastFightSalvageKillPercent);
+
+            var faction = _database.GetFaction(FactionIds.IronmarchUnion);
+            int unscaled = SalvageChanceCalculator.Compute(
+                faction.baseSalvageChancePercent,
+                SalvageBoardBoostAggregator.SumBoardBoost(_orchestrator.GetCombatBoard()));
+            Assert.AreEqual(
+                SalvageChanceCalculator.ApplyKillShare(unscaled, expectedShare),
+                _orchestrator.State.SalvageChancePercent);
+        }
+
+        [Test]
         public void SalvageAftermathHelper_CountsUniqueDestroyedEnemyTypes()
         {
             var enemyBoard = new BoardSnapshot
@@ -72,7 +99,9 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(2, SalvageAftermathHelper.CountDestroyedEnemyTypes(log, enemyBoard));
         }
 
-        private void RunCombatToCompletion()
+        /// <summary>Drives the fight to its end; returns the completed step (null if the
+        /// phase left Combat some other way).</summary>
+        private CombatAdvanceResult RunCombatToCompletion()
         {
             while (_orchestrator.State.Phase == RunPhase.Combat)
             {
@@ -81,9 +110,11 @@ namespace DeadManZone.Core.Tests
                 if (step.Status == CombatAdvanceStatus.Completed)
                 {
                     _orchestrator.FinalizePendingCombat();
-                    break;
+                    return step;
                 }
             }
+
+            return null;
         }
 
         private void SubmitCombatCommandsForCurrentWindow()

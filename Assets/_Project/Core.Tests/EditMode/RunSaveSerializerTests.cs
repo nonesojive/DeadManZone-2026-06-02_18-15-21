@@ -30,7 +30,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void SerializeDeserialize_PreservesCombatAndHqBoards()
         {
-            var state = RunState.CreateNew(FactionIds.IronmarchUnion, 42, 100, 100, 2, 100);
+            var state = RunState.CreateNew(FactionIds.IronmarchUnion, 42, 100, 100, 2);
             state.CombatBoard = new BoardSnapshot
             {
                 BoardKind = BoardKind.Combat.ToString(),
@@ -45,7 +45,7 @@ namespace DeadManZone.Core.Tests
             };
 
             var loaded = RunSaveSerializer.FromJson(RunSaveSerializer.ToJson(state));
-            Assert.AreEqual(9, loaded.SaveSchemaVersion);
+            Assert.AreEqual(10, loaded.SaveSchemaVersion);
             Assert.NotNull(loaded.CombatBoard);
             Assert.NotNull(loaded.HqBoard);
             Assert.AreEqual(6, loaded.CombatBoard.Width);
@@ -62,7 +62,6 @@ namespace DeadManZone.Core.Tests
                 Supplies = 120,
                 Authority = 4,
                 Manpower = 10,
-                Morale = 100,
                 RunSeed = 777,
                 FactionId = FactionIds.IronmarchUnion,
                 Phase = RunPhase.Build
@@ -193,7 +192,7 @@ namespace DeadManZone.Core.Tests
 
             Assert.AreEqual(FactionIds.DustScourge, loaded.LastEnemyFactionId);
             Assert.AreEqual(23, loaded.SalvageChancePercent);
-            Assert.AreEqual(9, loaded.SaveSchemaVersion, "v8 input is stamped to the current schema on load");
+            Assert.AreEqual(10, loaded.SaveSchemaVersion, "v8 input is stamped to the current schema on load");
         }
 
         [Test]
@@ -215,7 +214,28 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(1, loaded.LockedOffers.Count, "singular LockedOffer folds into the list");
             Assert.AreEqual(2, loaded.LockedOffers[0].SlotIndex);
             Assert.AreEqual("conscript_rifleman", loaded.LockedOffers[0].PieceId);
-            Assert.AreEqual(9, loaded.SaveSchemaVersion);
+            Assert.AreEqual(10, loaded.SaveSchemaVersion);
+        }
+
+        [Test]
+        public void FromJson_MigratesV9ByIgnoringRetiredMoraleKey()
+        {
+            // v9 save carrying the retired run-level Morale resource (ADR-0005, M5).
+            // v10 removed the member — the stray key is simply ignored on load.
+            const string v9Json =
+                "{\n" +
+                "  \"SaveSchemaVersion\": 9,\n" +
+                "  \"Phase\": \"Build\",\n" +
+                "  \"Morale\": 42,\n" +
+                "  \"Manpower\": 17\n" +
+                "}";
+
+            var loaded = RunSaveSerializer.FromJson(v9Json);
+
+            Assert.AreEqual(10, loaded.SaveSchemaVersion);
+            Assert.AreEqual(17, loaded.Manpower);
+            Assert.AreEqual(100, loaded.LastFightSalvageKillPercent,
+                "additive field defaults to the neutral kill share on older saves");
         }
 
         [Test]

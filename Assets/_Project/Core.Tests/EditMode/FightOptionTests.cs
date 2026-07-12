@@ -234,7 +234,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void SaveRoundTrip_PreservesOptionsChoiceAndTier()
         {
-            var state = RunState.CreateNew(FactionIds.IronmarchUnion, 42, 100, 100, 2, 100);
+            var state = RunState.CreateNew(FactionIds.IronmarchUnion, 42, 100, 100, 2);
             state.FightOptions = new List<FightOptionRecord>
             {
                 new() { Tier = FightOptionTier.Easy, EnemyFactionId = "ironmarch_union", TemplateFightNumber = 2, StrengthPreview = 120 },

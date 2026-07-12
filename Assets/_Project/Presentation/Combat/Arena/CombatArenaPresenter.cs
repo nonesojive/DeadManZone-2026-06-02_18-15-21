@@ -23,6 +23,17 @@ namespace DeadManZone.Presentation.Combat.Arena
         private readonly Dictionary<string, PieceDefinitionSO> _piecesById = new();
         private readonly ArmyHealthReplayTracker _unitHealth = new();
 
+        // Replay-side morale bookkeeping (mirrors _unitHealth): only units that can break
+        // (Definition.MaxMorale > 0) are registered, so morale-immune units never get a
+        // strip. "morale_damage" drains it, "rout" zeroes it — no game rules, just replay.
+        private sealed class UnitMorale
+        {
+            public int Max;
+            public int Current;
+        }
+
+        private readonly Dictionary<string, UnitMorale> _unitMorale = new();
+
         private CombatUnitActorPool _pool;
         private CombatGridMapper _mapper;
         private BattlefieldState _battlefield;
@@ -131,6 +142,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             _actors.Clear();
             _unitHealth.Clear();
+            _unitMorale.Clear();
             _pendingDeathPresentations = 0;
             _replayState.ResetFromBattlefield(null);
             _battlefield = null;
@@ -181,6 +193,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _buildingSpawner.SpawnAll(battlefield, _mapper, buildingsRoot, GetPiece, config);
 
             _unitHealth.Clear();
+            _unitMorale.Clear();
             foreach (var cell in battlefield.Cells)
             {
                 if (cell?.Definition == null)
@@ -190,6 +203,15 @@ namespace DeadManZone.Presentation.Combat.Arena
                     continue;
 
                 _unitHealth.RegisterUnit(cell.InstanceId, cell.Side, cell.Definition.MaxHp);
+                if (cell.Definition.MaxMorale > 0)
+                {
+                    _unitMorale[cell.InstanceId] = new UnitMorale
+                    {
+                        Max = cell.Definition.MaxMorale,
+                        Current = cell.Definition.MaxMorale
+                    };
+                }
+
                 var actor = _pool.Rent();
                 var source = GetPiece(cell.Definition.Id);
                 float moveSpeed = CombatArenaMoveSpeedResolver.ResolveWorldSpeed(source, config);
@@ -210,6 +232,8 @@ namespace DeadManZone.Presentation.Combat.Arena
 
                 _actors[cell.InstanceId] = actor;
                 actor.SetFrozen(IsPresentationFrozen);
+                if (_unitMorale.ContainsKey(cell.InstanceId))
+                    actor.SetMoraleFraction(1f); // builds the strip only for breakable units
             }
         }
 
@@ -241,6 +265,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 if (excludeSegment.HasValue && combatEvent.Segment == excludeSegment.Value)
                     continue;
                 _unitHealth.ApplyEvent(combatEvent);
+                ApplyMoraleEvent(combatEvent);
             }
         }
 
@@ -316,6 +341,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             {
                 if (_unitHealth.TryGetUnitFraction(pair.Key, out float fraction))
                     pair.Value.SetHealthFraction(fraction);
+                if (TryGetMoraleFraction(pair.Key, out float morale))
+                    pair.Value.SetMoraleFraction(morale);
             }
         }
 
@@ -340,7 +367,35 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             _replayState.ApplyEvent(combatEvent);
             _unitHealth.ApplyEvent(combatEvent);
+            ApplyMoraleEvent(combatEvent);
             ApplyEventVisual(combatEvent);
+        }
+
+        private void ApplyMoraleEvent(CombatEvent combatEvent)
+        {
+            switch (combatEvent.ActionType)
+            {
+                // "morale_damage": ActorId = source, TargetId = victim, Value = amount.
+                case "morale_damage":
+                    if (_unitMorale.TryGetValue(combatEvent.TargetId ?? string.Empty, out var shocked))
+                        shocked.Current = System.Math.Max(0, shocked.Current - combatEvent.Value);
+                    break;
+                // "rout" carries the victim in ActorId (same read as ArmyHealthReplayTracker).
+                case "rout":
+                    if (_unitMorale.TryGetValue(combatEvent.ActorId ?? string.Empty, out var broken))
+                        broken.Current = 0;
+                    break;
+            }
+        }
+
+        private bool TryGetMoraleFraction(string instanceId, out float fraction)
+        {
+            fraction = 0f;
+            if (string.IsNullOrEmpty(instanceId) || !_unitMorale.TryGetValue(instanceId, out var morale))
+                return false;
+
+            fraction = morale.Max <= 0 ? 0f : (float)morale.Current / morale.Max;
+            return true;
         }
 
         private void ApplyEventVisual(CombatEvent combatEvent)
@@ -365,6 +420,15 @@ namespace DeadManZone.Presentation.Combat.Arena
                     break;
                 case "destroyed":
                     PlayDestroyedEvent(combatEvent);
+                    break;
+                case "morale_damage":
+                    // No floating-number channel exists in this arena (PlayDamage is a
+                    // no-op in the 3D backend) — the strip's own drain + bone pulse is
+                    // the feedback, so just push the new fraction.
+                    UpdateMoraleBar(combatEvent.TargetId);
+                    break;
+                case "rout":
+                    PlayRoutEvent(combatEvent);
                     break;
             }
         }
@@ -453,6 +517,51 @@ namespace DeadManZone.Presentation.Combat.Arena
             {
                 actor.SetHealthFraction(fraction);
             }
+        }
+
+        /// <summary>Push the replayed morale fraction to the victim's strip (breakable units only).</summary>
+        private void UpdateMoraleBar(string instanceId)
+        {
+            if (string.IsNullOrEmpty(instanceId))
+                return;
+
+            if (_actors.TryGetValue(instanceId, out var actor)
+                && TryGetMoraleFraction(instanceId, out float fraction))
+            {
+                actor.SetMoraleFraction(fraction);
+            }
+        }
+
+        /// <summary>Rout replay (ADR-0005): the unit escapes the field. Deliberately NOT
+        /// the death presentation — no death VFX, no death audio, no punch-in; the actor
+        /// reuses the march machinery to run for its own edge (vehicles slump in place)
+        /// and the softer rout dissolve removes the visual.</summary>
+        private void PlayRoutEvent(CombatEvent combatEvent)
+        {
+            if (!_actors.TryGetValue(combatEvent.ActorId, out var broken))
+                return;
+
+            _actors.Remove(combatEvent.ActorId);
+            _pendingDeathPresentations++; // fight-end flow waits for the flee like a death
+            broken.PlayRout(ComputeFleeWorldTarget(broken), () =>
+            {
+                _pendingDeathPresentations--;
+                _pool.Release(broken);
+            });
+        }
+
+        /// <summary>The broken unit's OWN board edge, a couple of cells past it: player
+        /// columns map to low grid X (world -X), the enemy's to high X (world +X), so
+        /// player units flee -X and enemy units +X, each keeping its current lane.</summary>
+        private Vector3 ComputeFleeWorldTarget(CombatUnitActor broken)
+        {
+            Vector3 position = broken.transform.position;
+            if (_mapper == null || _battlefield?.Layout == null)
+                return position + (broken.Side == CombatSide.Player ? Vector3.left : Vector3.right) * 6f;
+
+            int edgeX = broken.Side == CombatSide.Player ? -2 : _battlefield.Layout.TotalWidth + 1;
+            Vector3 edge = _mapper.ToWorld(new GridCoord(edgeX, 0));
+            return new Vector3(edge.x, position.y, position.z);
         }
 
         private void PlayAttackMuzzleVfx(

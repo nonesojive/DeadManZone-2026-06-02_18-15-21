@@ -44,10 +44,14 @@ namespace DeadManZone.Core.Combat
                     $"[{phase} t{tick}] {Label(combatEvent.ActorId)} → {Label(combatEvent.TargetId)}: missed",
                 "gas_damage" =>
                     $"[{phase} t{tick}] Gas → {Label(combatEvent.TargetId)}: {combatEvent.Value} dmg",
+                "morale_damage" =>
+                    $"[{phase} t{tick}] {Label(combatEvent.ActorId)} → {Label(combatEvent.TargetId)}: {combatEvent.Value} morale",
                 "move" =>
                     $"[{phase} t{tick}] {Label(combatEvent.ActorId)} moved to {FormatCoord(combatEvent.TargetId)}",
                 "destroyed" =>
                     $"[{phase} t{tick}] {Label(combatEvent.ActorId)} destroyed",
+                "rout" =>
+                    $"[{phase} t{tick}] {Label(combatEvent.ActorId)} broke and routed",
                 "fight_end" =>
                     $"[{phase} t{tick}] Fight over — {FormatOutcome(combatEvent.TargetId)}",
                 "tactic_set" =>

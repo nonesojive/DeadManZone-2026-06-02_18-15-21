@@ -18,6 +18,9 @@ namespace DeadManZone.Core.Combat
         public CombatSide Side { get; init; }
         public PieceDefinition Definition { get; init; }
         public int CurrentHp { get; set; }
+        public int CurrentMorale { get; set; }
+        /// <summary>Set when morale hit 0: the unit routed — fled the field, alive but out of the fight (ADR-0005).</summary>
+        public bool IsBroken { get; set; }
         public int CooldownRemaining { get; set; }
         public int MoveCharge { get; set; }
         public int MoveChargePercentBonus { get; set; }
@@ -44,12 +47,18 @@ namespace DeadManZone.Core.Combat
 
         public bool IsAlive => CurrentHp > 0;
 
+        /// <summary>Morale-immune units (MaxMorale 0, e.g. structures) never break and take no morale damage.</summary>
+        public bool CanBreak => Definition.MaxMorale > 0;
+
+        /// <summary>The liveness gate for FIGHTING — routed is alive but out of the fight.</summary>
+        public bool IsActive => IsAlive && !IsBroken;
+
         public int EffectiveMovementSpeed =>
             System.Math.Max(0, Definition.MovementSpeed + MovementSpeedBonus);
 
         public bool HasTag(string tag) => PieceTagQueries.HasTag(Definition, tag);
 
-        public bool CanAttack => IsAlive && Definition.BaseDamage > 0;
+        public bool CanAttack => IsActive && Definition.BaseDamage > 0;
 
         public void RecomputeOccupiedCells()
         {

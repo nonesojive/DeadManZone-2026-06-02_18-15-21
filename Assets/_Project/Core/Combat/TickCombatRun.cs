@@ -52,7 +52,7 @@ namespace DeadManZone.Core.Combat
         /// so the target picker validates against the same rule execution applies.</summary>
         public IReadOnlyList<GridCoord> GetLiveEnemyTargetCells() =>
             _enemyCombatants
-                .Where(e => e.IsAlive)
+                .Where(e => e.IsActive)
                 .Select(e => e.AnchorPosition)
                 .Distinct()
                 .ToList();
@@ -280,11 +280,11 @@ namespace DeadManZone.Core.Combat
             IReadOnlyList<CombatantState> targets,
             int segment)
         {
-            var aliveTargets = targets.Where(t => t.IsAlive).ToList();
+            var aliveTargets = targets.Where(t => t.IsActive).ToList();
             if (aliveTargets.Count == 0)
                 return;
 
-            foreach (var mover in movers.Where(m => m.IsAlive && m.EffectiveMovementSpeed != 0).OrderBy(m => m.InstanceId))
+            foreach (var mover in movers.Where(m => m.IsActive && m.EffectiveMovementSpeed != 0).OrderBy(m => m.InstanceId))
             {
                 if (mover.EffectiveMovementSpeed == 0)
                     continue;
@@ -339,7 +339,8 @@ namespace DeadManZone.Core.Combat
 
         private void ApplyGas(int segment)
         {
-            foreach (var combatant in _playerCombatants.Concat(_enemyCombatants).Where(c => c.IsAlive).OrderBy(c => c.InstanceId))
+            // Routed units fled the field, so gas can't touch them.
+            foreach (var combatant in _playerCombatants.Concat(_enemyCombatants).Where(c => c.IsActive).OrderBy(c => c.InstanceId))
             {
                 if (GasDamageSystem.IsMitigated(combatant.Definition))
                     continue;
@@ -363,7 +364,7 @@ namespace DeadManZone.Core.Combat
             int segment,
             int tacticsCheckpointIndex)
         {
-            foreach (var actor in attackers.Where(a => a.IsAlive && a.CanAttack).OrderBy(a => a.InstanceId))
+            foreach (var actor in attackers.Where(a => a.IsActive && a.CanAttack).OrderBy(a => a.InstanceId))
             {
                 if (actor.CooldownRemaining > 0)
                 {
@@ -405,6 +406,8 @@ namespace DeadManZone.Core.Combat
                     target.DamageTakenThisFight += outcome.Damage;
                     if (!target.IsAlive)
                         LogDestroyed(segment, target.InstanceId, actor.InstanceId);
+                    else if (actor.Definition.TerrorDamage > 0)
+                        ApplyMoraleDamage(segment, target, actor.Definition.TerrorDamage, actor.InstanceId);
                 }
 
                 actor.CooldownRemaining = CombatAttackSpeed.GetEffectiveCooldown(
@@ -458,6 +461,45 @@ namespace DeadManZone.Core.Combat
         {
             _occupancyGrid.Remove(victimId);
             _log.Append(segment, GlobalTick, victimId, "destroyed", sourceId, 0);
+            ApplyDeathShock(segment, victimId);
+        }
+
+        /// <summary>Deaths — never routs — shock the dead unit's living unbroken allies
+        /// within <see cref="MoraleRules.DeathShockRadius"/> (ADR-0005). Shock-routs don't
+        /// shock again; only deaths do.</summary>
+        private void ApplyDeathShock(int segment, string deadInstanceId)
+        {
+            var dead = _playerCombatants.Concat(_enemyCombatants)
+                .FirstOrDefault(c => c.InstanceId == deadInstanceId);
+            if (dead == null)
+                return;
+
+            var allies = dead.Side == CombatSide.Player ? _playerCombatants : _enemyCombatants;
+            foreach (var ally in allies
+                         .Where(a => a.IsActive
+                             && CombatRange.Distance(dead.AnchorPosition, a.AnchorPosition) <= MoraleRules.DeathShockRadius)
+                         .OrderBy(a => a.InstanceId)
+                         .ToList())
+            {
+                ApplyMoraleDamage(segment, ally, MoraleRules.DeathShockDamage, dead.InstanceId);
+            }
+        }
+
+        private void ApplyMoraleDamage(int segment, CombatantState target, int amount, string sourceId)
+        {
+            if (!target.CanBreak || !target.IsActive || amount <= 0)
+                return;
+
+            target.CurrentMorale -= amount;
+            _log.Append(segment, GlobalTick, sourceId, "morale_damage", target.InstanceId, amount);
+            if (target.CurrentMorale > 0)
+                return;
+
+            // Break: the unit routs — flees the field, out of the fight, not dead. It stays
+            // in the combatant lists (routed player units survive the fight, ADR-0005).
+            target.IsBroken = true;
+            _occupancyGrid.Remove(target.InstanceId);
+            _log.Append(segment, GlobalTick, target.InstanceId, "rout", sourceId, 0);
         }
 
         private CombatAdvanceResult AwaitingResult(int segment) =>
@@ -478,6 +520,8 @@ namespace DeadManZone.Core.Combat
                 .Where(c => c.IsAlive && c.Definition.MaxHp > 0)
                 .Select(c => c.InstanceId)
                 .ToList();
+            int enemyKilled = _enemyCombatants.Count(c => c.Definition.MaxHp > 0 && !c.IsAlive);
+            int enemyRouted = _enemyCombatants.Count(c => c.Definition.MaxHp > 0 && c.IsAlive && c.IsBroken);
 
             return new CombatAdvanceResult
             {
@@ -488,6 +532,8 @@ namespace DeadManZone.Core.Combat
                 EventLog = _log,
                 PlayerCombatantsTotal = total,
                 PlayerCombatantsLost = lost,
+                EnemyKilled = enemyKilled,
+                EnemyRouted = enemyRouted,
                 SurvivingPlayerCombatantIds = survivors,
                 PlayerCombatantsAtEnd = _playerCombatants,
                 BattleReport = BattleReportBuilder.Build(
@@ -496,7 +542,8 @@ namespace DeadManZone.Core.Combat
                     IsDraw,
                     ManpowerCalculator.ComputeCasualties(_playerCombatants),
                     suppliesEarned: 0,
-                    moraleDelta: 0)
+                    enemyKilled: enemyKilled,
+                    enemyRouted: enemyRouted)
             };
         }
 
@@ -521,7 +568,7 @@ namespace DeadManZone.Core.Combat
         private void RebuildOccupied()
         {
             _occupancyGrid = new CombatOccupancyGrid();
-            foreach (var combatant in _playerCombatants.Concat(_enemyCombatants).Where(c => c.IsAlive))
+            foreach (var combatant in _playerCombatants.Concat(_enemyCombatants).Where(c => c.IsActive))
             {
                 if (combatant.ShapeOffsets == null || combatant.ShapeOffsets.Count == 0)
                     continue;
@@ -540,7 +587,7 @@ namespace DeadManZone.Core.Combat
         {
             foreach (var ally in allies)
             {
-                if (!ally.IsAlive || ally.InstanceId == moverInstanceId)
+                if (!ally.IsActive || ally.InstanceId == moverInstanceId)
                     continue;
 
                 if (ally.AnchorPosition.Equals(goal))
@@ -575,6 +622,7 @@ namespace DeadManZone.Core.Combat
                     Side = side,
                     Definition = piece.Definition,
                     CurrentHp = piece.Definition.MaxHp,
+                    CurrentMorale = piece.Definition.MaxMorale,
                     CooldownRemaining = 0,
                     AnchorPosition = anchor,
                     SpawnAnchorY = piece.Anchor.Y,

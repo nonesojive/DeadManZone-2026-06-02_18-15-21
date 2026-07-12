@@ -27,6 +27,20 @@ namespace DeadManZone.Presentation.Combat.Arena
         /// that leave HP to the overhead bar.</summary>
         void SetHealthFraction(float fraction);
 
+        /// <summary>Latest replayed Morale fraction (0..1). Only invoked for units that
+        /// can break (Definition.MaxMorale &gt; 0) — backends lazily build the morale
+        /// strip on the first call, so morale-immune units show nothing new (ADR-0005).</summary>
+        void SetMoraleFraction(float fraction);
+
+        /// <summary>True when a broken unit runs for its own board edge; vehicles return
+        /// false and slump-abandon in place inside <see cref="PlayRoutExit"/>.</summary>
+        bool FleesWhenBroken { get; }
+
+        /// <summary>Rout exit (ADR-0005): the ESCAPE presentation — a softer dissolve with
+        /// no die clip and no death VFX/audio hooks. Humanoids keep their walk cycle while
+        /// the actor marches them off-field; vehicles settle in place as abandoned.</summary>
+        void PlayRoutExit(Action onComplete);
+
         void SetWalking(bool walking);
         void FaceDirection(Vector3 worldDirection);
         void UpdateSortAndBob(Vector3 worldPosition);

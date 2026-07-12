@@ -6,11 +6,10 @@ namespace DeadManZone.Core.Run
 {
     public static class RunSaveSerializer
     {
-        private const int CurrentSchemaVersion = 9;
+        private const int CurrentSchemaVersion = 10;
         private const int MinimumSupportedSchemaVersion = 8;
         private const int LegacyMigrationTargetVersion = 2;
         private const int LegacyDefaultManpower = 100;
-        private const int LegacyDefaultMorale = 100;
 
         private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
         {
@@ -43,8 +42,9 @@ namespace DeadManZone.Core.Run
                 MigrateLockedOffers(root);
                 MigrateCombatSave(root);
                 // v9: obsolete PlayerBoard / singular LockedOffer keys are simply ignored
-                // by deserialization (members removed); stamp the current version so the
-                // next Persist writes v9.
+                // by deserialization (members removed); v10: same for the retired run-level
+                // Morale key (ADR-0005). Stamp the current version so the next Persist
+                // writes v10.
                 root["SaveSchemaVersion"] = CurrentSchemaVersion;
                 json = root.ToString();
             }
@@ -76,9 +76,6 @@ namespace DeadManZone.Core.Run
 
             if (root["Manpower"] == null)
                 root["Manpower"] = LegacyDefaultManpower;
-
-            if (root["Morale"] == null)
-                root["Morale"] = LegacyDefaultMorale;
 
             root.Remove("Gold");
             root.Remove("Requisition");

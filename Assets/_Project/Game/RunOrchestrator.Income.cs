@@ -22,9 +22,15 @@ namespace DeadManZone.Game
             if (Faction == null || State == null)
                 return;
 
-            State.SalvageChancePercent = SalvageChanceCalculator.Compute(
-                Faction.baseSalvageChancePercent,
-                SalvageBoardBoostAggregator.SumBoardBoost(GetCombatBoard()));
+            // Kill-share scaling (ADR-0005): routed enemies escaped with their gear, so
+            // the build round after an all-rout fight salvages nothing. The percent is
+            // state (stamped by CompleteCombat), so the per-round re-syncs from
+            // RefreshShop and the HUD can't erase it.
+            State.SalvageChancePercent = SalvageChanceCalculator.ApplyKillShare(
+                SalvageChanceCalculator.Compute(
+                    Faction.baseSalvageChancePercent,
+                    SalvageBoardBoostAggregator.SumBoardBoost(GetCombatBoard())),
+                State.LastFightSalvageKillPercent);
         }
 
         private int ApplyPostCombatIncome()

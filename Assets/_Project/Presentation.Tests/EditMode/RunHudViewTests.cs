@@ -21,7 +21,6 @@ namespace DeadManZone.Presentation.Tests.EditMode
             var supplies = CreateNumberText(panel.transform, "SuppliesNumber");
             var manpower = CreateNumberText(panel.transform, "ManpowerNumber");
             var authority = CreateNumberText(panel.transform, "AuthorityNumber");
-            var morale = CreateNumberText(panel.transform, "MoralNumber");
             var fightNumber = CreateNumberText(panel.transform, "FightNumber");
 
             var hud = topBar.AddComponent<RunHudView>();
@@ -30,7 +29,6 @@ namespace DeadManZone.Presentation.Tests.EditMode
                 Supplies = 12,
                 Manpower = 34,
                 Authority = 56,
-                Morale = 78,
                 FightIndex = 4
             };
 
@@ -41,7 +39,6 @@ namespace DeadManZone.Presentation.Tests.EditMode
                 Assert.AreEqual("12", supplies.text);
                 Assert.AreEqual("34", manpower.text);
                 Assert.AreEqual("56", authority.text);
-                Assert.AreEqual("78", morale.text);
                 Assert.AreEqual("4", fightNumber.text);
             }
             finally

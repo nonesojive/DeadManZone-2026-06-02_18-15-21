@@ -173,7 +173,7 @@ namespace DeadManZone.Core.Combat
             for (int i = 0; i < combatants.Count; i++)
             {
                 var combatant = combatants[i];
-                if (combatant == null || !combatant.IsAlive)
+                if (combatant == null || !combatant.IsActive)
                     continue;
 
                 if (excludeInstanceId != null && combatant.InstanceId == excludeInstanceId)
@@ -210,7 +210,7 @@ namespace DeadManZone.Core.Combat
                 }
             }
 
-            if (!moverAlreadyIncluded && combatant.IsAlive && IsMovableCombatant(combatant) && IsFrontlineRole(combatant))
+            if (!moverAlreadyIncluded && combatant.IsActive && IsMovableCombatant(combatant) && IsFrontlineRole(combatant))
                 frontline.Add(combatant);
 
             frontline.Sort(CompareByInstanceId);
@@ -246,7 +246,7 @@ namespace DeadManZone.Core.Combat
             }
 
             if (!moverAlreadyIncluded
-                && combatant.IsAlive
+                && combatant.IsActive
                 && string.Equals(combatant.Definition?.CombatRole, roleTag, StringComparison.OrdinalIgnoreCase))
             {
                 sameRole.Add(combatant);

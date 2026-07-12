@@ -81,11 +81,21 @@ Each faction opens every run with a few pre-placed pieces (free; upkeep applies)
 - Theme palette lesson ×2: anything mid-frame under the 1.7x warm key must sit at/below the ground's dry tone (town bags needed a theme-local dimmed material; shared sandbag/crate colors only survive at frame edges).
 - Post-ship regression (fixed same day, `dabc7ee0`): every "is the arena loaded" check must scan ALL arena scenes — `CombatArenaSession` still checked only `CombatArena3D`, so a themed arena survived a missed Build unload and the next fight stacked a second arena (two listeners, frozen presentation). The loader now also sweeps stale arena scenes on load; if a future system asks "is combat rendered", go through `CombatArenaSession`, never a scene-name literal.
 
-## M5 — Morale & rout (own milestone, after M1/M2 stabilize; ADR-0005)
+## M5 — Morale & rout (own milestone, after M1/M2 stabilize; ADR-0005) — **DONE 2026-07-12**
 
 - Per-unit Morale bar, terror damage channel, Break ⇒ rout (flee field, not a kill); side defeated when no unbroken living units.
 - Economy: enemy routs grant no salvage roll; player routs cost no Manpower and return to their slot next round. Manpower becomes run health; run-level Morale and `MoraleCalculator` deleted; casualties deduct Manpower directly.
 - Event-log actions + presentation (flee move reusing march/dissolve machinery; vehicles collapse-abandon) + first terror content (Cartel identity hook).
+
+**DONE notes (2026-07-12).** Core: `CombatantState.CurrentMorale/IsBroken/IsActive` (IsActive = the "still fighting" gate; swept through targeting, movement, gas, abilities, win checker, checkpoint fractions); morale damage = terror stat on damaging hits + death shock (`MoraleRules`: radius 2, 8 dmg, "M5 initial") — HP damage never bleeds morale, no new RNG; `MaxMorale <= 0` = immune (buildings). Log actions `morale_damage`/`rout`; `CombatAdvanceResult.EnemyKilled/EnemyRouted`. Economy: broken units skipped ENTIRELY by `ManpowerCalculator` (owner call: routs literally free); salvage chance × kill share (`SalvageChanceCalculator.KillSharePercent`, stamped on `RunState.LastFightSalvageKillPercent`, neutral 100); run Morale deleted everywhere (schema **v10**, migration ignores stray keys); defeat = Manpower ≤ 0 after a fight, post-grants, win or lose; **fielding gate deleted** (owner addition — you can always march, Manpower is pure health); `perfect_morale_victory` achievement now checks Manpower ≥ 100. Content: SO fields + factory params + shipped assets stamped (infantry 30 / vehicles 50 / mg nest 40 + terror 4 / buildings 0); MG nest = first terror content (suppression). Presentation: per-unit morale strip beside the side ring (amber/bone, never blue/red), rout playback = flee-march to own edge + dissolve (vehicles slump-abandon), report lines "Enemy broken: N routed / M killed" + "Your routed units return next round (N)", Morale HUD column deleted (PanelVersion 5). Suites 441 EditMode / 14 PlayMode green; live smoke produced 115 morale events / 20 routs and the full flee presentation.
+
+**Judgment calls & flags:**
+- **Dense-blob shock cascade** (BALANCE PASS, priority): 34 packed conscripts vs the stage-1 Warden lost to a 20-rout chain — death shock (radius 2) turns tight formations into dominoes. Working as designed (spacing now matters), but shock radius/damage and per-fight shock caps are the first knobs if playtests read as unfair.
+- Pause-batch kills (mortar/cannon/call-strike) do NOT death-shock — they bypass `LogDestroyed` (consistent with their existing occupancy bypass). Follow-up if terror builds want parity.
+- Call-strike targeting was switched to IsActive (won't burn Authority on routed enemies).
+- Loss/all-routs salvage: killed 0 + routed 0 ⇒ neutral 100 (no removals means no signal, not zero).
+- The pre-fight HUD income preview shows the UNSCALED salvage chance (next fight's kill share is unknowable) — annotate in M6 if it confuses.
+- Cartel terror identity content still pending its faction pass (mg nest carries the channel until then).
 
 ## M6 — UI restyle sweep (anytime after M0; cards/shop already done in M3)
 

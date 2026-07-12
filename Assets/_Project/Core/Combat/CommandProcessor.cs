@@ -211,7 +211,9 @@ namespace DeadManZone.Core.Combat
             string actorId,
             int damage)
         {
-            var target = enemyCombatants.Where(c => c.IsAlive).OrderBy(c => c.CurrentHp).FirstOrDefault();
+            // IsActive, not IsAlive (M5): a routed enemy has left the field — a strike
+            // aimed at it would burn Authority on a unit already out of the fight.
+            var target = enemyCombatants.Where(c => c.IsActive).OrderBy(c => c.CurrentHp).FirstOrDefault();
             if (target == null)
                 return;
 

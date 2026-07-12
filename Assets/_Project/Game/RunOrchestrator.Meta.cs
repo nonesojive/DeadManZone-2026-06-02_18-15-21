@@ -35,7 +35,7 @@ namespace DeadManZone.Game
         private void ProcessRunEndMeta(bool victory)
         {
             int score = ComputeRunScore(victory);
-            foreach (var id in MetaTracker.EvaluateRunEndAchievements(victory, State.FactionId, State.Morale))
+            foreach (var id in MetaTracker.EvaluateRunEndAchievements(victory, State.FactionId, State.Manpower))
                 GrantAchievement(id);
 
             if (victory)
@@ -50,7 +50,7 @@ namespace DeadManZone.Game
             if (!victory || State == null)
                 return 0;
 
-            return State.Supplies + State.Morale + State.FightIndex * 100;
+            return State.Supplies + State.Manpower + State.FightIndex * 100;
         }
 
         private static void GrantAchievement(string achievementId)

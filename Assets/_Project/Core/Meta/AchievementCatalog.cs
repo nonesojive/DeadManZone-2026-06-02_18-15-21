@@ -88,7 +88,7 @@ namespace DeadManZone.Core.Meta
             {
                 Id = AchievementIds.PerfectMorale,
                 DisplayName = "Unbroken Spirit",
-                Description = "Win a campaign at 100 morale.",
+                Description = "Win a campaign with 100+ Manpower standing.",
                 SteamApiName = "ACH_PERFECT_MORALE"
             }
         };

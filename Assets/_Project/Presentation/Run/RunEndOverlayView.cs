@@ -38,14 +38,14 @@ namespace DeadManZone.Presentation.Run
                         $"The gauntlet is yours.\n" +
                         $"Faction: {factionName}\n" +
                         $"Fights cleared: {state.FightIndex}\n" +
-                        $"Final supplies: {state.Supplies} · Morale: {state.Morale}";
+                        $"Final supplies: {state.Supplies} · Manpower: {state.Manpower}";
                 }
                 else
                 {
                     bodyText.text =
                         $"Your line broke.\n" +
                         $"Faction: {factionName}\n" +
-                        (state != null ? $"Reached fight {state.FightIndex} · Morale {state.Morale}" : "Regroup and try again.");
+                        (state != null ? $"Reached fight {state.FightIndex}" : "Regroup and try again.");
                 }
             }
         }

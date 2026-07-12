@@ -140,8 +140,7 @@ namespace DeadManZone.Core.Tests
                 VerticalSliceTestFixtures.RegressionRunSeed,
                 faction.startingSupplies,
                 faction.startingManpower,
-                faction.startingAuthority,
-                faction.startingMorale);
+                faction.startingAuthority);
             state.CombatBoard = BoardSnapshotMapper.FromBoard(boards.Combat);
             state.HqBoard = BoardSnapshotMapper.FromBoard(boards.Hq);
             state.Phase = phase;
@@ -257,7 +256,6 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(expected.Supplies, actual.Supplies);
             Assert.AreEqual(expected.Manpower, actual.Manpower);
             Assert.AreEqual(expected.Authority, actual.Authority);
-            Assert.AreEqual(expected.Morale, actual.Morale);
             Assert.AreEqual(expected.RunSeed, actual.RunSeed);
             Assert.AreEqual(expected.FactionId, actual.FactionId);
             Assert.AreEqual(expected.Reserves.Pieces.Count, actual.Reserves.Pieces.Count);

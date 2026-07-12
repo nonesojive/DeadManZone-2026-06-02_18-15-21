@@ -114,7 +114,9 @@ namespace DeadManZone.Data.Editor
             string[] abilityTags = null,
             string[] flavorTags = null,
             PieceAbilityInlineEntry[] customAbilities = null,
-            Rarity rarity = Rarity.Common)
+            Rarity rarity = Rarity.Common,
+            int? maxMorale = null,
+            int terrorDamage = 0)
         {
             var piece = DemoContentGenerator.SavePiece(
                 id,
@@ -141,7 +143,9 @@ namespace DeadManZone.Data.Editor
                 attackRange: attackRange,
                 movementSpeed: movementSpeed,
                 abilityTags: abilityTags ?? Array.Empty<string>(),
-                rarity: rarity);
+                rarity: rarity,
+                maxMorale: maxMorale,
+                terrorDamage: terrorDamage);
 
             piece.flavorTags = flavorTags ?? Array.Empty<string>();
             piece.catalogAbilities = Array.Empty<AbilityDefinitionSO>();
@@ -190,7 +194,6 @@ namespace DeadManZone.Data.Editor
                 baseSuppliesPerRound: 10,
                 baseMusterPerShop: 1,
                 startingAuthority: 2,
-                startingMorale: 30,
                 baseSalvageChancePercent: 1);
 
             faction.startingTactics = new[]

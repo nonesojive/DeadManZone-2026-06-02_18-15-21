@@ -45,7 +45,6 @@ namespace DeadManZone.Data
         [Header("Manpower")]
         public int baseMusterPerShop = 12;
         public int startingAuthority = 2;
-        public int startingMorale = 100;
 
         [Header("Tactics")]
         public TacticType[] startingTactics =

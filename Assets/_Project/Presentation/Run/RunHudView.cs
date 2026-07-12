@@ -21,7 +21,6 @@ namespace DeadManZone.Presentation.Run
         [SerializeField] private TMP_Text manpowerIncomeText;
         [SerializeField] private TMP_Text authorityIncomeText;
         [SerializeField] private TMP_Text salvageNumberText;
-        [SerializeField] private TMP_Text moraleValueText;
         [SerializeField] private TMP_Text strengthValueText;
         [SerializeField] private MatchupStrengthView matchupStrengthView;
 
@@ -43,7 +42,6 @@ namespace DeadManZone.Presentation.Run
             TMP_Text suppliesValue,
             TMP_Text manpowerValue,
             TMP_Text authorityValue,
-            TMP_Text moraleValue,
             TMP_Text salvageIndicator = null,
             MatchupStrengthView matchupStrength = null,
             TMP_Text strengthValue = null)
@@ -54,7 +52,6 @@ namespace DeadManZone.Presentation.Run
             suppliesValueText = suppliesValue;
             manpowerValueText = manpowerValue;
             authorityValueText = authorityValue;
-            moraleValueText = moraleValue;
             salvageIndicatorText = salvageIndicator;
             matchupStrengthView = matchupStrength;
             strengthValueText = strengthValue;
@@ -143,9 +140,6 @@ namespace DeadManZone.Presentation.Run
 
             if (authorityValueText != null)
                 authorityValueText.text = state.Authority.ToString();
-
-            if (moraleValueText != null)
-                moraleValueText.text = state.Morale.ToString();
 
             if (gateMessageText != null)
             {
@@ -280,7 +274,6 @@ namespace DeadManZone.Presentation.Run
             ApplyLabel(manpowerIncomeText, true, theme);
             ApplyLabel(authorityIncomeText, true, theme);
             ApplyLabel(salvageNumberText, false, theme);
-            ApplyLabel(moraleValueText, false, theme);
             ApplyLabel(strengthValueText, false, theme);
             matchupStrengthView?.ApplyTheme(theme);
         }
@@ -308,7 +301,6 @@ namespace DeadManZone.Presentation.Run
             manpowerIncomeText ??= FindNamedText(searchRoot, "ManpowerIncome");
             authorityIncomeText ??= FindNamedText(searchRoot, "AuthorityIncome");
             salvageNumberText ??= FindNamedText(searchRoot, "SalvageNumber");
-            moraleValueText ??= FindNamedText(searchRoot, "MoraleNumber", "MoralNumber");
             strengthValueText ??= FindNamedText(searchRoot, "StrengthNumber");
 
             _hudTextsWired = true;

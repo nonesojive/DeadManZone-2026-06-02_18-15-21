@@ -18,20 +18,6 @@ namespace DeadManZone.Core.Tests
         }
 
         [Test]
-        public void CanStartBattle_FalseWhenFieldingExceedsManpower()
-        {
-            var board = TestBoards.WithBuildingAndRifle();
-            Assert.IsFalse(ManpowerCalculator.CanStartBattle(board, manpower: 9, Registry));
-        }
-
-        [Test]
-        public void CanStartBattle_TrueWhenManpowerMeetsFielding()
-        {
-            var board = TestBoards.WithBuildingAndRifle();
-            Assert.IsTrue(ManpowerCalculator.CanStartBattle(board, manpower: 10, Registry));
-        }
-
-        [Test]
         public void ComputeUpkeep_IgnoresNonCombatantPieces()
         {
             var board = TestBoards.WithCommandBunker();
@@ -78,6 +64,26 @@ namespace DeadManZone.Core.Tests
                 }
             };
             Assert.AreEqual(10, ManpowerCalculator.ComputeCasualties(combatants));
+        }
+
+        [Test]
+        public void ComputeCasualties_BrokenUnit_CostsNothing()
+        {
+            // ADR-0005 mercy mechanic: a routed unit fled intact — no death cost, no
+            // damage-taken attrition, even with heavy damage on the books.
+            var rifle = TestPieces.RifleSquadTenMan();
+            var combatants = new[]
+            {
+                new CombatantState
+                {
+                    InstanceId = "rifle_1",
+                    Definition = rifle,
+                    CurrentHp = 1,
+                    DamageTakenThisFight = 99,
+                    IsBroken = true
+                }
+            };
+            Assert.AreEqual(0, ManpowerCalculator.ComputeCasualties(combatants));
         }
 
         [Test]

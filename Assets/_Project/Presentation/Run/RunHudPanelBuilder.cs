@@ -6,12 +6,14 @@ using UnityEngine.UI;
 namespace DeadManZone.Presentation.Run
 {
     /// <summary>
-    /// Builds the structured run HUD (fight header + four resource columns).
+    /// Builds the structured run HUD (fight header + three resource columns).
+    /// Run-level Morale is gone (ADR-0005: Manpower is run health) — version 5
+    /// forces authored panels to rebuild without the dead Morale column.
     /// </summary>
     public static class RunHudPanelBuilder
     {
         public const string PanelName = "RunHudPanel";
-        public const int PanelVersion = 4;
+        public const int PanelVersion = 5;
 
         public sealed class BuiltPanel
         {
@@ -23,7 +25,6 @@ namespace DeadManZone.Presentation.Run
             public TMP_Text SuppliesValue;
             public TMP_Text ManpowerValue;
             public TMP_Text AuthorityValue;
-            public TMP_Text MoraleValue;
             public MatchupStrengthView MatchupStrength;
         }
 
@@ -92,7 +93,6 @@ namespace DeadManZone.Presentation.Run
             var supplies = CreateResourceColumn(grid.transform, "Supplies", theme, 0);
             var manpower = CreateResourceColumn(grid.transform, "Manpower", theme, 1);
             var authority = CreateResourceColumn(grid.transform, "Authority", theme, 2);
-            var morale = CreateResourceColumn(grid.transform, "Morale", theme, 3);
 
             return new BuiltPanel
             {
@@ -104,7 +104,6 @@ namespace DeadManZone.Presentation.Run
                 SuppliesValue = supplies,
                 ManpowerValue = manpower,
                 AuthorityValue = authority,
-                MoraleValue = morale,
                 MatchupStrength = matchupView
             };
         }
@@ -137,7 +136,6 @@ namespace DeadManZone.Presentation.Run
                 panel.SuppliesValue,
                 panel.ManpowerValue,
                 panel.AuthorityValue,
-                panel.MoraleValue,
                 panel.SalvageIndicator,
                 panel.MatchupStrength);
         }
@@ -158,7 +156,7 @@ namespace DeadManZone.Presentation.Run
             UiThemeSO theme,
             int columnIndex)
         {
-            float width = 1f / 4f;
+            float width = 1f / 3f;
             float minX = columnIndex * width;
             float maxX = minX + width;
 

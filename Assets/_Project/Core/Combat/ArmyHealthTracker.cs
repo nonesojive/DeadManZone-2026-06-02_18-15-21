@@ -25,7 +25,8 @@ namespace DeadManZone.Core.Combat
                         continue;
 
                     starting += combatant.Definition.MaxHp;
-                    current += System.Math.Max(0, combatant.CurrentHp);
+                    // Routed units read as dead on the army bar: 0 current, full weight in max.
+                    current += combatant.IsBroken ? 0 : System.Math.Max(0, combatant.CurrentHp);
                 }
             }
 

@@ -68,8 +68,7 @@ namespace DeadManZone.Game
                 seed,
                 Faction.startingSupplies,
                 Faction.startingManpower,
-                Faction.startingAuthority,
-                Faction.startingMorale);
+                Faction.startingAuthority);
             State.CombatBoard = Faction.CreateEmptyCombatBoardSnapshot();
             State.HqBoard = Faction.CreateEmptyHqBoardSnapshot();
             ApplyStartingLoadout();
@@ -144,19 +143,13 @@ namespace DeadManZone.Game
             Persist();
         }
 
+        /// <summary>Always true since M5 (ADR-0005): the Manpower fielding gate is gone —
+        /// you can always march. Manpower is run health; the reckoning comes after the
+        /// fight, not before it. Kept as a method because UI wires through it.</summary>
         public bool CanStartBattle(out string failureReason)
         {
-            var combatBoard = GetCombatBoard();
-            int upkeep = ManpowerCalculator.ComputeUpkeep(combatBoard, _registry);
-            if (ManpowerCalculator.CanStartBattle(combatBoard, State.Manpower, _registry))
-            {
-                failureReason = null;
-                return true;
-            }
-
-            failureReason =
-                $"Insufficient manpower: fielding requires {upkeep} but only {State.Manpower} available.";
-            return false;
+            failureReason = null;
+            return true;
         }
 
         // ---- Dread clock / boss framework (M1, ADR-0004) ----
@@ -650,24 +643,26 @@ namespace DeadManZone.Game
             State.SalvageHardBoost = playerWon && activeTier == FightOptionTier.Hard && !isBossFight;
             var playerCombatants = result.PlayerCombatantsAtEnd ?? Array.Empty<CombatantState>();
             int casualties = ManpowerCalculator.ComputeCasualties(playerCombatants);
-            State.Manpower = Math.Max(0, State.Manpower - casualties);
+            // Manpower is run health (ADR-0005): no clamp here — the deficit must
+            // survive until AFTER the post-fight grants (muster, hard-victory package)
+            // so they get their chance to save the run before the defeat check.
+            State.Manpower -= casualties;
+            // Routed enemies escaped with their gear: the coming build round's salvage
+            // scales by the kill share (ADR-0005). Stamped for both outcomes — RefreshShop
+            // re-syncs salvage every round and reads this back.
+            State.LastFightSalvageKillPercent =
+                SalvageChanceCalculator.KillSharePercent(result.EnemyKilled, result.EnemyRouted);
             int suppliesIncome = ApplyPostCombatIncome();
 
             if (!playerWon)
             {
-                int moraleLoss = MoraleCalculator.ComputeLoss(
-                    DreadRules.FightEquivalent(State.Dread),
-                    result.PlayerCombatantsLost,
-                    result.PlayerCombatantsTotal);
-                State.Morale -= moraleLoss;
                 ProcessFightEndMeta();
                 State.LastBattleReport = BattleReportBuilder.Build(
                     System.Array.Empty<CombatantState>(),
                     playerWon,
                     isDraw,
                     casualties,
-                    suppliesIncome,
-                    moraleDelta: -moraleLoss);
+                    suppliesIncome);
                 // The sim's report carries the real damage tables; without this the
                 // defeat card always showed empty dealt/taken columns.
                 if (result.BattleReport != null)
@@ -678,7 +673,9 @@ namespace DeadManZone.Game
                         IsDraw = isDraw,
                         ManpowerCasualties = casualties,
                         SuppliesEarned = suppliesIncome,
-                        MoraleDelta = -moraleLoss,
+                        PlayerRouted = result.BattleReport.PlayerRouted,
+                        EnemyRouted = result.BattleReport.EnemyRouted,
+                        EnemyKilled = result.BattleReport.EnemyKilled,
                         TopDamageDealt = result.BattleReport.TopDamageDealt,
                         TopDamageTaken = result.BattleReport.TopDamageTaken
                     };
@@ -687,8 +684,9 @@ namespace DeadManZone.Game
                 State.Combat = null;
 
                 // Losses grant no Dread, and a pending boss stays pending — the boss
-                // simply awaits the next combat.
-                if (State.Morale <= 0)
+                // simply awaits the next combat. Defeat is bleeding out: no Manpower
+                // left even after the muster (ADR-0005).
+                if (State.Manpower <= 0)
                 {
                     State.Phase = RunPhase.Defeat;
                     ProcessRunEndMeta(victory: false);
@@ -713,8 +711,7 @@ namespace DeadManZone.Game
                 playerWon,
                 isDraw,
                 casualties,
-                suppliesIncome,
-                moraleDelta: 0);
+                suppliesIncome);
             if (result.BattleReport != null)
             {
                 State.LastBattleReport = new BattleReport
@@ -723,7 +720,9 @@ namespace DeadManZone.Game
                     IsDraw = isDraw,
                     ManpowerCasualties = casualties,
                     SuppliesEarned = suppliesIncome,
-                    MoraleDelta = 0,
+                    PlayerRouted = result.BattleReport.PlayerRouted,
+                    EnemyRouted = result.BattleReport.EnemyRouted,
+                    EnemyKilled = result.BattleReport.EnemyKilled,
                     TopDamageDealt = result.BattleReport.TopDamageDealt,
                     TopDamageTaken = result.BattleReport.TopDamageTaken
                 };
@@ -755,6 +754,17 @@ namespace DeadManZone.Game
                 }
 
                 State.Dread += DreadRules.DreadFor(activeTier);
+            }
+
+            // A win can still bleed the army out (ADR-0005): if the muster and the
+            // hard-victory package couldn't pull Manpower above zero, the run ends.
+            // The final-boss Victory above takes precedence — it already returned.
+            if (State.Manpower <= 0)
+            {
+                State.Phase = RunPhase.Defeat;
+                ProcessRunEndMeta(victory: false);
+                Persist();
+                return;
             }
 
             State.FightIndex++;

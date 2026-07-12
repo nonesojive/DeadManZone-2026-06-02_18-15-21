@@ -37,8 +37,8 @@ The state a unit enters when combat Morale hits zero: it flees the field and is 
 _Avoid_: Retreat (implies an order), death, despawn (presentation word)
 
 **Manpower**:
-Run health. Combat deaths deduct it directly; the run is lost when an army can no longer be fielded. Pieces and effects that grant Manpower are the game's heals.
-_Avoid_: Lives, HP (reserve for units), morale (the retired run resource)
+Run health. Combat deaths deduct it directly; the run is lost when it sits at 0 or below after a fight (checked after post-fight grants — muster and spoils can save you). There is no fielding requirement: you can always march, whatever the count. Pieces and effects that grant Manpower are the game's heals.
+_Avoid_: Lives, HP (reserve for units), morale (the retired run resource), fielding cost (deleted with the gate)
 
 **Starting Loadout**:
 The few pieces a faction begins every run with, pre-placed on their boards (buildings → HQ, units → combat) — free, upkeep applies. The faction's opening hand: it shapes early-game combat feel and nudges players toward the faction's identity (IronMarch: supply depot + command outpost, field medic + conscript rifleman). Authored per faction on its definition; anchors are preferences, not guarantees.

@@ -37,6 +37,10 @@ namespace DeadManZone.Core.Run
             {
                 if (c?.Definition == null || c.Definition.ManpowerCost <= 0)
                     continue;
+                // Routed units fled the field intact (ADR-0005 mercy mechanic): no death
+                // cost AND no damage-taken attrition — they stand again next round.
+                if (c.IsBroken)
+                    continue;
                 if (c.DamageTakenThisFight <= 0 && c.IsAlive)
                     continue;
 
@@ -56,9 +60,6 @@ namespace DeadManZone.Core.Run
 
         public static int ComputeUpkeep(BoardState board, ContentRegistry content) =>
             ComputeFieldingRequirement(board, content);
-
-        public static bool CanStartBattle(BoardState board, int manpower, ContentRegistry content) =>
-            manpower >= ComputeFieldingRequirement(board, content);
 
         public static bool CountsTowardFielding(PieceDefinition definition) =>
             definition != null && definition.ManpowerCost > 0;

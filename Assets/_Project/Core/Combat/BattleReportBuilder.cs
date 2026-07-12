@@ -11,8 +11,9 @@ namespace DeadManZone.Core.Combat
             bool isDraw,
             int manpowerCasualties,
             int suppliesEarned,
-            int moraleDelta,
-            int topCount = 3)
+            int topCount = 3,
+            int enemyKilled = 0,
+            int enemyRouted = 0)
         {
             var playerSide = playerCombatants.Where(c => c.Side == CombatSide.Player).ToList();
             return new BattleReport
@@ -21,7 +22,9 @@ namespace DeadManZone.Core.Combat
                 IsDraw = isDraw,
                 ManpowerCasualties = manpowerCasualties,
                 SuppliesEarned = suppliesEarned,
-                MoraleDelta = moraleDelta,
+                PlayerRouted = playerSide.Count(c => c.IsAlive && c.IsBroken),
+                EnemyRouted = enemyRouted,
+                EnemyKilled = enemyKilled,
                 TopDamageDealt = RankByDamage(playerSide, c => c.DamageDealtThisFight, topCount),
                 TopDamageTaken = RankByDamage(playerSide, c => c.DamageTakenThisFight, topCount)
             };

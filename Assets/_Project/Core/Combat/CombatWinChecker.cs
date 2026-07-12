@@ -9,8 +9,8 @@ namespace DeadManZone.Core.Combat
             IReadOnlyList<CombatantState> playerCombatants,
             IReadOnlyList<CombatantState> enemyCombatants)
         {
-            bool enemyAlive = HasLivingFighters(enemyCombatants);
-            bool playerAlive = HasLivingFighters(playerCombatants);
+            bool enemyAlive = HasActiveFighters(enemyCombatants);
+            bool playerAlive = HasActiveFighters(playerCombatants);
 
             if (!enemyAlive && !playerAlive)
                 return (true, true, true);
@@ -24,7 +24,8 @@ namespace DeadManZone.Core.Combat
             return (false, false, false);
         }
 
-        private static bool HasLivingFighters(IEnumerable<CombatantState> combatants) =>
-            combatants.Any(c => c.IsAlive && c.Definition.MaxHp > 0);
+        // A side fights on while it has any unbroken, living unit — routed survivors don't count (ADR-0005).
+        private static bool HasActiveFighters(IEnumerable<CombatantState> combatants) =>
+            combatants.Any(c => c.IsActive && c.Definition.MaxHp > 0);
     }
 }

@@ -21,7 +21,7 @@ namespace DeadManZone.Data.Editor
                     startingAuthority: 5),
                 DemoContentGenerator.SaveFaction("neutral", "Neutral Militia", startingSupplies: 80),
                 DemoContentGenerator.SaveFaction("crimson_legion", "Crimson Legion"),
-                DemoContentGenerator.SaveFaction("ash_wraiths", "Ash Wraiths", startingMorale: 90)
+                DemoContentGenerator.SaveFaction("ash_wraiths", "Ash Wraiths")
             };
     }
 }

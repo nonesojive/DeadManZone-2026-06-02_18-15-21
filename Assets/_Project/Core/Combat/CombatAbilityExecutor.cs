@@ -40,7 +40,7 @@ namespace DeadManZone.Core.Combat
             GridCoord? targetCell = null)
         {
             var sourceCombatant = playerCombatants.FirstOrDefault(c =>
-                c.InstanceId == sourcePieceId && c.IsAlive);
+                c.InstanceId == sourcePieceId && c.IsActive);
             if (sourceCombatant == null)
                 return CommandResult.Fail("Ability source not alive");
 
@@ -93,7 +93,7 @@ namespace DeadManZone.Core.Combat
             int logSegment,
             int logTick)
         {
-            foreach (var ally in allies.Where(a => a.IsAlive && IsAdjacent(source.AnchorPosition, a.AnchorPosition)))
+            foreach (var ally in allies.Where(a => a.IsActive && IsAdjacent(source.AnchorPosition, a.AnchorPosition)))
             {
                 if (!HasInfantryTag(ally.Definition))
                     continue;
@@ -118,7 +118,7 @@ namespace DeadManZone.Core.Combat
                 return CommandResult.Fail("No valid cannon target");
 
             ApplyDamage(source, primary, CannonBlastPrimaryDamage, AttackType.Explosive, log, logSegment, logTick, "cannon_blast");
-            foreach (var splash in enemies.Where(e => e.IsAlive && e.InstanceId != primary.InstanceId && IsAdjacent(primary.AnchorPosition, e.AnchorPosition)))
+            foreach (var splash in enemies.Where(e => e.IsActive && e.InstanceId != primary.InstanceId && IsAdjacent(primary.AnchorPosition, e.AnchorPosition)))
                 ApplyDamage(source, splash, CannonBlastSplashDamage, AttackType.Explosive, log, logSegment, logTick, "cannon_blast_splash");
 
             return CommandResult.Ok();
@@ -128,26 +128,26 @@ namespace DeadManZone.Core.Combat
         /// (a live enemy occupies it). UI target pickers must defer to this so their
         /// valid-cell highlighting can never drift from what execution accepts.</summary>
         public static bool IsValidTargetCell(IEnumerable<CombatantState> enemies, GridCoord cell) =>
-            enemies != null && enemies.Any(e => e != null && e.IsAlive && OccupiesCell(e, cell));
+            enemies != null && enemies.Any(e => e != null && e.IsActive && OccupiesCell(e, cell));
 
         private static GridCoord? ResolveTargetCell(IList<CombatantState> enemies, GridCoord? targetCell)
         {
             if (targetCell.HasValue && IsValidTargetCell(enemies, targetCell.Value))
                 return targetCell;
 
-            return enemies.Where(e => e.IsAlive).OrderBy(e => e.AnchorPosition.X).ThenBy(e => e.InstanceId).FirstOrDefault()?.AnchorPosition;
+            return enemies.Where(e => e.IsActive).OrderBy(e => e.AnchorPosition.X).ThenBy(e => e.InstanceId).FirstOrDefault()?.AnchorPosition;
         }
 
         private static CombatantState ResolvePrimaryTarget(IList<CombatantState> enemies, GridCoord? targetCell)
         {
             if (targetCell.HasValue)
             {
-                var atCell = enemies.FirstOrDefault(e => e.IsAlive && OccupiesCell(e, targetCell.Value));
+                var atCell = enemies.FirstOrDefault(e => e.IsActive && OccupiesCell(e, targetCell.Value));
                 if (atCell != null)
                     return atCell;
             }
 
-            return enemies.Where(e => e.IsAlive).OrderBy(e => e.CurrentHp).ThenBy(e => e.InstanceId).FirstOrDefault();
+            return enemies.Where(e => e.IsActive).OrderBy(e => e.CurrentHp).ThenBy(e => e.InstanceId).FirstOrDefault();
         }
 
         private static void ApplyAreaDamage(
@@ -162,7 +162,7 @@ namespace DeadManZone.Core.Combat
             int logTick,
             string actionType)
         {
-            foreach (var target in targets.Where(t => t.IsAlive && Manhattan(center, t.AnchorPosition) <= radius))
+            foreach (var target in targets.Where(t => t.IsActive && Manhattan(center, t.AnchorPosition) <= radius))
             {
                 var tempAttacker = new PieceDefinition
                 {

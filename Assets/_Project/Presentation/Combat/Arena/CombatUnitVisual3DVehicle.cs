@@ -22,6 +22,11 @@ namespace DeadManZone.Presentation.Combat.Arena
         private const float DissolveSeconds = 0.8f;
         private const float WreckLingerSeconds = 0.6f;
         private const float CollapseSeconds = 0.9f;
+        // Rout (crew abandons the vehicle, ADR-0005): the death collapse adapted — a
+        // shallower settle, a short beat, then a slower, softer dissolve. No wreck read.
+        private const float AbandonSinkFraction = 0.10f; // vs the 0.22 death sink
+        private const float AbandonLingerSeconds = 0.25f;
+        private const float RoutDissolveSeconds = 1.2f;
         private const float TurnDegreesPerSecond = 240f; // vehicles turn slower than infantry
         private const float RecoilDistanceMeters = 0.09f;
         private const float RecoilOutSeconds = 0.05f;
@@ -42,6 +47,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private GameObject _ring;
         private Renderer _ringRenderer;
         private MaterialPropertyBlock _ringMpb;
+        private CombatUnitMoraleStrip _moraleStrip;
         private float _ringTargetFill = 1f;
         private float _ringDisplayedFill = 1f;
 
@@ -77,6 +83,79 @@ namespace DeadManZone.Presentation.Combat.Arena
         /// <inheritdoc/>
         public void SetHealthFraction(float fraction) =>
             _ringTargetFill = Mathf.Clamp01(fraction);
+
+        /// <summary>Vehicles do NOT run when broken — the crew abandons them in place.</summary>
+        public bool FleesWhenBroken => false;
+
+        /// <inheritdoc/>
+        public void SetMoraleFraction(float fraction)
+        {
+            // Lazily mirrors the side-ring machinery; only breakable units get this call.
+            if (_moraleStrip == null && _modelRoot != null)
+                _moraleStrip = CombatUnitMoraleStrip.Attach(transform, RingScale);
+
+            _moraleStrip?.SetFraction(fraction);
+        }
+
+        /// <inheritdoc/>
+        public void PlayRoutExit(Action onComplete)
+        {
+            if (_dying)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            if (_attackRoutine != null)
+                StopCoroutine(_attackRoutine);
+            _attackRoutine = null;
+            if (_hurtRoutine != null)
+                StopCoroutine(_hurtRoutine);
+            _hurtRoutine = null;
+
+            // Reuse the death-collapse state gates (no locomotion, no new one-shots),
+            // but the exit itself is the softer slump-abandon, not the wreck.
+            _dying = true;
+            _walking = false;
+            _locomotionLockUntil = float.MaxValue;
+            if (_ring != null)
+                _ring.SetActive(false);
+            if (_moraleStrip != null)
+                _moraleStrip.gameObject.SetActive(false);
+            ApplyStatus(hitFlash: 0f, dissolve: 0f);
+
+            if (_deathRoutine != null)
+                StopCoroutine(_deathRoutine);
+            _deathRoutine = StartCoroutine(RoutExitRoutine(onComplete));
+        }
+
+        /// <summary>Slump-abandon: a shallow settle (crew bails, suspension sighs), a short
+        /// beat, then a slower soft dissolve — no list-to-one-side wreck read, no VFX hooks.</summary>
+        private IEnumerator RoutExitRoutine(Action onComplete)
+        {
+            float sink = _visualHeight * AbandonSinkFraction;
+            var startPos = _modelRoot != null ? _modelRoot.localPosition : Vector3.zero;
+
+            float settleSeconds = CollapseSeconds * 0.6f;
+            for (float t = 0f; t < settleSeconds && _modelRoot != null; t += Time.deltaTime)
+            {
+                float p = Mathf.SmoothStep(0f, 1f, t / settleSeconds);
+                _modelRoot.localPosition = startPos + Vector3.down * (sink * p);
+                yield return null;
+            }
+
+            yield return new WaitForSeconds(AbandonLingerSeconds);
+
+            for (float t = 0f; t < RoutDissolveSeconds; t += Time.deltaTime)
+            {
+                ApplyStatus(hitFlash: 0f, dissolve: Mathf.Clamp01(t / RoutDissolveSeconds));
+                yield return null;
+            }
+
+            ApplyStatus(hitFlash: 0f, dissolve: 1f);
+            _deathRoutine = null;
+            onComplete?.Invoke();
+        }
 
         /// <summary>Instantiates the static mesh under this actor at the archetype's target
         /// height (vehicles are NOT 1.7 m infantry — pass their authored silhouette height),
@@ -226,10 +305,13 @@ namespace DeadManZone.Presentation.Combat.Arena
                 Destroy(_modelRoot.gameObject);
             if (_ring != null)
                 Destroy(_ring);
+            if (_moraleStrip != null)
+                Destroy(_moraleStrip.gameObject);
 
             _modelRoot = null;
             _ring = null;
             _ringRenderer = null;
+            _moraleStrip = null;
             _ringTargetFill = 1f;
             _ringDisplayedFill = 1f;
             _renderers.Clear();
@@ -377,6 +459,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             ApplyStatus(hitFlash: 0f, dissolve: 1f);
             if (_ring != null)
                 _ring.SetActive(false);
+            if (_moraleStrip != null)
+                _moraleStrip.gameObject.SetActive(false);
 
             _deathRoutine = null;
             onComplete?.Invoke();

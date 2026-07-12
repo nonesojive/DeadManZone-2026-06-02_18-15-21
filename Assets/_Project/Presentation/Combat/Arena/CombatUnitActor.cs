@@ -52,6 +52,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         public string PieceId { get; private set; }
         public GridCoord Anchor => _anchor;
         public bool IsAlive { get; private set; } = true;
+        /// <summary>Which army the unit fights for — a broken unit flees toward this side's board edge.</summary>
+        public CombatSide Side { get; private set; } = CombatSide.Player;
         public CombatAttackPresentationProfile AttackProfile => _attackProfile;
 
         /// <summary>Seconds the death presentation takes (through the visual seam);
@@ -77,6 +79,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             InstanceId = instanceId;
             PieceId = pieceId;
+            Side = combatSide;
             _attackProfile = attackProfile;
             _mapper = mapper;
             _anchor = anchor;
@@ -125,6 +128,16 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
 
             _visual?.SetHealthFraction(fraction);
+        }
+
+        /// <summary>Update the unit's Morale display (0..1). The presenter only calls this
+        /// for units that can break, so morale-immune units never grow a strip.</summary>
+        public void SetMoraleFraction(float fraction)
+        {
+            if (!IsAlive)
+                return;
+
+            _visual?.SetMoraleFraction(fraction);
         }
 
         public void SetFrozen(bool frozen) => _frozen = frozen;
@@ -268,6 +281,82 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
 
             StartCoroutine(DeathRoutine(onComplete));
+        }
+
+        // Rout flee pacing: a panicked sprint over the calibrated march speed, with a few
+        // solid strides before the soft dissolve starts, and a hard cap so a stalled exit
+        // can never wedge the fight-end wait.
+        private const float RoutFleeSpeedScale = 1.35f;
+        private const float RoutFleeLeadSeconds = 0.45f;
+        private const float RoutMaxSeconds = 8f;
+
+        /// <summary>Rout presentation (ADR-0005): the unit ESCAPES — no die clip, no death
+        /// VFX/audio. Infantry reuse the march machinery to run for their own board edge
+        /// while the softer rout dissolve removes the visual; vehicles slump-abandon in
+        /// place (<see cref="ICombatUnitVisual.FleesWhenBroken"/>).</summary>
+        public void PlayRout(Vector3 fleeWorldTarget, Action onComplete)
+        {
+            if (!IsAlive)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            IsAlive = false; // leaves the sim-anchor march loop; the flee routine drives movement
+            ClearChaseTarget();
+
+            if (_visual == null)
+            {
+                // No visual pipeline (wiring bug fallback): reuse the silent scale-out.
+                StartCoroutine(DeathRoutine(onComplete));
+                return;
+            }
+
+            if (_visual.FleesWhenBroken)
+            {
+                StartCoroutine(RoutFleeRoutine(fleeWorldTarget, onComplete));
+                return;
+            }
+
+            _visual.SetWalking(false);
+            _visual.PlayRoutExit(() =>
+            {
+                onComplete?.Invoke();
+                gameObject.SetActive(false);
+            });
+        }
+
+        private IEnumerator RoutFleeRoutine(Vector3 fleeWorldTarget, Action onComplete)
+        {
+            Vector3 fleeDir = fleeWorldTarget - transform.position;
+            fleeDir.y = 0f;
+            if (fleeDir.sqrMagnitude < 0.0001f)
+                fleeDir = Vector3.left;
+
+            _visual.FaceDirection(fleeDir);
+            _visual.SetWalking(true);
+
+            bool exitStarted = false;
+            bool exitDone = false;
+            float speed = _moveWorldSpeed * RoutFleeSpeedScale;
+
+            for (float t = 0f; !exitDone && t < RoutMaxSeconds; t += Time.deltaTime)
+            {
+                if (!exitStarted && t >= RoutFleeLeadSeconds)
+                {
+                    exitStarted = true;
+                    _visual.PlayRoutExit(() => exitDone = true);
+                }
+
+                // Same anti-lunge step cap as the live march — the runner sprints, never pops.
+                float step = speed * Mathf.Min(Time.deltaTime, MaxMoveDeltaTime);
+                transform.position = Vector3.MoveTowards(transform.position, fleeWorldTarget, step);
+                _visual.UpdateSortAndBob(transform.position);
+                yield return null;
+            }
+
+            onComplete?.Invoke();
+            gameObject.SetActive(false);
         }
 
         private static float ResolveFallbackMoveSpeed(float moveLerpSeconds)

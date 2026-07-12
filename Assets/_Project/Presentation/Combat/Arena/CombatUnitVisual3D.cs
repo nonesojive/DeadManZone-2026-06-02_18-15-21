@@ -19,6 +19,9 @@ namespace DeadManZone.Presentation.Combat.Arena
         private const string DieParam = "Die";
 
         private const float DissolveSeconds = 0.8f;
+        // Rout exit: slower, ease-in ramp — the runner stays solid for the first strides
+        // and fades out softly, clearly gentler than the hard 0.8 s death dissolve.
+        private const float RoutDissolveSeconds = 1.4f;
         private const float CorpseLingerSeconds = 0.35f;
         // Softened from 0.85/0.16 — full peak read as a pure-white ghost at gameplay distance.
         private const float HitFlashPeak = 0.45f;
@@ -89,6 +92,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private GameObject _ring;
         private Renderer _ringRenderer;
         private MaterialPropertyBlock _ringMpb;
+        private CombatUnitMoraleStrip _moraleStrip;
         private float _ringTargetFill = 1f;
         private float _ringDisplayedFill = 1f;
         private float _visualHeight = 1.7f;
@@ -97,6 +101,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private Quaternion _targetRotation = Quaternion.identity;
         private Vector3 _lastFacingDir = Vector3.forward;
         private bool _dying;
+        private bool _routExiting;
         private float _locomotionLockUntil;
         private Coroutine _attackRoutine;
         private Coroutine _lungeRoutine;
@@ -149,6 +154,59 @@ namespace DeadManZone.Presentation.Combat.Arena
         /// <inheritdoc/>
         public void SetHealthFraction(float fraction) =>
             _ringTargetFill = Mathf.Clamp01(fraction);
+
+        /// <summary>Infantry run for their own board edge when broken.</summary>
+        public bool FleesWhenBroken => true;
+
+        /// <inheritdoc/>
+        public void SetMoraleFraction(float fraction)
+        {
+            // Lazily mirrors the side-ring machinery: only breakable units ever get this
+            // call, so morale-immune units keep an unchanged silhouette (ADR-0005).
+            if (_moraleStrip == null && _modelRoot != null)
+                _moraleStrip = CombatUnitMoraleStrip.Attach(transform, 1f);
+
+            _moraleStrip?.SetFraction(fraction);
+        }
+
+        /// <inheritdoc/>
+        public void PlayRoutExit(Action onComplete)
+        {
+            if (_dying || _routExiting)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            _routExiting = true;
+            StopTransientRoutines();
+
+            // Out of the fight: the status displays leave immediately (a fleeing unit
+            // reading as a live bar is noise). NOT _dying — the walk cycle keeps playing
+            // while the actor marches the runner off-field.
+            if (_ring != null)
+                _ring.SetActive(false);
+            if (_moraleStrip != null)
+                _moraleStrip.gameObject.SetActive(false);
+
+            if (_deathRoutine != null)
+                StopCoroutine(_deathRoutine);
+            _deathRoutine = StartCoroutine(RoutExitRoutine(onComplete));
+        }
+
+        private IEnumerator RoutExitRoutine(Action onComplete)
+        {
+            for (float t = 0f; t < RoutDissolveSeconds; t += Time.deltaTime)
+            {
+                float p = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / RoutDissolveSeconds));
+                ApplyStatus(hitFlash: 0f, dissolve: p);
+                yield return null;
+            }
+
+            ApplyStatus(hitFlash: 0f, dissolve: 1f);
+            _deathRoutine = null;
+            onComplete?.Invoke();
+        }
 
         /// <summary>Instantiates the rigged model under this actor, applies the toon-ink
         /// material across its renderers, wires the Animator, and drops the side ring.</summary>
@@ -412,10 +470,13 @@ namespace DeadManZone.Presentation.Combat.Arena
                 Destroy(_modelRoot.gameObject);
             if (_ring != null)
                 Destroy(_ring);
+            if (_moraleStrip != null)
+                Destroy(_moraleStrip.gameObject);
 
             _modelRoot = null;
             _ring = null;
             _ringRenderer = null;
+            _moraleStrip = null;
             _ringTargetFill = 1f;
             _ringDisplayedFill = 1f;
             _animator = null;
@@ -441,6 +502,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _rifleLastWorldRotation = Quaternion.identity;
             _hasRifleLastWorldRotation = false;
             _dying = false;
+            _routExiting = false;
             _locomotionLockUntil = 0f;
             _targetRotation = Quaternion.identity;
             _lastFacingDir = Vector3.forward;
@@ -867,6 +929,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             ApplyStatus(hitFlash: 0f, dissolve: 1f);
             if (_ring != null)
                 _ring.SetActive(false);
+            if (_moraleStrip != null)
+                _moraleStrip.gameObject.SetActive(false);
 
             _deathRoutine = null;
             onComplete?.Invoke();

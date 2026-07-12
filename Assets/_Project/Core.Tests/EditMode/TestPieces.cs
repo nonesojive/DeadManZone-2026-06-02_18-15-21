@@ -60,6 +60,8 @@ namespace DeadManZone.Core.Tests
             GrantedAbility? grantedAbility = null,
             int? accuracyOverride = null,
             int? cooldownTicks = null,
+            int? maxMorale = null,
+            int? terrorDamage = null,
             IReadOnlyList<PieceAbilityDefinition> abilities = null) =>
             new()
             {
@@ -76,7 +78,9 @@ namespace DeadManZone.Core.Tests
                 Tags = source.Tags,
                 Abilities = abilities ?? source.Abilities,
                 MaxHp = maxHp ?? source.MaxHp,
+                MaxMorale = maxMorale ?? source.MaxMorale,
                 BaseDamage = baseDamage ?? source.BaseDamage,
+                TerrorDamage = terrorDamage ?? source.TerrorDamage,
                 CooldownTicks = cooldownTicks ?? source.CooldownTicks,
                 GoldCost = source.GoldCost,
                 RequisitionCost = source.RequisitionCost,

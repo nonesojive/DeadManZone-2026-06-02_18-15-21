@@ -69,11 +69,12 @@ namespace DeadManZone.Data.Editor
                 GameTagIds.Infantry, GameTagIds.Assault, "neutral", 12, 50, 5, 1, AttackType.Ballistic, ArmorType.Light,
                 AttackSpeedTier.Slow, AttackRangeTier.Medium, 2, flavorTags: new[] { GameTagIds.SmallArms },
                 rarity: Rarity.Common),
+            // maxMorale 50: vehicle (see iron horse note).
             SavePiece("armored_transport", "Armored Transport", PieceCategory.Unit, DemoSandboxShapes.TransportL,
                 GameTagIds.Vehicle, GameTagIds.Defender, "neutral", 18, 75, 2, 3, AttackType.Ballistic, ArmorType.Light,
                 AttackSpeedTier.Slow, AttackRangeTier.Short, 4, grantedAbility: GrantedAbility.ShieldAllies,
                 synergyTags: new[] { GameTagIds.Convoy }, flavorTags: new[] { GameTagIds.Support },
-                rarity: Rarity.Rare),
+                rarity: Rarity.Rare, maxMorale: 50),
             SavePiece("ironmarch_surgeon", "Ironmarch Surgeon", PieceCategory.Unit, DemoSandboxShapes.Single,
                 GameTagIds.Infantry, GameTagIds.Support, FactionIds.IronmarchUnion, 15, 40, 3, 1, AttackType.Ballistic, ArmorType.Light,
                 AttackSpeedTier.Slow, AttackRangeTier.Short, 2, synergyTags: new[] { GameTagIds.Medic },
@@ -112,7 +113,9 @@ namespace DeadManZone.Data.Editor
                     Ability("iron_horse_adjacent_infantry_hp", PieceAbilityTrigger.AdjacentAura, SynergyStat.MaxHp, SynergyModType.Flat, 10,
                         neighborFilter: new NeighborFilter { PrimaryTagId = GameTagIds.Infantry }, applyToSelf: true)
                 },
-                rarity: Rarity.Rare),
+                // Vehicles hold the line longer than flesh (M5 initial, tune in playtest);
+                // their Break reads as collapse-abandon in presentation, not a sprint.
+                rarity: Rarity.Rare, maxMorale: 50),
             SavePiece("ironclad_mortars", "Ironclad Mortars", PieceCategory.Unit, DemoSandboxShapes.VerticalPair,
                 GameTagIds.Infantry, GameTagIds.Artillery, FactionIds.IronmarchUnion, 20, 25, 8, 3, AttackType.Piercing, ArmorType.Light,
                 AttackSpeedTier.Slow, AttackRangeTier.Long, 1, grantedAbility: GrantedAbility.MortarShot,
@@ -136,7 +139,10 @@ namespace DeadManZone.Data.Editor
             SavePiece("machine_gun_nest", "Machine Gun Nest", PieceCategory.Unit, DemoSandboxShapes.HorizontalPair,
                 GameTagIds.Structure, GameTagIds.Utility, "neutral", 20, 100, 2, 2, AttackType.Shredding, ArmorType.Heavy,
                 AttackSpeedTier.Medium, AttackRangeTier.Medium, 0, synergyTags: new[] { GameTagIds.Entrenched }, flavorTags: new[] { GameTagIds.Fortification },
-                rarity: Rarity.Rare)
+                // First terror content (M5, ADR-0005): sustained shredding fire breaks
+                // will before bodies — the nest suppresses. Crewed emplacement, so it
+                // CAN break (abandon the gun), just later than infantry.
+                rarity: Rarity.Rare, maxMorale: 40, terrorDamage: 4)
         };
     }
 }

@@ -48,6 +48,8 @@ MonoBehaviour:
   includeInShopPool: 1
   rarity: 2
   salvageChanceBonus: 0
+  maxMorale: 50
+  terrorDamage: 0
   attackSpeed: 0
   attackRange: 2
   movementSpeed: 2

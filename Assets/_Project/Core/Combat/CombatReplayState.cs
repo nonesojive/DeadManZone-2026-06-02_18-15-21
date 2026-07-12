@@ -67,7 +67,10 @@ namespace DeadManZone.Core.Combat
 
                     _anchors[combatEvent.ActorId] = destination;
                     return true;
+                // "rout" carries the victim in ActorId like "destroyed": the unit left the
+                // field, so it must not re-anchor on save/resume (ADR-0005).
                 case "destroyed":
+                case "rout":
                     _anchors.Remove(combatEvent.ActorId);
                     return true;
                 default:

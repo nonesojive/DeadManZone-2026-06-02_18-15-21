@@ -19,7 +19,11 @@ namespace DeadManZone.Core.Board
         public IReadOnlyList<PieceAbilityDefinition> Abilities { get; init; }
             = System.Array.Empty<PieceAbilityDefinition>();
         public int MaxHp { get; init; }
+        /// <summary>Morale pool (ADR-0005). 0 = morale-immune: never breaks, takes no morale damage (structures).</summary>
+        public int MaxMorale { get; init; }
         public int BaseDamage { get; init; }
+        /// <summary>Morale damage dealt to the target on any damaging attack (ADR-0005 terror channel).</summary>
+        public int TerrorDamage { get; init; }
         public int CooldownTicks { get; init; }
         public int GoldCost { get; init; }
         public int RequisitionCost { get; init; }

@@ -59,7 +59,9 @@ namespace DeadManZone.Data.Editor
             AttackSpeedTier attackSpeed = AttackSpeedTier.Medium,
             AttackRangeTier attackRange = AttackRangeTier.Medium,
             int movementSpeed = 2,
-            Rarity rarity = Rarity.Common)
+            Rarity rarity = Rarity.Common,
+            int? maxMorale = null,
+            int terrorDamage = 0)
         {
             var path = $"{Root}/Pieces/{id}.asset";
             var asset = LoadOrCreate<PieceDefinitionSO>(path);
@@ -84,6 +86,11 @@ namespace DeadManZone.Data.Editor
                 asset.flavorTags ?? System.Array.Empty<string>());
             asset.factionId = factionId;
             asset.maxHp = maxHp;
+            // M5 (ADR-0005) morale defaults: structures never break (0 = immune);
+            // everything else fields the standard bar unless authored otherwise
+            // (vehicles ride higher at their call sites). M5 initial, tune in playtest.
+            asset.maxMorale = maxMorale ?? (category == PieceCategory.Building ? 0 : 30);
+            asset.terrorDamage = terrorDamage;
             asset.baseDamage = baseDamage;
             asset.cooldownTicks = cooldownTicks;
             asset.goldCost = goldCost;
@@ -119,7 +126,6 @@ namespace DeadManZone.Data.Editor
             int baseSuppliesPerRound = 0,
             int baseMusterPerShop = 12,
             int startingAuthority = 2,
-            int startingMorale = 100,
             int baseSalvageChancePercent = 10)
         {
             var path = $"{Root}/Factions/{id}.asset";
@@ -134,7 +140,6 @@ namespace DeadManZone.Data.Editor
             asset.baseSuppliesPerRound = baseSuppliesPerRound;
             asset.baseMusterPerShop = baseMusterPerShop;
             asset.startingAuthority = startingAuthority;
-            asset.startingMorale = startingMorale;
             asset.baseSalvageChancePercent = baseSalvageChancePercent;
             asset.tokenBackgroundColor = DefaultFactionTokenBackground(id);
             EditorUtility.SetDirty(asset);

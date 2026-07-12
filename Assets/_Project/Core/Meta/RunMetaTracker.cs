@@ -25,7 +25,7 @@ namespace DeadManZone.Core.Meta
         public IEnumerable<string> EvaluateRunEndAchievements(
             bool victory,
             string factionId,
-            int finalMorale)
+            int finalManpower)
         {
             if (FightsCompletedThisRun >= 10)
                 yield return AchievementIds.TenFightsSurvived;
@@ -41,7 +41,9 @@ namespace DeadManZone.Core.Meta
 
             yield return AchievementIds.ClearGauntlet;
 
-            if (finalMorale >= 100)
+            // Run-level Morale retired (ADR-0005, M5): the "unbroken" bar is now the
+            // army itself — win with 100+ Manpower standing. Id stays for Steam parity.
+            if (finalManpower >= 100)
                 yield return AchievementIds.PerfectMorale;
 
             switch (factionId)
