@@ -27,6 +27,11 @@ namespace DeadManZone.Presentation.Combat.Arena
         private const float TurnDegreesPerSecond = 720f;
         private const float AttackLungeDistance = 0.22f;
 
+        // Rate limit on the port-arms additive rotations: fast enough to track the
+        // 720°/s facing turns and the 0.15 s aim blend, slow enough that a single-frame
+        // animator extreme (walk-swing apex mid-turn) can't pop the carry in one frame.
+        private const float PortArmsMaxDegreesPerSecond = 720f;
+
         // Ring-fill health drain speed (fill units/sec): fast enough that a hit reads as an
         // immediate response, slow enough to read as a drain rather than a pop.
         private const float RingDrainPerSecond = 1.4f;
@@ -38,16 +43,19 @@ namespace DeadManZone.Presentation.Combat.Arena
         [Header("Rifle grip (hand-bone axes, world meters; shared default across archetypes)")]
         [SerializeField] private Vector3 rifleGripOffsetMeters = new(0f, 0.05f, 0.02f);
         [SerializeField] private Vector3 rifleGripLocalEuler = new(-90f, 0f, 0f);
-        [Tooltip("Rifle size relative to its authored 0.73 m (for a 1.7 m figure).")]
-        [SerializeField] private float rifleWorldScale = 1f;
+        [Tooltip("Rifle size relative to its authored 0.73 m (for a 1.7 m figure). " +
+                 "1.2 = stylized board-game upscale so the prop reads at gameplay distance.")]
+        [SerializeField] private float rifleWorldScale = 1.2f;
 
         [Header("Port-arms rest carry (additive right-arm pose, character space; fades while aiming/dying)")]
         [SerializeField, Range(0f, 1f)] private float portArmsArmWeight = 0.65f;
         [SerializeField, Range(0f, 1f)] private float portArmsBarrelWeight = 0.95f;
-        [Tooltip("Where the right (grip) hand carries to, in character space meters for a 1.7 m figure.")]
-        [SerializeField] private Vector3 portArmsHandAnchorLocal = new(0.10f, 1.15f, 0.28f);
-        [Tooltip("Barrel direction at rest, character space (up-left ~45° = classic port arms).")]
-        [SerializeField] private Vector3 portArmsBarrelDirLocal = new(-0.85f, 1f, 0.25f);
+        [Tooltip("Where the right (grip) hand carries to, in character space meters for a 1.7 m figure. " +
+                 "Held slightly out from the chest so the rifle separates from the torso silhouette.")]
+        [SerializeField] private Vector3 portArmsHandAnchorLocal = new(0.13f, 1.15f, 0.34f);
+        [Tooltip("Barrel direction at rest, character space (up-left, slightly flatter than 45° " +
+                 "so more barrel crosses the silhouette when viewed from behind/above).")]
+        [SerializeField] private Vector3 portArmsBarrelDirLocal = new(-1f, 0.85f, 0.22f);
         [Tooltip("Rest-carry multiplier while the walk clip plays, so the additive doesn't fight arm swing.")]
         [SerializeField, Range(0f, 1f)] private float portArmsMovingMultiplier = 0.75f;
 
@@ -61,6 +69,9 @@ namespace DeadManZone.Presentation.Combat.Arena
         [SerializeField] private Vector3 forestockGripOffsetMeters = new(0f, -0.02f, 0.03f);
         [Tooltip("Seconds over which the hands release the carry/IK as the die clip starts.")]
         [SerializeField] private float deathReleaseSeconds = 0.35f;
+        [Tooltip("World-rotation low-pass time constant for the rifle during the die clip, " +
+                 "so fast hand-bone whips don't flail the rigidly-parented prop.")]
+        [SerializeField] private float rifleDeathRotationSmoothSeconds = 0.12f;
 
         [Header("Aim & recoil (code-driven, layered after the Animator in LateUpdate)")]
         [SerializeField, Range(0f, 1f)] private float aimWeight = 0.65f;
@@ -111,6 +122,15 @@ namespace DeadManZone.Presentation.Combat.Arena
         private float _recoilStartTime = float.NegativeInfinity;
         private float _deathStartTime = float.NegativeInfinity;
         private float _movingCarry01 = 1f;
+
+        // Rate-clamped port-arms additives (identity = no offset), previous frame.
+        private Quaternion _portArmsUpperAdditive = Quaternion.identity;
+        private Quaternion _portArmsForearmAdditive = Quaternion.identity;
+        private Quaternion _portArmsBarrelAdditive = Quaternion.identity;
+
+        // Previous-frame rifle world rotation for the die-clip flail damping.
+        private Quaternion _rifleLastWorldRotation = Quaternion.identity;
+        private bool _hasRifleLastWorldRotation;
 
         public bool IsBuilt => _modelRoot != null;
 
@@ -415,6 +435,11 @@ namespace DeadManZone.Presentation.Combat.Arena
             _recoilStartTime = float.NegativeInfinity;
             _deathStartTime = float.NegativeInfinity;
             _movingCarry01 = 1f;
+            _portArmsUpperAdditive = Quaternion.identity;
+            _portArmsForearmAdditive = Quaternion.identity;
+            _portArmsBarrelAdditive = Quaternion.identity;
+            _rifleLastWorldRotation = Quaternion.identity;
+            _hasRifleLastWorldRotation = false;
             _dying = false;
             _locomotionLockUntil = 0f;
             _targetRotation = Quaternion.identity;
@@ -520,28 +545,48 @@ namespace DeadManZone.Presentation.Combat.Arena
             float deathFade = _dying
                 ? 1f - Mathf.Clamp01((Time.time - _deathStartTime) / Mathf.Max(0.01f, deathReleaseSeconds))
                 : 1f;
-            if (deathFade <= 0f)
-                return; // die clip owns the body from here; rifle stays in the grip hand
 
-            float aim01 = ComputeAim01() * deathFade;
-
-            // Rest carry yields to the aim layer 1:1 (preserves the approved aim feel at
-            // full weight) and eases down a notch while the walk clip swings the arms.
-            bool moving = !_dying && _animator != null && _animator.GetBool(MovingParam);
-            _movingCarry01 = Mathf.MoveTowards(
-                _movingCarry01, moving ? portArmsMovingMultiplier : 1f, Time.deltaTime * 4f);
-            float rest01 = (1f - aim01) * deathFade;
-            // The moving multiplier only eases the ARM swing (that's what fights the walk
-            // clip); the barrel align stays full so the muzzle never droops mid-march.
-            ApplyPortArmsPose(rest01 * _movingCarry01, rest01);
-
-            if (aim01 > 0f)
+            if (deathFade > 0f)
             {
-                ApplyAimPose(aim01);
-                ApplyRecoil(aim01);
+                float aim01 = ComputeAim01() * deathFade;
+
+                // Rest carry yields to the aim layer 1:1 (preserves the approved aim feel at
+                // full weight) and eases down a notch while the walk clip swings the arms.
+                bool moving = !_dying && _animator != null && _animator.GetBool(MovingParam);
+                _movingCarry01 = Mathf.MoveTowards(
+                    _movingCarry01, moving ? portArmsMovingMultiplier : 1f, Time.deltaTime * 4f);
+                float rest01 = (1f - aim01) * deathFade;
+                // The moving multiplier only eases the ARM swing (that's what fights the walk
+                // clip); the barrel align stays full so the muzzle never droops mid-march.
+                ApplyPortArmsPose(rest01 * _movingCarry01, rest01);
+
+                if (aim01 > 0f)
+                {
+                    ApplyAimPose(aim01);
+                    ApplyRecoil(aim01);
+                }
+
+                ApplyLeftHandIk(leftHandIkWeight * deathFade);
             }
 
-            ApplyLeftHandIk(leftHandIkWeight * deathFade);
+            // Die-clip flail damping: once the hands have released, low-pass the rifle's
+            // WORLD rotation so a fast hand-bone whip (some fall frames) can't sling the
+            // rigidly-parented prop around. Converges to the animated pose as the body
+            // settles, so the rifle still ends resting with the corpse and dissolves with it.
+            if (_dying && _hasRifleLastWorldRotation)
+            {
+                float damp01 = 1f - deathFade; // ramps in over deathReleaseSeconds
+                if (damp01 > 0f)
+                {
+                    float follow = 1f - Mathf.Exp(
+                        -Time.deltaTime / Mathf.Max(0.01f, rifleDeathRotationSmoothSeconds));
+                    _rifle.rotation = Quaternion.Slerp(
+                        _rifleLastWorldRotation, _rifle.rotation, Mathf.Lerp(1f, follow, damp01));
+                }
+            }
+
+            _rifleLastWorldRotation = _rifle.rotation;
+            _hasRifleLastWorldRotation = true;
         }
 
         /// <summary>Character-space frame: unit yaw with the model's authored yaw offset
@@ -552,12 +597,17 @@ namespace DeadManZone.Presentation.Combat.Arena
         /// <summary>Port-arms carry, same self-correcting math shape as the aim layer:
         /// swing the right shoulder→hand line toward a chest-front anchor, then rotate the
         /// hand so the barrel points up-left. World-space FromToRotations, so it lands the
-        /// same pose on all four rigs regardless of their local bone axes.</summary>
+        /// same pose on all four rigs regardless of their local bone axes.
+        /// Each additive is rate-clamped against its previous frame (RotateTowards at
+        /// PortArmsMaxDegreesPerSecond) — a single-frame animator extreme (walk-swing apex
+        /// mid-turn) or a FromToRotation near-180° axis flip can no longer pop the carry
+        /// in one frame; it spreads over a few frames instead.</summary>
         private void ApplyPortArmsPose(float w, float barrelW)
         {
             if ((w <= 0.001f && barrelW <= 0.001f) || _modelRoot == null)
                 return;
 
+            float maxDegrees = PortArmsMaxDegreesPerSecond * Time.deltaTime;
             Quaternion charRot = CharacterRotation();
             float figureScale = _visualHeight / 1.7f;
             Vector3 anchor = transform.position + charRot * (portArmsHandAnchorLocal * figureScale);
@@ -569,9 +619,10 @@ namespace DeadManZone.Presentation.Combat.Arena
                 if (armDir.sqrMagnitude > 0.0001f && toAnchor.sqrMagnitude > 0.0001f)
                 {
                     var swing = Quaternion.FromToRotation(armDir.normalized, toAnchor.normalized);
-                    _upperArmBone.rotation =
-                        Quaternion.Slerp(Quaternion.identity, swing, w * portArmsArmWeight)
-                        * _upperArmBone.rotation;
+                    var desired = Quaternion.Slerp(Quaternion.identity, swing, w * portArmsArmWeight);
+                    _portArmsUpperAdditive =
+                        Quaternion.RotateTowards(_portArmsUpperAdditive, desired, maxDegrees);
+                    _upperArmBone.rotation = _portArmsUpperAdditive * _upperArmBone.rotation;
                 }
             }
 
@@ -582,9 +633,10 @@ namespace DeadManZone.Presentation.Combat.Arena
                 if (foreDir.sqrMagnitude > 0.0001f && toAnchor.sqrMagnitude > 0.0001f)
                 {
                     var raise = Quaternion.FromToRotation(foreDir.normalized, toAnchor.normalized);
-                    _forearmBone.rotation =
-                        Quaternion.Slerp(Quaternion.identity, raise, w * portArmsArmWeight * 0.6f)
-                        * _forearmBone.rotation;
+                    var desired = Quaternion.Slerp(Quaternion.identity, raise, w * portArmsArmWeight * 0.6f);
+                    _portArmsForearmAdditive =
+                        Quaternion.RotateTowards(_portArmsForearmAdditive, desired, maxDegrees);
+                    _forearmBone.rotation = _portArmsForearmAdditive * _forearmBone.rotation;
                 }
             }
 
@@ -596,9 +648,10 @@ namespace DeadManZone.Presentation.Combat.Arena
                 if (barrelDir.sqrMagnitude > 0.0001f)
                 {
                     var level = Quaternion.FromToRotation(barrelDir.normalized, want);
-                    _handBone.rotation =
-                        Quaternion.Slerp(Quaternion.identity, level, barrelW * portArmsBarrelWeight)
-                        * _handBone.rotation;
+                    var desired = Quaternion.Slerp(Quaternion.identity, level, barrelW * portArmsBarrelWeight);
+                    _portArmsBarrelAdditive =
+                        Quaternion.RotateTowards(_portArmsBarrelAdditive, desired, maxDegrees);
+                    _handBone.rotation = _portArmsBarrelAdditive * _handBone.rotation;
                 }
             }
         }
@@ -837,7 +890,10 @@ namespace DeadManZone.Presentation.Combat.Arena
         }
 
         /// <summary>Base ring = health display: a flat quad running DMZ/CombatRingFill —
-        /// the disc drains radially with HP while the outer rim stays side-colored.</summary>
+        /// the disc drains top-down (orb-style level cutoff) with HP while the outer rim
+        /// stays side-colored. The quad's +V faces world +Z (the actor root never rotates;
+        /// only ModelRoot3D does), and the gameplay camera looks from -Z, so the shader's
+        /// high-V edge = the far edge = screen top.</summary>
         private void BuildSideRing(Material ringMaterial)
         {
             var ring = GameObject.CreatePrimitive(PrimitiveType.Quad);

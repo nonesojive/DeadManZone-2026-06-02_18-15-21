@@ -25,27 +25,32 @@ namespace DeadManZone.Presentation.Editor
         /// Local +Z is the barrel direction; origin sits at the grip.</summary>
         public static GameObject EnsurePrefab()
         {
-            var metal = EnsureToonInkMaterial(MetalMaterialPath, new Color(0.16f, 0.17f, 0.20f));
-            var wood = EnsureToonInkMaterial(WoodMaterialPath, new Color(0.30f, 0.20f, 0.12f));
+            // Lightened a step from (0.16,0.17,0.20)/(0.30,0.20,0.12) — at gameplay
+            // distance the old gunmetal/wood merged into the uniform silhouette.
+            // Still muted (low-sat greys/browns) per the bible §3 saturation budget.
+            var metal = EnsureToonInkMaterial(MetalMaterialPath, new Color(0.30f, 0.32f, 0.38f));
+            var wood = EnsureToonInkMaterial(WoodMaterialPath, new Color(0.40f, 0.30f, 0.20f));
 
             var root = new GameObject("Rifle_Prop");
             try
             {
+                // Cross-sections thickened ~30-50% over the first pass so the prop reads
+                // from the gameplay camera (stylized board-game proportion, not scale).
                 AddPart(root.transform, PrimitiveType.Cube, "Stock_Wood", wood,
                     new Vector3(0f, -0.012f, -0.20f), new Vector3(-5f, 0f, 0f),
-                    new Vector3(0.045f, 0.085f, 0.20f));
+                    new Vector3(0.060f, 0.105f, 0.20f));
                 AddPart(root.transform, PrimitiveType.Cube, "Receiver_Metal", metal,
                     new Vector3(0f, 0.03f, -0.02f), Vector3.zero,
-                    new Vector3(0.042f, 0.06f, 0.18f));
+                    new Vector3(0.055f, 0.075f, 0.18f));
                 AddPart(root.transform, PrimitiveType.Cube, "Forestock_Wood", wood,
                     new Vector3(0f, 0.012f, 0.16f), Vector3.zero,
-                    new Vector3(0.04f, 0.05f, 0.22f));
+                    new Vector3(0.055f, 0.065f, 0.22f));
                 AddPart(root.transform, PrimitiveType.Cylinder, "Barrel_Metal", metal,
                     new Vector3(0f, 0.035f, 0.31f), new Vector3(90f, 0f, 0f),
-                    new Vector3(0.016f, 0.115f, 0.016f));
+                    new Vector3(0.026f, 0.115f, 0.026f));
                 AddPart(root.transform, PrimitiveType.Cube, "BoltHandle_Metal", metal,
-                    new Vector3(0.032f, 0.045f, -0.04f), Vector3.zero,
-                    new Vector3(0.05f, 0.015f, 0.015f));
+                    new Vector3(0.036f, 0.045f, -0.04f), Vector3.zero,
+                    new Vector3(0.058f, 0.022f, 0.022f));
 
                 var muzzle = new GameObject("MuzzlePoint");
                 muzzle.transform.SetParent(root.transform, false);

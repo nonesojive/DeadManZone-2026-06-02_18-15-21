@@ -1,7 +1,10 @@
 // Unit base ring as the health display (owner-decided, 2026-07-11): the disc drains
-// radially (pie-slice, clockwise from the far side) with the unit's HP fraction, while a
+// like a top-down health orb — a flat cutoff line empties the disc from the far edge
+// (screen top from the gameplay camera) downward with the unit's HP fraction, while a
 // thin always-on outer rim keeps the side read (muted blue/red) even at near-zero HP.
-// Unlit, flat quad at the unit's feet; _Fill driven per unit via MaterialPropertyBlock.
+// The quad is laid flat with +V toward world +Z; the camera looks from -Z, so high V
+// = the far edge = screen top. Fill f means the near (screen-bottom) f of the disc
+// stays filled. _Fill driven per unit via MaterialPropertyBlock.
 Shader "DMZ/CombatRingFill"
 {
     Properties
@@ -65,13 +68,11 @@ Shader "DMZ/CombatRingFill"
                 if (r >= _DiscRadius)
                     return half4(_EmptyColor.rgb, 1);
 
-                // Pie fill: angle 0 at the far side (+v), sweeping clockwise on screen.
-                // TWO_PI comes from URP's Macros.hlsl (via Core.hlsl).
-                float angle01 = atan2(d.x, d.y) / TWO_PI; // (-0.5, 0.5], 0 at +v
-                if (angle01 < 0.0)
-                    angle01 += 1.0;
-
-                bool filled = angle01 <= _Fill;
+                // Level fill: normalize the disc's V extent to 0..1 (0 = near/screen-
+                // bottom edge, 1 = far/screen-top edge) and fill the bottom _Fill of it,
+                // so damage drains the disc from the top down like a health orb.
+                float level01 = saturate((d.y + _DiscRadius) / (2.0 * _DiscRadius));
+                bool filled = level01 <= _Fill;
                 return half4(filled ? _FillColor.rgb : _EmptyColor.rgb, 1);
             }
             ENDHLSL

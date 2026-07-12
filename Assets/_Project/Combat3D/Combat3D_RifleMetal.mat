@@ -50,10 +50,10 @@ Material:
     - _SideTintAmount: 0
     m_Colors:
     - _AccentColor: {r: 1, g: 0.7, b: 0.2, a: 1}
-    - _BaseColor: {r: 0.16, g: 0.17, b: 0.2, a: 1}
+    - _BaseColor: {r: 0.3, g: 0.32, b: 0.38, a: 1}
     - _InkColor: {r: 0.02, g: 0.02, b: 0.03, a: 1}
     - _OutlineColor: {r: 0.03, g: 0.03, b: 0.04, a: 1}
-    - _ShadowColor: {r: 0.088, g: 0.0935, b: 0.11000001, a: 0.55}
+    - _ShadowColor: {r: 0.165, g: 0.176, b: 0.209, a: 0.55}
     - _SideTint: {r: 0.2, g: 0.4, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

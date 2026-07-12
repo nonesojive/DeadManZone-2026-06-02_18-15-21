@@ -525,5 +525,45 @@ Pose numbers were iterated **in Play mode via reflection** (script-execute setti
 ### Deferred
 - Fingers don't articulate (rigid glove mesh) — palm-on-forestock contact is approximate by design; a few cm invisible at gameplay distance.
 - Rest grip euler still the shared (−90,0,0) default — the barrel-align step makes per-archetype grip overrides unnecessary so far.
-- Die-clip rifle flail: during some death frames the rifle (still hand-parented) swings past the torso; reads as losing grip at speed, revisit only if a slow-mo kill cam ever lands.
-- The transient mid-turn frame where the carry crosses high (arm swing + facing ease) — visible only in freeze-frame, not at speed.
+- Die-clip rifle flail: during some death frames the rifle (still hand-parented) swings past the torso; reads as losing grip at speed, revisit only if a slow-mo kill cam ever lands. **Fixed in the 2026-07-11 rifle-read pass below.**
+- The transient mid-turn frame where the carry crosses high (arm swing + facing ease) — visible only in freeze-frame, not at speed. **Fixed in the 2026-07-11 rifle-read pass below.**
+
+## Rifle read + orb drain (2026-07-11)
+
+Four owner-requested fixes: rifle readability at gameplay distance (owner screenshot: prop vanished against the body from behind/above), ring health drain reshaped from pie-slice to a top-down orb level (owner design change), the deferred die-clip rifle flail, and the deferred high-carry single-frame pops. All presentation-side — Core and the 2D path untouched.
+
+### 1 — Rifle reads at gameplay distance
+Three levers combined (`RiflePropBuilder` + `CombatUnitVisual3D` defaults):
+- **Thicker proportions** (stylized board-game bar, length unchanged at ~0.73 m authored): stock cross-section 0.045×0.085 → **0.060×0.105**, receiver 0.042×0.06 → **0.055×0.075**, forestock 0.04×0.05 → **0.055×0.065**, barrel radius 0.016 → **0.026**, bolt handle 0.015² → 0.022².
+- **Lighter materials, still muted** (bible §3): gunmetal (0.16,0.17,0.20) → **(0.30,0.32,0.38)**; wood (0.30,0.20,0.12) → **(0.40,0.30,0.20)**. First wood attempt (0.46,0.32,0.19) rendered highlighter-orange under the toon light — pulled back a step (iteration 2 of 2). `EnsureToonInkMaterial` re-derives `_ShadowColor`, so rebuilds stay consistent.
+- **Pose + scale**: `rifleWorldScale` 1 → **1.2**; carry anchor (0.10, 1.15, 0.28) → **(0.13, 1.15, 0.34)** (held slightly out from the chest so the prop separates from the torso); barrel rest direction (−0.85, 1, 0.25) → **(−1, 0.85, 0.22)** (flatter diagonal ⇒ more barrel crossing the silhouette from behind/above).
+- Verified from the actual gameplay camera (0,10,−14 / pitch 29 / fov 42) with units facing away: rifle identifiable on every unit on the field, at port arms and mid-aim, both sides; behind-view close-up shows the barrel breaking the shoulder line on all rigs.
+
+### 2 — Ring drain: pie → top-down level (health-orb read)
+- `CombatRingFill.shader`: the `atan2` pie sweep is gone. Fill is now a flat cutoff along the quad's V axis: `level01 = saturate((d.y + _DiscRadius) / (2·_DiscRadius)); filled = level01 <= _Fill` — the disc empties from the far edge (screen top) downward, bottom `f` of the disc stays filled.
+- **No quad reorientation needed**: `BuildSideRing` already lays the quad flat with local +V toward world +Z (`Euler(90,0,0)` under the actor root, which never rotates — only `ModelRoot3D` yaws), and the gameplay camera looks from −Z, so high-V = far edge = screen top by construction. Comments in both files pin this invariant.
+- Kept: circular clip, near-black drained sector, always-on side-color rim, 1.4 fill/s eased drain, drain-to-zero during the death fall. Only the shape changed.
+- Verified twice: controlled fills (0.65/0.4/0.15 injected on live survivors — flat horizontal cutoffs, correct fractions, bottom-anchored) and a real mid-fight pause (blue units showing dark-top/blue-bottom discs from the gameplay camera).
+
+### 3 — Die-clip rifle flail damped
+- `CombatUnitVisual3D.LateUpdate` now low-passes the rifle's **world rotation** while dying: after the 0.35 s hand-release fade (damping ramps in with `1−deathFade`), the rifle slerps from the previous frame's world rotation toward the animated pose with time constant `rifleDeathRotationSmoothSeconds = 0.12`. Fast hand-bone whips in the fall frames can't sling the rigidly-parented prop; the low-pass converges once the body settles, so the rifle still ends resting with the corpse and dissolves with it.
+- Measured with an injected per-frame watcher across three deaths: **max per-frame rifle world-rotation delta 2.2° / 2.3° / 3.9°** (at 0.45× time; ≈5–8°/frame full-speed) — no frame above the 25° "whip" alarm. Corpse screenshots show rifles lying flat beside the bodies.
+
+### 4 — High-carry transient pops rate-clamped
+- Diagnosis: the port-arms additives are `FromToRotation`s computed fresh each frame against the animated pose — a walk-swing apex mid-turn (and the FromToRotation near-180° axis ambiguity) could jump the computed additive tens of degrees in a single frame.
+- Fix: all three port-arms additive rotations (upper-arm swing, forearm raise, hand barrel-align) are now stored and advanced via `Quaternion.RotateTowards(prev, desired, PortArmsMaxDegreesPerSecond·dt)` with **720°/s** — fast enough to track the 720°/s facing turns and the 0.15 s aim blend-in exactly, slow enough that a single-frame extreme spreads over a few frames. State resets in `Clear()`. The aim layer itself is untouched (approved feel preserved).
+- Verified by editor pause + `EditorApplication.Step()` frame-stepping through walking + turning units: five consecutive frames fully continuous, no pops.
+
+### Verification
+- assets-refresh clean, zero compile errors; rifle prefab + demo scene rebuilt via menu (idempotent through the script-execute retry storm).
+- Full play-through twice: fight completes, DEFEAT banner + army HUD intact, rings drain top-down visibly mid-fight, corpse rings empty, rifles readable on all archetypes from the gameplay camera.
+- EditMode **358/358** green.
+
+### Deferred
+- Wood still reads bright-tan at close-up range (toon light lifts it); at gameplay distance it sits in the muted-brown family — revisit only if a zoom cam lands.
+- Port-arms looks near-vertical in extreme close-ups on some rigs (perspective); reads as a proper diagonal from the gameplay camera — no per-archetype barrel-dir overrides yet (still YAGNI).
+- The moving-carry multiplier easing (4/s MoveTowards) was not implicated — left as-is.
+
+## Unit pipeline tooling (2026-07-11)
+
+The proven-by-hand Meshy chain is now a one-command orchestrator: `tools/meshy/generate_unit.py <unit_name>` (stdlib only, wraps `meshy_client.py`) runs image3d → remesh(12k) → rig(1.8 m) → animate(0=Idle, 8=Dead) with polling, downloads `idle/walk/die.glb` into `tools/meshy/units/<unit>/glb12k/` (walk from the rig's free walking anim; the animation_glb.glb download collision is avoided by writing final names directly), copies them to `Assets/_Project/Combat3D/Models/<unit>/`, and prints the remaining manual steps (RosterUnits entry with a piece-asset existence check + closest-id suggestion, menu rebuild, Play verification). Resumable via `tools/meshy/units/<unit>/pipeline_state.json` or `--resume <stage:id>`; `--dry-run` is free and side-effect free. Operator checklist + all gotchas: `docs/skills/meshy-unit-pipeline/SKILL.md` (tracked there because `.gitignore` excludes `.claude/skills/`).
