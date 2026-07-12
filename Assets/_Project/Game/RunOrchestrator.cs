@@ -77,6 +77,7 @@ namespace DeadManZone.Game
             ResetAuthorityForBuildRound();
             ResetMetaForNewRun();
             RefreshShop();
+            GenerateFightOptions();
             _activeCombat = null;
             Persist();
         }
@@ -132,7 +133,8 @@ namespace DeadManZone.Game
         /// Normal-fight enemy template keyed on the Dread difficulty clock, CLAMPED to the
         /// last authored template — variable-length runs exceed the authored 10 fights and
         /// the old modulo wrap in ContentDatabase.GetEnemyTemplate would reset difficulty
-        /// to fight 1. M2's Fight Options replace this seam wholesale.
+        /// to fight 1. Since M2 this is only the legacy fallback for pre-option v9 saves
+        /// mid-round; live rounds fight the chosen Fight Option's template.
         /// </summary>
         private EnemyTemplateSO GetEnemyTemplateForDifficulty()
         {
@@ -155,11 +157,92 @@ namespace DeadManZone.Game
                 return BossRoster.BuildStageBoard(
                     pendingBoss, State.BossesDefeated, _registry, Faction.combatBoardSize);
 
+            if (GetChosenOption() != null)
+                return GetOptionEnemyBoard(State.ChosenFightOption);
+
             var enemyTemplate = GetEnemyTemplateForDifficulty();
             if (enemyTemplate == null)
                 return null;
             return enemyTemplate.BuildBoard(Faction, _registry);
         }
+
+        // ---- Fight Options (M2, ADR-0004) ----
+
+        /// <summary>
+        /// Round-start Fight Option generation — the ONLY place options roll. They
+        /// persist across save/load and never regenerate mid-round (anti-scum); a
+        /// re-fought loss keeps its FightIndex and Dread, so it re-rolls the SAME
+        /// options. Boss-pending rounds get an EMPTY list — the Front Report shows
+        /// the boss instead and BeginCombat runs the boss branch.
+        /// </summary>
+        private void GenerateFightOptions()
+        {
+            State.ChosenFightOption = -1;
+            if (IsBossFightPending)
+            {
+                State.FightOptions = new List<FightOptionRecord>();
+                return;
+            }
+
+            var sources = _content.EnemyTemplates
+                .Where(t => t != null)
+                .Select(t => new FightOptionArmySource
+                {
+                    FightNumber = t.fightNumber,
+                    EnemyFactionId = t.enemyFactionId,
+                    BuildBoard = () => t.BuildBoard(Faction, _registry)
+                })
+                .ToList();
+            State.FightOptions = FightOptionGenerator.Generate(
+                State.RunSeed, State.FightIndex, State.Dread, sources);
+        }
+
+        public bool CanChooseOption(int index, out string reason)
+        {
+            if (State?.FightOptions == null || index < 0 || index >= State.FightOptions.Count)
+            {
+                reason = "No such fight option.";
+                return false;
+            }
+
+            if (State.FightOptions[index].Tier == FightOptionTier.Easy
+                && State.Authority < DreadRules.EasyAuthorityCost)
+            {
+                reason = $"The easy front costs {DreadRules.EasyAuthorityCost} Authority; " +
+                         $"only {State.Authority} available.";
+                return false;
+            }
+
+            reason = null;
+            return true;
+        }
+
+        public void ChooseFightOption(int index)
+        {
+            if (!CanChooseOption(index, out string reason))
+                throw new InvalidOperationException(reason);
+
+            State.ChosenFightOption = index;
+            Persist();
+        }
+
+        /// <summary>Enemy board preview for one Front Report option — regenerated from
+        /// its template key (armies are never persisted). Null on a bad index.</summary>
+        public BoardState GetOptionEnemyBoard(int index)
+        {
+            if (State?.FightOptions == null || index < 0 || index >= State.FightOptions.Count)
+                return null;
+
+            var template = _content.GetEnemyTemplate(State.FightOptions[index].TemplateFightNumber);
+            return template?.BuildBoard(Faction, _registry);
+        }
+
+        private FightOptionRecord GetChosenOption() =>
+            State?.FightOptions != null
+            && State.ChosenFightOption >= 0
+            && State.ChosenFightOption < State.FightOptions.Count
+                ? State.FightOptions[State.ChosenFightOption]
+                : null;
 
         public void BeginCombat()
         {
@@ -174,27 +257,45 @@ namespace DeadManZone.Game
             RecordCriticalMassIfTriggered();
 
             // Dread threshold crossed → the next fight is the pending boss at the stage
-            // matching how many bosses already fell. Normal fights keep the template path.
+            // matching how many bosses already fell (boss rounds ignore ChosenFightOption).
+            // Normal fights consume the chosen Fight Option.
             BoardState enemyBoard;
             string bossId = null;
-            string activeTwistId = null;
+            string activeModifierId = null;
+            FightOptionTier? activeTier = null;
             var pendingBoss = GetPendingBoss();
             if (pendingBoss != null)
             {
                 enemyBoard = BossRoster.BuildStageBoard(
                     pendingBoss, State.BossesDefeated, _registry, Faction.combatBoardSize);
                 bossId = pendingBoss.BossId;
-                activeTwistId = pendingBoss.TwistId;
+                activeModifierId = pendingBoss.TwistId;
                 // Salvage targeting works on bosses too.
                 State.LastEnemyFactionId = pendingBoss.EnemyFactionId;
             }
             else
             {
-                var enemyTemplate = GetEnemyTemplateForDifficulty();
+                var chosenOption = GetChosenOption();
+                if (chosenOption == null && State.FightOptions is { Count: > 0 })
+                    throw new InvalidOperationException(
+                        "A Fight Option must be chosen before combat (ChooseFightOption).");
+
+                // Legacy fallback: a v9 save from before M2 has no options for the
+                // round already in progress — fight the Dread-difficulty template.
+                var enemyTemplate = chosenOption != null
+                    ? _content.GetEnemyTemplate(chosenOption.TemplateFightNumber)
+                    : GetEnemyTemplateForDifficulty();
                 if (enemyTemplate == null)
                     throw new InvalidOperationException($"No enemy template for fight {State.FightIndex}.");
 
                 enemyBoard = enemyTemplate.BuildBoard(Faction, _registry);
+                if (chosenOption != null)
+                {
+                    activeTier = chosenOption.Tier;
+                    activeModifierId = chosenOption.ConditionId; // hard tier only, else null
+                    // Salvage targeting keys on the chosen front's pool.
+                    State.LastEnemyFactionId = chosenOption.EnemyFactionId;
+                }
             }
 
             ResetAuthorityForBuildRound();
@@ -202,6 +303,17 @@ namespace DeadManZone.Game
             var criticalMassSnapshot = CriticalMassEngine.Evaluate(buildBoards);
             if (criticalMassSnapshot.AuthorityBonus > 0)
                 State.Authority += criticalMassSnapshot.AuthorityBonus;
+
+            // The easy front spends command capital: debit the round pool BEFORE the
+            // combat snapshot so Requisition is the reduced pool.
+            if (activeTier == FightOptionTier.Easy)
+            {
+                if (State.Authority < DreadRules.EasyAuthorityCost)
+                    throw new InvalidOperationException(
+                        $"The easy front costs {DreadRules.EasyAuthorityCost} Authority; " +
+                        $"only {State.Authority} available.");
+                State.Authority -= DreadRules.EasyAuthorityCost;
+            }
 
             int combatSeed = SeedStreams.Derive(State.RunSeed, "combat", State.FightIndex);
             var defaultTactic = ResolveDefaultPlayerTactic(Faction);
@@ -212,7 +324,8 @@ namespace DeadManZone.Game
                 CombatSeed = combatSeed,
                 EnemyBoard = BoardSnapshotMapper.FromBoard(enemyBoard),
                 BossId = bossId,
-                ActiveTwistId = activeTwistId,
+                ActiveTwistId = activeModifierId,
+                ActiveTier = activeTier,
                 Requisition = State.Authority,
                 Authority = State.Authority,
                 PlayerTactic = defaultTactic,
@@ -227,7 +340,8 @@ namespace DeadManZone.Game
                 combatSeed,
                 State.Authority,
                 buildBoards,
-                ResolveActiveCombatModifiers());
+                ResolveActiveCombatModifiers(),
+                suppressEnemyFightStartEngines: activeTier == FightOptionTier.Easy);
             _activeCombat.SetPlayerTactic(defaultTactic);
             State.Combat.AwaitingCommand = _activeCombat.AwaitingCommand;
             State.Combat.CheckpointsFired = _activeCombat.CheckpointsFired;
@@ -451,22 +565,29 @@ namespace DeadManZone.Game
             if (pendingBoss != null)
                 return pendingBoss.DisplayName;
 
+            var chosen = GetChosenOption();
+            if (chosen != null)
+                return _content.GetEnemyTemplate(chosen.TemplateFightNumber)?.previewTag;
+
             var next = GetEnemyTemplateForDifficulty();
             return next?.previewTag;
         }
 
-        /// <summary>Rule modifiers for the active combat (the boss twist, resolved by id).
-        /// Used by both BeginCombat and the save-restore path so replays stay identical.</summary>
+        /// <summary>Rule modifiers for the active combat — a boss Twist or a hard option's
+        /// Battle Condition, resolved by id through the shared catalog. Used by both
+        /// BeginCombat and the save-restore path so replays stay identical.</summary>
         private IReadOnlyList<ICombatRuleModifier> ResolveActiveCombatModifiers() =>
             string.IsNullOrEmpty(State?.Combat?.ActiveTwistId)
                 ? null
-                : new[] { TwistCatalog.Resolve(State.Combat.ActiveTwistId) };
+                : new[] { RuleModifierCatalog.Resolve(State.Combat.ActiveTwistId) };
 
         private void CompleteCombat(CombatAdvanceResult result)
         {
             State.LastCombatLogText = CombatLogFormatter.FormatAll(result.EventLog?.Events);
             _activeCombat = null;
             bool isBossFight = State.Combat?.BossId != null;
+            // Captured before State.Combat is nulled; legacy saves (no tier) count as Normal.
+            var activeTier = State.Combat?.ActiveTier ?? FightOptionTier.Normal;
             bool playerWon = result.PlayerWon;
             bool isDraw = result.IsDraw;
             var playerCombatants = result.PlayerCombatantsAtEnd ?? Array.Empty<CombatantState>();
@@ -521,6 +642,9 @@ namespace DeadManZone.Game
                 State.RerollCountThisRound = 0;
                 ResetAuthorityForBuildRound();
                 RefreshShop();
+                // Same FightIndex + Dread → the SAME options re-roll (a re-fought
+                // loss faces the same fronts); the choice itself resets.
+                GenerateFightOptions();
                 Persist();
                 return;
             }
@@ -565,7 +689,14 @@ namespace DeadManZone.Game
             }
             else
             {
-                State.Dread += DreadRules.DreadPerWin;
+                // Hard-front victory pays its materiel package BEFORE the shop refresh.
+                if (activeTier == FightOptionTier.Hard)
+                {
+                    State.Supplies += DreadRules.HardVictorySupplies;
+                    State.Manpower += DreadRules.HardVictoryManpower;
+                }
+
+                State.Dread += DreadRules.DreadFor(activeTier);
             }
 
             State.FightIndex++;
@@ -573,14 +704,16 @@ namespace DeadManZone.Game
             State.RerollCountThisRound = 0;
             ResetAuthorityForBuildRound();
             RefreshShop();
+            GenerateFightOptions();
             Persist();
         }
 
         private void ApplySalvageAftermath(bool isBossFight)
         {
-            // Boss fights already stamped LastEnemyFactionId with the boss's pool
-            // at BeginCombat — don't overwrite it with a normal template's faction.
-            if (isBossFight)
+            // Boss and Fight Option fights already stamped LastEnemyFactionId with
+            // their pool at BeginCombat — don't overwrite it with the difficulty
+            // template's faction. Only the legacy (pre-M2 save) path re-derives.
+            if (isBossFight || GetChosenOption() != null)
             {
                 SyncSalvageChancePercent();
                 return;
@@ -647,7 +780,9 @@ namespace DeadManZone.Game
                 State.Combat.CombatSeed,
                 State.Combat.Authority > 0 ? State.Combat.Authority : State.Combat.Requisition,
                 buildBoards,
-                ResolveActiveCombatModifiers());
+                ResolveActiveCombatModifiers(),
+                // Null tier (boss fights, legacy saves) restores as Normal.
+                suppressEnemyFightStartEngines: State.Combat.ActiveTier == FightOptionTier.Easy);
 
             // Re-apply the FIGHT-START tactic before fast-forwarding; the saved
             // PlayerTactic may be a mid-fight change, which must replay through

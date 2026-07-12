@@ -97,6 +97,7 @@ namespace DeadManZone.Core.Tests.EditMode
                 "rifle_1").Success);
             orchestrator.SaveCombatBoard(board);
 
+            orchestrator.ChooseFightOption(1);
             orchestrator.BeginCombat();
 
             Assert.AreEqual(TacticType.DisciplinedFire, orchestrator.State.Combat.PlayerTactic);

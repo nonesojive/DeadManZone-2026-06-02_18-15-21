@@ -111,6 +111,15 @@ namespace DeadManZone.Presentation.Run
             SetCombatPresentationLayout(showBattlefield);
         }
 
+        private FrontReportPanel _frontReportPanel;
+
+        private FrontReportPanel EnsureFrontReportPanel()
+        {
+            if (_frontReportPanel == null)
+                _frontReportPanel = gameObject.AddComponent<FrontReportPanel>();
+            return _frontReportPanel;
+        }
+
         private void RefreshAll()
         {
             if (RunManager.Instance == null || !RunManager.Instance.HasActiveRun)
@@ -154,6 +163,17 @@ namespace DeadManZone.Presentation.Run
             if (inBuild && RunManager.Instance?.Orchestrator != null)
             {
                 bool canStart = RunManager.Instance.Orchestrator.CanStartBattle(out string failureReason);
+
+                // M2: on option rounds a front must be chosen before COMBAT unlocks
+                // (BeginCombat throws otherwise, by design — the UI always chooses).
+                bool needsChoice = state.FightOptions is { Count: > 0 } && state.ChosenFightOption < 0;
+                if (needsChoice)
+                {
+                    canStart = false;
+                    failureReason ??= "Choose a front to assault.";
+                }
+
+                EnsureFrontReportPanel().Refresh(state);
                 if (beginFightButton != null)
                     beginFightButton.interactable = canStart;
                 if (emergencyDraftButton != null)
@@ -177,6 +197,7 @@ namespace DeadManZone.Presentation.Run
             }
             else
             {
+                _frontReportPanel?.Hide();
                 runHudView?.Refresh(state);
                 runHudView?.ClearIncomePreview();
             }

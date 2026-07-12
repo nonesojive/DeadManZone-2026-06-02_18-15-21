@@ -7,10 +7,31 @@ namespace DeadManZone.Core.Run
     /// </summary>
     public static class DreadRules
     {
-        /// <summary>M1 interim flat rate — M2's Fight Options set 1/2/3 Dread per tier.</summary>
+        /// <summary>The Normal-tier win rate, and the divisor of the difficulty clock
+        /// (<see cref="FightEquivalent"/>). Tier-specific grants live in <see cref="DreadFor"/>.</summary>
         public const int DreadPerWin = 2;
 
+        // ---- M2 Fight Option economy (initial values, tune in playtest) ----
+
+        /// <summary>Authority debited from the round's command pool for taking the easy front.</summary>
+        public const int EasyAuthorityCost = 2;
+
+        /// <summary>Hard-front victory materiel package: supplies plus manpower worth
+        /// roughly half a muster (IronMarch musters ~9-12 with a couple of supply
+        /// buildings: base 1 + 3/depot + 2/synergy pair; other factions' base is 12).</summary>
+        public const int HardVictorySupplies = 15;
+        public const int HardVictoryManpower = 6;
+
         public const int BossCount = 3;
+
+        /// <summary>Dread earned by WINNING at the given Fight Option tier (ADR-0004:
+        /// harder assaults escalate the war faster). Losses and boss fights grant zero.</summary>
+        public static int DreadFor(FightOptionTier tier) => tier switch
+        {
+            FightOptionTier.Easy => 1,
+            FightOptionTier.Hard => 3,
+            _ => DreadPerWin
+        };
 
         private static readonly int[] Thresholds = { 6, 12, 18 };
 

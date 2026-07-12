@@ -29,11 +29,19 @@ namespace DeadManZone.Core.Run
         public int CombatSeed { get; set; }
         public BoardSnapshot EnemyBoard { get; set; }
 
-        /// <summary>Boss fight marker; null for normal fights. Restore resolves
-        /// <see cref="ActiveTwistId"/> through TwistCatalog and re-applies it, so a
-        /// restored boss fight replays identically to the live one.</summary>
+        /// <summary>Boss fight marker; null for normal fights.</summary>
         public string BossId { get; set; }
+
+        /// <summary>The fight's rule-modifier id — a boss Twist OR a hard option's Battle
+        /// Condition (M2); null for unmodified fights. Restore resolves it through
+        /// RuleModifierCatalog and re-applies it, so a restored fight replays identically.
+        /// Keeps its historical name: renaming the property would break the JSON key in
+        /// existing saves.</summary>
         public string ActiveTwistId { get; set; }
+
+        /// <summary>Fight Option tier this combat was begun at (M2). Null on boss fights
+        /// and legacy saves — treated as Normal (no enemy-engine suppression).</summary>
+        public FightOptionTier? ActiveTier { get; set; }
         public int CheckpointsFired { get; set; }
         public int GlobalTick { get; set; }
         public int LastSegmentIndex { get; set; }
@@ -76,6 +84,14 @@ namespace DeadManZone.Core.Run
         // restarts its escalation clock).
         public int Dread { get; set; }
         public int BossesDefeated { get; set; }
+
+        // M2 Fight Options (ADR-0004). Schema stays v9 — additive fields; older v9
+        // saves deserialize with an empty list / -1 and fall back to the legacy
+        // template path for the round already in progress.
+        public List<FightOptionRecord> FightOptions { get; set; } = new();
+
+        /// <summary>Index into <see cref="FightOptions"/> chosen for the next combat; -1 = none.</summary>
+        public int ChosenFightOption { get; set; } = -1;
         public int Supplies { get; set; }
         public int Manpower { get; set; }
         public int Authority { get; set; }

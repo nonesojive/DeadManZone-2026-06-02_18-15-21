@@ -83,6 +83,7 @@ namespace DeadManZone.Core.Tests
             var below = StartRun(runSeed: 777);
             below.State.Dread = DreadRules.NextThreshold(0) - 1;
             Assert.IsFalse(below.IsBossFightPending);
+            below.ChooseFightOption(1);
             below.BeginCombat();
             Assert.IsNull(below.State.Combat.BossId);
             Assert.IsNull(below.State.Combat.ActiveTwistId);
@@ -258,6 +259,10 @@ namespace DeadManZone.Core.Tests
         private static bool RunFightToCompletion(RunOrchestrator orchestrator)
         {
             Assert.IsTrue(orchestrator.CanStartBattle(out string reason), reason);
+            // Normal front by default (M2); boss rounds ignore the choice.
+            if (orchestrator.State.FightOptions is { Count: > 0 }
+                && orchestrator.State.ChosenFightOption < 0)
+                orchestrator.ChooseFightOption(1);
             orchestrator.BeginCombat();
 
             var step = orchestrator.AdvanceCombat();

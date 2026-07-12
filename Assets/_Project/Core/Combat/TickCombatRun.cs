@@ -65,7 +65,8 @@ namespace DeadManZone.Core.Combat
             int seed,
             int authority,
             BuildBoardSet playerBuildBoards,
-            IReadOnlyList<ICombatRuleModifier> modifiers)
+            IReadOnlyList<ICombatRuleModifier> modifiers,
+            bool suppressEnemyFightStartEngines)
         {
             _playerBoard = playerBoard;
             _battlefield = BattlefieldState.FromBoards(playerBoard, enemyBoard);
@@ -75,13 +76,21 @@ namespace DeadManZone.Core.Combat
             _playerCombatants = SpawnCombatants(playerBoard, CombatSide.Player, 0);
             _enemyCombatants = SpawnCombatants(enemyBoard, CombatSide.Enemy, _layout.EnemyOriginX);
             var playerSynergySnapshot = PieceAbilityEngine.EvaluateFightStart(playerBoard, playerBuildBoards);
-            var enemySynergySnapshot = PieceAbilityEngine.EvaluateFightStart(enemyBoard);
             var playerCriticalMassSnapshot = CriticalMassEngine.Evaluate(playerBoard);
-            var enemyCriticalMassSnapshot = CriticalMassEngine.Evaluate(enemyBoard);
             CriticalMassEngine.ApplyToCombatants(playerCriticalMassSnapshot, _playerCombatants);
-            CriticalMassEngine.ApplyToCombatants(enemyCriticalMassSnapshot, _enemyCombatants);
             PieceAbilityEngine.ApplyToCombatants(playerSynergySnapshot, _playerCombatants);
-            PieceAbilityEngine.ApplyToCombatants(enemySynergySnapshot, _enemyCombatants);
+
+            // Easy Fight Options (M2) field a green enemy force: the ENEMY side's
+            // fight-start engines (synergy auras, critical mass) are skipped entirely.
+            // Player side and tactic buffs are untouched; Normal/Hard/bosses pass false.
+            if (!suppressEnemyFightStartEngines)
+            {
+                var enemySynergySnapshot = PieceAbilityEngine.EvaluateFightStart(enemyBoard);
+                var enemyCriticalMassSnapshot = CriticalMassEngine.Evaluate(enemyBoard);
+                CriticalMassEngine.ApplyToCombatants(enemyCriticalMassSnapshot, _enemyCombatants);
+                PieceAbilityEngine.ApplyToCombatants(enemySynergySnapshot, _enemyCombatants);
+            }
+
             ApplyTacticDamageBuffs();
 
             // Rule modifiers (boss Twists now, Battle Conditions in M2) apply AFTER the
@@ -109,8 +118,16 @@ namespace DeadManZone.Core.Combat
             int seed,
             int authority = 0,
             BuildBoardSet playerBuildBoards = null,
-            IReadOnlyList<ICombatRuleModifier> modifiers = null) =>
-            new TickCombatRun(playerBoard, enemyBoard, seed, authority, playerBuildBoards, modifiers);
+            IReadOnlyList<ICombatRuleModifier> modifiers = null,
+            bool suppressEnemyFightStartEngines = false) =>
+            new TickCombatRun(
+                playerBoard,
+                enemyBoard,
+                seed,
+                authority,
+                playerBuildBoards,
+                modifiers,
+                suppressEnemyFightStartEngines);
 
         public CombatAdvanceResult Continue(IReadOnlyList<PhaseCommand> commands)
         {

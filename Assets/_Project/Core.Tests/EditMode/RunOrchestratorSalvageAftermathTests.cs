@@ -39,8 +39,10 @@ namespace DeadManZone.Core.Tests
             _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: VerticalSliceTestFixtures.RegressionRunSeed);
             VerticalSliceTestFixtures.SaveGauntletToOrchestrator(_orchestrator, _database);
 
-            var template = _database.GetEnemyTemplate(1);
-            Assert.IsNotNull(template, "Fight 1 enemy template required.");
+            _orchestrator.ChooseFightOption(1);
+            var chosen = _orchestrator.State.FightOptions[1];
+            var template = _database.GetEnemyTemplate(chosen.TemplateFightNumber);
+            Assert.IsNotNull(template, "chosen option's enemy template required.");
 
             _orchestrator.BeginCombat();
             RunCombatToCompletion();

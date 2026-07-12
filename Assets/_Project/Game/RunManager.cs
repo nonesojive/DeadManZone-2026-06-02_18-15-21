@@ -238,6 +238,30 @@ namespace DeadManZone.Game
             return ok;
         }
 
+        public bool CanChooseFightOption(int index, out string reason)
+        {
+            if (_orchestrator == null)
+            {
+                reason = "No active run.";
+                return false;
+            }
+
+            return _orchestrator.CanChooseOption(index, out reason);
+        }
+
+        public void ChooseFightOption(int index)
+        {
+            EnsureOrchestrator();
+            _orchestrator.ChooseFightOption(index);
+            NotifyStateChanged();
+        }
+
+        public BoardState GetOptionEnemyBoard(int index)
+        {
+            EnsureOrchestrator();
+            return _orchestrator.GetOptionEnemyBoard(index);
+        }
+
         public void BeginCombat()
         {
             EnsureOrchestrator();

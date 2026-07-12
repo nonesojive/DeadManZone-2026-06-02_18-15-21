@@ -32,7 +32,16 @@ Shipped same-day: Dread + BossesDefeated on RunState (schema stays v9, additive)
 - Run HUD Dread meter; seed display + enter-seed on run start (surface for the M0 streams).
 - Exit: variable-length run, winnable by three bosses, boss order differs per seed.
 
-## M2 — Fight Options + Front Report
+## M2 — Fight Options + Front Report — **DONE 2026-07-12**
+
+Shipped same-day: `FightOptionRecord`/`FightOptionTier` on RunState (schema stays v9, additive), `FightOptionGenerator` (three independent seeded army rolls per round via SeedStreams("options", FightIndex); ±1 template band around FightEquivalent; slot 0/1/2 = easy/normal/hard; hard rolls its Battle Condition), `ConditionCatalog` (entrenched_foe / veteran_cadre / storm_barrage / iron_resolve) + `RuleModifierCatalog` unifying twist+condition resolution through the M1 seam, easy tier = enemy fight-start engines suppressed (`TickCombatRun` flag, persisted as `ActiveTier`, restore-deterministic), easy Authority debit (2) into the combat snapshot, hard victory package (+15 supplies / +6 manpower ≈ half a muster), Dread per tier 1/2/3, options persist across save/load and regenerate only after a fight (re-fought losses see the same fronts), boss rounds carry an empty option set. Front Report panel in the Build screen's bottom band: three cards (tier, pool, coarse strength band vs. current army, stakes, hard's condition in amber), click-to-choose with leather highlight, COMBAT gated until a front is chosen, boss rounds show a single red boss report. Suites 386 EditMode / 14 PlayMode; live-verified: choose hard → condition (iron_resolve) into the sim → win → +3 Dread + spoils paid → fresh options rolled.
+
+**Deferred within M2 (content passes, tracked):**
+- **Enemy templates still form no synergies** — normal tier ≈ easy in practice until the enemy factory is re-authored with adjacency-aware layouts (the engines run; content never triggers them). Own content pass.
+- **Recon intel ladder**: option records already carry full data and the UI deliberately shows only the coarse band — the recon-piece content that unlocks deeper intel (counts → composition → next boss identity) is a piece-content pass.
+- Pools all read IRONMARCH UNION until non-IronMarch template content lands (generator is pool-ready).
+
+### Original scope (for reference)
 
 - Three seeded options per round (independent army rolls; pools may repeat), persisted on RunState; regenerate only after a fight resolves.
 - Economy: easy debits the round's Authority pool (~2–3) pre-combat; hard grants +1 Dread over normal + materiel package (~half a muster) on victory. Dread values: easy 1 / normal 2 / hard 3.

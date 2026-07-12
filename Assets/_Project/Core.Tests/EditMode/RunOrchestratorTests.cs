@@ -234,6 +234,7 @@ namespace DeadManZone.Core.Tests
             Assert.IsTrue(board.TryPlace(TestPieces.RifleSquad(), TestBoards.CombatBoardAnchor(5, 3), "rifle_1").Success);
             _orchestrator.SaveCombatBoard(board);
 
+            _orchestrator.ChooseFightOption(1);
             _orchestrator.BeginCombat();
             var openingStep = _orchestrator.AdvanceCombat();
 
@@ -305,6 +306,7 @@ namespace DeadManZone.Core.Tests
             if (!_orchestrator.CanStartBattle(out string reason))
                 Assert.Ignore($"single-unit board cannot start battle: {reason}");
 
+            _orchestrator.ChooseFightOption(1);
             _orchestrator.BeginCombat();
             while (_orchestrator.State.Phase == RunPhase.Combat)
             {
@@ -341,6 +343,8 @@ namespace DeadManZone.Core.Tests
                 if (!_orchestrator.CanStartBattle(out _))
                     break;
 
+                if (_orchestrator.State.FightOptions is { Count: > 0 })
+                    _orchestrator.ChooseFightOption(1);
                 _orchestrator.BeginCombat();
 
                 while (_orchestrator.State.Phase == RunPhase.Combat)
@@ -381,6 +385,7 @@ namespace DeadManZone.Core.Tests
             Assert.IsTrue(board.TryPlace(TestPieces.RifleSquad(), TestBoards.CombatBoardAnchor(5, 3), "rifle_1").Success);
             _orchestrator.SaveCombatBoard(board);
 
+            _orchestrator.ChooseFightOption(1);
             _orchestrator.BeginCombat();
             _orchestrator.AdvanceCombat();
             _orchestrator.SavePauseDraft(TacticType.Advance, new List<GrantedAbility>());
@@ -407,6 +412,7 @@ namespace DeadManZone.Core.Tests
             var freshBoard = fresh.GetCombatBoard();
             Assert.IsTrue(freshBoard.TryPlace(TestPieces.RifleSquad(), TestBoards.CombatBoardAnchor(5, 3), "rifle_1").Success);
             fresh.SaveCombatBoard(freshBoard);
+            fresh.ChooseFightOption(1);
             fresh.BeginCombat();
             fresh.AdvanceCombat();
             fresh.SubmitCombatCommands(new List<PhaseCommand>
@@ -454,6 +460,7 @@ namespace DeadManZone.Core.Tests
                 "rifle_1").Success);
             orchestrator.SaveCombatBoard(board);
 
+            orchestrator.ChooseFightOption(1);
             orchestrator.BeginCombat();
             // Change tactic at the opening pause — the saved PlayerTactic then differs
             // from the fight's starting tactic, which is what F3 got wrong on restore.
@@ -497,6 +504,7 @@ namespace DeadManZone.Core.Tests
                 "marshal_1").Success);
             _orchestrator.SaveCombatBoard(board);
 
+            _orchestrator.ChooseFightOption(1);
             _orchestrator.BeginCombat();
             while (_orchestrator.State.Phase == RunPhase.Combat
                    && !_orchestrator.HasPendingCombatCompletion)
