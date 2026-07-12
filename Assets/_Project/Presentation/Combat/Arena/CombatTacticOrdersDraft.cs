@@ -107,8 +107,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         public bool IsAbilityQueued(GrantedAbility ability) =>
             _queued.Any(q => q.Command.Ability == ability);
 
-        /// <summary>The exact PhaseCommands the real flow submits: SetTactic first
-        /// (mirrors TacticPausePanel), then the queued abilities.</summary>
+        /// <summary>The exact PhaseCommands the real flow submits: SetTactic first,
+        /// then the queued abilities.</summary>
         public List<PhaseCommand> BuildCommands()
         {
             var commands = new List<PhaseCommand>

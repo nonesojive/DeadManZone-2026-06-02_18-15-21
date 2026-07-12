@@ -1,0 +1,59 @@
+# Run-rework roadmap (2026-07-12 grilling session)
+
+Product of the 2026-07-12 design grilling. Domain language: CONTEXT.md (Dread, Boss Fight, Fight Option, Front Report, Battle Condition, Twist, Break/Rout, Manpower, Rarity, Arena Theme). Structural decisions: ADR-0004 (Dread run clock), ADR-0005 (per-unit morale / rout economy). Sequencing decision: scoped deletion pass first, then features in dependency order, each refactoring what it touches — no big-bang audit.
+
+## M0 — Deletion & seams — **DONE 2026-07-12**
+
+Shipped same-day: 51 files deleted (2D renderer stack, TacticPausePanel, Synty bar factory/health bars, 2D scene+bootstrap+tests, 2D art SOs+assets), mode gates collapsed (ToonInk3D is the only renderer; `ResolveCombatArenaScene()` is zero-arg), RunState v9 (obsolete `PlayerBoard` + singular `LockedOffer` dropped; v8 saves migrate + stamp), `SeedStreams` named sub-streams landed (golden-value locked; combat + shop seeds derive through it — the old arithmetic collided across systems), presentation-only `UnityEngine.Random` uses audited clean. Suites 338 EditMode / 14 PlayMode green; full run loop smoke-verified. Notables: `CombatArenaBuildingSpawner` renders buildings as placeholder cubes (2D building sprites deleted — needs a 3D building treatment, tracked for M4/art), `Data/` 2D animation-strip classes + `PieceDefinitionSO` 2D fields deferred (touch every piece asset; fold into M3's card/rarity asset pass).
+
+### Original scope (for reference)
+
+- Execute the 2D switchover deletion list (audit doc §6): 17 CombatArena2D files, CombatUnitVisual2D, Synty bar factory, TacticPausePanel, CombatArena2D scene + bootstrap, the replay tests' 2D-config pin.
+- RunState cleanup: delete obsolete `PlayerBoard`, reconcile `LockedOffer` vs `LockedOffers`, save schema v9 + migration test.
+- **Named RNG sub-streams** in Core: `hash(RunSeed, systemName, roundIndex)` per consumer (shop, options, themes, boss permutation, pity, combat). Order-independent determinism — every later milestone consumes this. Grep-and-fix any `UnityEngine.Random` feeding gameplay decisions.
+- Exit: suites green, a full run plays with zero 2D-path code.
+
+## M1 — Dread run skeleton
+
+- Dread on RunState; thresholds (tune from 6/12/18); threshold ⇒ mandatory Boss Fight; third boss ⇒ Victory. Losses/bosses grant no Dread.
+- FightIndex → Dread migration everywhere difficulty-curves (enemy strength, muster/salvage scaling; `MoraleCalculator`'s fightIndex scale until M5 deletes it).
+- Rule-modifier seam in the sim (one hook; content decks come later) + boss framework: boss = identity (commander, twist, pool) × 3 stage loadouts; seeded hidden permutation.
+- Boss content v1: three pool commanders (Neutral Militia, Crimson Legion, Ash Wraiths); rifleman-fallback visuals acceptable until modeled.
+- Run HUD Dread meter; seed display + enter-seed on run start (surface for the M0 streams).
+- Exit: variable-length run, winnable by three bosses, boss order differs per seed.
+
+## M2 — Fight Options + Front Report
+
+- Three seeded options per round (independent army rolls; pools may repeat), persisted on RunState; regenerate only after a fight resolves.
+- Economy: easy debits the round's Authority pool (~2–3) pre-combat; hard grants +1 Dread over normal + materiel package (~half a muster) on victory. Dread values: easy 1 / normal 2 / hard 3.
+- Enemy loadout flags: easy = fight-start engines suppressed for enemy side; normal = engines on; hard = engines on + one Battle Condition (visible in the report by default). First condition deck (3–5 cards) through the M1 rule-modifier seam.
+- Content: enemy templates re-authored to actually form synergies (normal tier's real delta — the engines already run).
+- Front Report panel (grimdark kit) with default intel (pool, strength band, stakes); recon intel-ladder seam (+1 recon piece to prove it). Boss report replaces options at threshold.
+- Exit: every round is a legible three-way choice with Dread/economy consequences.
+
+## M3 — Rarity + pity + card visual (parallel with M2 after M0; Dread weighting keys in when M1 lands)
+
+- Rarity enum (Common/Uncommon/Rare; append-only, room for a 4th), assignments for all pieces (design role, not raw power), shop weight table keyed by Dread, salvage-quality hook (hard fights = targeted shot at a pool's rares).
+- Pity: counter per generated offer batch (initial roll and each reroll both count), +step to rare odds per rare-less batch, reset on rare APPEARING, hard guarantee at the cap, rare-or-above satisfies. State on RunState (seeded).
+- Card template redesign with rarity frames (saturation budget; frames lean brass/bone, never near side-channel blue/red) + shop skin sweep — cards and rarity ship together.
+
+## M4 — Arena Themes wave 1 (independent after M0)
+
+- Theme framework: pool → home-theme-set keying; theme rolls seeded from the chosen option's pool; bosses on their pool's signature ground. Scene-per-theme via the existing `ResolveCombatArenaScene` branch point; `CombatEnvironmentBuilder` parameterized per theme.
+- Ship 3–4 of the canonical six (Trenchline exists; pick from Forest / Ravaged Town / Trench-dressing / Siege Ground / Fog Field). All dressings — camera, flat strip, value structure never change.
+
+## M5 — Morale & rout (own milestone, after M1/M2 stabilize; ADR-0005)
+
+- Per-unit Morale bar, terror damage channel, Break ⇒ rout (flee field, not a kill); side defeated when no unbroken living units.
+- Economy: enemy routs grant no salvage roll; player routs cost no Manpower and return to their slot next round. Manpower becomes run health; run-level Morale and `MoraleCalculator` deleted; casualties deduct Manpower directly.
+- Event-log actions + presentation (flee move reusing march/dissolve machinery; vehicles collapse-abandon) + first terror content (Cartel identity hook).
+
+## M6 — UI restyle sweep (anytime after M0; cards/shop already done in M3)
+
+- Promote `CombatGrimdarkSkin` to the game-wide kit; sweep main menu, settings/options, run HUD, battle report. Restyle, not redesign — layouts and flows keep.
+
+## Standing rules
+
+- Every milestone that touches RunState bumps the save schema with a migration + test (v8→v9 in M0; further bumps per milestone).
+- Determinism is a standing invariant: new randomness only through named sub-streams; seeded-run equality is a test target, not a hope.
+- Content debt from ADR-0004: anything still keyed to FightIndex after M1 is a bug.

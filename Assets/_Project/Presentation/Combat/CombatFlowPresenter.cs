@@ -18,7 +18,6 @@ namespace DeadManZone.Presentation.Combat
     public sealed class CombatFlowPresenter : MonoBehaviour
     {
         [SerializeField] private CombatDirector combatDirector;
-        [SerializeField] private TacticPausePanel tacticPausePanel;
         [SerializeField] private BattleReportPresenter battleReportPresenter;
         [SerializeField] private GameObject loadingOverlay;
         [SerializeField] private TMP_Text loadingText;
@@ -31,19 +30,10 @@ namespace DeadManZone.Presentation.Combat
         private Coroutine _loadingRoutine;
         private ContentRegistry _contentRegistry;
 
-        // 3D-mode pause UI (runtime-built; replaces TacticPausePanel when the shared
-        // CombatArenaConfig is in ToonInk3D mode). The panel stays wired for 2D.
+        // Runtime-built pause/HUD UI for the 3D arena (the orders window IS the pause UI).
         private CombatTacticOrdersWindow _ordersWindow3D;
         private CombatArmyHealthHud _armyHud3D;
         private BattlefieldLayout _battlefieldLayout;
-
-        /// <summary>THE 2D/3D switch: the shared CombatArenaConfig's visualMode (the same
-        /// asset GameScenes.ResolveCombatArenaScene reads to pick the arena scene).</summary>
-        private static bool ArenaIs3D()
-        {
-            var config = Resources.Load<CombatArenaConfigSO>("DeadManZone/CombatArenaConfig");
-            return config != null && config.visualMode == CombatArenaVisualMode.ToonInk3D;
-        }
 
         private void Awake()
         {
@@ -95,7 +85,6 @@ namespace DeadManZone.Presentation.Combat
 
         public void BeginCombatPresentation()
         {
-            tacticPausePanel?.Hide();
             _ordersWindow3D?.Hide();
             battleReportPresenter?.Hide();
 
@@ -190,7 +179,6 @@ namespace DeadManZone.Presentation.Combat
 
         private void ShowBattleReport()
         {
-            tacticPausePanel?.Hide();
             _ordersWindow3D?.Hide();
             battleReportPresenter?.ShowFromRunState();
         }
@@ -207,16 +195,10 @@ namespace DeadManZone.Presentation.Combat
                 ShowPauseUi(context);
         }
 
-        /// <summary>2D shows TacticPausePanel; 3D shows the interactive orders window
-        /// (same submit shape — both feed SubmitCombatCommands + ContinueCombat).</summary>
+        /// <summary>The interactive orders window is THE combat pause UI
+        /// (feeds SubmitCombatCommands + ContinueCombat).</summary>
         private void ShowPauseUi(CombatPauseContext context)
         {
-            if (!ArenaIs3D())
-            {
-                tacticPausePanel?.ShowPause(context);
-                return;
-            }
-
             EnsureOrdersWindow3D();
 
             var bootstrap = CombatArenaBootstrap.Instance;
@@ -276,9 +258,8 @@ namespace DeadManZone.Presentation.Combat
                 draft.Queued.Select(q => q.Command.Ability).ToList());
         }
 
-        /// <summary>Cross-scene wiring the additive 3D arena scene can't serialize:
-        /// director/presenter live here in the Run scene. 2D arena scenes carry no
-        /// punch-in component, so this is a no-op for the 2D path.</summary>
+        /// <summary>Cross-scene wiring the additive arena scene can't serialize:
+        /// director/presenter live here in the Run scene.</summary>
         private void WireArenaSceneComponents()
         {
             var bootstrap = CombatArenaBootstrap.Instance;
@@ -306,53 +287,29 @@ namespace DeadManZone.Presentation.Combat
 
         private void EnsureHealthBarPresenter()
         {
-            // 3D mode: the demo's opposing top-bar HUD replaces the Synty-coupled 2D bars.
-            // The HUD lives on its own child (NO CombatDirector there — its OnEnable
-            // self-subscription must not fire, this presenter already forwards events).
-            if (ArenaIs3D())
+            // The demo's opposing top-bar HUD is the army health UI. The HUD lives on its
+            // own child (NO CombatDirector there — its OnEnable self-subscription must not
+            // fire, this presenter already forwards events).
+
+            // The Run scene may still serialize the legacy 2D bars object; it never
+            // receives events (this presenter feeds the 3D HUD instead) — hide it or
+            // it sits full forever.
+            var legacyBars = transform.Find("ArmyHealthBars");
+            if (legacyBars != null)
+                legacyBars.gameObject.SetActive(false);
+
+            if (_armyHud3D == null)
             {
-                // The scene-serialized 2D bars never receive events in 3D mode (this
-                // presenter feeds the 3D HUD instead) — hide them or they sit full forever.
-                var legacyBars = transform.Find("ArmyHealthBars");
-                if (legacyBars != null)
-                    legacyBars.gameObject.SetActive(false);
-
-                if (_armyHud3D == null)
-                {
-                    // Top-level on purpose: the HUD builds its own ScreenSpaceOverlay canvas,
-                    // and nesting it under the Run UI canvas collapses its rect to zero.
-                    // Also keeps it off any GameObject carrying a CombatDirector (see
-                    // CombatArmyHealthHud.EnsurePresenter's double-subscription warning).
-                    var hudRoot = new GameObject("Combat3DArmyHud");
-                    _armyHud3D = hudRoot.AddComponent<CombatArmyHealthHud>();
-                }
-
-                _armyHud3D.gameObject.SetActive(true); // hidden on return to shop
-                healthBarPresenter = _armyHud3D.EnsurePresenter();
-                return;
+                // Top-level on purpose: the HUD builds its own ScreenSpaceOverlay canvas,
+                // and nesting it under the Run UI canvas collapses its rect to zero.
+                // Also keeps it off any GameObject carrying a CombatDirector (see
+                // CombatArmyHealthHud.EnsurePresenter's double-subscription warning).
+                var hudRoot = new GameObject("Combat3DArmyHud");
+                _armyHud3D = hudRoot.AddComponent<CombatArmyHealthHud>();
             }
 
-            if (healthBarPresenter == null || !healthBarPresenter.IsWired)
-            {
-                var barsRoot = transform.Find("ArmyHealthBars");
-                if (barsRoot != null)
-                    healthBarPresenter = barsRoot.GetComponent<ArmyHealthBarPresenter>();
-            }
-
-            if (healthBarPresenter != null
-                && healthBarPresenter.IsWired
-                && !CombatHealthBarUiFactory.UsesSyntyBars(healthBarPresenter))
-            {
-                healthBarPresenter = CombatHealthBarUiFactory.CreateUnder(transform);
-            }
-            else if (healthBarPresenter == null || !healthBarPresenter.IsWired)
-            {
-                healthBarPresenter = CombatHealthBarUiFactory.CreateUnder(transform);
-            }
-
-            var orphan = GetComponent<ArmyHealthBarPresenter>();
-            if (orphan != null && orphan != healthBarPresenter && !orphan.IsWired)
-                Destroy(orphan);
+            _armyHud3D.gameObject.SetActive(true); // hidden on return to shop
+            healthBarPresenter = _armyHud3D.EnsurePresenter();
         }
 
         private void EnsureArenaComponents()
@@ -371,10 +328,6 @@ namespace DeadManZone.Presentation.Combat
                 gameObject.AddComponent<CombatArenaCameraTuner>();
 #endif
 
-            var arenaVfx = GetComponent<CombatArena2DVfx>();
-            if (arenaVfx == null)
-                arenaVfx = gameObject.AddComponent<CombatArena2DVfx>();
-
             var arenaAudio = GetComponent<CombatArenaAudioPresenter>();
             if (arenaAudio == null)
                 arenaAudio = gameObject.AddComponent<CombatArenaAudioPresenter>();
@@ -383,7 +336,6 @@ namespace DeadManZone.Presentation.Combat
 
             arenaPresenter?.Configure(combatDirector, arenaAudio);
             freezeController?.Configure(combatDirector, arenaPresenter);
-            arenaVfx?.Configure(freezeController);
         }
 
         private void OnCombatEventReplayed(CombatEvent combatEvent)

@@ -60,7 +60,6 @@ namespace DeadManZone.Game
                 State.LockedOffers.Add(ShopOfferRecord.FromOffer(offer));
             }
 
-            State.LockedOffer = null;
             State.FrozenOfferId = null;
             Persist();
         }
@@ -230,16 +229,8 @@ namespace DeadManZone.Game
         private ShopOffer FindOffer(string offerId) =>
             State.Shop?.Offers?.FirstOrDefault(o => o.OfferId == offerId);
 
-        private List<ShopOfferRecord> GetLockedOffers()
-        {
-            if (State.LockedOffers != null && State.LockedOffers.Count > 0)
-                return State.LockedOffers;
-
-            if (State.LockedOffer != null)
-                return new List<ShopOfferRecord> { State.LockedOffer };
-
-            return new List<ShopOfferRecord>();
-        }
+        private List<ShopOfferRecord> GetLockedOffers() =>
+            State.LockedOffers ?? new List<ShopOfferRecord>();
 
         private void PayOffer(ShopOffer offer)
         {
@@ -284,7 +275,8 @@ namespace DeadManZone.Game
         {
             SyncSalvageChancePercent();
             var board = GetShopBoard();
-            int shopSeed = State.RunSeed + State.FightIndex * 100 + State.RerollCountThisRound;
+            int shopSeed = SeedStreams.Derive(
+                State.RunSeed, "shop", State.FightIndex, State.RerollCountThisRound);
             var shop = _shopGenerator.Generate(
                 board,
                 State.FactionId,
@@ -320,7 +312,8 @@ namespace DeadManZone.Game
                 fixedSlots[locked.SlotIndex] = locked;
             }
 
-            int shopSeed = State.RunSeed + State.FightIndex * 100 + State.RerollCountThisRound;
+            int shopSeed = SeedStreams.Derive(
+                State.RunSeed, "shop", State.FightIndex, State.RerollCountThisRound);
             var rerolled = _shopGenerator.RollShopOffers(
                 board,
                 State.FactionId,

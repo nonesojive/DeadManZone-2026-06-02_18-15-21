@@ -82,10 +82,18 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             var footprint = ComputeFootprintBounds(cell.Position, cell.Definition.Shape, mapper, DefaultBuildingHeight);
 
-            var building2D = CombatArena2DBuildingVisual.Spawn(cell.InstanceId, footprint.Center, source, cell.Side);
-            building2D.name = $"Building_{cell.InstanceId}";
-            building2D.transform.SetParent(buildingsRoot, false);
-            return building2D;
+            // Footprint-sized placeholder block until non-combatant structures get a real
+            // 3D treatment (the 2D billboard sprite path was deleted with the 2D arena).
+            var building = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            building.name = $"Building_{cell.InstanceId}";
+            var collider = building.GetComponent<Collider>();
+            if (collider != null)
+                UnityEngine.Object.Destroy(collider);
+
+            building.transform.SetParent(buildingsRoot, false);
+            building.transform.localScale = new Vector3(footprint.Width, footprint.Height, footprint.Depth);
+            building.transform.position = footprint.Center + Vector3.up * (footprint.Height * 0.5f);
+            return building;
         }
 
         private static FootprintBounds ComputeFootprintBounds(

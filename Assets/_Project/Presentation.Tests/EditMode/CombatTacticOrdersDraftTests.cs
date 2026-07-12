@@ -9,7 +9,7 @@ namespace DeadManZone.Presentation.Tests
     /// <summary>
     /// The tactics window's order sheet must defer every verdict to the Core
     /// TacticPauseValidator and build the exact PhaseCommand shapes the live flow
-    /// submits (TacticPausePanel.SubmitAndContinue + TargetCell for targeted abilities).
+    /// submits (SetTactic first + TargetCell for targeted abilities).
     /// </summary>
     public sealed class CombatTacticOrdersDraftTests
     {

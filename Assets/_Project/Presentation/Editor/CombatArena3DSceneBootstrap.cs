@@ -58,8 +58,7 @@ namespace DeadManZone.Presentation.Editor
             EditorSceneManager.SaveScene(scene, ScenePath);
             EnsureSceneInBuildSettings();
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Combat3D] Run-flow arena scene saved to {ScenePath} and added to Build " +
-                      "Settings. Switch combat to 3D via DeadManZone → Combat3D → Switch Combat To 3D Arena.");
+            Debug.Log($"[Combat3D] Run-flow arena scene saved to {ScenePath} and added to Build Settings.");
         }
 
         /// <summary>Scene-side rig only — see class summary for what stays in the Run scene.</summary>
@@ -128,8 +127,10 @@ namespace DeadManZone.Presentation.Editor
             });
         }
 
-        // ------------------------------------------------------------- 2D/3D switch
+        // ---------------------------------------------------------------- mode repair
 
+        /// <summary>ToonInk3D is the only renderer; this just repairs a config asset that
+        /// still carries an obsolete mode int and makes sure the scene is in Build Settings.</summary>
         [MenuItem("DeadManZone/Combat3D/Switch Combat To 3D Arena")]
         public static void SwitchCombatTo3D()
         {
@@ -147,22 +148,8 @@ namespace DeadManZone.Presentation.Editor
             EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssets();
             EnsureSceneInBuildSettings();
-            Debug.Log("[Combat3D] Shared CombatArenaConfig switched to ToonInk3D — run combat now loads " +
-                      $"{GameScenes.CombatArena3D}. Switch back any time via 'Switch Combat To 2D Arena'.");
-        }
-
-        [MenuItem("DeadManZone/Combat3D/Switch Combat To 2D Arena")]
-        public static void SwitchCombatTo2D()
-        {
-            var config = LoadSharedConfig();
-            if (config == null)
-                return;
-
-            config.visualMode = CombatArenaVisualMode.TopTroops2D;
-            EditorUtility.SetDirty(config);
-            AssetDatabase.SaveAssets();
-            Debug.Log("[Combat3D] Shared CombatArenaConfig switched back to TopTroops2D — run combat loads " +
-                      $"{GameScenes.CombatArena2D} again.");
+            Debug.Log("[Combat3D] Shared CombatArenaConfig set to ToonInk3D — run combat loads " +
+                      $"{GameScenes.CombatArena3D}.");
         }
 
         private static CombatArenaConfigSO LoadSharedConfig()

@@ -33,13 +33,5 @@ namespace DeadManZone.Core.Combat
 
             return false;
         }
-
-        public static GridCoord SelectNearestEnemyPosition(GridCoord from, IReadOnlyList<CombatantState> enemies) =>
-            enemies
-                .Where(e => e.IsAlive)
-                .OrderBy(e => CombatRange.Manhattan(from, e.AnchorPosition))
-                .ThenBy(e => e.InstanceId)
-                .First()
-                .AnchorPosition;
     }
 }

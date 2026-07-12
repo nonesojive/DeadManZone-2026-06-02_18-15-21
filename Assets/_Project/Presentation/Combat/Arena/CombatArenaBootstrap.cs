@@ -7,7 +7,8 @@ using UnityEngine.Rendering.Universal;
 
 namespace DeadManZone.Presentation.Combat.Arena
 {
-    /// <summary>Bootstraps the 2D (Top Troops) combat arena: orthographic camera, roots, atmosphere.</summary>
+    /// <summary>Bootstraps the ToonInk3D combat arena: camera plumbing and unit/building roots.
+    /// The scene authors its own perspective camera pose, lighting, and grade.</summary>
     public sealed class CombatArenaBootstrap : MonoBehaviour
     {
         [SerializeField] private Camera arenaCamera;
@@ -22,11 +23,6 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public static CombatArenaBootstrap Instance { get; private set; }
 
-        /// <summary>ToonInk3D scenes author their own perspective camera, lighting, and grade;
-        /// the 2D atmosphere/battlefield build and orthographic framing must not run.</summary>
-        private bool Is3DMode =>
-            config != null && config.visualMode == CombatArenaVisualMode.ToonInk3D;
-
         private void Awake()
         {
             Instance = this;
@@ -40,13 +36,6 @@ namespace DeadManZone.Presentation.Combat.Arena
             Time.maximumDeltaTime = 0.05f;
 
             ConfigureCamera();
-            if (!Is3DMode)
-            {
-                TopTroopsAtmosphere.Apply(config, transform, arenaCamera);
-#if UNITY_URP_PRESENT
-                CombatArenaPostFx.Ensure(transform);
-#endif
-            }
         }
 
         private void OnDestroy()
@@ -57,13 +46,12 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private Vector3? _authoredCameraHome;
 
-        /// <summary>3D fight-start framing: dolly/shift from the scene-authored pose (kept
+        /// <summary>Fight-start framing: dolly/shift from the scene-authored pose (kept
         /// as the minimum) so every occupied cell is on screen — real deployments can span
-        /// the full 17-column strip, which the authored close framing does not cover.
-        /// No-op in 2D mode (the orthographic framer owns that path).</summary>
+        /// the full 17-column strip, which the authored close framing does not cover.</summary>
         public void FrameBattlefield3D(BattlefieldState battlefield, CombatGridMapper mapper)
         {
-            if (!Is3DMode || arenaCamera == null || battlefield == null || mapper == null)
+            if (arenaCamera == null || battlefield == null || mapper == null)
                 return;
 
             _authoredCameraHome ??= arenaCamera.transform.position;
@@ -83,27 +71,6 @@ namespace DeadManZone.Presentation.Combat.Arena
                 arenaCamera, _authoredCameraHome.Value, points);
         }
 
-        public void FrameBattlefield(BattlefieldLayout layout)
-        {
-            if (layout == null || config == null)
-                return;
-
-            ConfigureCamera();
-            if (Is3DMode)
-                return; // scene-authored camera pose/lighting; no 2D battlefield view.
-
-            TopTroopsAtmosphere.Apply(config, transform, arenaCamera);
-#if UNITY_URP_PRESENT
-            CombatArenaPostFx.Ensure(transform);
-#endif
-
-            var mapper = new CombatGridMapper(layout, config.cellWidth, config.cellDepth);
-            CombatArena2DBattlefieldView.Build(transform, layout, mapper, config, arenaCamera);
-
-            if (arenaCamera != null)
-                CombatArenaOrthographicFramer.Frame(arenaCamera, layout, config);
-        }
-
         private void ConfigureCamera()
         {
             if (arenaCamera == null)
@@ -117,16 +84,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             arenaCamera.depth = 10f;
             arenaCamera.rect = new Rect(0f, 0f, 1f, 1f);
             arenaCamera.allowHDR = true; // let bloom pick up the bright additive muzzle/tracer VFX
-            if (!Is3DMode)
-                arenaCamera.orthographic = true;
 
             EnsureUrpCameraData(arenaCamera);
-
-            if (!Is3DMode && RenderSettings.skybox == null)
-            {
-                arenaCamera.clearFlags = CameraClearFlags.SolidColor;
-                arenaCamera.backgroundColor = new Color(0.12f, 0.11f, 0.10f);
-            }
 
             if (unitsRoot == null)
             {

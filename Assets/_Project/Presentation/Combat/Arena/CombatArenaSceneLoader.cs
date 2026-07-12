@@ -11,8 +11,7 @@ namespace DeadManZone.Presentation.Combat.Arena
     {
         [SerializeField] private RunSceneController runSceneController;
 
-        // Which arena scene this loader actually loaded (2D or 3D); unload must target the
-        // same scene even if the config asset changes between load and unload.
+        // Which arena scene this loader actually loaded; unload must target the same scene.
         private string _loadedSceneName;
         private string _previousActiveSceneName;
 
@@ -35,8 +34,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         public IEnumerator LoadAsync()
         {
-            var config = Resources.Load<CombatArenaConfigSO>("DeadManZone/CombatArenaConfig");
-            string sceneName = GameScenes.ResolveCombatArenaScene(config);
+            string sceneName = GameScenes.ResolveCombatArenaScene();
 
             if (!SceneManager.GetSceneByName(sceneName).isLoaded)
                 IsLoaded = false;
@@ -51,17 +49,13 @@ namespace DeadManZone.Presentation.Combat.Arena
             IsLoaded = true;
             _loadedSceneName = sceneName;
 
-            // The 3D arena scene owns its lighting/fog (RenderSettings are per-scene and
-            // only the ACTIVE scene's apply). Gated to the 3D scene so the 2D path keeps
-            // its exact old behavior. Restored on unload.
-            if (sceneName == GameScenes.CombatArena3D)
+            // The arena scene owns its lighting/fog (RenderSettings are per-scene and
+            // only the ACTIVE scene's apply). Restored on unload.
+            var arenaScene = SceneManager.GetSceneByName(sceneName);
+            if (arenaScene.IsValid() && arenaScene.isLoaded)
             {
-                var arenaScene = SceneManager.GetSceneByName(sceneName);
-                if (arenaScene.IsValid() && arenaScene.isLoaded)
-                {
-                    _previousActiveSceneName = SceneManager.GetActiveScene().name;
-                    SceneManager.SetActiveScene(arenaScene);
-                }
+                _previousActiveSceneName = SceneManager.GetActiveScene().name;
+                SceneManager.SetActiveScene(arenaScene);
             }
 
             if (runSceneController == null)
@@ -89,9 +83,8 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             // Trust the actual scene state, not just the flag: on the defeat→new-run path the
             // flag can desync while the additive scene lingers behind the shop. When the flag
-            // desynced before this loader ever loaded, fall back to the config-resolved name.
-            string sceneName = _loadedSceneName ?? GameScenes.ResolveCombatArenaScene(
-                Resources.Load<CombatArenaConfigSO>("DeadManZone/CombatArenaConfig"));
+            // desynced before this loader ever loaded, fall back to the resolved name.
+            string sceneName = _loadedSceneName ?? GameScenes.ResolveCombatArenaScene();
             bool sceneLoaded = SceneManager.GetSceneByName(sceneName).isLoaded;
             if (!IsLoaded && !sceneLoaded)
                 yield break;

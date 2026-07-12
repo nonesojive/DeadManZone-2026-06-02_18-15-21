@@ -57,7 +57,9 @@ namespace DeadManZone.Core.Run
 
     public sealed class RunState
     {
-        public int SaveSchemaVersion { get; set; } = 8;
+        // v9 (2026-07-12, M0): dropped obsolete PlayerBoard + singular LockedOffer
+        // (v8 JSON migrates: LockedOffer folds into LockedOffers, stale keys ignored).
+        public int SaveSchemaVersion { get; set; } = 9;
         public int FightIndex { get; set; } = 1;
         public int Supplies { get; set; }
         public int Manpower { get; set; }
@@ -71,13 +73,9 @@ namespace DeadManZone.Core.Run
         public RunPhase Phase { get; set; } = RunPhase.Build;
         public BoardSnapshot CombatBoard { get; set; }
         public BoardSnapshot HqBoard { get; set; }
-
-        [System.Obsolete("Use CombatBoard and HqBoard (schema v8).")]
-        public BoardSnapshot PlayerBoard { get; set; }
         public ReservesSnapshot Reserves { get; set; }
         public ShopState Shop { get; set; }
         public string FrozenOfferId { get; set; }
-        public ShopOfferRecord LockedOffer { get; set; }
         public List<ShopOfferRecord> LockedOffers { get; set; } = new();
         public CombatSaveState Combat { get; set; }
         public BattleReport LastBattleReport { get; set; }
@@ -105,7 +103,7 @@ namespace DeadManZone.Core.Run
                 Morale = startingMorale,
                 Phase = RunPhase.Build,
                 FightIndex = 1,
-                SaveSchemaVersion = 8,
+                SaveSchemaVersion = 9,
                 Reserves = new ReservesSnapshot
                 {
                     Width = ReservesState.Width,

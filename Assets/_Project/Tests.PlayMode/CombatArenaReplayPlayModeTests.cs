@@ -18,8 +18,6 @@ namespace DeadManZone.PlayMode.Tests
     public sealed class CombatArenaReplayPlayModeTests
     {
         private GameObject _root;
-        private CombatArenaVisualMode _savedVisualMode;
-        private CombatArenaConfigSO _sharedConfig;
 
         private sealed class ArenaHarness
         {
@@ -34,29 +32,15 @@ namespace DeadManZone.PlayMode.Tests
         {
             PlayModeTestHelpers.CleanupPersistentManagers();
             CombatArenaSession.ResetForTests();
-
-            // These tests cover the 2D arena path and load the 2D scene explicitly, but its
-            // bootstrap reads the SHARED config — pin it to 2D for the test's lifetime so
-            // the suite stays green while the game itself runs the 3D arena. In-memory only
-            // (no SetDirty), restored in teardown.
-            _sharedConfig = Resources.Load<CombatArenaConfigSO>("DeadManZone/CombatArenaConfig");
-            if (_sharedConfig != null)
-            {
-                _savedVisualMode = _sharedConfig.visualMode;
-                _sharedConfig.visualMode = CombatArenaVisualMode.TopTroops2D;
-            }
         }
 
         [TearDown]
         public void TearDown()
         {
-            if (_sharedConfig != null)
-                _sharedConfig.visualMode = _savedVisualMode;
-
             if (_root != null)
                 Object.DestroyImmediate(_root);
 
-            var arenaScene = SceneManager.GetSceneByName(GameScenes.CombatArena2D);
+            var arenaScene = SceneManager.GetSceneByName(GameScenes.CombatArena3D);
             if (arenaScene.isLoaded)
                 SceneManager.UnloadSceneAsync(arenaScene);
 
@@ -122,7 +106,7 @@ namespace DeadManZone.PlayMode.Tests
         }
 
         [UnityTest]
-        public IEnumerator InitializeArena_ConscriptRifleman_RendersSingleFrameScale()
+        public IEnumerator InitializeArena_ConscriptRifleman_UsesVisual3DBackend()
         {
             var database = RequireDatabase();
             if (database == null)
@@ -138,14 +122,10 @@ namespace DeadManZone.PlayMode.Tests
             var actor = FindActor(harness.Presenter, "enemy_rifle_1");
             Assert.NotNull(actor, "Enemy conscript actor should exist after arena initialization.");
 
-            var quad = actor
-                .GetComponentsInChildren<Transform>(includeInactive: false)
-                .FirstOrDefault(child => child.name == "Quad");
-            Assert.NotNull(quad, "Enemy conscript should render through a sprite quad.");
-
-            // A full 4096 sheet rendered as one sprite was roughly 2.7 units tall.
-            Assert.Less(Mathf.Abs(quad.localScale.y), 2.1f, "Conscript quad should be a sliced frame, not the full sprite sheet.");
-            Assert.Less(Mathf.Abs(quad.localScale.x), 2.1f, "Conscript quad width should be a sliced frame, not the full sprite sheet.");
+            // The arena scene's CombatUnitVisual3DInstaller must have installed the 3D
+            // visual backend on the pooled actor (there is no 2D fallback anymore).
+            var visual3D = actor.GetComponentInChildren<CombatUnitVisual3D>(includeInactive: true);
+            Assert.NotNull(visual3D, "Enemy conscript should render through the ToonInk3D visual backend.");
         }
 
         [UnityTest]
@@ -237,7 +217,7 @@ namespace DeadManZone.PlayMode.Tests
             presenter.Configure(director, null);
             director.SetSecondsPerTickForTests(0f);
 
-            yield return SceneManager.LoadSceneAsync(GameScenes.CombatArena2D, LoadSceneMode.Additive);
+            yield return SceneManager.LoadSceneAsync(GameScenes.CombatArena3D, LoadSceneMode.Additive);
             yield return null;
 
             var start = new GridCoord(3, 2);

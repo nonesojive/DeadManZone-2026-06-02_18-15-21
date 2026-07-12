@@ -107,14 +107,12 @@ namespace DeadManZone.Presentation.Editor
 
             var combatDirector = combatPanel.AddComponent<CombatDirector>();
             var loadingOverlay = CreateCombatLoadingOverlay(combatPanel.transform, theme, out var loadingText);
-            var tacticPanel = CreateTacticPausePanel(combatPanel.transform, theme);
             var battleReport = CreateBattleReportPanel(combatPanel.transform, theme);
             var flowPresenter = combatPanel.AddComponent<CombatFlowPresenter>();
-            var healthBarPresenter = CreateArmyHealthBars(combatPanel.transform, theme);
 
-            WireFlowPresenter(flowPresenter, combatDirector, tacticPanel, battleReport, loadingOverlay, loadingText, healthBarPresenter);
+            WireFlowPresenter(flowPresenter, combatDirector, battleReport, loadingOverlay, loadingText);
             WireController(controller, shopScene, shopCanvasGroup, combatPanel, boardAreaGo, shopAreaGo, bottomBar,
-                boardView, shopView, reservesView, combatDirector, tacticPanel, hud, endOverlay, pauseMenu,
+                boardView, shopView, reservesView, combatDirector, hud, endOverlay, pauseMenu,
                 beginFight, menuBtn, rowLayout);
 
             var hudController = shopScene.AddComponent<BuildScreenHudController>();
@@ -142,10 +140,6 @@ namespace DeadManZone.Presentation.Editor
                 bottomBar.transform.Find("ReservesRegion") as RectTransform,
                 rowLayout,
                 boardView);
-
-            var panelSerialized = new SerializedObject(tacticPanel);
-            panelSerialized.FindProperty("combatDirector").objectReferenceValue = combatDirector;
-            panelSerialized.ApplyModifiedPropertiesWithoutUndo();
 
             var directorSerialized = new SerializedObject(combatDirector);
             directorSerialized.FindProperty("autoAdvanceAfterCommands").boolValue = false;
@@ -839,47 +833,6 @@ namespace DeadManZone.Presentation.Editor
             return overlay;
         }
 
-        private static TacticPausePanel CreateTacticPausePanel(
-            Transform parent,
-            UiThemeSO theme)
-        {
-            var sheet = CreateRegion(parent, "TacticPauseSheet", Vector2.zero, new Vector2(1f, 0.42f));
-            var sheetBg = sheet.AddComponent<Image>();
-            UiThemeApplicator.ApplySecurityTerminalFrame(sheetBg, theme);
-
-            var panel = sheet.AddComponent<TacticPausePanel>();
-            var title = MenuSceneSetup.CreateLabelPublic(
-                sheet.transform, "Combat Pause", 22, FontStyles.Bold,
-                new Vector2(0.5f, 0.88f), new Vector2(900f, 36f));
-            var authority = MenuSceneSetup.CreateLabelPublic(
-                sheet.transform, "Authority", 18, FontStyles.Normal,
-                new Vector2(0.5f, 0.78f), new Vector2(900f, 28f));
-            var reason = MenuSceneSetup.CreateLabelPublic(
-                sheet.transform, "", 16, FontStyles.Italic,
-                new Vector2(0.5f, 0.14f), new Vector2(900f, 24f));
-            UiThemeSceneStyling.StyleLabel(title, theme);
-            UiThemeSceneStyling.StyleLabel(authority, theme);
-            UiThemeSceneStyling.StyleLabel(reason, theme, secondary: true);
-
-            var tacticRow = CreateRegion(sheet.transform, "TacticRow", new Vector2(0.05f, 0.52f), new Vector2(0.95f, 0.72f));
-            var abilityRow = CreateRegion(sheet.transform, "AbilityRow", new Vector2(0.05f, 0.28f), new Vector2(0.95f, 0.48f));
-            var continueBtn = MenuSceneSetup.CreateSmallButtonPublic(
-                sheet.transform, "Continue", new Vector2(0.5f, 0.05f), new Vector2(180f, 44f));
-            UiThemeSceneStyling.StyleButton(continueBtn, theme, accent: true);
-
-            var serialized = new SerializedObject(panel);
-            serialized.FindProperty("titleText").objectReferenceValue = title;
-            serialized.FindProperty("authorityText").objectReferenceValue = authority;
-            serialized.FindProperty("reasonText").objectReferenceValue = reason;
-            serialized.FindProperty("tacticRow").objectReferenceValue = tacticRow.transform;
-            serialized.FindProperty("abilityRow").objectReferenceValue = abilityRow.transform;
-            serialized.FindProperty("continueButton").objectReferenceValue = continueBtn;
-            serialized.FindProperty("panelBackground").objectReferenceValue = sheetBg;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
-            sheet.SetActive(false);
-            return panel;
-        }
-
         private static BattleReportPresenter CreateBattleReportPanel(Transform parent, UiThemeSO theme)
         {
             var sheet = CreateRegion(parent, "BattleReportSheet", new Vector2(0.15f, 0.18f), new Vector2(0.85f, 0.82f));
@@ -921,27 +874,18 @@ namespace DeadManZone.Presentation.Editor
             return presenter;
         }
 
-        private static ArmyHealthBarPresenter CreateArmyHealthBars(Transform parent, UiThemeSO theme)
-        {
-            return CombatHealthBarUiFactory.CreateUnder(parent);
-        }
-
         private static void WireFlowPresenter(
             CombatFlowPresenter presenter,
             CombatDirector director,
-            TacticPausePanel panel,
             BattleReportPresenter battleReport,
             GameObject loadingOverlay,
-            TMP_Text loadingText,
-            ArmyHealthBarPresenter healthBarPresenter)
+            TMP_Text loadingText)
         {
             var serialized = new SerializedObject(presenter);
             serialized.FindProperty("combatDirector").objectReferenceValue = director;
-            serialized.FindProperty("tacticPausePanel").objectReferenceValue = panel;
             serialized.FindProperty("battleReportPresenter").objectReferenceValue = battleReport;
             serialized.FindProperty("loadingOverlay").objectReferenceValue = loadingOverlay;
             serialized.FindProperty("loadingText").objectReferenceValue = loadingText;
-            serialized.FindProperty("healthBarPresenter").objectReferenceValue = healthBarPresenter;
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
@@ -957,7 +901,6 @@ namespace DeadManZone.Presentation.Editor
             ShopView shopView,
             ReservesView reservesView,
             CombatDirector combatDirector,
-            TacticPausePanel tacticPanel,
             RunHudView hud,
             RunEndOverlayView endOverlay,
             PauseMenuView pauseMenu,
@@ -977,7 +920,6 @@ namespace DeadManZone.Presentation.Editor
             serialized.FindProperty("shopView").objectReferenceValue = shopView;
             serialized.FindProperty("reservesView").objectReferenceValue = reservesView;
             serialized.FindProperty("combatDirector").objectReferenceValue = combatDirector;
-            serialized.FindProperty("tacticPausePanel").objectReferenceValue = tacticPanel;
             serialized.FindProperty("runHudView").objectReferenceValue = hud;
             serialized.FindProperty("runEndOverlay").objectReferenceValue = endOverlay;
             serialized.FindProperty("pauseMenuView").objectReferenceValue = pauseMenu;

@@ -6,7 +6,7 @@ namespace DeadManZone.Core.Run
 {
     public static class RunSaveSerializer
     {
-        private const int CurrentSchemaVersion = 8;
+        private const int CurrentSchemaVersion = 9;
         private const int MinimumSupportedSchemaVersion = 8;
         private const int LegacyMigrationTargetVersion = 2;
         private const int LegacyDefaultManpower = 100;
@@ -42,6 +42,10 @@ namespace DeadManZone.Core.Run
                 MigrateShopLaneNames(root);
                 MigrateLockedOffers(root);
                 MigrateCombatSave(root);
+                // v9: obsolete PlayerBoard / singular LockedOffer keys are simply ignored
+                // by deserialization (members removed); stamp the current version so the
+                // next Persist writes v9.
+                root["SaveSchemaVersion"] = CurrentSchemaVersion;
                 json = root.ToString();
             }
 

@@ -41,12 +41,10 @@ namespace DeadManZone.Presentation.Combat.Arena
         private Vector3? _chaseTargetWorld;
         private Vector3 _smoothedSimWorld;
         private CombatAttackPresentationProfile _attackProfile;
-        private CombatUnitHealthBar _healthBar;
 
-        /// <summary>Scene-installed visual backend override (e.g. the ToonInk3D arena via
-        /// <see cref="CombatUnitVisual3DInstaller"/>). Null — the default — keeps the 2D
-        /// sprite pipeline byte-identical. Actors are pooled/runtime-created, so this is a
-        /// static hook rather than a serialized field.</summary>
+        /// <summary>Scene-installed visual backend (the ToonInk3D arena installs it via
+        /// <see cref="CombatUnitVisual3DInstaller"/>). Actors are pooled/runtime-created,
+        /// so this is a static hook rather than a serialized field.</summary>
         public static Func<CombatUnitActor, PieceDefinitionSO, CombatSide, Camera, ICombatUnitVisual>
             VisualFactory;
 
@@ -102,46 +100,30 @@ namespace DeadManZone.Presentation.Combat.Arena
                     ? cameraTransform.GetComponent<Camera>()
                     : null;
 
-                // Scene-installed backend (3D toon-ink) wins; the 2D sprite pipeline
-                // stays the default when no factory is installed (or it declines).
+                // The scene-installed 3D backend is the only visual pipeline. A missing
+                // factory (or one that declines) is a wiring bug — log it and run the
+                // sim presentation without a visual rather than throwing mid-fight.
                 _visual = VisualFactory?.Invoke(this, pieceDefinition, combatSide, arenaCamera);
                 if (_visual == null)
                 {
-                    var visual2D = gameObject.AddComponent<CombatUnitVisual2D>();
-                    int squadSize = Mathf.Clamp(pieceDefinition.manpowerCost, 1, 5);
-                    visual2D.Build(pieceDefinition, combatSide, arenaCamera, squadSize);
-                    _visual = visual2D;
+                    Debug.LogError(
+                        $"[CombatUnitActor] No visual for '{pieceDefinition.id}' — " +
+                        "CombatUnitVisual3DInstaller did not install a VisualFactory " +
+                        "(or it declined). The unit will be invisible.", this);
                 }
             }
 
             SnapToAnchor(anchor);
             _smoothedSimWorld = _mapper.ToWorld(anchor);
-
-            // 3D visuals present HP on the base ring themselves — no floating overhead
-            // bar in the 3D arena. The 2D path keeps its bar unchanged.
-            if (_visual != null && _visual.DisplaysHealth)
-            {
-                _healthBar?.Clear();
-                _healthBar = null;
-            }
-            else
-            {
-                _healthBar = CombatUnitHealthBar.Attach(
-                    this,
-                    combatSide,
-                    cameraTransform != null ? cameraTransform.GetComponent<Camera>() : null,
-                    _visual != null ? _visual.VisualHeight : 1.8f);
-            }
         }
 
-        /// <summary>Update the unit's HP display (0..1): overhead bar (2D, hidden at full
-        /// health) or the visual's own presentation (3D ring fill).</summary>
+        /// <summary>Update the unit's HP display (0..1) — the visual's own presentation
+        /// (3D base-ring fill).</summary>
         public void SetHealthFraction(float fraction)
         {
             if (!IsAlive)
                 return;
 
-            _healthBar?.SetFraction(fraction);
             _visual?.SetHealthFraction(fraction);
         }
 
@@ -274,7 +256,6 @@ namespace DeadManZone.Presentation.Combat.Arena
         public void PlayDeath(Action onComplete)
         {
             IsAlive = false;
-            _healthBar?.Hide();
 
             if (_visual != null)
             {
@@ -313,7 +294,6 @@ namespace DeadManZone.Presentation.Combat.Arena
             _marchGraceSeconds = 2.4f;
             _lastMoveCommandTime = -999f;
             _attackProfile = CombatAttackPresentationProfile.InfantryRifle;
-            _healthBar?.Clear();
             ClearPresentation();
         }
 

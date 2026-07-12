@@ -2,18 +2,13 @@ using System.Linq;
 using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
-using DeadManZone.Core.Tests;
 using DeadManZone.Data;
-using DeadManZone.Presentation.Combat.Arena;
 using NUnit.Framework;
 
 namespace DeadManZone.PlayMode.Tests
 {
     internal static class CombatArenaTestBoards
     {
-        public static BattlefieldState BuildIronmarchUnionSkirmish(ContentDatabase database) =>
-            CombatSliceLayouts.BuildIronmarchUnionSkirmish(database);
-
         public static BattlefieldState BuildFieldGunVsHq(ContentDatabase database) =>
             BuildFieldGunVsRifle(database);
 

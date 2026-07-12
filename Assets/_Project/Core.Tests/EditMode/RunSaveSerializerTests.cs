@@ -45,7 +45,7 @@ namespace DeadManZone.Core.Tests
             };
 
             var loaded = RunSaveSerializer.FromJson(RunSaveSerializer.ToJson(state));
-            Assert.AreEqual(8, loaded.SaveSchemaVersion);
+            Assert.AreEqual(9, loaded.SaveSchemaVersion);
             Assert.NotNull(loaded.CombatBoard);
             Assert.NotNull(loaded.HqBoard);
             Assert.AreEqual(6, loaded.CombatBoard.Width);
@@ -193,7 +193,29 @@ namespace DeadManZone.Core.Tests
 
             Assert.AreEqual(FactionIds.DustScourge, loaded.LastEnemyFactionId);
             Assert.AreEqual(23, loaded.SalvageChancePercent);
-            Assert.AreEqual(8, loaded.SaveSchemaVersion);
+            Assert.AreEqual(9, loaded.SaveSchemaVersion, "v8 input is stamped to the current schema on load");
+        }
+
+        [Test]
+        public void FromJson_MigratesV8SingularLockedOfferAndIgnoresPlayerBoard()
+        {
+            // v8 save carrying both retired members: the singular LockedOffer (pre-list)
+            // and the obsolete PlayerBoard snapshot. v9 removed both properties — the
+            // offer folds into LockedOffers, the stale board key is simply ignored.
+            const string oldJson =
+                "{\n" +
+                "  \"SaveSchemaVersion\": 8,\n" +
+                "  \"Phase\": \"Build\",\n" +
+                "  \"LockedOffer\": { \"SlotIndex\": 2, \"PieceId\": \"conscript_rifleman\", \"GoldPrice\": 13 },\n" +
+                "  \"PlayerBoard\": { \"Width\": 8, \"Height\": 6 }\n" +
+                "}";
+
+            var loaded = RunSaveSerializer.FromJson(oldJson);
+
+            Assert.AreEqual(1, loaded.LockedOffers.Count, "singular LockedOffer folds into the list");
+            Assert.AreEqual(2, loaded.LockedOffers[0].SlotIndex);
+            Assert.AreEqual("conscript_rifleman", loaded.LockedOffers[0].PieceId);
+            Assert.AreEqual(9, loaded.SaveSchemaVersion);
         }
 
         [Test]

@@ -138,7 +138,7 @@ namespace DeadManZone.Game
             if (criticalMassSnapshot.AuthorityBonus > 0)
                 State.Authority += criticalMassSnapshot.AuthorityBonus;
 
-            int combatSeed = State.RunSeed + State.FightIndex * 1000;
+            int combatSeed = SeedStreams.Derive(State.RunSeed, "combat", State.FightIndex);
             var defaultTactic = ResolveDefaultPlayerTactic(Faction);
 
             State.Phase = RunPhase.Combat;

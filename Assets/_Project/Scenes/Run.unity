@@ -8661,7 +8661,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: DeadManZone.Presentation::DeadManZone.Presentation.Combat.CombatFlowPresenter
   combatDirector: {fileID: 1180328167}
-  tacticPausePanel: {fileID: 1532603335}
   battleReportPresenter: {fileID: 1359915812}
   loadingOverlay: {fileID: 454222201}
   loadingText: {fileID: 1386521547}
@@ -9372,7 +9371,6 @@ MonoBehaviour:
   shopView: {fileID: 1529001885}
   reservesView: {fileID: 2096662515}
   combatDirector: {fileID: 1180328167}
-  tacticPausePanel: {fileID: 1532603335}
   runHudView: {fileID: 1911353304}
   runEndOverlay: {fileID: 936871022}
   pauseMenuView: {fileID: 1663819998}
@@ -12077,7 +12075,6 @@ GameObject:
   - component: {fileID: 1532603334}
   - component: {fileID: 1532603337}
   - component: {fileID: 1532603336}
-  - component: {fileID: 1532603335}
   m_Layer: 0
   m_Name: TacticPauseSheet
   m_TagString: Untagged
@@ -12110,26 +12107,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1532603335
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1532603333}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 542aa6dae6dbff848a71c2037da3e3f7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: DeadManZone.Presentation::DeadManZone.Presentation.Combat.TacticPausePanel
-  titleText: {fileID: 737075051}
-  authorityText: {fileID: 1619341141}
-  reasonText: {fileID: 1246263186}
-  tacticRow: {fileID: 1421119080}
-  abilityRow: {fileID: 1883729143}
-  continueButton: {fileID: 408311358}
-  combatDirector: {fileID: 1180328167}
-  panelBackground: {fileID: 1532603336}
 --- !u!114 &1532603336
 MonoBehaviour:
   m_ObjectHideFlags: 0
