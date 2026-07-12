@@ -144,9 +144,11 @@ namespace DeadManZone.Presentation.Combat
             // Safety net: whenever we're back in the shop/build, the arena must be gone.
             // The normal unload runs after death presentations, but paths that reach
             // aftermath via the state-change event (defeat, resume) skip it, leaving the
-            // arena rendered behind the shop.
-            if (state?.Phase == RunPhase.Build && arenaLoader != null && arenaLoader.IsLoaded)
-                StartCoroutine(arenaLoader.UnloadAsync());
+            // arena rendered behind the shop. Route through the session, NOT a local
+            // StartCoroutine — this object (CombatPanel) is often already inactive here,
+            // which threw and silently skipped the unload (2026-07-12 playtest).
+            if (state?.Phase == RunPhase.Build && CombatArenaSession.IsSceneLoaded)
+                CombatArenaSession.RequestUnload();
 
             // The 3D army HUD is a top-level overlay canvas (not under CombatPanel like the
             // 2D bars), so the panel's phase-driven SetActive never reaches it — hide it

@@ -50,6 +50,22 @@ namespace DeadManZone.Presentation.Combat.Arena
                 sceneName = GameScenes.CombatArena3D;
             }
 
+            // Self-heal: sweep any OTHER arena scene a missed Build-phase unload left
+            // behind. Pre-M4 a stale arena was harmless (one scene — it just got
+            // reused); with scene-per-theme it stacked a second environment and a
+            // second audio listener on top of the fight (2026-07-12 playtest).
+            foreach (var candidate in GameScenes.AllCombatArenaScenes)
+            {
+                if (candidate == sceneName || !SceneManager.GetSceneByName(candidate).isLoaded)
+                    continue;
+                Debug.LogWarning($"[Arena] Stale arena scene '{candidate}' still loaded — unloading before '{sceneName}'.");
+                IsLoaded = false;
+                _loadedSceneName = null;
+                var unload = SceneManager.UnloadSceneAsync(candidate);
+                while (unload != null && !unload.isDone)
+                    yield return null;
+            }
+
             if (!SceneManager.GetSceneByName(sceneName).isLoaded)
                 IsLoaded = false;
 
