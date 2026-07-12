@@ -92,6 +92,18 @@ namespace DeadManZone.Core.Run
 
         /// <summary>Index into <see cref="FightOptions"/> chosen for the next combat; -1 = none.</summary>
         public int ChosenFightOption { get; set; } = -1;
+
+        // M3 rarity + pity. Schema stays v9 — additive fields; older v9 saves
+        // deserialize 0/false (pity clock restarts, no hard-victory boost pending).
+
+        /// <summary>Consecutive generated offer batches (round rolls AND rerolls)
+        /// without a rare-or-above APPEARING in the shown shop. Reset on appearance,
+        /// not purchase (see Shop.RarityWeights for the step/guarantee rules).</summary>
+        public int RarePityBatches { get; set; }
+
+        /// <summary>True after a hard-front VICTORY: this build round's salvage
+        /// offers upweight rarer spoils. Rewritten every fight completion.</summary>
+        public bool SalvageHardBoost { get; set; }
         public int Supplies { get; set; }
         public int Manpower { get; set; }
         public int Authority { get; set; }

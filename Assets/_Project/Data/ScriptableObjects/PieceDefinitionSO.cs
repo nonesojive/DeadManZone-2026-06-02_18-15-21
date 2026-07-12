@@ -37,6 +37,8 @@ namespace DeadManZone.Data
 
         [Header("Shop")]
         public bool includeInShopPool = true;
+        [Tooltip("Design role, not raw power (M3): Common = line, Uncommon = synergy enabler/support, Rare = build-around. Serialized as int — append-only enum.")]
+        public Rarity rarity = Rarity.Common;
 
         [Header("Salvage")]
         public int salvageChanceBonus;
@@ -149,6 +151,7 @@ namespace DeadManZone.Data
                 GrantedAbility = grantedAbility,
                 AccuracyOverride = accuracyOverride <= 0 ? null : accuracyOverride,
                 FactionId = factionId,
+                Rarity = rarity,
                 Abilities = ResolveAbilities()
             };
         }

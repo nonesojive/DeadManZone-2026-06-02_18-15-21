@@ -113,7 +113,8 @@ namespace DeadManZone.Data.Editor
             string[] synergyTags = null,
             string[] abilityTags = null,
             string[] flavorTags = null,
-            PieceAbilityInlineEntry[] customAbilities = null)
+            PieceAbilityInlineEntry[] customAbilities = null,
+            Rarity rarity = Rarity.Common)
         {
             var piece = DemoContentGenerator.SavePiece(
                 id,
@@ -139,7 +140,8 @@ namespace DeadManZone.Data.Editor
                 attackSpeed: attackSpeed,
                 attackRange: attackRange,
                 movementSpeed: movementSpeed,
-                abilityTags: abilityTags ?? Array.Empty<string>());
+                abilityTags: abilityTags ?? Array.Empty<string>(),
+                rarity: rarity);
 
             piece.flavorTags = flavorTags ?? Array.Empty<string>();
             piece.catalogAbilities = Array.Empty<AbilityDefinitionSO>();

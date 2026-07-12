@@ -36,6 +36,10 @@ namespace DeadManZone.Core.Board
         public GrantedAbility GrantedAbility { get; init; } = GrantedAbility.None;
         public int? AccuracyOverride { get; init; }
         public string FactionId { get; init; } = "neutral";
+
+        /// <summary>Design role, not raw power (M3). Defaults Common so pieces from
+        /// assets generated before the rarity pass stay valid.</summary>
+        public Rarity Rarity { get; init; } = Rarity.Common;
     }
 
     [System.Flags]

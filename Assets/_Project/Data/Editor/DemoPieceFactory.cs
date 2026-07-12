@@ -21,6 +21,11 @@ namespace DeadManZone.Data.Editor
             return list.ToArray();
         }
 
+        // Rarity = design role, not raw power (M3): Common = line units (the default),
+        // Uncommon = synergy enablers/support/specialists and most buildings,
+        // Rare = build-arounds (ability granters, vehicles, commanders, emplacements).
+        // Overlapping ids MUST match IronmarchUnionContentFactory so either menu regen
+        // preserves the same assignment.
         private static PieceDefinitionSO[] CreateIronmarchPieces() => new[]
         {
             SaveMappedPiece("rifle_squad", "Rifle Squad", PieceCategory.Unit, ShopLane.Offensive,
@@ -30,10 +35,12 @@ namespace DeadManZone.Data.Editor
             SaveMappedPiece("diesel_walker", "Diesel Walker", PieceCategory.Unit, ShopLane.Offensive,
                 DemoSandboxShapes.Walker, FactionIds.IronmarchUnion,
                 maxHp: 250, baseDamage: 32, cooldownTicks: 5, goldCost: 12,
-                attackType: AttackType.Piercing, armorType: ArmorType.Heavy, movementSpeed: 1),
+                attackType: AttackType.Piercing, armorType: ArmorType.Heavy, movementSpeed: 1,
+                rarity: Rarity.Rare),
             SaveMappedPiece("radio_array", "Radio Array", PieceCategory.Building, ShopLane.Defensive,
                 DemoSandboxShapes.Single, FactionIds.IronmarchUnion, maxHp: 120, goldCost: 7,
-                shopModifiers: ShopModifierFlags.EnemyTagPreview),
+                shopModifiers: ShopModifierFlags.EnemyTagPreview,
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("mg_team", "MG Team", PieceCategory.Unit, ShopLane.Offensive,
                 DemoSandboxShapes.HorizontalPair, FactionIds.IronmarchUnion,
                 maxHp: 120, baseDamage: 24, manpowerCost: 12, cooldownTicks: 4, goldCost: 8,
@@ -41,31 +48,38 @@ namespace DeadManZone.Data.Editor
             SaveMappedPiece("field_gun_nest", "Field Gun Nest", PieceCategory.Building, ShopLane.Defensive,
                 DemoSandboxShapes.VerticalPair, FactionIds.IronmarchUnion,
                 maxHp: 180, baseDamage: 24, goldCost: 9,
-                attackType: AttackType.Explosive, armorType: ArmorType.Medium, attackRange: AttackRangeTier.Long),
+                attackType: AttackType.Explosive, armorType: ArmorType.Medium, attackRange: AttackRangeTier.Long,
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("supply_depot", "Supply Depot", PieceCategory.Building, ShopLane.Defensive,
                 DemoSandboxShapes.Single, FactionIds.IronmarchUnion, maxHp: 50, goldCost: 6, manpowerCost: 0, musterPerShop: 3,
-                shopModifiers: ShopModifierFlags.GoldDiscount10),
+                shopModifiers: ShopModifierFlags.GoldDiscount10,
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("field_workshop", "Field Workshop", PieceCategory.Building, ShopLane.Defensive,
                 DemoSandboxShapes.Single, FactionIds.IronmarchUnion, maxHp: 120, goldCost: 7, musterPerShop: 2,
-                shopModifiers: ShopModifierFlags.GuaranteeEngineerOffer),
+                shopModifiers: ShopModifierFlags.GuaranteeEngineerOffer,
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("mobile_artillery", "Mobile Artillery", PieceCategory.Hybrid, ShopLane.Specialty,
                 DemoSandboxShapes.HorizontalPair, FactionIds.IronmarchUnion,
                 maxHp: 160, baseDamage: 40, goldCost: 10, requisitionCost: 2,
-                attackType: AttackType.Explosive, armorType: ArmorType.Medium, attackRange: AttackRangeTier.Long),
+                attackType: AttackType.Explosive, armorType: ArmorType.Medium, attackRange: AttackRangeTier.Long,
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("ironmarch_heavy_tank", "IronMarch Heavy Tank", PieceCategory.Unit, ShopLane.Offensive,
                 DemoSandboxShapes.Square2x2, FactionIds.IronmarchUnion,
                 maxHp: 320, baseDamage: 36, cooldownTicks: 6, goldCost: 14, manpowerCost: 14,
-                attackType: AttackType.Piercing, armorType: ArmorType.Heavy, movementSpeed: 1),
+                attackType: AttackType.Piercing, armorType: ArmorType.Heavy, movementSpeed: 1,
+                rarity: Rarity.Rare),
             SaveMappedPiece("ironmarch_mortar", "IronMarch Mortar", PieceCategory.Unit, ShopLane.Specialty,
                 DemoSandboxShapes.VerticalPair, FactionIds.IronmarchUnion,
                 maxHp: 90, baseDamage: 34, cooldownTicks: 5, goldCost: 8, requisitionCost: 1,
                 attackType: AttackType.Explosive, armorType: ArmorType.Light, attackRange: AttackRangeTier.Long,
-                attackSpeed: AttackSpeedTier.Slow),
+                attackSpeed: AttackSpeedTier.Slow,
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("ironmarch_engineer", "Combat Engineer", PieceCategory.Unit, ShopLane.Defensive,
                 DemoSandboxShapes.Single, FactionIds.IronmarchUnion,
                 maxHp: 80, baseDamage: 8, goldCost: 6, manpowerCost: 6,
                 synergyTags: new[] { GameTagIds.Mechanic },
-                attackType: AttackType.Melee, armorType: ArmorType.Medium),
+                attackType: AttackType.Melee, armorType: ArmorType.Medium,
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("ironmarch_breacher", "Assault Breacher", PieceCategory.Unit, ShopLane.Offensive,
                 DemoSandboxShapes.Single, FactionIds.IronmarchUnion,
                 maxHp: 110, baseDamage: 26, goldCost: 7, manpowerCost: 8,
@@ -76,12 +90,14 @@ namespace DeadManZone.Data.Editor
                 maxHp: 70, baseDamage: 28, goldCost: 7, manpowerCost: 6, cooldownTicks: 4,
                 attackType: AttackType.Ballistic, armorType: ArmorType.Light,
                 attackRange: AttackRangeTier.Long, attackSpeed: AttackSpeedTier.Slow,
-                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty)),
+                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty),
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("ironmarch_defender", "Bulwark Squad", PieceCategory.Unit, ShopLane.Defensive,
                 DemoSandboxShapes.HorizontalPair, FactionIds.IronmarchUnion,
                 maxHp: 140, baseDamage: 14, goldCost: 6, manpowerCost: 10,
                 attackType: AttackType.Melee, armorType: ArmorType.Heavy, movementSpeed: 1,
-                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Defender, string.Empty))
+                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Defender, string.Empty),
+                rarity: Rarity.Uncommon)
         };
 
         private static PieceDefinitionSO[] CreateNeutralPieces() => new[]
@@ -95,30 +111,36 @@ namespace DeadManZone.Data.Editor
                 maxHp: 70, baseDamage: 24, cooldownTicks: 4, goldCost: 5, manpowerCost: 8,
                 grantedAbility: GrantedAbility.MortarShot,
                 abilityTags: new[] { GameTagIds.Grenadier },
-                attackType: AttackType.Explosive, armorType: ArmorType.Light),
+                attackType: AttackType.Explosive, armorType: ArmorType.Light,
+                rarity: Rarity.Rare),
             SaveMappedPiece("armored_transport", "Armored Transport", PieceCategory.Unit, ShopLane.Offensive,
                 DemoSandboxShapes.TransportL, "neutral",
                 maxHp: 120, baseDamage: 8, manpowerCost: 8, goldCost: 8,
                 grantedAbility: GrantedAbility.ShieldAllies,
-                attackType: AttackType.Ballistic, armorType: ArmorType.Medium, movementSpeed: 2),
+                attackType: AttackType.Ballistic, armorType: ArmorType.Medium, movementSpeed: 2,
+                rarity: Rarity.Rare),
             SaveMappedPiece("mobile_cannon", "Mobile Cannon", PieceCategory.Hybrid, ShopLane.Specialty,
                 DemoSandboxShapes.SiegePlate, "neutral",
                 maxHp: 180, baseDamage: 36, goldCost: 10, requisitionCost: 2, manpowerCost: 10,
                 grantedAbility: GrantedAbility.CannonBlast,
                 attackType: AttackType.Explosive, armorType: ArmorType.Heavy, attackRange: AttackRangeTier.Long,
-                attackSpeed: AttackSpeedTier.Slow, movementSpeed: 1),
+                attackSpeed: AttackSpeedTier.Slow, movementSpeed: 1,
+                rarity: Rarity.Rare),
             SaveMappedPiece("field_medic", "Field Medic", PieceCategory.Unit, ShopLane.Defensive,
                 DemoSandboxShapes.Single, "neutral",
                 maxHp: 40, baseDamage: 0, manpowerCost: 4, goldCost: 5,
                 synergyTags: new[] { GameTagIds.Medic },
-                attackType: AttackType.None, armorType: ArmorType.Light),
+                attackType: AttackType.None, armorType: ArmorType.Light,
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("neutral_supply_depot", "Neutral Supply Depot", PieceCategory.Building, ShopLane.Defensive,
                 DemoSandboxShapes.Single, "neutral", maxHp: 55, goldCost: 5, manpowerCost: 0, musterPerShop: 2,
-                shopModifiers: ShopModifierFlags.GoldDiscount10, salvageChanceBonus: 5),
+                shopModifiers: ShopModifierFlags.GoldDiscount10, salvageChanceBonus: 5,
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("neutral_field_gun", "Neutral Field Gun", PieceCategory.Building, ShopLane.Defensive,
                 DemoSandboxShapes.VerticalPair, "neutral",
                 maxHp: 120, baseDamage: 22, goldCost: 7,
-                attackType: AttackType.Explosive, armorType: ArmorType.Medium, attackRange: AttackRangeTier.Medium),
+                attackType: AttackType.Explosive, armorType: ArmorType.Medium, attackRange: AttackRangeTier.Medium,
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("shock_trooper", "Shock Trooper", PieceCategory.Unit, ShopLane.Offensive,
                 DemoSandboxShapes.Single, "neutral",
                 maxHp: 85, baseDamage: 22, goldCost: 6, manpowerCost: 7,
@@ -129,13 +151,15 @@ namespace DeadManZone.Data.Editor
                 maxHp: 75, baseDamage: 30, goldCost: 6, requisitionCost: 1, manpowerCost: 8,
                 attackType: AttackType.Explosive, armorType: ArmorType.Light, attackRange: AttackRangeTier.Long,
                 attackSpeed: AttackSpeedTier.Slow,
-                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Artillery, string.Empty)),
+                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Artillery, string.Empty),
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("marksman_squad", "Marksman Squad", PieceCategory.Unit, ShopLane.Specialty,
                 DemoSandboxShapes.Single, "neutral",
                 maxHp: 55, baseDamage: 26, goldCost: 6, manpowerCost: 5, cooldownTicks: 4,
                 attackType: AttackType.Ballistic, armorType: ArmorType.Light,
                 attackRange: AttackRangeTier.Long, attackSpeed: AttackSpeedTier.Slow,
-                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty))
+                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty),
+                rarity: Rarity.Uncommon)
         };
 
         private static PieceDefinitionSO[] CreateDustScourgePieces() => new[]
@@ -147,12 +171,14 @@ namespace DeadManZone.Data.Editor
             SaveMappedPiece("scrap_rig", "Scrap Rig", PieceCategory.Unit, ShopLane.Offensive,
                 DemoSandboxShapes.HorizontalPair, FactionIds.DustScourge,
                 maxHp: 160, baseDamage: 16, goldCost: 7,
-                attackType: AttackType.Shredding, armorType: ArmorType.Medium),
+                attackType: AttackType.Shredding, armorType: ArmorType.Medium,
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("toxin_launcher", "Toxin Launcher", PieceCategory.Hybrid, ShopLane.Specialty,
                 DemoSandboxShapes.Single, FactionIds.DustScourge,
                 maxHp: 100, baseDamage: 32, goldCost: 9, requisitionCost: 2,
                 grantedAbility: GrantedAbility.MortarShot,
-                attackType: AttackType.Gas, armorType: ArmorType.Light)
+                attackType: AttackType.Gas, armorType: ArmorType.Light,
+                rarity: Rarity.Rare)
         };
 
         private static PieceDefinitionSO[] CreateCartelPieces() => new[]
@@ -162,14 +188,17 @@ namespace DeadManZone.Data.Editor
                 maxHp: 70, baseDamage: 24, cooldownTicks: 2, goldCost: 7,
                 abilityTags: new[] { GameTagIds.Stealth },
                 attackType: AttackType.Piercing, armorType: ArmorType.Light,
-                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty)),
+                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty),
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("signal_relay", "Signal Relay", PieceCategory.Building, ShopLane.Defensive,
                 DemoSandboxShapes.Single, FactionIds.CartelOfEchoes,
-                maxHp: 110, goldCost: 6, musterPerShop: 1, shopModifiers: ShopModifierFlags.EnemyTagPreview),
+                maxHp: 110, goldCost: 6, musterPerShop: 1, shopModifiers: ShopModifierFlags.EnemyTagPreview,
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("resonance_cannon", "Resonance Cannon", PieceCategory.Hybrid, ShopLane.Specialty,
                 DemoSandboxShapes.HorizontalPair, FactionIds.CartelOfEchoes,
                 maxHp: 130, baseDamage: 40, goldCost: 10, requisitionCost: 2,
-                attackType: AttackType.Explosive, armorType: ArmorType.Medium, attackRange: AttackRangeTier.Long)
+                attackType: AttackType.Explosive, armorType: ArmorType.Medium, attackRange: AttackRangeTier.Long,
+                rarity: Rarity.Rare)
         };
 
         private static PieceDefinitionSO[] CreateCrimsonLegionPieces() => new[]
@@ -181,11 +210,13 @@ namespace DeadManZone.Data.Editor
             SaveMappedPiece("crimson_tank", "Crimson Tank", PieceCategory.Unit, ShopLane.Offensive,
                 DemoSandboxShapes.Walker, "crimson_legion",
                 maxHp: 280, baseDamage: 40, goldCost: 0,
-                attackType: AttackType.Piercing, armorType: ArmorType.Heavy),
+                attackType: AttackType.Piercing, armorType: ArmorType.Heavy,
+                rarity: Rarity.Rare),
             SaveMappedPiece("crimson_artillery", "Crimson Battery", PieceCategory.Building, ShopLane.Defensive,
                 DemoSandboxShapes.HorizontalPair, "crimson_legion",
                 maxHp: 200, baseDamage: 32, goldCost: 0,
-                attackType: AttackType.Explosive, armorType: ArmorType.Heavy, attackRange: AttackRangeTier.Long)
+                attackType: AttackType.Explosive, armorType: ArmorType.Heavy, attackRange: AttackRangeTier.Long,
+                rarity: Rarity.Uncommon)
         };
 
         private static PieceDefinitionSO[] CreateAshWraithPieces() => new[]
@@ -195,7 +226,8 @@ namespace DeadManZone.Data.Editor
                 maxHp: 80, baseDamage: 32, goldCost: 0,
                 abilityTags: new[] { GameTagIds.Stealth },
                 attackType: AttackType.Piercing, armorType: ArmorType.Light,
-                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty)),
+                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty),
+                rarity: Rarity.Uncommon),
             SaveMappedPiece("wraith_phantom", "Ash Phantom", PieceCategory.Unit, ShopLane.Offensive,
                 DemoSandboxShapes.Single, "ash_wraiths",
                 maxHp: 100, baseDamage: 24, goldCost: 0,
@@ -203,7 +235,8 @@ namespace DeadManZone.Data.Editor
             SaveMappedPiece("wraith_bombard", "Grave Bombard", PieceCategory.Hybrid, ShopLane.Specialty,
                 DemoSandboxShapes.HorizontalPair, "ash_wraiths",
                 maxHp: 150, baseDamage: 40, goldCost: 0,
-                attackType: AttackType.Explosive, armorType: ArmorType.Medium, attackRange: AttackRangeTier.Long)
+                attackType: AttackType.Explosive, armorType: ArmorType.Medium, attackRange: AttackRangeTier.Long,
+                rarity: Rarity.Rare)
         };
 
         private static PieceDefinitionSO SaveMappedPiece(
@@ -232,7 +265,8 @@ namespace DeadManZone.Data.Editor
             AttackRangeTier attackRange = AttackRangeTier.Medium,
             int movementSpeed = 2,
             bool includeInShopPool = true,
-            TagContentMigrator.PieceTagMapping? mappingOverride = null)
+            TagContentMigrator.PieceTagMapping? mappingOverride = null,
+            Rarity rarity = Rarity.Common)
         {
             var mapping = mappingOverride ?? TagContentMigrator.GetMappingOrThrow(id);
             var piece = DemoContentGenerator.SavePiece(
@@ -262,7 +296,8 @@ namespace DeadManZone.Data.Editor
                 armorType: armorType,
                 attackSpeed: attackSpeed,
                 attackRange: attackRange,
-                movementSpeed: movementSpeed);
+                movementSpeed: movementSpeed,
+                rarity: rarity);
 
             piece.includeInShopPool = includeInShopPool;
             EditorUtility.SetDirty(piece);

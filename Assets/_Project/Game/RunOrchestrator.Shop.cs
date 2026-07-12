@@ -287,9 +287,23 @@ namespace DeadManZone.Game
                 shopSeed,
                 State.LastEnemyFactionId,
                 State.SalvageChancePercent,
-                _content.GetShopOverride(State.FactionId));
+                _content.GetShopOverride(State.FactionId),
+                State.RarePityBatches,
+                State.SalvageHardBoost);
             ApplyLockedSlots(shop);
             State.Shop = shop;
+            UpdateRarePity(shop.Offers);
+        }
+
+        /// <summary>M3 pity, appear-reset: every generated batch (round roll or reroll)
+        /// either resets the counter (a rare-or-above is SHOWN — locked slots included)
+        /// or climbs it. Pity is state-derived, no extra randomness, so seeded runs
+        /// with the same reroll sequence stay identical.</summary>
+        private void UpdateRarePity(IEnumerable<ShopOffer> offers)
+        {
+            State.RarePityBatches = ShopGenerator.ContainsRareOrAbove(offers, _registry)
+                ? 0
+                : State.RarePityBatches + 1;
         }
 
         private void ApplyMuster()
@@ -326,9 +340,12 @@ namespace DeadManZone.Game
                 fixedSlots,
                 State.LastEnemyFactionId,
                 State.SalvageChancePercent,
-                _content.GetShopOverride(State.FactionId));
+                _content.GetShopOverride(State.FactionId),
+                State.RarePityBatches,
+                State.SalvageHardBoost);
 
             State.Shop.Offers = rerolled;
+            UpdateRarePity(rerolled);
         }
     }
 }

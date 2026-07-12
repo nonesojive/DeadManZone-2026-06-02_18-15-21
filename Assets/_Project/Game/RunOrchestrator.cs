@@ -590,6 +590,9 @@ namespace DeadManZone.Game
             var activeTier = State.Combat?.ActiveTier ?? FightOptionTier.Normal;
             bool playerWon = result.PlayerWon;
             bool isDraw = result.IsDraw;
+            // M3 salvage quality: a hard-front VICTORY upweights the following build
+            // round's salvage offers toward rarer spoils (boss tiers are null → false).
+            State.SalvageHardBoost = playerWon && activeTier == FightOptionTier.Hard && !isBossFight;
             var playerCombatants = result.PlayerCombatantsAtEnd ?? Array.Empty<CombatantState>();
             int casualties = ManpowerCalculator.ComputeCasualties(playerCombatants);
             State.Manpower = Math.Max(0, State.Manpower - casualties);

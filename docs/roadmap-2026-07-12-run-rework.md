@@ -50,7 +50,13 @@ Shipped same-day: `FightOptionRecord`/`FightOptionTier` on RunState (schema stay
 - Front Report panel (grimdark kit) with default intel (pool, strength band, stakes); recon intel-ladder seam (+1 recon piece to prove it). Boss report replaces options at threshold.
 - Exit: every round is a legible three-way choice with Dread/economy consequences.
 
-## M3 — Rarity + pity + card visual (parallel with M2 after M0; Dread weighting keys in when M1 lands)
+## M3 — Rarity + pity + card visual — **DONE 2026-07-12**
+
+Shipped same-day: `Rarity` enum (append-only) on PieceDefinition/SO with all pieces assigned by design role through BOTH content factories (the ability-grant lesson — SavePiece writes the param) and stamped onto the 17 shipped assets directly (full regen avoided: it wipes post-gen asset touches); Dread-keyed weight TABLE (80/18/2 at FE1 → 55/30/15 at FE9+) with per-offer tier roll + down-only lane fallback; appear-reset pity (`RarePityBatches` on RunState, +4%/rare-less batch fed from the Common share, hard guarantee at 9 batches / 40% cap, both Generate call sites, rare-or-above satisfies, locked slots count as appearing); salvage quality hook (`SalvageHardBoost` after a hard-front victory upweights salvage picks Rare×3/Uncommon×2 for the following build round — salvage-source picks stay exempt from the tier gate otherwise); shop card rarity chrome (brass Rare / muted-olive Uncommon name tints + strip above the name band; commons stay quiet). Suites 406 EditMode / 14 PlayMode. Live bonus verification: same run seed reproduced the identical shop AND identical fight options — the seeded-run guarantee end-to-end.
+
+**Notes:** command_outpost assigned Common (lane floor — the defensive lane needs a Common or early rolls always hit the fallback); `SalvageShopPool.cs` found dead (zero callers), delete in the next cleanup; the broader shop/menu grimdark sweep stays M6 (only cards shipped here, per the cards-with-rarity rule); hover/board piece cards get their rarity treatment in M6.
+
+### Original scope (for reference)
 
 - Rarity enum (Common/Uncommon/Rare; append-only, room for a 4th), assignments for all pieces (design role, not raw power), shop weight table keyed by Dread, salvage-quality hook (hard fights = targeted shot at a pool's rares).
 - Pity: counter per generated offer batch (initial roll and each reroll both count), +step to rare odds per rare-less batch, reset on rare APPEARING, hard guarantee at the cap, rare-or-above satisfies. State on RunState (seeded).

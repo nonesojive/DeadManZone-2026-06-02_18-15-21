@@ -58,7 +58,8 @@ namespace DeadManZone.Data.Editor
             ArmorType armorType = ArmorType.Light,
             AttackSpeedTier attackSpeed = AttackSpeedTier.Medium,
             AttackRangeTier attackRange = AttackRangeTier.Medium,
-            int movementSpeed = 2)
+            int movementSpeed = 2,
+            Rarity rarity = Rarity.Common)
         {
             var path = $"{Root}/Pieces/{id}.asset";
             var asset = LoadOrCreate<PieceDefinitionSO>(path);
@@ -98,6 +99,7 @@ namespace DeadManZone.Data.Editor
             asset.attackSpeed = attackSpeed;
             asset.attackRange = attackRange;
             asset.movementSpeed = movementSpeed;
+            asset.rarity = rarity;
             asset.categoryTint = category switch
             {
                 PieceCategory.Unit => FactionTint(factionId, 0.35f, 0.42f, 0.55f),

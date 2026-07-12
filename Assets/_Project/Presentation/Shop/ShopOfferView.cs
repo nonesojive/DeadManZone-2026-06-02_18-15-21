@@ -28,6 +28,16 @@ namespace DeadManZone.Presentation.Shop
         [SerializeField] private Image lockedIndicator;
         [SerializeField] private ShopOfferDragSource dragSource;
 
+        // M3 rarity chrome: a thin strip along the card's top edge + a name tint.
+        // Brass for Rare, pale bone-silver for Uncommon, nothing for Common — the
+        // bible's saturation budget: rarity never approaches side-channel blue/red
+        // and never out-saturates the battlefield.
+        private static readonly Color RareBrass = new(0.85f, 0.68f, 0.30f);
+        // Muted olive-sage — distinct from bone-white commons on a dark card, and
+        // deliberately desaturated so it never reads as Dust Scourge acid green.
+        private static readonly Color UncommonSilver = new(0.58f, 0.70f, 0.46f);
+        private Image _rarityStrip;
+
         private ShopOffer _offer;
         private bool _isLocked;
         private ContentDatabase _database;
@@ -162,6 +172,41 @@ namespace DeadManZone.Presentation.Shop
             dragSource?.SetOffer(null);
         }
 
+        private void ApplyRarityChrome(Rarity rarity)
+        {
+            if (_rarityStrip == null && cardBackground != null)
+            {
+                var go = new GameObject("RarityStrip", typeof(RectTransform));
+                go.transform.SetParent(cardBackground.transform, false);
+                // Above the name strip — the card's authored frame art swallows anything
+                // hugging the outer edges.
+                var rect = go.GetComponent<RectTransform>();
+                rect.anchorMin = new Vector2(0.12f, 0f);
+                rect.anchorMax = new Vector2(0.88f, 0f);
+                rect.pivot = new Vector2(0.5f, 0f);
+                rect.anchoredPosition = new Vector2(0f, ShopLayoutMetrics.NameStripHeight + 3f);
+                rect.sizeDelta = new Vector2(0f, 3f);
+                _rarityStrip = go.AddComponent<Image>();
+                _rarityStrip.raycastTarget = false;
+            }
+
+            Color tint = rarity switch
+            {
+                Rarity.Rare => RareBrass,
+                Rarity.Uncommon => UncommonSilver,
+                _ => Color.clear
+            };
+
+            if (_rarityStrip != null)
+            {
+                _rarityStrip.gameObject.SetActive(rarity > Rarity.Common);
+                _rarityStrip.color = tint;
+            }
+
+            if (pieceIdText != null && rarity > Rarity.Common)
+                pieceIdText.color = tint;
+        }
+
         public void Bind(ShopOffer offer, bool isLocked, float cellSize, float spacing, float laneInnerWidth, float laneInnerHeight, int offerCount = 6)
         {
             _offer = offer;
@@ -207,6 +252,9 @@ namespace DeadManZone.Presentation.Shop
                 pieceIdText.text = source != null && !string.IsNullOrEmpty(source.displayName)
                     ? source.displayName
                     : offer.PieceId;
+
+            ApplyRarityChrome(definition != null ? definition.Rarity
+                : source != null ? source.rarity : Rarity.Common);
 
             if (priceBadgeText != null)
                 priceBadgeText.text = BuildPriceLabel(offer);
