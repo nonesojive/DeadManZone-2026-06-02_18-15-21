@@ -16,6 +16,20 @@ namespace DeadManZone.Presentation.DragDrop
         private Transform _returnParent;
         private int _returnSiblingIndex;
 
+        /// <summary>Rect the ghost's localPosition is expressed in — always its actual parent.</summary>
+        private RectTransform _ghostSpace;
+
+        /// <summary>
+        /// The canvas the ghost hangs off. ShopV2Canvas (order 10) outranks the legacy Canvas
+        /// (order 0), and the boards now live on V2 — so a ghost left on the legacy canvas
+        /// draws BEHIND the boards it is being dragged over. Follow the live shop surface.
+        /// </summary>
+        private Canvas GhostHost()
+        {
+            var v2 = ShopV2.ShopV2Surface.Canvas;
+            return v2 != null ? v2 : rootCanvas;
+        }
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -55,7 +69,14 @@ namespace DeadManZone.Presentation.DragDrop
             if (_ghost != null)
                 Destroy(_ghost.gameObject);
 
-            var canvasTransform = rootCanvas != null ? rootCanvas.transform : transform;
+            var host = GhostHost();
+            var layer = DragLayer.For(host);
+            var canvasTransform = layer != null
+                ? layer
+                : (host != null ? host.transform : transform);
+
+            _ghostSpace = canvasTransform as RectTransform;
+
             _ghost = DragGhost.Create(
                 canvasTransform,
                 payload.PieceId ?? payload.Offer?.PieceId ?? "piece",
@@ -86,6 +107,7 @@ namespace DeadManZone.Presentation.DragDrop
                 _ghost = null;
             }
 
+            _ghostSpace = null;
             _activePayload = null;
             _returnParent = null;
         }
@@ -101,12 +123,14 @@ namespace DeadManZone.Presentation.DragDrop
 
         private void FollowPointer(PointerEventData eventData)
         {
-            if (_ghost == null || rootCanvas == null)
+            // Must convert into the ghost's ACTUAL parent rect, not rootCanvas — the ghost now
+            // lives on the DragLayer under the live shop surface, which may not be rootCanvas.
+            if (_ghost == null || _ghostSpace == null)
                 return;
 
             var rect = _ghost.GetComponent<RectTransform>();
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                rootCanvas.transform as RectTransform,
+                _ghostSpace,
                 eventData.position,
                 eventData.pressEventCamera,
                 out var localPoint);

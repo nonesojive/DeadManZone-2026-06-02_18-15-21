@@ -46,7 +46,20 @@ namespace DeadManZone.Presentation.Run
                 exitButton.onClick.AddListener(OnExit);
 
             ApplyGrimdarkSkin();
-            Hide();
+
+            // Do NOT unconditionally Hide() here.
+            //
+            // `root` is normally THIS GameObject, and the menu is authored inactive — so Awake
+            // does not run at startup, it runs the first time Open() activates the object. A
+            // Hide() here therefore fired DURING the first Open() and immediately deactivated
+            // the menu again. That is the "first click does nothing, second click works" bug:
+            // click 1 activated the object, Awake slammed it shut; click 2 stuck because Awake
+            // only ever runs once.
+            //
+            // Closed is the AUTHORED state. Only self-hide when root is a separate child object,
+            // where activating it cannot re-enter this Awake.
+            if (root != null && root != gameObject)
+                Hide();
         }
 
         /// <summary>M6: runtime grimdark-kit pass over the scene-authored pause menu
@@ -83,7 +96,13 @@ namespace DeadManZone.Presentation.Run
 
         public void Open()
         {
-            RunManager.Instance?.SaveAndExit();
+            // Autosave on open — but ONLY with a live run. SaveAndExit -> Persist ->
+            // SaveManager.Save(null) throws when there is no run, and the exception aborted
+            // Open() before it ever activated the menu.
+            var manager = RunManager.Instance;
+            if (manager != null && manager.HasActiveRun)
+                manager.SaveAndExit();
+
             ShowMain();
             if (root != null)
                 root.SetActive(true);

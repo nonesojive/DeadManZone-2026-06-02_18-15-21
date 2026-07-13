@@ -53,6 +53,71 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(6, loaded.HqBoard.Height);
         }
 
+        /// <summary>
+        /// ShopV2 flip validation gate: "save/continue roundtrip mid-shop (locked offer +
+        /// chosen front persist)". The V2 shop reads BOTH of these straight out of RunState
+        /// to paint its slots and fight cards, so if either is dropped by the save the player
+        /// reloads into a shop that silently forgot what they locked and which front they
+        /// committed to.
+        /// </summary>
+        [Test]
+        public void SerializeDeserialize_PreservesLockedOffersAndChosenFront()
+        {
+            var state = new RunState
+            {
+                FightIndex = 2,
+                Supplies = 60,
+                Authority = 3,
+                Manpower = 90,
+                RunSeed = 1234,
+                FactionId = FactionIds.IronmarchUnion,
+                Phase = RunPhase.Build,
+                FightOptions =
+                {
+                    new FightOptionRecord
+                    {
+                        Tier = FightOptionTier.Easy,
+                        EnemyFactionId = "neutral",
+                        TemplateFightNumber = 2
+                    },
+                    new FightOptionRecord
+                    {
+                        Tier = FightOptionTier.Hard,
+                        EnemyFactionId = "ash_wraiths",
+                        TemplateFightNumber = 2,
+                        ConditionId = "gas_drift"
+                    }
+                },
+                ChosenFightOption = 1,
+                LockedOffers =
+                {
+                    new ShopOfferRecord
+                    {
+                        OfferId = "offer-abc",
+                        SlotIndex = 3,
+                        PieceId = "ironclad_marksman",
+                        GoldPrice = 20
+                    }
+                }
+            };
+
+            var loaded = RunSaveSerializer.FromJson(RunSaveSerializer.ToJson(state));
+
+            Assert.AreEqual(1, loaded.ChosenFightOption, "chosen front must survive the roundtrip");
+
+            Assert.AreEqual(2, loaded.FightOptions.Count);
+            Assert.AreEqual(FightOptionTier.Hard, loaded.FightOptions[1].Tier);
+            Assert.AreEqual("gas_drift", loaded.FightOptions[1].ConditionId,
+                "hard-tier battle condition is shown up front — consent, not gotcha");
+
+            Assert.AreEqual(1, loaded.LockedOffers.Count, "locked offer must survive the roundtrip");
+            var locked = loaded.LockedOffers[0];
+            Assert.AreEqual("offer-abc", locked.OfferId);
+            Assert.AreEqual(3, locked.SlotIndex,
+                "SlotIndex is what ShopV2ShopBandPresenter matches on to paint the lock");
+            Assert.AreEqual("ironclad_marksman", locked.PieceId);
+        }
+
         [Test]
         public void SerializeDeserialize_PreservesSuppliesAndFightIndex()
         {

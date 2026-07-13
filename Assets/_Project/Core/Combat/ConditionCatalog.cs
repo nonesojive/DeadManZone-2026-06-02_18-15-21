@@ -26,6 +26,38 @@ namespace DeadManZone.Core.Combat
             EntrenchedFoe, VeteranCadre, StormBarrage, IronResolve
         };
 
+        /// <summary>
+        /// Player-facing name for the Front Report chip.
+        /// </summary>
+        public static string DisplayName(string conditionId) => conditionId switch
+        {
+            EntrenchedFoe => "ENTRENCHED FOE",
+            VeteranCadre => "VETERAN CADRE",
+            StormBarrage => "STORM BARRAGE",
+            IronResolve => "IRON RESOLVE",
+            _ => string.IsNullOrEmpty(conditionId)
+                ? string.Empty
+                : conditionId.Replace('_', ' ').ToUpperInvariant()
+        };
+
+        /// <summary>
+        /// What the condition actually DOES, in the player's words. Consent, not gotcha — the
+        /// Front Report shows this before the fight is taken.
+        ///
+        /// Deliberately kept in this file, next to the behaviour it describes: the magnitudes
+        /// below are duplicated from the modifiers a few lines down, and separating them is how
+        /// tooltip text silently drifts away from the rules it claims to explain. Change one,
+        /// change the other.
+        /// </summary>
+        public static string Describe(string conditionId) => conditionId switch
+        {
+            EntrenchedFoe => "Dug in for weeks. The enemy front rank — the column nearest you — holds with +1 armor step.",
+            VeteranCadre => "Hardened survivors man the guns. Every enemy BEHIND the front rank fields +25% HP.",
+            StormBarrage => "Your march in was through an artillery storm. Every one of your units starts the fight at -15% HP.",
+            IronResolve => "Zealots to the last. Every enemy unit hits +1 harder.",
+            _ => string.Empty
+        };
+
         public static bool TryResolve(string conditionId, out ICombatRuleModifier modifier)
         {
             modifier = conditionId switch

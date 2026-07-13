@@ -6,6 +6,7 @@ using DeadManZone.Presentation.Combat;
 using DeadManZone.Presentation.Combat.Arena;
 using DeadManZone.Presentation.Reserves;
 using DeadManZone.Presentation.Shop;
+using DeadManZone.Presentation.ShopV2;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -111,6 +112,18 @@ namespace DeadManZone.Presentation.Run
             SetCombatPresentationLayout(showBattlefield);
         }
 
+        /// <summary>
+        /// Show/hide the ShopV2 canvas. It is a TOP-LEVEL overlay canvas at order 10, so none
+        /// of the legacy `shopScene` hide paths touch it — that is why it survived into combat
+        /// and painted over the battlefield, the pause menu and the run-end overlay (all on the
+        /// base canvas at order 0). V2 is the BUILD surface: it shows in Build and nowhere else.
+        ///
+        /// This deliberately does NOT piggyback on shopScene's toggle. PauseMenu and
+        /// RunEndOverlay are CHILDREN of ShopScene, so ShopScene has to stay active precisely
+        /// when they need to be shown — the two surfaces have genuinely different lifetimes.
+        /// </summary>
+        private static void SetShopV2Visible(bool visible) => ShopV2Surface.SetVisible(visible);
+
         private FrontReportPanel _frontReportPanel;
 
         private FrontReportPanel EnsureFrontReportPanel()
@@ -118,6 +131,23 @@ namespace DeadManZone.Presentation.Run
             if (_frontReportPanel == null)
                 _frontReportPanel = gameObject.AddComponent<FrontReportPanel>();
             return _frontReportPanel;
+        }
+
+        /// <summary>
+        /// ShopV2 owns fight selection via FrontReportModal + ShopV2FightOrdersPresenter.
+        /// The legacy FrontReportPanel is a SECOND selector on its own overlay canvas at
+        /// sortingOrder 250 — above ShopV2Canvas (10) — so it paints over V2 and offers a
+        /// duplicate set of choose-front buttons. Never build it while V2 is the surface.
+        /// </summary>
+        private void RefreshFrontReport(RunState state)
+        {
+            if (ShopV2Surface.IsActive)
+            {
+                _frontReportPanel?.Hide();
+                return;
+            }
+
+            EnsureFrontReportPanel().Refresh(state);
         }
 
         private void RefreshAll()
@@ -130,6 +160,7 @@ namespace DeadManZone.Presentation.Run
                 pauseMenuView?.Hide();
                 if (shopScene != null)
                     shopScene.SetActive(true);
+                SetShopV2Visible(false); // no run, no shop
                 if (combatPanel != null)
                     combatPanel.SetActive(false);
                 SetBuildPanelAlpha(1f);
@@ -150,9 +181,14 @@ namespace DeadManZone.Presentation.Run
 
             if (shopScene != null)
             {
+                // ShopScene must stay active outside the arena: PauseMenu and RunEndOverlay
+                // are its children.
                 bool hideForArena = (inCombat || aftermath) && CombatArenaSession.IsActive;
                 shopScene.SetActive(!hideForArena);
             }
+
+            // V2 is the Build surface only — it has no pause/run-end children to keep alive.
+            SetShopV2Visible(inBuild);
 
             if (combatPanel != null)
                 combatPanel.SetActive(inCombat || aftermath || runEnded);
@@ -173,7 +209,7 @@ namespace DeadManZone.Presentation.Run
                     failureReason ??= "Choose a front to assault.";
                 }
 
-                EnsureFrontReportPanel().Refresh(state);
+                RefreshFrontReport(state);
                 if (beginFightButton != null)
                     beginFightButton.interactable = canStart;
                 if (emergencyDraftButton != null)
@@ -374,14 +410,30 @@ namespace DeadManZone.Presentation.Run
         {
             EnsureLayoutReferences();
 
-            if (shopArea != null)
-                shopArea.SetActive(!combatActive);
+            // Same rule as RefreshAll: the V2 shop is the Build surface. This path is also
+            // reached directly via RefreshCombatPresentation, so it has to hide V2 too or the
+            // shop reappears over the battlefield.
+            SetShopV2Visible(!combatActive);
 
-            if (bottomBar != null)
-                bottomBar.SetActive(!combatActive);
+            // ShopV2 SUPERSEDES the legacy TopBar and ShopArea (its CommandBar and ShopBand
+            // replace them). The flip switched them off in the scene — but this method used to
+            // SetActive(!combatActive) them unconditionally, so every Build refresh quietly
+            // RESURRECTED the old offer cards, the old metal reroll plate and the old resource
+            // bar behind the V2 shop. A scene-level "off" cannot survive code that turns things
+            // back on: while V2 owns the shop, these stay dead.
+            bool v2OwnsShop = ShopV2Surface.IsActive;
+
+            if (shopArea != null)
+                shopArea.SetActive(!combatActive && !v2OwnsShop);
 
             if (_topBar != null)
-                _topBar.SetActive(!combatActive);
+                _topBar.SetActive(!combatActive && !v2OwnsShop);
+
+            // BottomBar goes too. Its InfoMessageRegion (the legacy flavor line) is no longer
+            // written while V2 owns the shop — the V2 hovercard carries its own context slot —
+            // and it was printing hover text BEHIND the BEGIN COMBAT button.
+            if (bottomBar != null)
+                bottomBar.SetActive(!combatActive && !v2OwnsShop);
 
             if (_mainRow != null)
                 _mainRow.SetActive(!combatActive);

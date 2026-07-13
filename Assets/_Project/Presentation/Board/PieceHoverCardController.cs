@@ -2,6 +2,7 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Tags;
 using DeadManZone.Presentation.Run;
+using DeadManZone.Presentation.ShopV2;
 using DeadManZone.Presentation.UI;
 using UnityEngine;
 
@@ -21,6 +22,18 @@ namespace DeadManZone.Presentation.Board
             Hide();
         }
 
+        /// <summary>
+        /// ShopV2 owns the hovercard whenever it is the shop surface. Otherwise a player would
+        /// get two different-looking cards for the same piece depending on whether they hovered
+        /// a shop slot (V2 card) or a board piece (legacy centre-column card).
+        ///
+        /// The V2 card positions itself opposite the pointer, so the legacy PositionOppositePointer
+        /// call is skipped — and ResolveUnitCardPanel() must NOT be called on this path at all,
+        /// since it lazily BUILDS a floating legacy panel if it can't find one.
+        /// </summary>
+        private static bool UseShopV2Card =>
+            ShopV2Surface.IsActive && ShopV2HovercardPresenter.Instance != null;
+
         public void NotifyPieceHoverEnter(
             string instanceId,
             PieceDefinition definition,
@@ -29,6 +42,9 @@ namespace DeadManZone.Presentation.Board
         {
             _hoverLock.Enter(instanceId);
             Show(definition, pointerScreenPosition ?? Vector2.zero, context);
+
+            if (UseShopV2Card)
+                return;
 
             // Slide the card to the side of the screen opposite the hovered piece so
             // the middle of the shop stays clear (piece on the left → card on the right).
@@ -61,6 +77,18 @@ namespace DeadManZone.Presentation.Board
             if (definition == null)
                 return;
 
+            if (UseShopV2Card)
+            {
+                // Context carries the adjacency synergy, so a placed piece shows what it is
+                // ACTUALLY doing on the board, not its base stat line.
+                //
+                // Deliberately NOT writing BuildMessagesView: that legacy flavor line renders
+                // into InfoMessageRegion at the bottom of the screen, where it printed BEHIND
+                // the BEGIN COMBAT button. The V2 hovercard carries its own context/flavor slot.
+                ShopV2HovercardPresenter.Instance.Show(definition, screenPosition, context);
+                return;
+            }
+
             var panel = ResolveUnitCardPanel();
             if (panel == null)
                 return;
@@ -71,6 +99,14 @@ namespace DeadManZone.Presentation.Board
 
         public void Hide()
         {
+            if (UseShopV2Card)
+            {
+                ShopV2HovercardPresenter.Instance.Hide();
+                // Clear (don't write) the legacy line, so anything already printed goes away.
+                ResolveMessagesView()?.ClearFlavor();
+                return;
+            }
+
             ResolveUnitCardPanel()?.Hide();
             ResolveMessagesView()?.ClearFlavor();
         }

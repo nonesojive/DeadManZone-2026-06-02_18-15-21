@@ -10,6 +10,7 @@ using DeadManZone.Data;
 using DeadManZone.Game;
 using DeadManZone.Game.Dev;
 using DeadManZone.Presentation.Combat;
+using DeadManZone.Presentation.DragDrop;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -25,8 +26,25 @@ namespace DeadManZone.Presentation.ShopV2
         private const float ShapeCellStep = 13f;
         private const float ShapePadding = 4f;
 
-        // Display-only lock tint: dimmed toward the kit's VictoryGold, never a rule.
+        // ---------------------------------------------------------------------------------
+        // Slot visual vocabulary. The ShopV2 layout was authored as a MOCK: each slot was
+        // hand-painted to showcase a different state (slot 1 = locked, slots 2/3 = hover),
+        // and those colors are decoration, not data. The presenter therefore owns EVERY
+        // stateful color on a slot and writes all of them on every bind. Never seed a
+        // baseline from the authored color — slot 1's authored background IS LockedGoldTint,
+        // so "remember the original and restore it" would pin that slot to looking locked
+        // forever. Display only: lock semantics live in Game/Core; we mirror LockedOffers.
+        // ---------------------------------------------------------------------------------
+        private static readonly Color SlotBase = new(0.08f, 0.07f, 0.06f, 1f);
         private static readonly Color LockedGoldTint = new(0.42f, 0.35f, 0.21f, 1f);
+
+        private static readonly Color BorderIdle = new(0.17f, 0.14f, 0.10f, 1f);
+        private static readonly Color BorderHover = new(0.90f, 0.78f, 0.50f, 0.80f);
+        private static readonly Color BorderLocked = new(0.90f, 0.78f, 0.50f, 1f);
+
+        private static readonly Color NameIdle = new(0.92f, 0.87f, 0.74f, 1f);
+        private static readonly Color NameLocked = new(0.90f, 0.78f, 0.50f, 1f);
+
         private static readonly Color ShapeCellColor = new(
             CombatGrimdarkSkin.Bone.r, CombatGrimdarkSkin.Bone.g, CombatGrimdarkSkin.Bone.b, 0.45f);
 
@@ -34,6 +52,7 @@ namespace DeadManZone.Presentation.ShopV2
         {
             public GameObject Root;
             public Image Background;
+            public Image Border;
             public Image Role;
             public TMP_Text Name;
             public TMP_Text Rarity;
@@ -41,8 +60,10 @@ namespace DeadManZone.Presentation.ShopV2
             public GameObject LockBanner;
             public ShopV2OfferSlotInput Input;
             public bool MocksCleared;
-            public bool OriginalColorStored;
-            public Color OriginalColor;
+
+            /// <summary>Live state the visuals are derived from — never read back off the graphics.</summary>
+            public bool Locked;
+            public bool Hovered;
         }
 
         private readonly List<Slot> _slots = new();
@@ -64,7 +85,13 @@ namespace DeadManZone.Presentation.ShopV2
                     continue;
                 }
 
-                _slots.Add(BuildSlot(root));
+                var slot = BuildSlot(root);
+                slot.Input.HoverChanged += hovered =>
+                {
+                    slot.Hovered = hovered;
+                    ApplyVisualState(slot);
+                };
+                _slots.Add(slot);
             }
 
             var rerollPlate = transform.Find("RerollPlate");
@@ -86,6 +113,7 @@ namespace DeadManZone.Presentation.ShopV2
 
         private static Slot BuildSlot(Transform root)
         {
+            var border = root.Find("Border");
             var role = root.Find("Role");
             var name = root.Find("Name");
             var rarity = root.Find("Rarity");
@@ -96,10 +124,16 @@ namespace DeadManZone.Presentation.ShopV2
             if (input == null)
                 input = root.gameObject.AddComponent<ShopV2OfferSlotInput>();
 
+            // NOTE: the slot's Image must have raycastTarget=true or this input component never
+            // fires and the slot is silently dead. That flag is AUTHORED in the scene — see the
+            // "mock decoration is not state" section of docs/shopv2-flip-checklist.md.
+            var background = root.GetComponent<Image>();
+
             return new Slot
             {
                 Root = root.gameObject,
-                Background = root.GetComponent<Image>(),
+                Background = background,
+                Border = border != null ? border.GetComponent<Image>() : null,
                 Role = role != null ? role.GetComponent<Image>() : null,
                 Name = name != null ? name.GetComponent<TMP_Text>() : null,
                 Rarity = rarity != null ? rarity.GetComponent<TMP_Text>() : null,
@@ -107,6 +141,28 @@ namespace DeadManZone.Presentation.ShopV2
                 LockBanner = lockBanner != null ? lockBanner.gameObject : null,
                 Input = input
             };
+        }
+
+        /// <summary>
+        /// The single place a slot's stateful colors are written. Locked outranks hover:
+        /// a locked slot always reads as locked, so hovering it can't disguise the state
+        /// you are about to toggle off.
+        /// </summary>
+        private static void ApplyVisualState(Slot slot)
+        {
+            if (slot.Background != null)
+                slot.Background.color = slot.Locked ? LockedGoldTint : SlotBase;
+
+            if (slot.Border != null)
+                slot.Border.color = slot.Locked
+                    ? BorderLocked
+                    : (slot.Hovered ? BorderHover : BorderIdle);
+
+            if (slot.Name != null)
+                slot.Name.color = slot.Locked ? NameLocked : NameIdle;
+
+            if (slot.LockBanner != null)
+                slot.LockBanner.SetActive(slot.Locked);
         }
 
         protected override void Refresh(RunState state)
@@ -117,9 +173,20 @@ namespace DeadManZone.Presentation.ShopV2
             if (_rerollCostVal != null)
                 _rerollCostVal.text = (RunOrchestrator.BaseRerollCost + state.RerollCountThisRound).ToString();
 
-            var offers = state.Shop?.Offers != null
-                ? state.Shop.Offers.Where(o => o != null).OrderBy(o => o.SlotIndex).ToList()
-                : new List<ShopOffer>();
+            // Key by SlotIndex, NOT list position. An offer's SlotIndex is its identity — it is
+            // what the lock is stored against and what the shop generator rolls per slot. Binding
+            // offers[i] to slot i meant that the moment ONE offer was consumed the list shortened
+            // and every remaining offer SHIFTED LEFT into the wrong slot (which is how a 6th
+            // offer could appear in a 5-slot band, and how a lock could appear to jump slots).
+            var offersBySlot = new Dictionary<int, ShopOffer>();
+            if (state.Shop?.Offers != null)
+            {
+                foreach (var offer in state.Shop.Offers)
+                {
+                    if (offer != null)
+                        offersBySlot[offer.SlotIndex] = offer;
+                }
+            }
 
             var registry = ContentRegistryProvider.Build(_database ?? ContentDatabase.Load());
 
@@ -128,14 +195,14 @@ namespace DeadManZone.Presentation.ShopV2
                 var slot = _slots[i];
                 ClearAuthoredMockCells(slot);
 
-                if (i >= offers.Count)
+                if (!offersBySlot.TryGetValue(i, out var slotOffer))
                 {
                     slot.Input.Bind(null, false);
                     slot.Root.SetActive(false);
                     continue;
                 }
 
-                BindSlot(slot, offers[i], state, registry);
+                BindSlot(slot, slotOffer, state, registry);
             }
         }
 
@@ -165,25 +232,11 @@ namespace DeadManZone.Presentation.ShopV2
 
             RegenerateShapeCells(slot, definition);
 
-            // Display only: lock semantics live in Game/Core; we just mirror LockedOffers.
-            bool locked = state.LockedOffers != null
+            slot.Locked = state.LockedOffers != null
                 && state.LockedOffers.Any(r => r != null && r.SlotIndex == offer.SlotIndex);
 
-            if (slot.LockBanner != null)
-                slot.LockBanner.SetActive(locked);
-
-            if (slot.Background != null)
-            {
-                if (!slot.OriginalColorStored)
-                {
-                    slot.OriginalColor = slot.Background.color;
-                    slot.OriginalColorStored = true;
-                }
-
-                slot.Background.color = locked ? LockedGoldTint : slot.OriginalColor;
-            }
-
-            slot.Input.Bind(offer, locked, definition);
+            ApplyVisualState(slot);
+            slot.Input.Bind(offer, slot.Locked, definition);
         }
 
         private static void ClearAuthoredMockCells(Slot slot)
@@ -246,12 +299,22 @@ namespace DeadManZone.Presentation.ShopV2
     }
 
     /// <summary>Per-slot input: left-click acquires the offer to reserves, right-click toggles its lock,
-    /// hover shows the piece hovercard — all routed straight to RunManager / the hovercard presenter.</summary>
-    public sealed class ShopV2OfferSlotInput : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
+    /// DRAG buys it straight onto a board (or reserves) via the shared DragDropController, and hover
+    /// shows the piece hovercard — all routed straight to RunManager / the hovercard presenter.
+    ///
+    /// Click and drag coexist: Unity only fires OnPointerClick when the pointer did not move past the
+    /// drag threshold, so a click still means "buy to reserves" and a drag still means "place it here".</summary>
+    public sealed class ShopV2OfferSlotInput : MonoBehaviour,
+        IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler,
+        IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         private ShopOffer _offer;
         private bool _locked;
         private PieceDefinition _definition;
+
+        /// <summary>Raised on enter (true) / exit (false) so the presenter can light the border.
+        /// The slot's highlight used to be baked into the mock art; it is state now.</summary>
+        public event Action<bool> HoverChanged;
 
         public void Bind(ShopOffer offer, bool locked, PieceDefinition definition = null)
         {
@@ -262,12 +325,24 @@ namespace DeadManZone.Presentation.ShopV2
 
         public void OnPointerEnter(PointerEventData eventData)
         {
+            HoverChanged?.Invoke(true);
+
             if (_definition != null)
                 ShopV2HovercardPresenter.Instance?.Show(_definition, eventData.position);
         }
 
-        public void OnPointerExit(PointerEventData eventData) =>
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            HoverChanged?.Invoke(false);
             ShopV2HovercardPresenter.Instance?.Hide();
+        }
+
+        private void OnDisable()
+        {
+            // A slot hidden mid-hover never gets its exit event; drop the highlight so it
+            // does not come back lit on the next reroll.
+            HoverChanged?.Invoke(false);
+        }
 
         public void OnPointerClick(PointerEventData eventData)
         {
@@ -293,5 +368,41 @@ namespace DeadManZone.Presentation.ShopV2
                 }
             }
         }
+
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            if (_offer == null || DragDropController.Instance == null)
+                return;
+
+            // The hovercard would otherwise follow the ghost around the screen.
+            ShopV2HovercardPresenter.Instance?.Hide();
+
+            var payload = new DragPayload
+            {
+                SourceKind = DragSourceKind.ShopOffer,
+                OfferId = _offer.OfferId,
+                PieceId = _offer.PieceId,
+                Offer = _offer,
+                Definition = _definition,
+                Rotation = PieceRotation.R0
+            };
+
+            // pieceOnlyGhost: drag the PIECE, not a copy of the shop card — the ghost has to
+            // read as the footprint you are about to drop onto the grid.
+            ShopDragMetrics.Resolve(out float cellSize, out float spacing);
+            DragDropController.Instance.BeginDrag(
+                payload,
+                transform,
+                eventData,
+                cellSize,
+                spacing,
+                pieceOnlyGhost: true);
+        }
+
+        public void OnDrag(PointerEventData eventData) =>
+            DragDropController.Instance?.UpdateDrag(eventData);
+
+        public void OnEndDrag(PointerEventData eventData) =>
+            DragDropController.Instance?.EndDrag(eventData);
     }
 }

@@ -16,7 +16,7 @@ namespace DeadManZone.Core.Tests
         private static BoardState BuildBoardWithSupplyDepot() => TestBoards.WithSupplyDepot();
 
         [Test]
-        public void DefaultBoard_GeneratesSixVisibleOffers()
+        public void DefaultBoard_GeneratesFiveVisibleOffers()
         {
             var board = new BoardState(DefaultLayout());
             var registry = CreateRoleTestRegistry();
@@ -25,6 +25,29 @@ namespace DeadManZone.Core.Tests
             var shop = generator.Generate(board, FactionIds.IronmarchUnion, round: 1, seed: 42);
 
             Assert.AreEqual(ShopSlotLayoutResolver.VisibleOfferSlotCount, shop.Offers.Count);
+        }
+
+        /// <summary>
+        /// Pins the baseline roll to FIVE, literally. The other shop tests assert against
+        /// ShopSlotLayoutResolver.VisibleOfferSlotCount, which makes them tautological — they pass
+        /// at any value, so nothing would catch the count drifting. ShopV2's band authors exactly
+        /// five live slots (`OfferSlot_0..4`); a sixth offer has nowhere to render and used to
+        /// shove itself into a visible slot the moment another offer was bought.
+        /// </summary>
+        [Test]
+        public void DefaultBoard_RollsExactlyFiveOffers_InSlotsZeroToFour()
+        {
+            var board = new BoardState(DefaultLayout());
+            var registry = CreateRoleTestRegistry();
+            var generator = new ShopGenerator(registry);
+
+            var shop = generator.Generate(board, FactionIds.IronmarchUnion, round: 1, seed: 42);
+
+            Assert.AreEqual(5, shop.Offers.Count, "ShopV2 authors five live offer slots");
+            CollectionAssert.AreEquivalent(
+                new[] { 0, 1, 2, 3, 4 },
+                shop.Offers.Select(o => o.SlotIndex).ToArray(),
+                "offers must occupy slots 0-4; slot 5+ is reserved/dormant");
         }
 
         [Test]

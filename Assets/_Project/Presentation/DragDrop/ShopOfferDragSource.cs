@@ -78,7 +78,7 @@ namespace DeadManZone.Presentation.DragDrop
                 Rotation = PieceRotation.R0
             };
 
-            ResolveBoardCellMetrics(out float cellSize, out float spacing);
+            ShopDragMetrics.Resolve(out float cellSize, out float spacing);
             DragDropController.Instance.BeginDrag(
                 payload,
                 transform,
@@ -95,24 +95,6 @@ namespace DeadManZone.Presentation.DragDrop
         {
             DragDropController.Instance?.EndDrag(eventData);
             GetComponentInParent<ShopOfferView>()?.SetPreviewVisible(true);
-        }
-
-        private static void ResolveBoardCellMetrics(out float cellSize, out float spacing)
-        {
-            var board = Object.FindFirstObjectByType<BoardView>();
-            if (board != null)
-            {
-                var resolved = ShopLayoutMetrics.Resolve(
-                    board.CellSize.x,
-                    new Vector2(board.CellSpacing.x, board.CellSpacing.y));
-                cellSize = resolved.cellSize;
-                spacing = resolved.spacing;
-                return;
-            }
-
-            var fallback = ShopLayoutMetrics.Resolve(48f, new Vector2(3f, 3f));
-            cellSize = fallback.cellSize;
-            spacing = fallback.spacing;
         }
 
         private PieceCardBuildContext BuildShopContext()

@@ -191,18 +191,24 @@ namespace DeadManZone.Presentation.Run
 
         private static string FormatSalvageChance(int percent) => $"{percent}%";
 
+        private GameObject _metaStripRoot;
+
         /// <summary>Bottom-edge meta strip: Dread clock (left) + run seed (right), on a
         /// dedicated overlay canvas so the authored top bar never reflows. Sort 300 —
         /// under the combat HUD (400) and every pause/banner layer.</summary>
         private void EnsureMetaStrip()
         {
             if (_dreadText != null)
+            {
+                HideMetaStripForShopV2();
                 return;
+            }
 
             // TOP-LEVEL on purpose: a canvas nested under the HUD inherits the top bar's
             // rect instead of the screen (the CombatArmyHealthHud lesson). Lands in the
             // active scene; if the arena scene unloads it, the null-check rebuilds it.
             var canvasGo = new GameObject("RunMetaStrip");
+            _metaStripRoot = canvasGo;
             var canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 300;
@@ -221,6 +227,21 @@ namespace DeadManZone.Presentation.Run
             _seedText.color = new Color(
                 CombatGrimdarkSkin.BodyText.r, CombatGrimdarkSkin.BodyText.g,
                 CombatGrimdarkSkin.BodyText.b, 0.6f);
+
+            HideMetaStripForShopV2();
+        }
+
+        /// <summary>
+        /// The V2 CommandBar already carries the Dread clock (top-right, with its track), so this
+        /// strip's Dread label is a duplicate reading and its seed label is not in the approved
+        /// layout. It sits at sorting 300 — ABOVE ShopV2Canvas (10) — so it printed over the V2
+        /// shop. Hide it whenever the V2 shop is on screen; it returns for combat, which is the
+        /// surface it was actually built for.
+        /// </summary>
+        private void HideMetaStripForShopV2()
+        {
+            if (_metaStripRoot != null)
+                _metaStripRoot.SetActive(!ShopV2.ShopV2Surface.IsVisible);
         }
 
         private static TMP_Text CreateMetaLabel(

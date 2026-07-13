@@ -13,19 +13,26 @@ namespace DeadManZone.Presentation.Run
 
         public static CriticalMassDrawerView Ensure(Transform buildPanel)
         {
+            // The drawer is re-docked under ShopV2Canvas when V2 is the shop surface, so a
+            // Find() scoped to the legacy ShopScene would miss it and CREATE A SECOND ONE —
+            // that duplicate is what leaked the stray "0 active buffs" ribbon over the V2
+            // layout. Look wherever the drawer actually lives before building anything.
+            var docked = FindExisting();
+            if (docked != null)
+            {
+                EnsureSortingIsland(docked.gameObject); // scene-baked drawers predate it
+                return docked;
+            }
+
             if (buildPanel == null)
                 return null;
 
-            var existing = buildPanel.Find(DrawerName)?.GetComponent<CriticalMassDrawerView>();
-            if (existing != null)
-            {
-                existing.transform.SetAsLastSibling();
-                EnsureSortingIsland(existing.gameObject); // scene-baked drawers predate it
-                return existing;
-            }
-
             return CreateDrawer(buildPanel);
         }
+
+        /// <summary>The one drawer in the scene, wherever it is currently parented.</summary>
+        private static CriticalMassDrawerView FindExisting() =>
+            Object.FindFirstObjectByType<CriticalMassDrawerView>(FindObjectsInactive.Include);
 
         /// <summary>The Front Report band is its own overlay canvas at sortingOrder 250,
         /// so it painted OVER the open drawer (which inherited the base run canvas's

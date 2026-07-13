@@ -4,8 +4,14 @@ namespace DeadManZone.Core.Shop
     {
         public const int GridColumns = 3;
         public const int GridRows = 3;
-        public const int VisibleOfferSlotCount = 6;
-        public const int ReservedSlotStartIndex = 6;
+
+        /// <summary>
+        /// Offers rolled every round. ShopV2's band authors FIVE live slots (`OfferSlot_0..4`)
+        /// plus three dormant ones that unlock via abilities — so the baseline roll is 5, not the
+        /// legacy 3x2 grid's 6. Slots from <see cref="ReservedSlotStartIndex"/> up do not roll.
+        /// </summary>
+        public const int VisibleOfferSlotCount = 5;
+        public const int ReservedSlotStartIndex = 5;
         public const int BaselineSlotCount = 9;
         public const int BonusSlotCount = 4;
         public const int MaxSlotCount = BaselineSlotCount + BonusSlotCount;

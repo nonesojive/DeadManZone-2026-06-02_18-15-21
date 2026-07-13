@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
+using DeadManZone.Core.Tags;
 using DeadManZone.Presentation.Combat;
 using TMPro;
 using UnityEngine;
@@ -19,6 +20,8 @@ namespace DeadManZone.Presentation.ShopV2
         private static readonly Color ChipWeak = new(0.09f, 0.075f, 0.06f, 1f);
 
         private TMP_Text _name, _subtitle, _cadence, _faction, _flavor, _supVal, _manVal, _rarityTag;
+        private TMP_Text _abilities;
+        private GameObject _abilitiesLabel;
         private TMP_Text _valHp, _valMorale, _valDamage, _lblDamage, _valTerror;
         private GameObject _terrorIcon, _terrorNote;
         private readonly TMP_Text[] _minorVals = new TMP_Text[3];
@@ -39,6 +42,8 @@ namespace DeadManZone.Presentation.ShopV2
             _cadence = Text("Cadence");
             _faction = Text("Faction");
             _flavor = Text("Flavor");
+            _abilities = Text("Abilities");
+            _abilitiesLabel = Find("AbilitiesLabel")?.gameObject;
             _supVal = Text("SupVal");
             _manVal = Text("ManVal");
             _rarityTag = Text("RarityTag");
@@ -70,11 +75,24 @@ namespace DeadManZone.Presentation.ShopV2
             _plateSprite = headerBand != null ? headerBand.sprite : null;
         }
 
-        public void Bind(PieceDefinition def)
+        public void Bind(PieceDefinition def) => Bind(def, null);
+
+        /// <summary>
+        /// Binds the card. <paramref name="context"/> is null for a SHOP OFFER (the piece is not
+        /// on a board yet, so base stats are the truth) and non-null for a PLACED piece, where
+        /// adjacency is already buffing it — the numbers on the card must be what the piece is
+        /// actually doing right now, or hover is useless for reading your own board.
+        ///
+        /// Deltas come from PieceCardViewModelBuilder, the same builder the legacy card uses, so
+        /// the two cards can never disagree about a piece.
+        /// </summary>
+        public void Bind(PieceDefinition def, PieceCardBuildContext context)
         {
             if (def == null)
                 return;
             CacheChildren();
+
+            var vm = PieceCardViewModelBuilder.Build(def, context);
 
             bool rare = def.Rarity.ToString().Equals("Rare", StringComparison.OrdinalIgnoreCase);
             var nameColor = rare ? CombatGrimdarkSkin.VictoryGold : CombatGrimdarkSkin.Bone;
@@ -95,7 +113,7 @@ namespace DeadManZone.Presentation.ShopV2
 
             Set(_valHp, def.MaxHp.ToString());
             Set(_valMorale, def.MaxMorale.ToString());
-            Set(_valDamage, def.BaseDamage.ToString());
+            Set(_valDamage, WithBonus(def.BaseDamage, vm.SynergyDamageBonus));
             Set(_lblDamage, $"DAMAGE — {def.AttackType.ToString().ToUpperInvariant()}", Dim);
             if (_damageIcon != null)
             {
@@ -114,19 +132,94 @@ namespace DeadManZone.Presentation.ShopV2
             if (hasTerror) Set(_valTerror, def.TerrorDamage.ToString());
 
             Set(_minorVals[0], def.AttackRange.ToString());
-            Set(_minorVals[1], MoveLabel(def.MovementSpeed));
-            Set(_minorVals[2], def.ArmorType.ToString());
+            Set(_minorVals[1], AppendBonus(MoveLabel(def.MovementSpeed), vm.SynergyMoveChargeBonus));
+            Set(_minorVals[2], AppendBonus(def.ArmorType.ToString(), vm.SynergyArmorBuffSteps));
 
             bool ironmarch = def.FactionId != null && def.FactionId.Contains("ironmarch");
             Set(_faction, FactionDisplay(def.FactionId), ironmarch ? Brass : Dim);
 
-            Set(_flavor, string.Empty); // TODO: piece flavor text source (BuildMessagesView pattern) at swap time.
+            // ABILITIES — what this piece actually DOES. Previously shown nowhere at all, which
+            // made two pieces with identical stat lines look identical. Ability lines come from
+            // PieceCardViewModelBuilder (active abilities, passive income, granted combat ability),
+            // then the board-context lines (synergy firing / critical-mass / salvage) in dim,
+            // because "what it does" outranks "what the board is doing to it".
+            BindAbilities(vm);
             Set(_supVal, def.GoldCost.ToString());
             Set(_manVal, def.ManpowerCost.ToString());
 
             RegenerateShape(def);
             RegenerateChips(def);
             ToggleRarityChrome(def, rare);
+        }
+
+        /// <summary>
+        /// The ABILITIES block: what the piece does, then what the board is doing to it.
+        ///
+        /// The section header hides when there is nothing to say, so a plain rifleman does not
+        /// show an empty "ABILITIES" heading — an empty label reads as a bug, not as "none".
+        /// </summary>
+        private void BindAbilities(PieceCardViewModel vm)
+        {
+            var lines = new List<string>();
+
+            if (vm.AbilityLines != null)
+                lines.AddRange(vm.AbilityLines.Where(l => !string.IsNullOrWhiteSpace(l)));
+
+            // Board context is dimmed: it is conditional on where the piece is standing, not an
+            // intrinsic property of the piece.
+            string context = BuildContextLines(vm);
+            if (!string.IsNullOrWhiteSpace(context))
+            {
+                string hex = ColorUtility.ToHtmlStringRGB(Dim);
+                foreach (var line in context.Split('\n').Where(l => !string.IsNullOrWhiteSpace(l)))
+                    lines.Add($"<color=#{hex}>{line}</color>");
+            }
+
+            bool any = lines.Count > 0;
+
+            if (_abilitiesLabel != null)
+                _abilitiesLabel.SetActive(any);
+
+            if (_abilities != null)
+            {
+                _abilities.gameObject.SetActive(any);
+                _abilities.text = string.Join("\n", lines);
+            }
+        }
+
+        /// <summary>"12" when unbuffed, "12 +3" (gold) when adjacency is boosting it.</summary>
+        private static string WithBonus(int baseValue, int bonus) =>
+            bonus == 0
+                ? baseValue.ToString()
+                : $"{baseValue} <color=#{BuffHex}>+{bonus}</color>";
+
+        /// <summary>Same, for the label-style minor stats ("Medium +1").</summary>
+        private static string AppendBonus(string label, int bonus) =>
+            bonus == 0
+                ? label
+                : $"{label} <color=#{BuffHex}>+{bonus}</color>";
+
+        private static string BuffHex =>
+            ColorUtility.ToHtmlStringRGB(CombatGrimdarkSkin.VictoryGold);
+
+        /// <summary>
+        /// The board-context block: which synergies are firing, critical-mass progress, and the
+        /// salvage note. All empty for a shop offer, so the slot simply collapses to nothing.
+        /// </summary>
+        private static string BuildContextLines(PieceCardViewModel vm)
+        {
+            var lines = new List<string>();
+
+            if (vm.SynergyLines != null)
+                lines.AddRange(vm.SynergyLines.Where(l => !string.IsNullOrWhiteSpace(l)));
+
+            if (!string.IsNullOrWhiteSpace(vm.CriticalMassHint))
+                lines.Add(vm.CriticalMassHint);
+
+            if (!string.IsNullOrWhiteSpace(vm.SalvageContext))
+                lines.Add(vm.SalvageContext);
+
+            return string.Join("\n", lines);
         }
 
         private static string MoveLabel(int movementSpeed) => movementSpeed switch
