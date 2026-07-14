@@ -207,7 +207,11 @@ InitTestScene*.unity*
 .agents/
 
 # Meshy 3D->sprite pipeline: large regenerable intermediates (keep the .py scripts, ignore data)
-/Tools/meshy/units/
+# Exception: units/*/refs/ — reference images are the SOURCE of each model (unit-art spec 7.6), tracked.
+/Tools/meshy/units/**
+!/Tools/meshy/units/*/
+!/Tools/meshy/units/*/refs/
+!/Tools/meshy/units/*/refs/**
 /Tools/meshy/output/
 /Tools/meshy/glb/
 /Tools/meshy/frames/
