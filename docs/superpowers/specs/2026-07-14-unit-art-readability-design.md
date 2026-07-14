@@ -39,8 +39,9 @@ mood only. Any identity that only exists in surface detail does not exist.
 ### 2.1 Scale law (arena spec §1/§2 amendment)
 Units render at **120–140% of cell footprint** (toy-soldier oversized, Top Troops precedent);
 slight overlap between neighbours is tolerated. Playback gets the shape; punch-ins get the detail.
-Proportions stay stocky per bible §1 — heads/hands/weapons oversized enough to read small, never
-chibi-cute.
+Proportions: bible §1 mandates stocky (heads/hands/weapons oversized enough to read small, never
+chibi-cute), but whether stocky or realistic survives the Meshy pipeline better is decided by the
+§7.4 bake-off — the verdict is committed roster-wide.
 
 ### 2.2 Stance joins silhouette (bible §2 amendment)
 Each archetype's idle **stance is part of its silhouette signature** — the black-shape test is run
@@ -59,10 +60,16 @@ on the **posed idle at final combat screen size**, not on a T-pose or a zoomed v
 
 ### 2.3 Two-level identity key — current roster mapping
 Piece-within-archetype identity comes from **one head-zone cue** (heads read best at distance).
-With the image→Meshy pipeline, the enforcement point is the **reference image**: a piece's
-reference must show its stance + cue *before* it goes to `image3d`, and the generated model is
-verified at combat scale *after*. **A new piece must declare its row in this table before its
-reference image is authored** — that is the production gate.
+The identity key **splits across the pipeline** (Meshy's auto-rig wants a neutral standing
+character, so stance cannot live in the base mesh):
+
+- **Geometry cues live in the reference image** — headgear and silhouette-shaping dressing
+  (ghillie hood, greatcoat, shield bulk, pack). See §7 for the ref spec.
+- **Stance lives in the idle animation** — Meshy preset where it fits, Humanoid retarget where it
+  doesn't (§5.1 risk; Phase 0's marksman case answers it).
+
+**A new piece must declare its row in this table before its reference image is authored** — that
+is the production gate.
 
 | Piece | Archetype signature | Piece cue |
 |---|---|---|
@@ -112,16 +119,25 @@ faction read from frame trim, not from repainting the render.
 
 ## 4. Phase 0 gate extension (arena spec §8 amendment)
 
-The style spike now includes **two units of the same archetype** — conscript (soft cap) vs enlisted
-(helmet + pack) — posed side by side and judged at final combat screen size with the oversized
-scale law applied. If cap-vs-helmet cannot be told apart at battle distance, the cue system needs a
-bigger lever **before any roster work**.
+The style spike is now an **experiment, not just a look-check**. It includes the **reference-image
+bake-off** (§7.4): conscript generated from a 2×2 matrix of refs — (inked flat-cel vs neutral
+geometry) × (stocky toy-soldier vs realistic proportions) — four full Meshy chains, screenshotted
+beside the existing enlisted model (the painterly-realistic baseline) at final combat screen size
+under the oversized scale law.
 
-One spike, four judgments (consolidated from both 2026-07-14 specs):
+One spike, six judgments (consolidated from both 2026-07-14 specs):
 1. Interior ink: full pass / close-camera pass (two-tier surface) / fail.
 2. Morale ring guttering legibility at 20+ units.
-3. Within-archetype cue legibility (this spec).
+3. Within-archetype cue legibility: cap-vs-helmet at battle distance (conscript winner vs
+   enlisted). If the cue cannot be told apart, the cue system needs a bigger lever **before any
+   roster work**.
 4. Oversized-scale grid read (does 120–140% break the board?).
+5. **Ref style verdict** — where the ink lives: baked in texture (inked-cel refs), shader-only
+   (neutral refs), or both.
+6. **Proportion verdict** — stocky vs realistic, committed roster-wide.
+
+Verdicts 5–6 lock the §7 reference template. The marksman stance-coverage question (§5.1) rides
+the same spike.
 
 ## 5. Build cost summary
 
@@ -129,11 +145,11 @@ One spike, four judgments (consolidated from both 2026-07-14 specs):
 |---|---|---|
 | Archetype stance idles (Meshy anim preset per archetype, or Humanoid retarget where the preset library falls short) | Art/Anim | Medium — see §5.1 risk |
 | Head-zone cues authored into reference images (per piece) | Art (prompt/reference pass) | Small per piece |
-| Re-generation of existing models whose reference lacks stance/cue | Art (Meshy re-runs) | Per-piece, only where Phase 0 says the current model fails at scale |
+| Roster re-generation from new template refs | Art (Meshy re-runs) | Per-piece, confusion-priority order, only where Phase 0 says the current model fails at scale (§7.5) |
 | Oversized scale + overlap tolerance | Presentation | Small |
 | Icon render tool (pose/camera/frame presets, batch) | Editor tooling | Medium, one-time |
 | Portrait re-slotting (hovercard/front report/aftermath) | Presentation | Small |
-| Phase 0 second unit | Art | Small (conscript reference image + one Meshy run; enlisted GLB already exists) |
+| Phase 0 bake-off | Art | 4 ref images + 4 Meshy chains (conscript 2×2; enlisted GLB is the baseline, already exists) |
 
 ### 5.1 Known risk — stance coverage in the Meshy animation library
 The stance law (§2.2) depends on per-archetype idle poses. Meshy's preset animations cover
@@ -147,4 +163,46 @@ Phase 0 should answer this for one hard case (marksman) before the roster pass.
 - No interim sprite rework (§2.4).
 - No per-piece bespoke silhouettes beyond the cue system (two-level key was chosen over full
   piece-level uniqueness — cost scales to future factions).
-- No reopening of ADR-0002/0003.
+- No reopening of ADR-0002.
+
+## 7. Reference Image Spec — the pipeline's control surface
+
+**Root cause, stated plainly (owner, 2026-07-14):** the current painterly refs were authored as
+shop art, not geometry sources. Painterly refs hurt Meshy twice — soft edges and texture noise
+give it mushy forms to reconstruct, and baked painterly lighting fights the cel/ink shader
+afterward. The refs are the root of the readability failure; every law in this spec is ultimately
+a reference-image requirement.
+
+### 7.1 Principle
+The reference image's job is **geometry and identity, not mood**. The shader owns mood (final
+split pending §7.4). Ref style and game style are allowed to diverge. A ref that looks beautiful
+but generates a mushy model is a failed ref.
+
+### 7.2 The template — every piece ref must have
+- Single character, ¾ front view, **neutral standing pose** (rig-friendly).
+- Flat, even lighting; solid clean background; no atmosphere, no ground shadow, no painterly
+  softness.
+- **Hard part boundaries** — armor vs cloth vs weapon separations Meshy can reconstruct.
+- The piece's **cue and archetype dressing at silhouette-affecting size** (§2.3).
+- Proportions and style keywords per the §7.4 verdicts, then locked as template defaults.
+
+### 7.3 Pre-Meshy gate — black-shape the ref itself
+Before a ref spends a Meshy chain: threshold to flat black, shrink to combat size (~40px), check
+archetype + cue still read. A failed ref costs a re-prompt; a failure discovered after
+generate→remesh→rig→animate costs the whole chain plus cleanup. Cheapest-point enforcement of the
+silhouette law.
+
+### 7.4 Phase 0 bake-off (see §4)
+Conscript ×4: (inked flat-cel | neutral geometry) × (stocky | realistic), full chain each, judged
+through the ink shader at combat scale beside the enlisted baseline. Outputs: ref style verdict
+(where the ink lives) and proportion verdict. Both lock the template.
+
+### 7.5 Rollout
+After the template locks, regenerate the roster in **confusion-priority order**: most-confused
+pairs first (the conscript/enlisted/bulwark rifle cluster), silhouette-unique pieces (mortars,
+vehicles, structures) last — and only where the Phase 0 scale check says the existing model
+actually fails.
+
+### 7.6 Storage
+Refs are a per-piece artifact: `tools/meshy/units/<piece>/ref.png` beside the GLBs. The painterly
+portraits are unaffected (§3.2) — refs are a new artifact class, not a replacement.
