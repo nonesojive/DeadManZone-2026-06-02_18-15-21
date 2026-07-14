@@ -1,6 +1,23 @@
 # DeadManZone
 
-Unity 6 demo: 10-fight gauntlet, 3 playable factions (IronMarch Union, Dust Scourge, Cartel of Echoes), tick-based combat with tactics, synergies, salvage, achievements, and local leaderboards. See [README.md](README.md) and [docs/demo-guide.md](docs/demo-guide.md) for player-facing details.
+Unity 6 run-based tactics autobattler. You build an army across two spatial boards (Combat + HQ),
+choose one of three fronts, and the fight auto-resolves on a deterministic tick sim with a few
+tactical pauses. **Dread** is the run clock (earned only by winning); at its thresholds you fight a
+**Boss**. Beat 3 bosses to win; run out of **Manpower** and the run is over.
+**One playable faction** (IronMarch Union); the others are enemy pools.
+
+## Design source of truth
+
+**[`docs/GDD.md`](docs/GDD.md) is authoritative.** It is verified against `Core/` and cites the file
+for every number. **Read it before designing or changing any rule, and update it in the same commit
+as the rule change.**
+
+Everything in **`docs/archive/`** (including the three old GDDs and all `superpowers/` plans+specs)
+is **SUPERSEDED** and stamped as such — it describes systems that no longer exist (Morale as a run
+resource, Gold, 8×2 reserves, 6 shop slots, a fixed 10-fight gauntlet, 3 playable factions). It kept
+getting picked up as if current. **Do not design from it.**
+
+Still authoritative: `docs/adr/` (architecture decisions) and `docs/art/style-bible/` (art direction).
 
 ## Architecture
 
