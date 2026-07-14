@@ -62,7 +62,9 @@ The side-color base ring carries morale as **physical integrity, not color**:
 ### 2.2 The break — grammatically opposite exits
 - **Death** (specced already): dissolve **in place**.
 - **Rout** (new): weapon drops, unit turns and **flees toward its own board edge**, ring gutters
-  out mid-flight. One retargeted flee clip covers the shared-rig infantry roster.
+  out mid-flight. With the Meshy character pipeline (see sibling unit-art spec), each rigged unit
+  already has a free walk/run preset — the flee read comes from *direction + speed + ring gutter*,
+  not a bespoke clip.
 - Acceptance: at full battle distance, silhouette motion alone tells you which economy fired.
 - Individual breaks are ambient. A **cascade — 3+ breaks within ~2s — earns one punch-in**, under
   existing discipline (one active, ~2s spacing, disabled in fast-forward).
@@ -162,7 +164,7 @@ The pause order UI must not display a broken order — fix the zone bug or hide 
 | Item | Layer | Cost |
 |---|---|---|
 | Ring morale states | Presentation (shader states) | Small |
-| Flee clip + rout exit | Presentation (1 retargeted clip) | Small |
+| Rout exit (run preset + direction + ring gutter) | Presentation | Small |
 | Cascade punch-in trigger | Presentation (punch-in director) | Tiny |
 | Pause register (grid, bars, grade, radius hover) | Presentation | Medium |
 | Aftermath Died/Fled split | Presentation (report styling) | Tiny |
@@ -176,6 +178,6 @@ The pause order UI must not display a broken order — fix the zone bug or hide 
 ## 8. Sequencing note
 
 §2 and §5 ride the existing arena-spec Phase 0/3 roadmap (the ring is side-channel shader work =
-Phase 1; flee clip = Phase 2; cascade punch-in = Phase 3). §3 is independent of the 3D combat work
+Phase 1; rout exit = Phase 2; cascade punch-in = Phase 3). §3 is independent of the 3D combat work
 and can proceed immediately against the live ShopV2 surface. §6.1 should land before §3.2/§3.3, so
 the counts the UI displays are the corrected ones.

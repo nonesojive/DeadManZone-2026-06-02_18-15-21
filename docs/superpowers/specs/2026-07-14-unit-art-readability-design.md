@@ -5,8 +5,13 @@
 unit art specifically)
 **Amends:** `docs/art/style-bible/00-style-bible.md` (§2), `docs/art/style-bible/50-combat-arena-spec.md`
 (§1 board scale, §4 mesh sourcing, §8 Phase 0)
-**Reconfirms:** ADR-0002 (cel-shaded 3D + ink) and ADR-0003 (kitbash backbone + AI heroes) — the 3D
-move stands; this spec defines the differentiation requirements those models must hit.
+**Reconfirms:** ADR-0002 (cel-shaded 3D + ink) — the 3D move stands; this spec defines the
+differentiation requirements the models must hit.
+**Corrects:** ADR-0003 (kitbash backbone) is **superseded by practice** — the roster is produced by
+the character pipeline: reference image → Meshy image3d @12k → remesh → rig → animate
+(`docs/meshy-roster-jobs-2026-07-11.md`; ten roster GLBs already live in
+`Assets/_Project/Combat3D/Models/`). **Companion item: write the superseding ADR** so the ADR layer
+stops describing a pipeline that no longer exists.
 
 ## 0. The problem, diagnosed from the live assets
 
@@ -54,8 +59,10 @@ on the **posed idle at final combat screen size**, not on a T-pose or a zoomed v
 
 ### 2.3 Two-level identity key — current roster mapping
 Piece-within-archetype identity comes from **one head-zone cue** (heads read best at distance).
-**A new piece must declare its row in this table before modeling starts** — that is the production
-gate.
+With the image→Meshy pipeline, the enforcement point is the **reference image**: a piece's
+reference must show its stance + cue *before* it goes to `image3d`, and the generated model is
+verified at combat scale *after*. **A new piece must declare its row in this table before its
+reference image is authored** — that is the production gate.
 
 | Piece | Archetype signature | Piece cue |
 |---|---|---|
@@ -120,12 +127,20 @@ One spike, four judgments (consolidated from both 2026-07-14 specs):
 
 | Item | Layer | Cost |
 |---|---|---|
-| Stance-posed idle set (per archetype, retargeted) | Art/Anim | Rides existing Phase 2 plan |
-| Head-zone kitbash cues (per piece) | Art | Small per piece (kitbash parts) |
+| Archetype stance idles (Meshy anim preset per archetype, or Humanoid retarget where the preset library falls short) | Art/Anim | Medium — see §5.1 risk |
+| Head-zone cues authored into reference images (per piece) | Art (prompt/reference pass) | Small per piece |
+| Re-generation of existing models whose reference lacks stance/cue | Art (Meshy re-runs) | Per-piece, only where Phase 0 says the current model fails at scale |
 | Oversized scale + overlap tolerance | Presentation | Small |
 | Icon render tool (pose/camera/frame presets, batch) | Editor tooling | Medium, one-time |
 | Portrait re-slotting (hovercard/front report/aftermath) | Presentation | Small |
-| Phase 0 second unit | Art | Small (one kitbash variant) |
+| Phase 0 second unit | Art | Small (conscript reference image + one Meshy run; enlisted GLB already exists) |
+
+### 5.1 Known risk — stance coverage in the Meshy animation library
+The stance law (§2.2) depends on per-archetype idle poses. Meshy's preset animations cover
+idle/walk/die (and its shoot presets are known-unusable — bow-and-arrow, per the 2026-07-11 job
+notes). If the preset library cannot deliver a kneeling-brace idle (marksman) or low-crew idle
+(mortars), those archetypes need Unity Humanoid retargeting of external clips onto the Meshy rigs.
+Phase 0 should answer this for one hard case (marksman) before the roster pass.
 
 ## 6. Explicit non-goals
 
