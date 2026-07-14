@@ -13,6 +13,7 @@ Shader "DMZ/CombatRingFill"
         _RimColor ("Rim Color", Color) = (0.28, 0.40, 0.60, 1)
         _EmptyColor ("Drained Color", Color) = (0.09, 0.10, 0.12, 1)
         _Fill ("Health Fill", Range(0, 1)) = 1
+        _Gutter ("Morale Gutter (0 solid - 1 breaking)", Range(0, 1)) = 0
         _DiscRadius ("Disc Radius (UV)", Range(0.1, 0.5)) = 0.40
         _RimInnerRadius ("Rim Inner Radius (UV)", Range(0.1, 0.5)) = 0.435
         _RimOuterRadius ("Rim Outer Radius (UV)", Range(0.1, 0.5)) = 0.48
@@ -38,6 +39,7 @@ Shader "DMZ/CombatRingFill"
                 float4 _RimColor;
                 float4 _EmptyColor;
                 float _Fill;
+                float _Gutter;
                 float _DiscRadius;
                 float _RimInnerRadius;
                 float _RimOuterRadius;
@@ -61,8 +63,24 @@ Shader "DMZ/CombatRingFill"
                 clip(_RimOuterRadius - r); // circular silhouette out of a quad
 
                 // Always-on outer rim: side identity survives at any HP.
+                // Morale gutter: as _Gutter rises the rim notches and flickers like a dying
+                // flame — angular noise gates rim pixels, animated by _Time. Achromatic on
+                // purpose: shape/flicker only, hue untouched (audit spec 2026-07-14 section 2.1).
                 if (r >= _RimInnerRadius)
+                {
+                    if (_Gutter > 0.001)
+                    {
+                        float ang = atan2(d.y, d.x);
+                        // Two beat frequencies so the flicker doesn't read as a smooth rotation.
+                        // n is in [-1,1], density peaked near 0 (product of sines).
+                        float n = sin(ang * 9.0 + _Time.y * 14.0) * sin(ang * 23.0 - _Time.y * 31.0);
+                        // Threshold slides -1 -> 0.2 with _Gutter: gates nothing when healthy,
+                        // sputters roughly 60% of the rim off when breaking. Tune 1.2 in review.
+                        if (n < _Gutter * 1.2 - 1.0)
+                            return half4(_EmptyColor.rgb, 1);
+                    }
                     return half4(_RimColor.rgb, 1);
+                }
 
                 // Thin dark separator so the rim still reads against a full disc.
                 if (r >= _DiscRadius)
