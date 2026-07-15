@@ -1,9 +1,8 @@
-# Phase 0 Style-Spike Verdicts — DRAFT (owner ruling pending)
+# Phase 0 Style-Spike Verdicts — FINAL (owner-ruled)
 
-> **DRAFT.** These are agent judgments with evidence citations, produced 2026-07-14 from
-> `Assets/_Project/Scenes/StyleSpike_Phase0.unity`. The six verdicts are OWNER calls; no
-> spec has been updated. Evidence captures live in `Screenshots/phase0/` (untracked by
-> convention).
+> **FINAL.** Owner verdicts locked 2026-07-14 from `Assets/_Project/Scenes/StyleSpike_Phase0.unity`.
+> Evidence captures live in `Screenshots/phase0/` (untracked by convention). Spec amendments
+> marked **(Phase 0 verdict, 2026-07-14)** in the sibling design docs.
 
 ## Capture setup
 
@@ -45,65 +44,85 @@ judgment-only.
 | `crowd_gutter_play_1.png` / `crowd_gutter_play_2.png` | Play mode, ~2s apart — flicker check |
 | `blackshape_sim.png` | Five lineup silhouettes at real rendered scale (diff vs `battle_distance_bgplate2.png`, built by `make_blackshape.py`) |
 
-## Draft verdicts
+## Owner verdicts
 
-### 1. Interior ink
+### 1. Interior ink — **CLOSE-CAMERA PASS (two-tier surface)**
 
-**DRAFT: PASS at punch-in, COLLAPSES at battle distance.** At punch-in the cel textures
-read as inked illustration — cel_stocky has clear browline/crease linework and flat color
-planes, cel_real reads painted-with-line; both neutrals read as soft matte CG with no ink
-language (`closeup_cel_stocky` / `closeup_cel_real` vs `closeup_neutral_stocky` /
-`closeup_neutral_real`). At battle distance the interior ink is sub-pixel: cel vs neutral is
-barely distinguishable and the look is carried by the outline pass and value grouping, not
-interior line (`battle_distance.png`). Implication: interior ink is a closeup/UI-card
-asset, not a battlefield differentiator.
+**Evidence:** At punch-in the cel textures read as inked illustration — cel_stocky has clear
+browline/crease linework and flat color planes, cel_real reads painted-with-line; both neutrals
+read as soft matte CG with no ink language (`closeup_cel_stocky.png`, `closeup_cel_real.png`
+vs `closeup_neutral_stocky.png`, `closeup_neutral_real.png`). At battle distance the interior
+ink is sub-pixel: cel vs neutral is barely distinguishable and the look is carried by the
+outline pass and value grouping, not interior line (`battle_distance.png`).
 
-### 2. Morale ring gutter legibility at 24 units
+**Owner ruling:** **Close-camera pass** — adopt the two-tier surface from the art-direction
+spec §5 outcome 2. Interior ink lives on cards, portraits, and punch-ins; battlefield models
+carry exterior outline + 2–3 band cel only. Not a failure; the DD skin is delivered at the
+distances the eye can receive it.
 
-**DRAFT: PASS with one tuning flag.** Rows 0.7 and 1.0 are clearly broken/sputtering and
-read at a glance; row 0.35 IS distinguishable from the solid row 1 but only on inspection —
-it is too subtle for peripheral reading at crowd scale (`crowd_gutter.png`). Flicker
-animates: play captures ~2s apart differ by 13,257 px (>30 channel-sum) concentrated on
-rows 2–4 rims — `_Time` animation confirmed (`crowd_gutter_play_1/2.png`). Consider
-steepening the low end of the `_Gutter * 1.2 - 1.0` threshold curve so 0.35 notches earlier.
+### 2. Morale ring gutter legibility at 24 units — **PASS AS-IS**
 
-### 3. Within-archetype cue (cap vs helmet+pack) at battle distance
+**Evidence:** Rows 0.7 and 1.0 are clearly broken/sputtering and read at a glance; row 0.35
+IS distinguishable from the solid row 1 but only on inspection — it is too subtle for
+peripheral reading at crowd scale (`crowd_gutter.png`). Flicker animates: play captures ~2s
+apart differ by 13,257 px (>30 channel-sum) concentrated on rows 2–4 rims — `_Time`
+animation confirmed (`crowd_gutter_play_1.png`, `crowd_gutter_play_2.png`).
 
-**DRAFT: MARGINAL.** In `blackshape_sim.png` the enlisted baseline (leftmost) reads bulkier
-through torso mass (pack) than the four conscripts, but the headgear itself does not
-resolve: cap brim vs helmet dome is not legible at ~60 px silhouette height. The
-differentiating signal is body mass, not the intended headgear cue. Pose variance from
-idle-sampling contaminates this comparison — recommend the owner confirm on matched poses
-before ruling; if it holds, the within-archetype cue needs a bigger silhouette element than
-headgear.
+**Owner ruling:** **Pass as-is.** The subtle shaken band (0.35) is acceptable; do not steepen
+the gutter threshold curve. Guttering reads at 20+ units without becoming screen noise.
 
-### 4. Oversized scale (1.3×CELL)
+### 3. Within-archetype cue (cap vs helmet+pack) at battle distance — **UPGRADE (body-mass cue rule)**
 
-**DRAFT: PASS for bodies, WATCH the rings.** In the 24-unit crowd the grid stays readable —
-each unit is traceable to its ring and rows/columns hold (`crowd_gutter.png`). But the ring
-quads (1.98 scale ≈ 1.9-unit rim outer diameter) overlap at 1.8-unit crowd spacing: rims
-kiss and cut into neighbors, which is where the "bad overlap" lives — not in the bodies.
-A-pose arms cross neighbor cells but posed units at battle distance don't visually collide
-(`battle_distance.png`). If crowd spacing is representative of real board density, shrink
-rim outer radius or ring scale.
+**Evidence:** In `blackshape_sim.png` the enlisted baseline (leftmost) reads bulkier through
+torso mass (pack) than the four conscripts, but the headgear itself does not resolve: cap brim
+vs helmet dome is not legible at ~60 px silhouette height. The differentiating signal is body
+mass, not the intended headgear cue. Pose variance from idle-sampling contaminates this
+comparison.
 
-### 5. Ref style column: cel vs neutral
+**Owner ruling:** **Upgrade the cue system.** Piece cues must alter **body-level silhouette
+mass** (pack, cape, armor bulk). Headgear alone is a punch-in/icon cue only — not sufficient
+at battle distance. Amend unit-art spec §2.3 accordingly; enlisted vs conscript
+differentiation must be authored through pack/bulk geometry, not helmet-vs-cap head-zone detail.
 
-**DRAFT: CEL wins on both axes.** Geometry: cel_stocky and cel_real came back as clean
-single figures; neutral_stocky shipped with a cluster of extra rifles fused beside the
-figure (Meshy junk geometry, visible in `closeup_neutral_stocky.png` and photobombing
-`closeup_neutral_real.png`). Final look through `DMZ/UnitCelInk`: the cel textures' baked
-line + flat planes cooperate with the shader (reads stylized at punch-in), while the neutral
-textures' soft gradients read as generic CG through the same shader — the shader does not
-stylize them by itself (`closeup_cel_*` vs `closeup_neutral_*`).
+### 4. Oversized scale (1.3×CELL) — **PASS with ring shrink**
 
-### 6. Proportions: stocky vs realistic at battle distance
+**Evidence:** In the 24-unit crowd the grid stays readable — each unit is traceable to its ring
+and rows/columns hold (`crowd_gutter.png`). But the ring quads (1.98 scale ≈ 1.9-unit rim
+outer diameter) overlap at 1.8-unit crowd spacing: rims kiss and cut into neighbors, which is
+where the "bad overlap" lives — not in the bodies. A-pose arms cross neighbor cells but posed
+units at battle distance don't visually collide (`battle_distance.png`).
 
-**DRAFT: STOCKY.** At battle distance the stocky variants hold chunkier, more solid masses
-with larger head reads; realistic proportions go spindly — thin limbs start to break up
-into noise at rendered scale (`battle_distance.png`, silhouette solidity in
-`blackshape_sim.png`: stocky tiles ~1.72k silhouette px vs ~1.4k for realistic at equal
-height). Stocky also matches the tabletop-miniature framing of the ring bases.
+**Owner ruling:** **Pass the 1.3× unit height.** Shrink ring outer diameter to ~**0.9×CELL**
+so rims don't touch at 1-cell spacing. Bodies and grid read are good; only the ring scale
+needs implementation.
+
+### 5. Ref style column: cel vs neutral — **INCONCLUSIVE → RERUN**
+
+**Evidence:** Geometry: cel_stocky and cel_real came back as clean single figures;
+neutral_stocky shipped with a cluster of extra rifles fused beside the figure (Meshy junk
+geometry, visible in `closeup_neutral_stocky.png` and photobombing `closeup_neutral_real.png`).
+Final look through `DMZ/UnitCelInk`: the cel textures' baked line + flat planes cooperate with
+the shader (reads stylized at punch-in), while the neutral textures' soft gradients read as
+generic CG through the same shader — the shader does not stylize them by itself
+(`closeup_cel_*.png` vs `closeup_neutral_*.png`).
+
+**Owner ruling:** **Inconclusive — do not lock cel yet.** A focused cel rerun is queued (see
+follow-up queue). The neutral column was contaminated by Meshy junk geometry; the cel column
+showed promise but the bake-off matrix was not decisive enough to commit template defaults.
+§7.2 template defaults remain **TBD pending rerun**.
+
+### 6. Proportions: stocky vs realistic at battle distance — **MID-STOCKY (pending rerun confirmation)**
+
+**Evidence:** At battle distance the stocky variants hold chunkier, more solid masses with
+larger head reads; realistic proportions go spindly — thin limbs start to break up into noise
+at rendered scale (`battle_distance.png`, silhouette solidity in `blackshape_sim.png`: stocky
+tiles ~1.72k silhouette px vs ~1.4k for realistic at equal height). Stocky also matches the
+tabletop-miniature framing of the ring bases.
+
+**Owner ruling:** **Mid-stocky** — between current stocky (~4.5 head-heights) and realistic.
+Target **~5 head-heights**, slightly oversized head/hands but not full toy-soldier chunk.
+Commit roster-wide once the focused rerun confirms. Do not lock full stocky or realistic until
+then.
 
 ## Tuning notes / issues found while capturing
 
@@ -113,12 +132,19 @@ height). Stocky also matches the tabletop-miniature framing of the ring bases.
   out all-solid). For these captures the MPBs were reapplied (0 / 0.35 / 0.7 / 1.0 by row) in
   edit mode and again inside play mode. Real gameplay needs a runtime driver setting `_Gutter`
   per unit via MPB (matches the shader's stated design); the material assets alone will not do it.
-- Gutter threshold constant `1.2` (`CombatRingFill.shader` line 79): fine at 0.7/1.0, too
-  shy at 0.35 — see verdict 2.
 - **Enlisted rifleman material artifact:** the enlisted_baseline model shows saturated blue
   patches on pack/helmet submeshes at grazing angles (`closeup_cel_stocky.png` right figure,
   also visible in crowd shots) — looks like a submesh missing its albedo binding on the
-  UnitCelInk material rather than a shader fault. Worth a fix before any final art call
-  that involves the enlisted model.
+  UnitCelInk material rather than a shader fault. Fix before any final art call involving the
+  enlisted model.
 - Positioned-capture FOV caveat (see Capture setup) applies to any framing-sensitive
   re-review.
+
+## Phase 0 follow-up queue
+
+| # | Item | Owner verdict driver | Notes |
+|---|---|---|---|
+| a | **Focused cel rerun matrix** | Verdict 5 inconclusive | Re-run conscript 2×2 bake-off with clean neutral refs (no junk geometry); judge ink-at-combat-scale before locking §7.2 template defaults. Sibling worker owns execution. |
+| b | **Ring diameter shrink implementation** | Verdict 4 pass-with-shrink | Shrink ring outer diameter to ~0.9×CELL; keep 1.3× unit body height. Presentation-layer shader/ring prefab change. |
+| c | **Enlisted baseline blue-patch material fix** | Capture tuning note | Submesh albedo binding on enlisted_baseline pack/helmet — saturated blue at grazing angles (`closeup_cel_stocky.png`). |
+| d | **Gutter runtime driver for `_Gutter`** | Capture tuning note | Material assets on disk have `_Gutter=0`; gameplay must set per-unit `_Gutter` via MPB at runtime. Matches shader design intent. |

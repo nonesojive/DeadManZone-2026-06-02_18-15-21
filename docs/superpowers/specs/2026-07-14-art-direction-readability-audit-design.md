@@ -82,6 +82,13 @@ ash-neutral) — the routing-saves-lives economy is taught after every fight.
 Guttering must read at 20+ units without becoming screen noise → judged in the same Phase 0
 screenshot review as the ink (§5). One spike, two verdicts.
 
+**(Phase 0 verdict, 2026-07-14): PASS AS-IS.** Guttering reads at 24 units without screen
+noise (`Screenshots/phase0/crowd_gutter.png`). Rows 0.7/1.0 break clearly; row 0.35 (shaken)
+is subtle but acceptable — no threshold-curve steepening. Flicker animation confirmed
+(`crowd_gutter_play_1.png`, `crowd_gutter_play_2.png`). **Ring shrink note:** oversized unit
+bodies pass at 1.3×CELL, but ring outer diameter must shrink to ~0.9×CELL so rims don't kiss
+at 1-cell spacing (`crowd_gutter.png`); see `2026-07-phase0-verdicts.md` verdict 4.
+
 ## 3. Build-phase threshold legibility *(new — amends bible §6)*
 
 **Law:** the Build screen gets the same art-direction rigor as the arena. Acceptance test, parallel
@@ -145,6 +152,14 @@ explicit outcomes:
 3. **Fail** — generic toon at every distance → revisit ADR-0002 before roster work (as specced).
 
 The same review judges §2.5 (guttering-ring legibility).
+
+**(Phase 0 verdict, 2026-07-14): CLOSE-CAMERA PASS (two-tier surface).** Interior ink reads
+as inked illustration at punch-in (`Screenshots/phase0/closeup_cel_stocky.png`,
+`closeup_cel_real.png`) but collapses to sub-pixel at battle distance (`battle_distance.png`)
+— the look is carried by outline pass and value grouping, not interior line. **Owner ruling:**
+adopt outcome 2 above. Interior ink lives on shop cards, hovercards, portraits, and punch-ins;
+battlefield models carry exterior outline + 2–3 band cel only. A legal outcome, not a failure.
+Full evidence and owner call: `2026-07-phase0-verdicts.md` verdict 1.
 
 ## 6. Companion items — NOT art, flagged during this audit
 

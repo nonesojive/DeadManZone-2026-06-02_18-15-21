@@ -43,6 +43,12 @@ Proportions: bible §1 mandates stocky (heads/hands/weapons oversized enough to 
 chibi-cute), but whether stocky or realistic survives the Meshy pipeline better is decided by the
 §7.4 bake-off — the verdict is committed roster-wide.
 
+**(Phase 0 verdict, 2026-07-14): MID-STOCKY, pending rerun confirmation.** Target ~5
+head-heights — between current stocky (~4.5) and realistic. Slightly oversized head/hands but
+not full toy-soldier chunk (`Screenshots/phase0/battle_distance.png`, `blackshape_sim.png`).
+Commit roster-wide once the focused cel rerun confirms. Do not lock full stocky or realistic
+until then.
+
 ### 2.2 Stance joins silhouette (bible §2 amendment)
 Each archetype's idle **stance is part of its silhouette signature** — the black-shape test is run
 on the **posed idle at final combat screen size**, not on a T-pose or a zoomed view:
@@ -59,12 +65,15 @@ on the **posed idle at final combat screen size**, not on a T-pose or a zoomed v
 | Structure | Rigid, architectural, taller than any unit |
 
 ### 2.3 Two-level identity key — current roster mapping
-Piece-within-archetype identity comes from **one head-zone cue** (heads read best at distance).
-The identity key **splits across the pipeline** (Meshy's auto-rig wants a neutral standing
-character, so stance cannot live in the base mesh):
+**(Phase 0 verdict, 2026-07-14): UPGRADED — body-mass cue rule.** Piece-within-archetype
+identity at battle distance comes from **body-level silhouette mass** (pack, cape, armor bulk).
+Headgear alone does not resolve at ~60 px silhouette height (`Screenshots/phase0/blackshape_sim.png`)
+— it is a punch-in/icon cue only. The identity key **splits across the pipeline** (Meshy's
+auto-rig wants a neutral standing character, so stance cannot live in the base mesh):
 
-- **Geometry cues live in the reference image** — headgear and silhouette-shaping dressing
-  (ghillie hood, greatcoat, shield bulk, pack). See §7 for the ref spec.
+- **Geometry cues live in the reference image** — silhouette-shaping dressing at **body mass**
+  (pack bulk, greatcoat mass, shield-plate shoulders, ghillie hood volume). Headgear is
+  secondary — legible at punch-in/card size, not at battle distance. See §7 for the ref spec.
 - **Stance lives in the idle animation** — Meshy preset where it fits, Humanoid retarget where it
   doesn't (§5.1 risk; Phase 0's marksman case answers it).
 
@@ -73,8 +82,8 @@ is the production gate.
 
 | Piece | Archetype signature | Piece cue |
 |---|---|---|
-| conscript_rifleman | rifle, upright | soft cap, no pack |
-| enlisted_rifleman | rifle, upright | steel helmet + full pack |
+| conscript_rifleman | rifle, upright | no pack (lean torso mass) |
+| enlisted_rifleman | rifle, upright | full pack bulk (headgear = punch-in only) |
 | bulwark_squad | assault lean, multi-body | shield-plate bulk at shoulders |
 | ironclad_marksman | kneel, longest gun | ghillie hood |
 | ironclad_mortars | low crew + tube | — (silhouette unique) |
@@ -128,9 +137,9 @@ under the oversized scale law.
 One spike, six judgments (consolidated from both 2026-07-14 specs):
 1. Interior ink: full pass / close-camera pass (two-tier surface) / fail.
 2. Morale ring guttering legibility at 20+ units.
-3. Within-archetype cue legibility: cap-vs-helmet at battle distance (conscript winner vs
-   enlisted). If the cue cannot be told apart, the cue system needs a bigger lever **before any
-   roster work**.
+3. Within-archetype cue legibility: body-mass differentiation at battle distance (conscript
+   lean torso vs enlisted pack bulk). If the cue cannot be told apart, the cue system needs a
+   bigger lever **before any roster work**.
 4. Oversized-scale grid read (does 120–140% break the board?).
 5. **Ref style verdict** — where the ink lives: baked in texture (inked-cel refs), shader-only
    (neutral refs), or both.
@@ -138,6 +147,19 @@ One spike, six judgments (consolidated from both 2026-07-14 specs):
 
 Verdicts 5–6 lock the §7 reference template. The marksman stance-coverage question (§5.1) rides
 the same spike.
+
+**(Phase 0 verdict, 2026-07-14) — judgments locked:**
+
+| # | Judgment | Owner verdict | Evidence |
+|---|---|---|---|
+| 1 | Interior ink | **Close-camera pass** (two-tier surface) | `closeup_cel_*.png` vs `battle_distance.png` |
+| 2 | Morale guttering | **Pass as-is** (0.35 subtle OK) | `crowd_gutter.png`, `crowd_gutter_play_*.png` |
+| 3 | Within-archetype cue | **Upgrade** — body-mass cue rule | `blackshape_sim.png` |
+| 4 | Oversized scale | **Pass** — ring shrink to ~0.9×CELL | `crowd_gutter.png`, `battle_distance.png` |
+| 5 | Ref style | **Inconclusive → rerun** (do not lock cel) | `closeup_cel_*` vs `closeup_neutral_*` |
+| 6 | Proportions | **Mid-stocky** (~5 head-heights, pending rerun) | `battle_distance.png`, `blackshape_sim.png` |
+
+Full owner calls and follow-up queue: `2026-07-phase0-verdicts.md`.
 
 ## 5. Build cost summary
 
@@ -186,6 +208,12 @@ but generates a mushy model is a failed ref.
 - The piece's **cue and archetype dressing at silhouette-affecting size** (§2.3).
 - Proportions and style keywords per the §7.4 verdicts, then locked as template defaults.
 
+**(Phase 0 verdict, 2026-07-14): TBD pending rerun.** Ref style (inked flat-cel vs neutral
+geometry) and proportion keywords are **not cel-locked** — verdict 5 was inconclusive due to
+neutral-column Meshy junk geometry. Template defaults lock after the focused cel rerun matrix
+(see `2026-07-phase0-verdicts.md` follow-up queue item a). Provisional proportion target:
+mid-stocky (~5 head-heights).
+
 ### 7.3 Pre-Meshy gate — black-shape the ref itself
 Before a ref spends a Meshy chain: threshold to flat black, shrink to combat size (~40px), check
 archetype + cue still read. A failed ref costs a re-prompt; a failure discovered after
@@ -196,6 +224,10 @@ silhouette law.
 Conscript ×4: (inked flat-cel | neutral geometry) × (stocky | realistic), full chain each, judged
 through the ink shader at combat scale beside the enlisted baseline. Outputs: ref style verdict
 (where the ink lives) and proportion verdict. Both lock the template.
+
+**(Phase 0 verdict, 2026-07-14): INCONCLUSIVE on ref style; MID-STOCKY provisional on
+proportions.** Ref style verdict deferred — focused cel rerun queued. Proportion target
+mid-stocky (~5 head-heights), roster-wide commit pending rerun confirmation.
 
 ### 7.5 Rollout
 After the template locks, regenerate the roster in **confusion-priority order**: most-confused
