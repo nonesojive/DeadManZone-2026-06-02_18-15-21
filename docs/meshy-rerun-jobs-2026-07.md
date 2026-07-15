@@ -21,10 +21,12 @@ Shared ref prompt base: WW1 grimdark conscript, soft field cap (no helmet), no b
 
 | Variant | image3d task id | remesh | rig | anim idle | anim die |
 |---|---|---|---|---|---|
-| cel_mid | 019f6331-e7bd-717e-a4e8-cb68fcadd3fe ⏳ | | | | |
-| cel_stocky_v2 | 019f6331-eb83-7e1b-b39e-86502aa3d89a ⏳ | | | | |
-| cel_real_v2 | 019f6331-e498-7e1a-a8d2-a375906b00f3 ⏳ | | | | |
+| cel_mid | 019f6331-e7bd-717e-a4e8-cb68fcadd3fe ✅ | 019f6334-6df1-7d25-bbdb-b47e6295c5ee ✅ | 019f6335-d7e5-7675-bad7-daaf5a0aaced ✅ | 019f6336-6f92-7eb8-a4f7-fee966648acb ✅ | 019f6336-7279-7d9e-81be-0935268a77ed ✅ |
+| cel_stocky_v2 | 019f6331-eb83-7e1b-b39e-86502aa3d89a ✅ | 019f6336-c5a4-7ec0-8daa-f30288f3506f ✅ | 019f6338-3155-72d7-ba9b-67413a50f2a1 ✅ | 019f6338-c98c-76f7-938f-2293e4404f1c ✅ | 019f6338-cc6c-72ed-ab12-3ce68d8ba64d ✅ |
+| cel_real_v2 | 019f6331-e498-7e1a-a8d2-a375906b00f3 ✅ | 019f6339-1cb3-72fa-a358-27b14b38a085 ✅ | 019f633a-869f-7747-8a08-a087883bd5a6 ✅ | 019f633b-1dac-7f90-9722-ce62ee381d76 ✅ | 019f633b-2091-737f-83ef-67469657c5bb ✅ |
 
-Queued 2026-07-14 ~20:35 ET. Chains walking via `tools/meshy/walk_rerun_chains.ps1`.
+**All 15 jobs complete 2026-07-14 (~20:44 ET), zero failures.** GLBs downloaded to `tools/meshy/units/conscript_rifleman/rerun/<variant>/{idle,walk,die}.glb` (gitignored spike output — not force-added).
+
+Walker script: `tools/meshy/walk_rerun_chains.ps1`; log: `tools/meshy/walk_rerun_chains.log`.
 
 Gotchas (from spike run): texture color varies per gen; do NOT blunt-decimate in Blender; Meshy shoot anims unusable.
