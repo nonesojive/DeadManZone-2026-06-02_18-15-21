@@ -30,12 +30,11 @@ Punch-in discipline: max one active at a time; skip if another fired within ~2s 
 
 ## 3. Side channel (always-on allegiance read)
 
-Per CONTEXT.md: faction ≠ side, Neutral units fight for anyone, mirror matches exist. Two redundant channels, neither touching the model's interior:
+Per CONTEXT.md: faction ≠ side, Neutral units fight for anyone, mirror matches exist. Side allegiance reads via the base ring only — exterior outlines stay pure black (arena spec §4, §6):
 
-1. **Outline tint** — the ink outline pass (§6) shifts toward side color: player cool blue, enemy warm red.
-2. **Base ring** — tinted disc/ring under the feet (replaces/absorbs the blob shadow).
+1. **Base ring** — tinted disc/ring under the feet (replaces/absorbs the blob shadow): player cool blue, enemy warm red.
 
-Blue and red at these saturations are reserved battlefield-wide (game bible §3). Full-model side tint is rejected — it would destroy the DD surface and collide with faction accents.
+Blue and red at these saturations are reserved battlefield-wide (game bible §3). Full-model side tint is rejected — it would destroy the DD surface and collide with faction accents. **Outline side-tint is SCRAPPED (owner ruling 2026-07-14).**
 
 ## 4. Unit rendering pipeline (ADR-0002/0003)
 
@@ -52,7 +51,7 @@ Blue and red at these saturations are reserved battlefield-wide (game bible §3)
 **The uber-shader (URP, one shader for all units/buildings)**
 Requirements, in priority order:
 1. Cel/toon ramp (2–3 hard bands, no smooth falloff).
-2. **Ink outline pass** — dark exterior outline, thickness scaled by screen size; accepts side-color tint parameter (§3).
+2. **Ink outline pass** — dark exterior outline (pure black ink, no side tint), thickness scaled by screen size.
 3. **Interior ink** — material-boundary dark edges (texture-authored line work and/or edge-detect term), with varied stroke weight. This is the "reads as inked illustration, not toon" make-or-break (Phase 0).
 4. Status body-pipeline hooks: hit flash, damage desaturation, burn/gas/freeze material overlays, stealth dissolve — all as shader states driven per-instance (`MaterialPropertyBlock`), replacing the old C# sprite-flash approach.
 5. Faction accent as a masked emission/tint channel (one mask texture slot; accents are authored into masks, so palette changes never require re-texturing).
@@ -91,7 +90,7 @@ Cost per theme: ground material + skybox/backdrop + one prop set. Escalation acr
 ## 8. Build roadmap (agreed 2026-07-10)
 
 - **Phase 0 — kill/keep gate (style spike).** ONE kitbashed unit + uber-shader ink look + grade, screenshotted in the §1 camera against a graybox board. Pass = "inked illustration"; fail = "generic toon" → revisit ADR-0002 before any roster work. Nothing else starts until this gate is judged.
-- **Phase 1 — stage.** Perspective camera rig + graybox board with placement/combat grid states + side-channel shader (outline tint + base ring; shares code with the ink outline).
+- **Phase 1 — stage.** Perspective camera rig + graybox board with placement/combat grid states + side-channel shader (base ring; ink outline stays black).
 - **Phase 2 — backbone.** Base body family, one rig, retargeted anim set, four archetypes (rifle, marksman, mortar crew, assault) fighting in the arena.
 - **Phase 3 — feedback.** Two-pipeline status system + punch-in director + VFX saturation pass.
 - **Phase 4 — themes.** Three arena dressings.

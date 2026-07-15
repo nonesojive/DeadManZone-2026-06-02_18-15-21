@@ -1,6 +1,5 @@
 // DMZ/UnitCelInk — spike v0 (Phase 0 gate, specs 2026-07-14).
-// Pass 1: inverted-hull ink outline; _OutlineColor lerps toward _SideColor by _SideTint,
-//         implementing the side channel on the outline (arena spec section 3).
+// Pass 1: inverted-hull ink outline — pure black ink (_OutlineColor only; side read is ring-only).
 // Pass 2: cel-banded forward lit — hard 3-band ramp on the main light, texture albedo.
 // Interior ink in v0 comes from the albedo texture (inked refs bake it); no edge-detect term.
 Shader "DMZ/UnitCelInk"
@@ -9,8 +8,6 @@ Shader "DMZ/UnitCelInk"
     {
         [MainTexture] _BaseMap ("Albedo", 2D) = "white" {}
         [MainColor] _BaseColor ("Tint", Color) = (1,1,1,1)
-        _SideColor ("Side Color", Color) = (0.25, 0.45, 0.9, 1)
-        _SideTint ("Outline Side Tint", Range(0,1)) = 0.65
         _OutlineColor ("Ink Color", Color) = (0.04, 0.03, 0.03, 1)
         _OutlineWidth ("Outline Width (m)", Range(0, 0.05)) = 0.012
         _Bands ("Cel Bands", Range(2, 4)) = 3
@@ -31,7 +28,6 @@ Shader "DMZ/UnitCelInk"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseMap_ST; float4 _BaseColor;
-                float4 _SideColor; float _SideTint;
                 float4 _OutlineColor; float _OutlineWidth;
                 float _Bands; float _ShadowFloor;
             CBUFFER_END
@@ -50,8 +46,7 @@ Shader "DMZ/UnitCelInk"
             }
             half4 frag(V IN) : SV_Target
             {
-                float3 ink = lerp(_OutlineColor.rgb, _SideColor.rgb, _SideTint);
-                return half4(ink, 1);
+                return half4(_OutlineColor.rgb, 1);
             }
             ENDHLSL
         }
@@ -69,7 +64,6 @@ Shader "DMZ/UnitCelInk"
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseMap_ST; float4 _BaseColor;
-                float4 _SideColor; float _SideTint;
                 float4 _OutlineColor; float _OutlineWidth;
                 float _Bands; float _ShadowFloor;
             CBUFFER_END

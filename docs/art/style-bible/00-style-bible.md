@@ -60,7 +60,7 @@ Squad pieces (manpowerCost > 1) render as multiple bodies; their formation offse
 
 - Every unit and building carries a **dark exterior outline** (shader pass, thickness tuned per silhouette size — smaller units get relatively thicker lines).
 - Interior material boundaries (armor vs. cloth vs. skin vs. weapon) separate via **dark ink-style edges**, not soft gradients — in a texture pass or edge-detect shader term. Vary apparent stroke weight so the result reads "inked illustration," not "uniform cel filter." This is the single technique that keeps us out of generic-toon territory; it is the Phase-0 kill/keep criterion (arena spec §8).
-- The exterior outline doubles as the side channel: it tints toward side color in combat. Interior ink stays black always.
+- The exterior outline is always pure black ink in combat. Side allegiance reads via the base ring only (arena spec §3). Interior ink stays black always.
 
 ## 5. Feedback grammar
 

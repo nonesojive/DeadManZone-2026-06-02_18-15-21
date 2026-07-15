@@ -2,7 +2,7 @@
 
 **Thesis:** the world as it died. Neutral is not a fourth faction — it is the game's visual baseline made walkable: pre-collapse military surplus, sandbags, field kit, and the militia still using them. Every faction bible is a deviation *from this document's look*.
 
-**The hard rule (from CONTEXT.md):** Neutral pieces are usable by anyone — any player faction and the enemy pool, potentially both sides of the same battle. Therefore Neutral art must never intrinsically encode allegiance. No insignia, no faction accent, no side color anywhere in the sprite/model/texture. Side identity comes exclusively from the side channel (outline + base ring; arena spec §3).
+**The hard rule (from CONTEXT.md):** Neutral pieces are usable by anyone — any player faction and the enemy pool, potentially both sides of the same battle. Therefore Neutral art must never intrinsically encode allegiance. No insignia, no faction accent, no side color anywhere in the sprite/model/texture. Side identity comes exclusively from the base ring (arena spec §3).
 
 ## Accent
 

@@ -126,6 +126,7 @@ then.
 
 ## Tuning notes / issues found while capturing
 
+- **Outline side-tint SCRAPPED (owner ruling 2026-07-14):** `DMZ/UnitCelInk` ink outline pass is pure black (`_OutlineColor` only). Side allegiance reads via base ring materials only — `_SideColor` / `_SideTint` removed from the shader. Arena spec §3 and style bible §4 updated accordingly.
 - **Gutter materials are inert on disk:** all four `Assets/_Project/Combat3D/RingFill_Gutter_{0,35,70,100}.mat`
   assets have `_Gutter=0` — the per-row values existed only as MaterialPropertyBlocks that a
   prior session applied and that do not survive scene reload (the first crowd capture came
