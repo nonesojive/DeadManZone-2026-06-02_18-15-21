@@ -83,6 +83,43 @@ namespace DeadManZone.Core.Board
             return new PlacementResult { Success = true };
         }
 
+        /// <summary>2026-07-15 faction-roster-v1 §2.5 transport tentpole: load an already-placed
+        /// piece as cargo into an already-placed transport during Build. Purely a data tag
+        /// (PlacedPiece.CarrierInstanceId) — the cargo piece's own board cell is untouched, so
+        /// this can't fail on geometry, only on transport validity/capacity.</summary>
+        public PlacementResult TryLoadCargo(string cargoInstanceId, string transportInstanceId)
+        {
+            if (!_pieces.TryGetValue(cargoInstanceId, out var cargo))
+                return new PlacementResult { Success = false, Reason = "Cargo piece not found" };
+
+            if (!_pieces.TryGetValue(transportInstanceId, out var transport))
+                return new PlacementResult { Success = false, Reason = "Transport piece not found" };
+
+            if (!transport.Definition.IsTransport)
+                return new PlacementResult { Success = false, Reason = "Source is not a transport" };
+
+            if (cargo.Definition.IsTransport)
+                return new PlacementResult { Success = false, Reason = "A transport cannot be cargo" };
+
+            if (cargoInstanceId == transportInstanceId)
+                return new PlacementResult { Success = false, Reason = "Cannot load a transport into itself" };
+
+            int loaded = _pieces.Values.Count(p => p.CarrierInstanceId == transportInstanceId);
+            if (loaded >= transport.Definition.TransportCapacity)
+                return new PlacementResult { Success = false, Reason = "Transport is full" };
+
+            _pieces[cargoInstanceId] = new PlacedPiece
+            {
+                InstanceId = cargo.InstanceId,
+                Definition = cargo.Definition,
+                Anchor = cargo.Anchor,
+                Rotation = cargo.Rotation,
+                CarrierInstanceId = transportInstanceId
+            };
+
+            return new PlacementResult { Success = true };
+        }
+
         public bool IsOnSpecialTile(string instanceId)
         {
             if (!_pieces.TryGetValue(instanceId, out var piece))

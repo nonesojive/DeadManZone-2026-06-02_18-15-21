@@ -47,6 +47,62 @@ namespace DeadManZone.Core.Board
         /// <summary>Design role, not raw power (M3). Defaults Common so pieces from
         /// assets generated before the rarity pass stay valid.</summary>
         public Rarity Rarity { get; init; } = Rarity.Common;
+
+        // ---- 2026-07-15 faction-roster-v1 §1.8/§4 new-tech ledger fields ----
+        // Content (piece data) lands in a later wave; these are the seams that wave authors
+        // against. All magnitudes referenced by the paired Rules classes are PROVISIONAL.
+
+        /// <summary>Suppression tentpole (Crimson, §1.8): this piece's attacks apply
+        /// Suppression on hit (SuppressionRules.Apply) — the game's ONLY enemy-facing debuff
+        /// family (border rule). Attack-speed tier step-down + movement charge slow for N ticks.</summary>
+        public bool AppliesSuppressionOnHit { get; init; }
+
+        /// <summary>Transport tentpole (Oathborn, §1.8/§2.5): pieces load as cargo during
+        /// Build (PlacedPiece.CarrierInstanceId) and ride embarked until this transport reaches
+        /// its opening-window target cell (unload) or is destroyed (spill). See TransportRules.</summary>
+        public bool IsTransport { get; init; }
+
+        /// <summary>Max cargo pieces this transport can carry. Only meaningful when IsTransport.</summary>
+        public int TransportCapacity { get; init; }
+
+        /// <summary>Low-state trigger bonus (Ashen, §2.9): flat damage bonus while this piece is
+        /// below the universal 50% HP-or-morale threshold (LowStateRules.IsLowState).</summary>
+        public int LowStateDamageBonus { get; init; }
+
+        /// <summary>Low-state trigger bonus (Ashen, §2.9): attack-speed tier steps while below
+        /// the 50% threshold (LowStateRules.IsLowState).</summary>
+        public int LowStateAttackSpeedSteps { get; init; }
+
+        /// <summary>In-combat healing (Oathborn medics, §4 🟡): HP restored to each eligible
+        /// ally per pulse (HealPulseRules), capped at the ally's MaxHp.</summary>
+        public int HealPulseAmount { get; init; }
+
+        /// <summary>Chebyshev radius HealPulseAmount reaches (HealPulseRules.GetHealTargets).</summary>
+        public int HealPulseRadius { get; init; }
+
+        /// <summary>Tick cadence between pulses (HealPulseRules.IsPulseTick). 0 = no pulse (default).</summary>
+        public int HealPulseIntervalTicks { get; init; }
+
+        /// <summary>Gas→morale fusion (Blightborn's Duchess of Sighs, rare-only, §2.7): while a
+        /// piece with this flag is active, gas-type attacks from its side also deal equal
+        /// morale damage (TickCombatRun.ResolveAttacks).</summary>
+        public bool GasDealsMoraleDamage { get; init; }
+
+        /// <summary>Ambient-gas hijack (Blightborn's Yellow Autumn, rare-only, §2.7): while a
+        /// piece with this flag is active on a side, the ambient anti-stall gas
+        /// (GasDamageSystem) starts earlier for the whole fight and that side's units are
+        /// immune to it.</summary>
+        public bool HijacksAmbientGas { get; init; }
+
+        /// <summary>Third pause window (Paradox's The Second Hand, §1.7/§4 🟡): a fielded piece
+        /// with this flag appends one extra threshold to the fight's pause windows
+        /// (TickCombatRun's per-instance pause-threshold list, seeded from CombatPacingConfig).</summary>
+        public bool AddsPauseWindow { get; init; }
+
+        /// <summary>Repeat activations tentpole (Paradox's Doctor Recursion, §1.8): while a
+        /// piece with this flag is active, this army's pause-window abilities each fire twice
+        /// (CommandProcessor.TryApplyBatch) — deterministic, zero randomness (border rule).</summary>
+        public bool RepeatsPauseAbilities { get; init; }
     }
 
     [System.Flags]

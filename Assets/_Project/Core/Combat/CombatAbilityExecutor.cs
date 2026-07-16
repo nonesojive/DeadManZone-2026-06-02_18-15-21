@@ -34,6 +34,11 @@ namespace DeadManZone.Core.Combat
                 GrantedAbility.CannonBlast => 4,
                 GrantedAbility.RollingBarrage when checkpointIndex == 0 => 3,
                 GrantedAbility.RollingBarrage => 4,
+                // Echo (2026-07-15 faction-roster-v1 §2.6): "repeat the last order/tactic
+                // issued this fight, free." CommandProcessor handles Echo's own dispatch
+                // separately (it never reaches Execute() directly), but keep the cost table
+                // honest for anything that reads it (e.g. GetAvailableCommands pricing).
+                GrantedAbility.Echo => 0,
                 _ => 0
             };
 

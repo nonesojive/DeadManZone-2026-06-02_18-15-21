@@ -25,6 +25,20 @@ namespace DeadManZone.Core.Combat
         private bool _awaitingOpeningCommand;
         private bool _protectSupportArmorGranted;
 
+        // 2026-07-15 faction-roster-v1 §1.7/§2.6/§4 Paradox's The Second Hand: per-instance
+        // pause thresholds (a fielded AddsPauseWindow piece appends one to the shared default).
+        private readonly float[] _pauseThresholds;
+
+        // §1.8/§2.5 Oathborn's Armored Ark: transport instance id -> opening-window target cell.
+        private readonly Dictionary<string, GridCoord> _transportTargets = new();
+
+        // §2.7/§4 Blightborn's Yellow Autumn: earlier ambient-gas start + hijacking-side immunity.
+        // Tracked per side (not just "player") so an enemy-fielded Yellow Autumn (later enemy
+        // rotation waves) is immune on its own side, not the player's.
+        private readonly bool _playerAmbientGasHijack;
+        private readonly bool _enemyAmbientGasHijack;
+        private readonly int _effectiveGasStartTick;
+
         public BoardState PlayerBoard => _playerBoard;
         public int Authority { get; private set; }
         public int Requisition => Authority;
@@ -38,9 +52,12 @@ namespace DeadManZone.Core.Combat
 
         public bool AwaitingCommand => !IsFightOver && _awaitingCommand;
 
-        /// <summary>Index of the pause currently awaiting commands, or -1.</summary>
+        /// <summary>Index of the pause currently awaiting commands, or -1. Equals
+        /// CheckpointsFired for any non-opening pause — identical to the old hardcoded "1" for
+        /// every fight with only the default single mid-fight pause, and generalizes correctly
+        /// once a third window (§1.7 The Second Hand) is in play.</summary>
         public int CurrentPauseIndex => AwaitingCommand
-            ? _awaitingOpeningCommand ? 0 : 1
+            ? _awaitingOpeningCommand ? 0 : CheckpointsFired
             : -1;
 
         public TacticType PlayerTactic => _tactics.PlayerTactic;
@@ -83,6 +100,25 @@ namespace DeadManZone.Core.Combat
             Authority = authority;
             _playerCombatants = SpawnCombatants(playerBoard, CombatSide.Player, 0);
             _enemyCombatants = SpawnCombatants(enemyBoard, CombatSide.Enemy, _layout.EnemyOriginX);
+
+            // §1.7/§2.6 The Second Hand: scan HQ + combat board (mirrors CommandProcessor.
+            // GetAvailableCommands' own HQ-ability scan) for a fielded AddsPauseWindow piece.
+            var playerPiecesForThresholds = _playerHqBoard == null
+                ? playerBoard.Pieces
+                : playerBoard.Pieces.Concat(_playerHqBoard.Pieces);
+            bool addsThirdWindow = playerPiecesForThresholds.Any(p => p.Definition.AddsPauseWindow);
+            _pauseThresholds = addsThirdWindow
+                ? CombatPacingConfig.PauseThresholds.Append(CombatPacingConfig.ThirdPauseWindowThreshold).ToArray()
+                : CombatPacingConfig.PauseThresholds;
+
+            // §2.7 Yellow Autumn: earlier ambient-gas start + hijacking-side immunity for the
+            // whole fight once fielded (checked once here, not re-evaluated per tick). Either
+            // side hijacking pulls the start earlier for everyone; each side is only immune
+            // if IT fielded the piece.
+            _playerAmbientGasHijack = _playerCombatants.Any(c => c.Definition.HijacksAmbientGas);
+            _enemyAmbientGasHijack = _enemyCombatants.Any(c => c.Definition.HijacksAmbientGas);
+            _effectiveGasStartTick = GasHijackRules.GetEffectiveGasStartTick(_playerAmbientGasHijack || _enemyAmbientGasHijack);
+
             var playerSynergySnapshot = PieceAbilityEngine.EvaluateFightStart(playerBoard, playerBuildBoards);
             var playerCriticalMassSnapshot = CriticalMassEngine.Evaluate(playerBoard);
             CriticalMassEngine.ApplyToCombatants(playerCriticalMassSnapshot, _playerCombatants);
@@ -211,7 +247,9 @@ namespace DeadManZone.Core.Combat
                 if (TryEndFight(segment))
                     return;
 
-                if (GlobalTick >= CombatPacingConfig.GasStartTick)
+                ApplyHealPulses(segment);
+
+                if (GlobalTick >= _effectiveGasStartTick)
                 {
                     ApplyGas(segment);
                     if (TryEndFight(segment))
@@ -226,6 +264,8 @@ namespace DeadManZone.Core.Combat
                 if (TryEndFight(segment))
                     return;
 
+                TickSuppressionDurations();
+
                 GlobalTick++;
                 if (TryFireCheckpoint(segment))
                     return;
@@ -234,7 +274,7 @@ namespace DeadManZone.Core.Combat
 
         private bool TryFireCheckpoint(int segment)
         {
-            var thresholds = CombatPacingConfig.PauseThresholds;
+            var thresholds = _pauseThresholds;
             if (CheckpointsFired >= thresholds.Length)
                 return false;
 
@@ -310,11 +350,25 @@ namespace DeadManZone.Core.Combat
                     moveChargePerTick,
                     MovementSlowRules.IsSlowed(mover, targets));
 
+                moveChargePerTick = SuppressionRules.ApplyMovementSuppression(moveChargePerTick, mover.IsSuppressed);
+
                 mover.MoveCharge += moveChargePerTick;
 
-                var goal = RoleEngagement.ComputeGoal(mover, movers, aliveTargets, _layout);
-                if (!CombatMovementRules.ShouldAttemptMove(mover, aliveTargets, goal))
-                    continue;
+                // §1.8/§2.5 Armored Ark: a transport with an assigned opening-window target
+                // drives straight there instead of engaging — "choice of WHERE, not when".
+                var transportGoal = default(GridCoord);
+                bool isTransportRun = mover.IsTransport && _transportTargets.TryGetValue(mover.InstanceId, out transportGoal);
+                GridCoord goal;
+                if (isTransportRun)
+                {
+                    goal = transportGoal;
+                }
+                else
+                {
+                    goal = RoleEngagement.ComputeGoal(mover, movers, aliveTargets, _layout);
+                    if (!CombatMovementRules.ShouldAttemptMove(mover, aliveTargets, goal))
+                        continue;
+                }
 
                 if (IsGoalBlockedByFriendly(goal, mover.InstanceId, movers))
                     continue;
@@ -329,7 +383,11 @@ namespace DeadManZone.Core.Combat
                     spawnAnchorY: mover.SpawnAnchorY,
                     preferLaneHold: RoleEngagement.IsFrontlineMover(mover));
                 if (next == null || next.Value.Equals(mover.AnchorPosition))
+                {
+                    if (isTransportRun && mover.AnchorPosition.Equals(transportGoal))
+                        ArriveTransport(mover, segment);
                     continue;
+                }
 
                 int cost = CombatMovement.GetStepChargeCost(mover.AnchorPosition, next.Value, _layout);
                 if (mover.MoveCharge < cost)
@@ -346,7 +404,20 @@ namespace DeadManZone.Core.Combat
                     "move",
                     $"{next.Value.X},{next.Value.Y}",
                     0);
+
+                if (isTransportRun && mover.AnchorPosition.Equals(transportGoal))
+                    ArriveTransport(mover, segment);
             }
+        }
+
+        /// <summary>Transport reached its opening-window target: unload cargo and stop trying
+        /// to path further (§2.5 Armored Ark — unload happens exactly once, on arrival).</summary>
+        private void ArriveTransport(CombatantState transport, int segment)
+        {
+            if (!_transportTargets.Remove(transport.InstanceId))
+                return;
+
+            UnloadTransport(transport, segment);
         }
 
         private void ApplyGas(int segment)
@@ -357,15 +428,93 @@ namespace DeadManZone.Core.Combat
                 if (GasDamageSystem.IsMitigated(combatant.Definition))
                     continue;
 
+                // §2.7 Yellow Autumn: "your units are immune to it" — the hijacking side only.
+                if (_playerAmbientGasHijack && combatant.Side == CombatSide.Player)
+                    continue;
+                if (_enemyAmbientGasHijack && combatant.Side == CombatSide.Enemy)
+                    continue;
+
                 int damage = GasDamageSystem.GetDamage(
                     combatant.AnchorPosition,
-                    GlobalTick - CombatPacingConfig.GasStartTick,
+                    GlobalTick - _effectiveGasStartTick,
                     _layout);
                 combatant.CurrentHp -= damage;
                 _log.Append(segment, GlobalTick, "gas", "gas_damage", combatant.InstanceId, damage);
                 if (!combatant.IsAlive)
                     LogDestroyed(segment, combatant.InstanceId, "gas");
             }
+        }
+
+        /// <summary>§4 (🟡 in-combat healing): pulses HealPulseAmount to nearby active allies on
+        /// a tick cadence, capped at MaxHp. Sim-wide — enemy healers (if ever fielded) work the
+        /// same way.</summary>
+        private void ApplyHealPulses(int segment)
+        {
+            ApplyHealPulsesForSide(_playerCombatants, segment);
+            ApplyHealPulsesForSide(_enemyCombatants, segment);
+        }
+
+        private void ApplyHealPulsesForSide(IReadOnlyList<CombatantState> side, int segment)
+        {
+            foreach (var healer in side.Where(c => c.IsActive && c.Definition.HealPulseAmount > 0).OrderBy(c => c.InstanceId))
+            {
+                if (!HealPulseRules.IsPulseTick(healer, GlobalTick))
+                    continue;
+
+                foreach (var target in HealPulseRules.GetHealTargets(healer, side).OrderBy(t => t.InstanceId).ToList())
+                {
+                    int amount = HealPulseRules.GetHealAmount(healer, target);
+                    if (amount <= 0)
+                        continue;
+
+                    target.CurrentHp += amount;
+                    _log.Append(segment, GlobalTick, healer.InstanceId, "heal", target.InstanceId, amount);
+                }
+            }
+        }
+
+        /// <summary>§1.8 Suppression tentpole: ticks every combatant's suppression duration
+        /// down once per sim tick.</summary>
+        private void TickSuppressionDurations()
+        {
+            foreach (var combatant in _playerCombatants)
+                SuppressionRules.TickDown(combatant);
+            foreach (var combatant in _enemyCombatants)
+                SuppressionRules.TickDown(combatant);
+        }
+
+        /// <summary>§2.5 Armored Ark: unload embarked cargo onto the field at the transport's
+        /// current anchor. The good outcome — no morale shock (that's spill-on-destruction only).</summary>
+        private void UnloadTransport(CombatantState transport, int segment)
+        {
+            var side = transport.Side == CombatSide.Player ? _playerCombatants : _enemyCombatants;
+            foreach (var cargo in TransportRules.ResolveCargo(transport, side))
+            {
+                TransportRules.Disembark(cargo, transport);
+                _occupancyGrid.Place(cargo.InstanceId, cargo.AnchorPosition, cargo.ShapeOffsets);
+                _log.Append(segment, GlobalTick, transport.InstanceId, "transport_unload", cargo.InstanceId, 0);
+                _log.Append(segment, GlobalTick, cargo.InstanceId, "move", $"{cargo.AnchorPosition.X},{cargo.AnchorPosition.Y}", 0);
+            }
+
+            transport.EmbarkedCargoIds = System.Array.Empty<string>();
+        }
+
+        /// <summary>§2.5 Armored Ark: "if destroyed in transit, cargo spills out at the wreck
+        /// with a morale shock — never dies inside." Called from LogDestroyed before the death
+        /// shock radius pulse (the spilled cargo is now on the field and eligible for it too).</summary>
+        private void SpillTransportCargo(CombatantState transport, int segment)
+        {
+            var side = transport.Side == CombatSide.Player ? _playerCombatants : _enemyCombatants;
+            foreach (var cargo in TransportRules.ResolveCargo(transport, side))
+            {
+                TransportRules.Disembark(cargo, transport);
+                _occupancyGrid.Place(cargo.InstanceId, cargo.AnchorPosition, cargo.ShapeOffsets);
+                _log.Append(segment, GlobalTick, transport.InstanceId, "transport_spill", cargo.InstanceId, 0);
+                _log.Append(segment, GlobalTick, cargo.InstanceId, "move", $"{cargo.AnchorPosition.X},{cargo.AnchorPosition.Y}", 0);
+                ApplyMoraleDamage(segment, cargo, TransportRules.SpillMoraleShock, transport.InstanceId);
+            }
+
+            transport.EmbarkedCargoIds = System.Array.Empty<string>();
         }
 
         private void ResolveAttacks(
@@ -376,6 +525,10 @@ namespace DeadManZone.Core.Combat
             int segment,
             int tacticsCheckpointIndex)
         {
+            // §2.7 Duchess of Sighs: rare-only gas→morale fusion, checked once per side per
+            // volley rather than per attacker (army-wide granted rule).
+            bool gasMoraleFusion = attackers.Any(c => c.IsActive && c.Definition.GasDealsMoraleDamage);
+
             foreach (var actor in attackers.Where(a => a.IsActive && a.CanAttack).OrderBy(a => a.InstanceId))
             {
                 if (actor.CooldownRemaining > 0)
@@ -396,7 +549,7 @@ namespace DeadManZone.Core.Combat
                     target.Definition,
                     distance,
                     accuracyMod,
-                    actor.DamageBonus + damageBuff,
+                    actor.DamageBonus + damageBuff + LowStateRules.GetDamageBonus(actor),
                     target.TotalArmorSteps,
                     actor.DamagePercentBonus,
                     actor.AccuracyPercentBonus,
@@ -417,15 +570,36 @@ namespace DeadManZone.Core.Combat
                     actor.DamageDealtThisFight += outcome.Damage;
                     target.DamageTakenThisFight += outcome.Damage;
                     if (!target.IsAlive)
+                    {
                         LogDestroyed(segment, target.InstanceId, actor.InstanceId);
-                    else if (actor.Definition.TerrorDamage > 0)
-                        ApplyMoraleDamage(segment, target, actor.Definition.TerrorDamage, actor.InstanceId);
+                    }
+                    else
+                    {
+                        if (actor.Definition.TerrorDamage > 0)
+                            ApplyMoraleDamage(segment, target, actor.Definition.TerrorDamage, actor.InstanceId);
+
+                        // §1.8 Suppression tentpole: on-hit only, the game's ONLY enemy-facing
+                        // debuff family (border rule).
+                        if (actor.Definition.AppliesSuppressionOnHit)
+                        {
+                            SuppressionRules.Apply(target);
+                            _log.Append(segment, GlobalTick, actor.InstanceId, "suppress", target.InstanceId, SuppressionRules.SuppressionDurationTicks);
+                        }
+
+                        // §2.7 Duchess of Sighs: "your gas damage also deals equal morale
+                        // damage" — attack-sourced gas only (not the ambient GasDamageSystem).
+                        if (gasMoraleFusion && actor.Definition.AttackType == AttackType.Gas)
+                            ApplyMoraleDamage(segment, target, outcome.Damage, actor.InstanceId);
+                    }
                 }
 
+                int attackSpeedSteps = actor.AttackSpeedSteps
+                    + LowStateRules.GetAttackSpeedSteps(actor)
+                    - (actor.IsSuppressed ? SuppressionRules.SuppressionAttackSpeedStepDown : 0);
                 actor.CooldownRemaining = CombatAttackSpeed.GetEffectiveCooldown(
                     actor.Definition.CooldownTicks,
                     actor.Definition.AttackSpeed,
-                    actor.AttackSpeedSteps);
+                    attackSpeedSteps);
             }
         }
 
@@ -448,7 +622,8 @@ namespace DeadManZone.Core.Combat
                 CheckpointsFired,
                 GlobalTick,
                 hqBoard: _playerHqBoard,
-                artilleryCount: _playerArtilleryCount);
+                artilleryCount: _playerArtilleryCount,
+                transportTargetSink: _transportTargets);
             Authority = authority;
 
             // Ability/strike kills inside the batch don't touch the occupancy grid
@@ -475,12 +650,22 @@ namespace DeadManZone.Core.Combat
         {
             _occupancyGrid.Remove(victimId);
             _log.Append(segment, GlobalTick, victimId, "destroyed", sourceId, 0);
+
+            // §2.5 Armored Ark: "if destroyed in transit, cargo spills out at the wreck ...
+            // never dies inside." Must run before the death-shock pulse below so spilled cargo
+            // is on the field (and IsActive) in time to be eligible for/immune from it exactly
+            // like any other unit that was already there.
+            var victim = _playerCombatants.Concat(_enemyCombatants).FirstOrDefault(c => c.InstanceId == victimId);
+            if (victim != null && victim.IsTransport && victim.EmbarkedCargoIds.Count > 0)
+                SpillTransportCargo(victim, segment);
+
             ApplyDeathShock(segment, victimId);
         }
 
         /// <summary>Deaths — never routs — shock the dead unit's living unbroken allies
         /// within <see cref="MoraleRules.DeathShockRadius"/> (ADR-0005). Shock-routs don't
-        /// shock again; only deaths do.</summary>
+        /// shock again; only deaths do. §2.9 Ashen death-shock inversion: an Ashen death
+        /// GRANTS morale to those allies instead of draining it (MoraleRules.IsDeathShockInverted).</summary>
         private void ApplyDeathShock(int segment, string deadInstanceId)
         {
             var dead = _playerCombatants.Concat(_enemyCombatants)
@@ -488,6 +673,7 @@ namespace DeadManZone.Core.Combat
             if (dead == null)
                 return;
 
+            bool inverted = MoraleRules.IsDeathShockInverted(dead.Definition.FactionId);
             var allies = dead.Side == CombatSide.Player ? _playerCombatants : _enemyCombatants;
             foreach (var ally in allies
                          .Where(a => a.IsActive
@@ -495,7 +681,10 @@ namespace DeadManZone.Core.Combat
                          .OrderBy(a => a.InstanceId)
                          .ToList())
             {
-                ApplyMoraleDamage(segment, ally, MoraleRules.DeathShockDamage, dead.InstanceId);
+                if (inverted)
+                    ApplyMoraleGain(segment, ally, MoraleRules.DeathShockDamage, dead.InstanceId);
+                else
+                    ApplyMoraleDamage(segment, ally, MoraleRules.DeathShockDamage, dead.InstanceId);
             }
         }
 
@@ -518,6 +707,23 @@ namespace DeadManZone.Core.Combat
             target.IsBroken = true;
             _occupancyGrid.Remove(target.InstanceId);
             _log.Append(segment, GlobalTick, target.InstanceId, "rout", sourceId, 0);
+        }
+
+        /// <summary>§2.9 Ashen death-shock inversion: the gain-side twin of ApplyMoraleDamage.
+        /// No resistance modifier (there's nothing to resist about a gift) and no break check
+        /// (gains never rout anyone); clamps at MaxMorale.</summary>
+        private void ApplyMoraleGain(int segment, CombatantState target, int amount, string sourceId)
+        {
+            if (!target.CanBreak || !target.IsActive || amount <= 0)
+                return;
+
+            int before = target.CurrentMorale;
+            target.CurrentMorale = System.Math.Min(target.Definition.MaxMorale, target.CurrentMorale + amount);
+            int applied = target.CurrentMorale - before;
+            if (applied <= 0)
+                return;
+
+            _log.Append(segment, GlobalTick, sourceId, "morale_gain", target.InstanceId, applied);
         }
 
         private CombatAdvanceResult AwaitingResult(int segment) =>
@@ -621,6 +827,7 @@ namespace DeadManZone.Core.Combat
         {
             int halfWidth = board.Layout.Width;
             var combatants = new List<CombatantState>();
+            var anchorByInstanceId = new Dictionary<string, GridCoord>();
 
             foreach (var piece in board.Pieces
                          .OrderBy(p => p.InstanceId)
@@ -635,6 +842,7 @@ namespace DeadManZone.Core.Combat
                         piece.Rotation)
                     : piece.Anchor.X;
                 var anchor = new GridCoord(xOffset + localX, piece.Anchor.Y);
+                anchorByInstanceId[piece.InstanceId] = anchor;
                 var offsets = CombatFootprint.ComputeOffsets(piece.Definition.Shape, rotationIndex);
                 var combatant = new CombatantState
                 {
@@ -647,11 +855,38 @@ namespace DeadManZone.Core.Combat
                     AnchorPosition = anchor,
                     SpawnAnchorY = piece.Anchor.Y,
                     ShapeOffsets = offsets,
-                    MoraleDamageResistancePercent = piece.Definition.MoraleDamageResistancePercent
+                    MoraleDamageResistancePercent = piece.Definition.MoraleDamageResistancePercent,
+                    // §1.8/§2.5 Armored Ark: cargo spawns embarked (off-field) instead of
+                    // independently when Build-phase-loaded (PlacedPiece.CarrierInstanceId).
+                    IsTransport = piece.Definition.IsTransport,
+                    IsEmbarked = !string.IsNullOrEmpty(piece.CarrierInstanceId),
+                    CarrierInstanceId = piece.CarrierInstanceId
                 };
-                combatant.RecomputeOccupiedCells();
-                _occupancyGrid.Place(combatant.InstanceId, anchor, offsets);
                 combatants.Add(combatant);
+            }
+
+            // Re-anchor embarked cargo to its carrier's spawn anchor (cosmetic — where it'll
+            // appear on unload/spill) and keep it OFF the occupancy grid: it's inside the
+            // transport, not on the field.
+            foreach (var cargo in combatants.Where(c => c.IsEmbarked))
+            {
+                if (cargo.CarrierInstanceId != null && anchorByInstanceId.TryGetValue(cargo.CarrierInstanceId, out var carrierAnchor))
+                    cargo.AnchorPosition = carrierAnchor;
+                cargo.RecomputeOccupiedCells();
+            }
+
+            foreach (var transport in combatants.Where(c => c.IsTransport))
+            {
+                transport.EmbarkedCargoIds = combatants
+                    .Where(c => c.CarrierInstanceId == transport.InstanceId)
+                    .Select(c => c.InstanceId)
+                    .ToList();
+            }
+
+            foreach (var combatant in combatants.Where(c => !c.IsEmbarked))
+            {
+                combatant.RecomputeOccupiedCells();
+                _occupancyGrid.Place(combatant.InstanceId, combatant.AnchorPosition, combatant.ShapeOffsets);
             }
 
             return combatants;

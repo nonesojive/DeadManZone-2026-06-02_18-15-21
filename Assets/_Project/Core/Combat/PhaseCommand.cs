@@ -9,7 +9,12 @@ namespace DeadManZone.Core.Combat
         UseAbility,
         ChangeStance,
         SpendRequisitionBuff,
-        CallStrike
+        CallStrike,
+        /// <summary>2026-07-15 faction-roster-v1 §2.5 transport tentpole: opening-window-only
+        /// command targeting a cell for a fielded transport (SourcePieceId) to drive to and
+        /// unload at. Choice of WHERE, not when — CommandProcessor rejects it outside
+        /// checkpoint 0. Free (no Authority cost), PROVISIONAL.</summary>
+        TransportTarget
     }
 
     public sealed class PhaseCommand

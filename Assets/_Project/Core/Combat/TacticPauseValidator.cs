@@ -43,7 +43,10 @@ namespace DeadManZone.Core.Combat
         public static int GetTacticCost(TacticType selected, TacticType previous, int checkpointIndex)
         {
             int cost = selected == TacticType.ProtectSupport ? 1 : 0;
-            if (checkpointIndex != 1 || selected == previous)
+            // checkpointIndex 0 (opening) is always a free pick; any pause after that (1, or 2
+            // with a third window fielded — 2026-07-15 faction-roster-v1 §1.7 The Second Hand)
+            // costs an extra Authority to switch away from the standing tactic.
+            if (checkpointIndex < 1 || selected == previous)
                 return cost;
 
             return cost + 1;

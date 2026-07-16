@@ -396,6 +396,85 @@ minimum 1
 - **Timeout at 10,000 ticks → draw, and `PlayerWon = false`** (`TickCombatRun.cs:270-276`).
   **A timeout is NOT a win.** These two draws resolve oppositely — deliberate, but a sharp edge.
 
+### New combat-sim tech (2026-07-15 faction-roster-v1 Wave 1a)
+Systems only — content (piece data) lands in a later wave. Every rule below is driven by new
+`PieceDefinition` fields the content wave will author; all magnitudes are **PROVISIONAL**.
+
+- **Suppression** (Crimson's tentpole, §1.8). *"Suppressed = attack-speed tier stepped down +
+  movement charge slowed for N ticks, applied on hit by suppression-tagged attacks."* The game's
+  **only** enemy-facing debuff family. `PieceDefinition.AppliesSuppressionOnHit` triggers it on a
+  non-lethal hit; `CombatantState.SuppressionTicksRemaining`/`IsSuppressed` track it;
+  `SuppressionRules.cs` holds the two dials (`SuppressionDurationTicks` = 40, PROVISIONAL;
+  `SuppressionAttackSpeedStepDown` = 1; `SuppressionMovementSlowPercent` = 50%, PROVISIONAL) and
+  is ticked down once per sim tick (`TickCombatRun.TickSuppressionDurations`). **Stacking rule
+  (PROVISIONAL): a new hit refreshes the duration, it does not stack.** Wired into
+  `TickCombatRun.ResolveAttacks` (apply on hit, fold into effective attack-speed steps) and
+  `TryMoveSide` (fold into movement charge). Deliberately distinct from `MovementSlowRules`
+  (Trench Works) — see that class's header note.
+- **Transport load/target/unload** (Oathborn's tentpole, Armored Ark, §1.8/§2.5). Cargo loads
+  into a transport during Build (`BoardState.TryLoadCargo`, tagging `PlacedPiece.CarrierInstanceId`
+  — geometry untouched). At spawn, loaded cargo rides **embarked**: off the field, untargetable,
+  can't move/attack, doesn't count for the win check (`CombatantState.IsEmbarked`,
+  folded into `IsActive`). At the **opening pause window only** the player targets a cell
+  (`CommandType.TransportTarget`, validated in `CommandProcessor.TryApplyBatch` — free, no
+  Authority cost, PROVISIONAL); the transport drives there (`TickCombatRun.TryMoveSide`,
+  overriding its normal engagement goal) and unloads on arrival (`TickCombatRun.UnloadTransport`).
+  **If destroyed in transit, cargo spills at the wreck with a morale shock** — never dies inside
+  (`TickCombatRun.SpillTransportCargo`, `TransportRules.SpillMoraleShock` = 6, PROVISIONAL, called
+  from `LogDestroyed` before the death-shock pulse). Pure cargo-resolution seam:
+  `TransportRules.cs`. `PieceDefinition.IsTransport`/`TransportCapacity`.
+- **Repeat activations** (Paradox's tentpole, Doctor Recursion, §1.8). *"Your pause-window
+  abilities each fire twice."* Deterministic, zero randomness (border rule: Paradox manipulates
+  only its own tempo). `PieceDefinition.RepeatsPauseAbilities`; checked once per command batch in
+  `CommandProcessor.TryApplyBatch` (`repeatAbilities`) — every successful `UseAbility` command
+  executes a second time for free. Also implements Resonance Coil's **Echo**
+  (`GrantedAbility.Echo`, free, `checkpointIndex`-agnostic): replays
+  `TacticState.LastAbilityCommand` (the last successfully-executed ability this fight). Scoped to
+  abilities only this wave, not `SetTactic` — see the class's header note for why.
+- **In-combat healing** (heal pulse, §4 🟡; consumers later: Mercy Sister, Field Chirurgeon,
+  Hospitaller-General). The sim had no HP-restoration path before this. `PieceDefinition`.
+  `HealPulseAmount`/`HealPulseRadius`/`HealPulseIntervalTicks`; pure targeting/cap logic in
+  `HealPulseRules.cs`; ticked every sim tick via `TickCombatRun.ApplyHealPulses`, capped at the
+  target's MaxHp.
+- **Low-state triggers** (Ashen, §2.9). One universal threshold, evaluated live, per-unit: **below
+  50% HP or morale** → the piece's own bonuses activate. `LowStateRules.cs`
+  (`LowStateThresholdPercent` = 50); `PieceDefinition.LowStateDamageBonus`/
+  `LowStateAttackSpeedSteps`; folded into `TickCombatRun.ResolveAttacks`' damage bonus and
+  effective attack-speed steps alongside Suppression's step-down.
+- **Death-shock inversion** (Ashen passive, §2.9). *"An Ashen death GRANTS morale to allies
+  within 2 cells instead of draining it."* Keyed directly off `PieceDefinition.FactionId ==
+  FactionIds.AshenCovenant` (`MoraleRules.IsDeathShockInverted`) — smaller than a new per-piece
+  flag for a whole-faction passive. `TickCombatRun.ApplyDeathShock` branches to the new
+  `ApplyMoraleGain` (clamped at MaxMorale, no resistance modifier, no break check) instead of
+  `ApplyMoraleDamage` when true. Same `DeathShockRadius`/`DeathShockDamage` constants as the
+  normal case (ADR-0005).
+- **Third pause window via piece** (Paradox's The Second Hand, §1.7/§4 🟡). `PauseThresholds` was
+  already a list — a fielded piece with `PieceDefinition.AddsPauseWindow` (HQ or combat board,
+  scanned the same way `CommandProcessor.GetAvailableCommands` scans for HQ-granted abilities)
+  appends one extra threshold (`CombatPacingConfig.ThirdPauseWindowThreshold` = 0.30, PROVISIONAL)
+  to a per-fight `TickCombatRun._pauseThresholds` array. `TickCombatRun.CurrentPauseIndex` now
+  equals `CheckpointsFired` for any non-opening pause (was hardcoded to `1`) so it generalizes
+  correctly past two windows. `TacticPauseValidator.GetTacticCost` now charges the tactic-switch
+  Authority premium for **any** pause after the opening one (was `checkpointIndex == 1` only).
+- **Gas→morale fusion** (Blightborn's Duchess of Sighs, rare-only, §2.7). *"Your gas damage also
+  deals equal morale damage."* Scoped to **attack-sourced** gas damage (pieces with
+  `AttackType.Gas`), not the ambient `GasDamageSystem` tick. `PieceDefinition.GasDealsMoraleDamage`
+  checked once per `TickCombatRun.ResolveAttacks` volley (`gasMoraleFusion`); on a non-lethal gas
+  hit, `ApplyMoraleDamage` fires again for the same amount as the HP damage.
+- **Ambient-gas hijack** (Blightborn's Yellow Autumn, rare-only, §2.7). *"The ambient anti-stall
+  gas starts far earlier and YOUR units are immune to it."* Sanctioned reuse of
+  `GasDamageSystem` — only the start tick and per-side immunity change.
+  `PieceDefinition.HijacksAmbientGas`; `GasHijackRules.EarlyGasStartTick` = 120 (PROVISIONAL,
+  default is 300). Tracked per side (`TickCombatRun._playerAmbientGasHijack`/
+  `_enemyAmbientGasHijack`) so a future enemy-fielded Yellow Autumn is immune on its own side, not
+  the player's; the earlier start applies fight-wide once either side hijacks.
+
+**New Core.Tests coverage:** `SuppressionRulesTests`, `TickCombatRunSuppressionTests`,
+`TransportRulesTests`, `BoardStateTransportTests`, `TickCombatRunTransportTests`,
+`CommandProcessorRepeatActivationTests`, `HealPulseRulesTests`, `TickCombatRunHealPulseTests`,
+`LowStateRulesTests`, `MoraleRulesDeathShockInversionTests`, `TickCombatRunPauseWindowTests`,
+`TickCombatRunGasAndMoraleFusionTests` — all deterministic, no Unity APIs.
+
 ---
 
 ## 11. Content — IronMarch Union

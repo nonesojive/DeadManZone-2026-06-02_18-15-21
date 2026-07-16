@@ -14,6 +14,11 @@ namespace DeadManZone.Core
         public const string DustScourge = "dust_scourge";
         public const string CartelOfEchoes = "cartel_of_echoes";
 
+        /// <summary>2026-07-15 faction-roster-v1 §2.9/§4: the only other faction id wired this
+        /// wave — MoraleRules.IsDeathShockInverted keys off it directly (smaller than adding a
+        /// per-piece flag for a whole-faction passive). Content (roster/pass) lands later.</summary>
+        public const string AshenCovenant = "ashen_covenant";
+
         /// <summary>
         /// Playable factions in selection order (matches ContentDatabase.PlayableFactionIds contract).
         /// </summary>

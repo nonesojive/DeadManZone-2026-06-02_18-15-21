@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
+using DeadManZone.Core.Common;
 
 namespace DeadManZone.Core.Combat
 {
@@ -80,7 +81,8 @@ namespace DeadManZone.Core.Combat
             int globalTick,
             TacticType[] startingTactics = null,
             BoardState hqBoard = null,
-            int artilleryCount = 0)
+            int artilleryCount = 0,
+            IDictionary<string, GridCoord> transportTargetSink = null)
         {
             int authoritySnapshot = authority;
             var tacticCommand = commands?.FirstOrDefault(c =>
@@ -112,6 +114,11 @@ namespace DeadManZone.Core.Combat
                 log.Append(logSegment, globalTick, "tactic", "tactic_set", null, (int)tacticCommand.Tactic);
             }
 
+            // Doctor Recursion (2026-07-15 faction-roster-v1 §1.8/§2.6): "your pause-window
+            // abilities each fire twice" — deterministic, zero randomness, no extra Authority
+            // cost. Army-wide: any active piece carrying the flag switches it on for the batch.
+            bool repeatAbilities = playerCombatants.Any(c => c.IsActive && c.Definition.RepeatsPauseAbilities);
+
             var usedAbilities = new HashSet<GrantedAbility>();
             foreach (var command in commands.Where(c => c.Type == CommandType.UseAbility))
             {
@@ -119,6 +126,65 @@ namespace DeadManZone.Core.Combat
                     return CommandResult.Fail("Duplicate ability");
 
                 usedAbilities.Add(command.Ability);
+
+                if (command.Ability == GrantedAbility.Echo)
+                {
+                    // Resonance Coil's Echo (§2.6): repeat the last ability issued this fight,
+                    // free. Border rule (§1.8): Paradox manipulates only its own tempo — Echo
+                    // replays an ability, never a SetTactic, and isn't itself echoable.
+                    bool sourceGrantsEcho =
+                        board.Pieces.Any(p => p.InstanceId == command.SourcePieceId && p.Definition.GrantedAbility == GrantedAbility.Echo)
+                        || (hqBoard != null && hqBoard.Pieces.Any(p => p.InstanceId == command.SourcePieceId && p.Definition.GrantedAbility == GrantedAbility.Echo));
+                    if (!sourceGrantsEcho)
+                    {
+                        authority = authoritySnapshot;
+                        return CommandResult.Fail("Source cannot grant Echo");
+                    }
+
+                    var echoed = tactics.LastAbilityCommand;
+                    if (echoed == null)
+                    {
+                        authority = authoritySnapshot;
+                        return CommandResult.Fail("No prior ability to echo");
+                    }
+
+                    var echoResult = CombatAbilityExecutor.Execute(
+                        echoed.Ability,
+                        echoed.SourcePieceId,
+                        board,
+                        playerCombatants,
+                        enemyCombatants,
+                        log,
+                        logSegment,
+                        globalTick,
+                        echoed.TargetCell,
+                        hqBoard,
+                        artilleryCount);
+                    if (!echoResult.Success)
+                    {
+                        authority = authoritySnapshot;
+                        return echoResult;
+                    }
+
+                    log.Append(logSegment, globalTick, command.SourcePieceId, "echo", echoed.SourcePieceId, (int)echoed.Ability);
+
+                    if (repeatAbilities)
+                        CombatAbilityExecutor.Execute(
+                            echoed.Ability,
+                            echoed.SourcePieceId,
+                            board,
+                            playerCombatants,
+                            enemyCombatants,
+                            log,
+                            logSegment,
+                            globalTick,
+                            echoed.TargetCell,
+                            hqBoard,
+                            artilleryCount);
+
+                    continue;
+                }
+
                 int cost = CombatAbilityExecutor.GetAuthorityCost(command.Ability, checkpointIndex);
                 if (authority < cost)
                 {
@@ -145,6 +211,46 @@ namespace DeadManZone.Core.Combat
                 }
 
                 authority -= cost;
+                tactics.LastAbilityCommand = command;
+
+                if (repeatAbilities)
+                    CombatAbilityExecutor.Execute(
+                        command.Ability,
+                        command.SourcePieceId,
+                        board,
+                        playerCombatants,
+                        enemyCombatants,
+                        log,
+                        logSegment,
+                        globalTick,
+                        command.TargetCell,
+                        hqBoard,
+                        artilleryCount);
+            }
+
+            foreach (var command in commands.Where(c => c.Type == CommandType.TransportTarget))
+            {
+                // §2.5 Armored Ark: "at the opening pause window the player targets a cell" —
+                // choice of WHERE, not when. No other window may (re)target a transport.
+                if (checkpointIndex != 0)
+                    return CommandResult.Fail("Transport targeting is opening-window only");
+
+                if (transportTargetSink == null || !command.TargetCell.HasValue)
+                    return CommandResult.Fail("Transport target cell required");
+
+                var transport = playerCombatants.FirstOrDefault(c =>
+                    c.InstanceId == command.SourcePieceId && c.IsTransport && c.IsActive);
+                if (transport == null)
+                    return CommandResult.Fail("Transport not found");
+
+                transportTargetSink[transport.InstanceId] = command.TargetCell.Value;
+                log.Append(
+                    logSegment,
+                    globalTick,
+                    transport.InstanceId,
+                    "transport_target",
+                    $"{command.TargetCell.Value.X},{command.TargetCell.Value.Y}",
+                    0);
             }
 
             foreach (var command in commands.Where(c =>

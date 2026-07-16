@@ -1,3 +1,5 @@
+using DeadManZone.Core;
+
 namespace DeadManZone.Core.Combat
 {
     /// <summary>Per-unit morale tuning (ADR-0005): at 0 morale a unit Breaks and routs —
@@ -26,5 +28,12 @@ namespace DeadManZone.Core.Combat
 
             return System.Math.Max(0, rawDamage * (100 - clampedPercent) / 100);
         }
+
+        /// <summary>2026-07-15 faction-roster-v1 §2.9/§4 Ashen death-shock inversion: an Ashen
+        /// death grants morale to nearby allies instead of draining it. Keyed directly off
+        /// FactionId (smaller than a new per-piece flag for a whole-faction passive) —
+        /// TickCombatRun.ApplyDeathShock branches on this.</summary>
+        public static bool IsDeathShockInverted(string factionId) =>
+            factionId == FactionIds.AshenCovenant;
     }
 }

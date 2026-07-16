@@ -41,6 +41,30 @@ namespace DeadManZone.Core.Combat
         /// added to by PieceAbilityEngine.ApplyToCombatants.</summary>
         public int MoraleDamageResistancePercent { get; set; }
 
+        /// <summary>2026-07-15 faction-roster-v1 §1.8 Suppression tentpole: ticks remaining on
+        /// an on-hit Suppression application (SuppressionRules). Refreshed, not stacked
+        /// (PROVISIONAL stacking rule) — a new hit resets this to the full duration.</summary>
+        public int SuppressionTicksRemaining { get; set; }
+
+        public bool IsSuppressed => SuppressionTicksRemaining > 0;
+
+        /// <summary>2026-07-15 faction-roster-v1 §2.5 transport tentpole: true for a fielded
+        /// transport piece (Definition.IsTransport). Transports are never embarked themselves.</summary>
+        public bool IsTransport { get; set; }
+
+        /// <summary>True while this piece rides inside a transport (TransportRules): off the
+        /// field, untargetable, doesn't move/attack, "never dies inside". Cleared on unload or
+        /// on the carrier's destruction (spill).</summary>
+        public bool IsEmbarked { get; set; }
+
+        /// <summary>Instance id of the transport carrying this piece, or null. Set at spawn from
+        /// PlacedPiece.CarrierInstanceId.</summary>
+        public string CarrierInstanceId { get; set; }
+
+        /// <summary>For a transport only: cargo instance ids currently embarked. Cleared on
+        /// unload/spill.</summary>
+        public IReadOnlyList<string> EmbarkedCargoIds { get; set; } = System.Array.Empty<string>();
+
         /// <summary>Effective armor steps for damage resolution: permanent + pause-scoped.</summary>
         public int TotalArmorSteps => ArmorBuffSteps + PauseArmorBuffSteps;
         public int DamageDealtThisFight { get; set; }
@@ -55,8 +79,11 @@ namespace DeadManZone.Core.Combat
         /// <summary>Morale-immune units (MaxMorale 0, e.g. structures) never break and take no morale damage.</summary>
         public bool CanBreak => Definition.MaxMorale > 0;
 
-        /// <summary>The liveness gate for FIGHTING — routed is alive but out of the fight.</summary>
-        public bool IsActive => IsAlive && !IsBroken;
+        /// <summary>The liveness gate for FIGHTING — routed is alive but out of the fight.
+        /// Embarked cargo (transport tentpole, §2.5) is also excluded: it can't move, attack,
+        /// be targeted, or be counted for the win check while riding, by construction of every
+        /// loop that already gates on IsActive.</summary>
+        public bool IsActive => IsAlive && !IsBroken && !IsEmbarked;
 
         public int EffectiveMovementSpeed =>
             System.Math.Max(0, Definition.MovementSpeed + MovementSpeedBonus);
