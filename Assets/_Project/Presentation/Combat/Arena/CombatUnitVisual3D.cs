@@ -42,6 +42,12 @@ namespace DeadManZone.Presentation.Combat.Arena
         private static readonly int HitFlashId = Shader.PropertyToID("_HitFlash");
         private static readonly int DissolveId = Shader.PropertyToID("_DissolveAmount");
         private static readonly int RingFillId = Shader.PropertyToID("_Fill");
+        private static readonly int RingGutterId = Shader.PropertyToID("_Gutter");
+
+        // Phase 0 verdict 2: the morale gutter (achromatic rim flicker) reads fine even at
+        // the louder 0.7/1.0 bands from the crowd captures, but the runtime driver stays on
+        // the subtle end on purpose — cap intensity at 0.35 rather than escalating with morale.
+        private const float MoraleGutterMaxIntensity = 0.35f;
 
         [Header("Rifle grip (hand-bone axes, world meters; shared default across archetypes)")]
         [SerializeField] private Vector3 rifleGripOffsetMeters = new(0f, 0.05f, 0.02f);
@@ -95,6 +101,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private CombatUnitMoraleStrip _moraleStrip;
         private float _ringTargetFill = 1f;
         private float _ringDisplayedFill = 1f;
+        private float _ringGutter;
         private float _visualHeight = 1.7f;
         private float _dieClipSeconds = FallbackDieClipSeconds;
         private float _yawOffsetDegrees;
@@ -167,6 +174,12 @@ namespace DeadManZone.Presentation.Combat.Arena
                 _moraleStrip = CombatUnitMoraleStrip.Attach(transform, 1f);
 
             _moraleStrip?.SetFraction(fraction);
+
+            // Ring's _Gutter: achromatic rim flicker, driven by MPB same as _Fill (no
+            // per-unit material instances). Solid morale (1) = no gutter; broken (0) ramps
+            // to the subtle 0.35 cap above.
+            _ringGutter = (1f - Mathf.Clamp01(fraction)) * MoraleGutterMaxIntensity;
+            ApplyRingFill();
         }
 
         /// <inheritdoc/>
@@ -490,6 +503,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _moraleStrip = null;
             _ringTargetFill = 1f;
             _ringDisplayedFill = 1f;
+            _ringGutter = 0f;
             _animator = null;
             _renderers.Clear();
             _spineBone = null;
@@ -978,8 +992,10 @@ namespace DeadManZone.Presentation.Combat.Arena
             ring.transform.SetParent(transform, false);
             ring.transform.localPosition = new Vector3(0f, 0.02f, 0f);
             ring.transform.localRotation = Quaternion.Euler(90f, 0f, 0f); // flat, facing up
-            // Shader draws to UV radius 0.48, so 0.95 ≈ the old 0.9-diameter spike disc.
-            ring.transform.localScale = new Vector3(0.95f, 0.95f, 1f);
+            // ~0.9x CELL outer diameter (Phase 0 verdict 4) — see CombatArenaVisualPlacement.
+            ring.transform.localScale = new Vector3(
+                CombatArenaVisualPlacement.RingBaseLocalScale,
+                CombatArenaVisualPlacement.RingBaseLocalScale, 1f);
 
             var ringRenderer = ring.GetComponent<MeshRenderer>();
             ringRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -992,6 +1008,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _ringMpb ??= new MaterialPropertyBlock();
             _ringTargetFill = 1f;
             _ringDisplayedFill = 1f;
+            _ringGutter = 0f;
             ApplyRingFill();
         }
 
@@ -1016,6 +1033,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             _ringRenderer.GetPropertyBlock(_ringMpb);
             _ringMpb.SetFloat(RingFillId, _ringDisplayedFill);
+            _ringMpb.SetFloat(RingGutterId, _ringGutter);
             _ringRenderer.SetPropertyBlock(_ringMpb);
         }
 

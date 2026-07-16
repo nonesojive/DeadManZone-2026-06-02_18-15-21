@@ -5,6 +5,22 @@ namespace DeadManZone.Presentation.Combat.Arena
     /// <summary>Uniform scale and ground alignment for arena prefabs (no footprint stretching).</summary>
     internal static class CombatArenaVisualPlacement
     {
+        // Phase 0 verdict 4 (docs/superpowers/specs/2026-07-phase0-verdicts.md): shrink the
+        // base health ring's outer diameter to ~0.9x the grid cell so neighboring rims don't
+        // kiss/overlap at 1-cell crowd spacing. CELL is shared by CombatArena3DDemoConfig and
+        // the run-flow CombatArenaConfig (both author cellWidth/cellDepth = 1.8 m).
+        private const float CellSizeMeters = 1.8f;
+        private const float RingDiameterCellRatio = 0.9f;
+        // Must match CombatRingFill's _RimOuterRadius default (UV-space radius from the quad
+        // center where the disc silhouette is clipped) so the scale below yields the intended
+        // world-space diameter: diameter = localScale * 2 * RingRimOuterRadiusUv.
+        private const float RingRimOuterRadiusUv = 0.48f;
+
+        /// <summary>Uniform local scale for a health-ring quad so its rendered outer diameter
+        /// is ~0.9x CELL. Vehicles widen further with their own multiplier on top of this.</summary>
+        public const float RingBaseLocalScale =
+            (CellSizeMeters * RingDiameterCellRatio) / (2f * RingRimOuterRadiusUv);
+
         public static void PlaceOnGround(Transform instance, Vector3 worldCenter, float targetHeight, float modelScale)
         {
             if (instance == null)

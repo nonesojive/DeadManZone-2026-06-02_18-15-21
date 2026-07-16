@@ -40,6 +40,10 @@ namespace DeadManZone.Presentation.Combat.Arena
         private static readonly int HitFlashId = Shader.PropertyToID("_HitFlash");
         private static readonly int DissolveId = Shader.PropertyToID("_DissolveAmount");
         private static readonly int RingFillId = Shader.PropertyToID("_Fill");
+        private static readonly int RingGutterId = Shader.PropertyToID("_Gutter");
+
+        // Phase 0 verdict 2 — same subtle cap as the humanoid visual (CombatUnitVisual3D).
+        private const float MoraleGutterMaxIntensity = 0.35f;
 
         private Transform _modelRoot;
         private readonly List<Renderer> _renderers = new();
@@ -50,6 +54,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private CombatUnitMoraleStrip _moraleStrip;
         private float _ringTargetFill = 1f;
         private float _ringDisplayedFill = 1f;
+        private float _ringGutter;
 
         private float _visualHeight = 2.2f;
         private float _yawOffsetDegrees;
@@ -95,6 +100,11 @@ namespace DeadManZone.Presentation.Combat.Arena
                 _moraleStrip = CombatUnitMoraleStrip.Attach(transform, RingScale);
 
             _moraleStrip?.SetFraction(fraction);
+
+            // Ring's _Gutter: achromatic rim flicker, driven by MPB same as _Fill (no
+            // per-unit material instances) — mirrors CombatUnitVisual3D's humanoid path.
+            _ringGutter = (1f - Mathf.Clamp01(fraction)) * MoraleGutterMaxIntensity;
+            ApplyRingFill();
         }
 
         /// <inheritdoc/>
@@ -324,6 +334,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _moraleStrip = null;
             _ringTargetFill = 1f;
             _ringDisplayedFill = 1f;
+            _ringGutter = 0f;
             _renderers.Clear();
             _walking = false;
             _dying = false;
@@ -506,7 +517,10 @@ namespace DeadManZone.Presentation.Combat.Arena
             ring.transform.SetParent(transform, false);
             ring.transform.localPosition = new Vector3(0f, 0.02f, 0f);
             ring.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            ring.transform.localScale = new Vector3(0.95f * RingScale, 0.95f * RingScale, 1f);
+            // ~0.9x CELL base outer diameter (Phase 0 verdict 4), widened by RingScale for
+            // the bigger vehicle silhouette — see CombatArenaVisualPlacement.
+            float ringLocalScale = CombatArenaVisualPlacement.RingBaseLocalScale * RingScale;
+            ring.transform.localScale = new Vector3(ringLocalScale, ringLocalScale, 1f);
 
             var ringRenderer = ring.GetComponent<MeshRenderer>();
             ringRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -519,6 +533,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _ringMpb ??= new MaterialPropertyBlock();
             _ringTargetFill = 1f;
             _ringDisplayedFill = 1f;
+            _ringGutter = 0f;
             ApplyRingFill();
         }
 
@@ -540,6 +555,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             _ringRenderer.GetPropertyBlock(_ringMpb);
             _ringMpb.SetFloat(RingFillId, _ringDisplayedFill);
+            _ringMpb.SetFloat(RingGutterId, _ringGutter);
             _ringRenderer.SetPropertyBlock(_ringMpb);
         }
     }
