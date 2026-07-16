@@ -79,7 +79,16 @@ namespace DeadManZone.Core.Run
                     // Own "arenaTheme" stream cell — must not draw from `rng`, or the
                     // theme roll would shift every pre-M4 seed's condition rolls.
                     ThemeId = ArenaThemes.Roll(runSeed, roundIndex, slot, army.EnemyFactionId),
-                    StrengthPreview = ArmyStrengthCalculator.Evaluate(army.BuildBoard()).EffectiveTotal
+
+                    // Preview what will actually MARCH, not the raw stat line: rate the enemy with
+                    // its fight-start engines applied — EXCEPT on Easy, where the enemy fields a
+                    // green force with those engines suppressed (see TickCombatRun's
+                    // suppressEnemyFightStartEngines). So Easy previews lower because it genuinely
+                    // IS weaker, and all three numbers are finally measured on the same basis.
+                    StrengthPreview = ArmyStrengthCalculator.Evaluate(
+                        army.BuildBoard(),
+                        buildBoards: null,
+                        includeFightStartEngines: tier != FightOptionTier.Easy).EffectiveTotal
                 });
             }
 

@@ -83,5 +83,61 @@ namespace DeadManZone.Core.Tests.EditMode
             var snapshot = ArmyStrengthCalculator.Evaluate(board);
             Assert.AreEqual(0, snapshot.BaseTotal);
         }
+
+        /// <summary>
+        /// Five infantry trips the `infantry` critical-mass rule (5 -> +10 Max HP each). ARMY
+        /// STRENGTH must SEE that. It previously did not: the rating only read synergy's damage and
+        /// armor, so every HP threshold and every HP aura in the game was invisible to the preview —
+        /// it understated exactly the compositions the game wants the player to build.
+        /// </summary>
+        [Test]
+        public void CriticalMass_RaisesEffectiveTotal_AboveBase()
+        {
+            var below = ArmyStrengthCalculator.Evaluate(BoardWithInfantry(4));
+            var above = ArmyStrengthCalculator.Evaluate(BoardWithInfantry(5));
+
+            // Below the threshold nothing fires: effective == base.
+            Assert.AreEqual(below.BaseTotal, below.EffectiveTotal,
+                "no rule active at 4 infantry, so effective must equal base");
+
+            // At the threshold every infantry gains HP, so effective must exceed base.
+            Assert.Greater(above.EffectiveTotal, above.BaseTotal,
+                "the infantry critical-mass rule (5 -> +10 HP) must be visible to ARMY STRENGTH");
+        }
+
+        /// <summary>
+        /// The Easy front fields a GREEN enemy: TickCombatRun suppresses that side's fight-start
+        /// engines. The preview has to model the same suppression or it over-states what the player
+        /// will actually face — and the three fronts stop being measured on the same basis.
+        /// </summary>
+        [Test]
+        public void SuppressedFightStartEngines_RateAsRawStatLine()
+        {
+            var board = BoardWithInfantry(5);
+
+            var buffed = ArmyStrengthCalculator.Evaluate(board);
+            var green = ArmyStrengthCalculator.Evaluate(
+                board, buildBoards: null, includeFightStartEngines: false);
+
+            Assert.AreEqual(green.BaseTotal, green.EffectiveTotal,
+                "engines off: the army rates at its raw stat line");
+            Assert.Less(green.EffectiveTotal, buffed.EffectiveTotal,
+                "a green force must preview weaker than the same board fighting with its engines on");
+        }
+
+        /// <summary>The real combat board: unzoned 6x6, same as BoardLayout.CreateCombatBoard().</summary>
+        private static BoardState BoardWithInfantry(int count)
+        {
+            var board = new BoardState(TestBoards.CombatLayout);
+            for (int i = 0; i < count; i++)
+            {
+                var infantry = TestPieces.CreateUnit($"infantry_{i}", primary: GameTagIds.Infantry);
+                Assert.IsTrue(
+                    board.TryPlace(infantry, new GridCoord(i, 0), $"infantry_{i}").Success,
+                    $"failed to place infantry_{i}");
+            }
+
+            return board;
+        }
     }
 }

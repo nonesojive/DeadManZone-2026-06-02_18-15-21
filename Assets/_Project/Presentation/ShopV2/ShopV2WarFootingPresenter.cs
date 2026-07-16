@@ -50,7 +50,12 @@ namespace DeadManZone.Presentation.ShopV2
             if (board == null)
                 return "—";
 
-            return ArmyStrengthCalculator.Evaluate(board).EffectiveTotal.ToString();
+            // Pass the full board set: combat evaluates synergy with the HQ board in scope, so
+            // rating the combat board alone under-reports HQ-fed auras.
+            return ArmyStrengthCalculator
+                .Evaluate(board, manager.Orchestrator.GetBuildBoards())
+                .EffectiveTotal
+                .ToString();
         }
 
         private static string EnemyPreviewDisplay(RunState state)

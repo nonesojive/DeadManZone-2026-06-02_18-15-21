@@ -65,10 +65,16 @@ namespace DeadManZone.Presentation.Run
                 RefreshPlayerStrength(assessment.Value.Player);
         }
 
-        public void RefreshMatchupFromBoards(BoardState playerBoard, BoardState enemyBoard)
+        public void RefreshMatchupFromBoards(
+            BoardState playerBoard,
+            BoardState enemyBoard,
+            BuildBoardSet playerBuildBoards = null)
         {
+            // Both sides are rated WITH their fight-start engines, so this comparison is like for
+            // like. The player passes the full board set because combat evaluates synergy with the
+            // HQ board in scope.
             var playerStrength = playerBoard != null
-                ? ArmyStrengthCalculator.Evaluate(playerBoard)
+                ? ArmyStrengthCalculator.Evaluate(playerBoard, playerBuildBoards)
                 : default;
             RefreshPlayerStrength(playerStrength);
 

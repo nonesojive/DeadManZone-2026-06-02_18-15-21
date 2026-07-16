@@ -222,7 +222,10 @@ namespace DeadManZone.Presentation.Run
                     try
                     {
                         var enemyBoard = RunManager.Instance.Orchestrator.GetUpcomingEnemyBoard();
-                        runHudView?.RefreshMatchupFromBoards(boardView.GetBoardState(), enemyBoard);
+                        runHudView?.RefreshMatchupFromBoards(
+                            boardView.GetBoardState(),
+                            enemyBoard,
+                            RunManager.Instance.Orchestrator.GetBuildBoards());
                     }
                     catch (System.Exception ex)
                     {
