@@ -48,6 +48,9 @@ namespace DeadManZone.Core.Board
         None,
         MortarShot,
         ShieldAllies,
-        CannonBlast
+        CannonBlast,
+        /// <summary>2026-07-15 faction-roster-v1 §2.2: Grand Battery's Rolling Barrage — a
+        /// bigger area strike than MortarShot that scales with the army's artillery-tag count.</summary>
+        RollingBarrage
     }
 }

@@ -45,6 +45,7 @@ MonoBehaviour:
   salvageChanceBonus: 0
   maxMorale: 40
   terrorDamage: 4
+  moraleDamageResistancePercent: 0
   attackSpeed: 1
   attackRange: 2
   movementSpeed: 0

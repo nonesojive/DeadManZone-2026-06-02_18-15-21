@@ -1,4 +1,6 @@
+using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
+using DeadManZone.Core.Common;
 using DeadManZone.Core.Content;
 using DeadManZone.Core.Run;
 using NUnit.Framework;
@@ -101,6 +103,76 @@ namespace DeadManZone.Core.Tests
                 }
             };
             Assert.AreEqual(9, ManpowerCalculator.ComputeCasualties(combatants));
+        }
+
+        // ---------------------------------------------------------------
+        // 2026-07-15 faction-roster-v1 §2.1 Field Hospital: post-fight, damaged-survivor
+        // Manpower loss is reduced when field_hospital is fielded on the HQ board.
+        // ---------------------------------------------------------------
+
+        [Test]
+        public void ComputeCasualties_WithFieldHospital_ReducesSurvivorLoss()
+        {
+            var rifle = TestPieces.RifleSquadTenMan();
+            var combatants = new[]
+            {
+                new CombatantState
+                {
+                    InstanceId = "rifle_1",
+                    Definition = rifle,
+                    CurrentHp = 78,
+                    DamageTakenThisFight = 22
+                }
+            };
+
+            var hqBoard = new BoardState(TestBoards.IronMarchHqLayout);
+            hqBoard.TryPlace(TestPieces.FieldHospital(), new GridCoord(0, 0), "field_hospital_1");
+
+            // Baseline (no hospital) is 2 (ComputeCasualties_Survivor_UsesDamageOverHpPerBody);
+            // -50% PROVISIONAL floors to 1.
+            Assert.AreEqual(1, ManpowerCalculator.ComputeCasualties(combatants, hqBoard));
+        }
+
+        [Test]
+        public void ComputeCasualties_WithoutFieldHospital_UnaffectedByOptionalBoard()
+        {
+            var rifle = TestPieces.RifleSquadTenMan();
+            var combatants = new[]
+            {
+                new CombatantState
+                {
+                    InstanceId = "rifle_1",
+                    Definition = rifle,
+                    CurrentHp = 78,
+                    DamageTakenThisFight = 22
+                }
+            };
+
+            var hqBoard = new BoardState(TestBoards.IronMarchHqLayout);
+            hqBoard.TryPlace(TestPieces.CommandOutpost(), new GridCoord(0, 0), "command_outpost_1");
+
+            Assert.AreEqual(2, ManpowerCalculator.ComputeCasualties(combatants, hqBoard));
+        }
+
+        [Test]
+        public void ComputeCasualties_FieldHospital_DoesNotReduceDeathCost()
+        {
+            var rifle = TestPieces.RifleSquadTenMan();
+            var combatants = new[]
+            {
+                new CombatantState
+                {
+                    InstanceId = "rifle_1",
+                    Definition = rifle,
+                    CurrentHp = 0,
+                    DamageTakenThisFight = 15
+                }
+            };
+
+            var hqBoard = new BoardState(TestBoards.IronMarchHqLayout);
+            hqBoard.TryPlace(TestPieces.FieldHospital(), new GridCoord(0, 0), "field_hospital_1");
+
+            Assert.AreEqual(10, ManpowerCalculator.ComputeCasualties(combatants, hqBoard), "insurance covers the wounded, not the dead");
         }
     }
 }

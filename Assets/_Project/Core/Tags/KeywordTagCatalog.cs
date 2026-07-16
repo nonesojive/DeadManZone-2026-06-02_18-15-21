@@ -51,6 +51,7 @@ namespace DeadManZone.Core.Tags
             Entry(GameTagIds.Echo, "Echo", TagCategory.Ability, "Doubles buffs given to this unit.", 35),
             Entry(GameTagIds.Toxic, "Toxic", TagCategory.Ability, "Applies toxic damage over time.", 33),
             Entry(GameTagIds.Ironclad, "Ironclad", TagCategory.Ability, "Extreme damage resistance under fire.", 31),
+            Entry(GameTagIds.MovementSlowAura, "Entrenching Works", TagCategory.Ability, "Adjacent enemy units' movement charge is slowed while this stands.", 29),
 
             // Flavor
             Entry(GameTagIds.Fortified, "Fortified", TagCategory.Flavor, "This unit has +1 armor.", 50),

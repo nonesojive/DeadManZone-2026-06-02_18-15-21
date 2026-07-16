@@ -47,6 +47,8 @@ namespace DeadManZone.Data
         public int maxMorale;
         [Tooltip("Morale damage dealt on every damaging hit (ADR-0005, M5). Terror builds rout instead of kill: faster, safer, poorer.")]
         public int terrorDamage;
+        [Tooltip("2026-07-15 faction-roster-v1: percent (0-100) this piece's own incoming morale damage is reduced by (Iron Guard).")]
+        public int moraleDamageResistancePercent;
         public AttackSpeedTier attackSpeed = AttackSpeedTier.Medium;
         public AttackRangeTier attackRange = AttackRangeTier.Medium;
         [Range(0, 4)]
@@ -140,6 +142,7 @@ namespace DeadManZone.Data
                 MaxMorale = maxMorale,
                 BaseDamage = baseDamage,
                 TerrorDamage = terrorDamage,
+                MoraleDamageResistancePercent = moraleDamageResistancePercent,
                 CooldownTicks = cooldownTicks,
                 RequisitionCost = requisitionCost,
                 ManpowerCost = manpowerCost,

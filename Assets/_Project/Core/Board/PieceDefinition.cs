@@ -24,6 +24,10 @@ namespace DeadManZone.Core.Board
         public int BaseDamage { get; init; }
         /// <summary>Morale damage dealt to the target on any damaging attack (ADR-0005 terror channel).</summary>
         public int TerrorDamage { get; init; }
+        /// <summary>Percent (0-100) this piece's own incoming morale damage is reduced by, before
+        /// any aura contribution (MoraleRules.ApplyResistance). 2026-07-15 faction-roster-v1 §2.2:
+        /// Iron Guard's "takes reduced morale damage".</summary>
+        public int MoraleDamageResistancePercent { get; init; }
         public int CooldownTicks { get; init; }
         public int RequisitionCost { get; init; }
         public int ManpowerCost { get; init; }

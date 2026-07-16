@@ -27,11 +27,22 @@ namespace DeadManZone.Core.Run
                 .Sum(p => p.Definition.ManpowerCost);
         }
 
-        public static int ComputeCasualties(IReadOnlyList<CombatantState> playerCombatants)
+        /// <summary>2026-07-15 faction-roster-v1 §2.1 Field Hospital: post-fight, reduces
+        /// Manpower lost to damaged-but-surviving units. "Priced painfully — insurance costs
+        /// tempo" per the design spec; PROVISIONAL magnitude, tune in playtest.</summary>
+        public const int FieldHospitalSurvivorCasualtyReductionPercent = 50;
+
+        private const string FieldHospitalPieceId = "field_hospital";
+
+        /// <param name="hqBoard">Optional HQ board to check for Field Hospital. field_hospital
+        /// is Building-primary, so it always resolves to the HQ board
+        /// (BoardPlacementRules.ResolveTargetBoard) — never the combat board.</param>
+        public static int ComputeCasualties(IReadOnlyList<CombatantState> playerCombatants, BoardState hqBoard = null)
         {
             if (playerCombatants == null || playerCombatants.Count == 0)
                 return 0;
 
+            bool hasFieldHospital = HasFieldHospital(hqBoard);
             int total = 0;
             foreach (var c in playerCombatants)
             {
@@ -52,11 +63,16 @@ namespace DeadManZone.Core.Run
 
                 int hpPerBody = HpPerBody(c.Definition);
                 int bodies = hpPerBody > 0 ? c.DamageTakenThisFight / hpPerBody : 0;
+                if (hasFieldHospital)
+                    bodies = bodies * (100 - FieldHospitalSurvivorCasualtyReductionPercent) / 100;
                 total += Math.Min(c.Definition.ManpowerCost, bodies);
             }
 
             return total;
         }
+
+        private static bool HasFieldHospital(BoardState hqBoard) =>
+            hqBoard != null && hqBoard.Pieces.Any(p => p.Definition.Id == FieldHospitalPieceId);
 
         public static int ComputeUpkeep(BoardState board, ContentRegistry content) =>
             ComputeFieldingRequirement(board, content);

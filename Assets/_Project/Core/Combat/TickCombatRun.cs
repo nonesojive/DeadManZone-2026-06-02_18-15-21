@@ -3,6 +3,7 @@ using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Run;
+using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Combat
 {
@@ -10,6 +11,8 @@ namespace DeadManZone.Core.Combat
     {
         private readonly CommandProcessor _commandProcessor = new();
         private readonly BoardState _playerBoard;
+        private readonly BoardState _playerHqBoard;
+        private readonly int _playerArtilleryCount;
         private readonly BattlefieldState _battlefield;
         private readonly BattlefieldLayout _layout;
         private readonly Rng _rng;
@@ -69,6 +72,11 @@ namespace DeadManZone.Core.Combat
             bool suppressEnemyFightStartEngines)
         {
             _playerBoard = playerBoard;
+            _playerHqBoard = playerBuildBoards?.Hq;
+            // Grand Battery's Rolling Barrage scales with this (2026-07-15 faction-roster-v1
+            // §2.2) — a fixed fight-start count, same reuse of BuildBoardTagCounter as the
+            // Marksman-Doctrine Officer's BoardPerTagCount sniper-count aura.
+            _playerArtilleryCount = BuildBoardTagCounter.Count(playerBuildBoards, GameTagIds.Artillery);
             _battlefield = BattlefieldState.FromBoards(playerBoard, enemyBoard);
             _layout = _battlefield.Layout;
             _rng = new Rng(seed);
@@ -298,6 +306,10 @@ namespace DeadManZone.Core.Combat
                     moveChargePerTick = moveChargePerTick * percentMultiplier / 100;
                 }
 
+                moveChargePerTick = MovementSlowRules.ApplyMovementSlow(
+                    moveChargePerTick,
+                    MovementSlowRules.IsSlowed(mover, targets));
+
                 mover.MoveCharge += moveChargePerTick;
 
                 var goal = RoleEngagement.ComputeGoal(mover, movers, aliveTargets, _layout);
@@ -434,7 +446,9 @@ namespace DeadManZone.Core.Combat
                 _log,
                 checkpointIndex,
                 CheckpointsFired,
-                GlobalTick);
+                GlobalTick,
+                hqBoard: _playerHqBoard,
+                artilleryCount: _playerArtilleryCount);
             Authority = authority;
 
             // Ability/strike kills inside the batch don't touch the occupancy grid
@@ -490,6 +504,10 @@ namespace DeadManZone.Core.Combat
             if (!target.CanBreak || !target.IsActive || amount <= 0)
                 return;
 
+            amount = MoraleRules.ApplyResistance(amount, target.MoraleDamageResistancePercent);
+            if (amount <= 0)
+                return;
+
             target.CurrentMorale -= amount;
             _log.Append(segment, GlobalTick, sourceId, "morale_damage", target.InstanceId, amount);
             if (target.CurrentMorale > 0)
@@ -540,7 +558,9 @@ namespace DeadManZone.Core.Combat
                     _playerCombatants,
                     PlayerWon,
                     IsDraw,
-                    ManpowerCalculator.ComputeCasualties(_playerCombatants),
+                    // field_hospital is Building-primary => always resolves to the HQ board
+                    // (BoardPlacementRules.ResolveTargetBoard), not the combat board.
+                    ManpowerCalculator.ComputeCasualties(_playerCombatants, _playerHqBoard),
                     suppliesEarned: 0,
                     enemyKilled: enemyKilled,
                     enemyRouted: enemyRouted)
@@ -626,7 +646,8 @@ namespace DeadManZone.Core.Combat
                     CooldownRemaining = 0,
                     AnchorPosition = anchor,
                     SpawnAnchorY = piece.Anchor.Y,
-                    ShapeOffsets = offsets
+                    ShapeOffsets = offsets,
+                    MoraleDamageResistancePercent = piece.Definition.MoraleDamageResistancePercent
                 };
                 combatant.RecomputeOccupiedCells();
                 _occupancyGrid.Place(combatant.InstanceId, anchor, offsets);

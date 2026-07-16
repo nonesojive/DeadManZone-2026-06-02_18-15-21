@@ -104,6 +104,7 @@ namespace DeadManZone.Core.Tags
                 SynergyStat.ArmorType => $"{signed} armor",
                 SynergyStat.MoveChargePercent => $"{signed}% move charge",
                 SynergyStat.AttackRange => $"{signed} attack range",
+                SynergyStat.MoraleResistancePercent => $"-{System.Math.Abs(magnitude)}% morale damage taken",
                 _ => string.Empty
             };
         }

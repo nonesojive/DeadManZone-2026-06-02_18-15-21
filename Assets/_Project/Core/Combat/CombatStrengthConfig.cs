@@ -30,6 +30,7 @@ namespace DeadManZone.Core.Combat
             GrantedAbility.MortarShot => 25f,
             GrantedAbility.ShieldAllies => 20f,
             GrantedAbility.CannonBlast => 35f,
+            GrantedAbility.RollingBarrage => 40f,
             _ => 0f
         };
     }

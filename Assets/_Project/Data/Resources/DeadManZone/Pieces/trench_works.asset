@@ -22,12 +22,14 @@ MonoBehaviour:
   tags:
   - Structure
   - Defender
+  - Entrenching Works
   - Fortification
   primary: structure
   combatRole: defender
   systemTag: 
   synergyTags: []
-  abilityTags: []
+  abilityTags:
+  - movement_slow_aura
   flavorTags:
   - fortification
   maxHp: 140
@@ -44,6 +46,7 @@ MonoBehaviour:
   salvageChanceBonus: 0
   maxMorale: 30
   terrorDamage: 0
+  moraleDamageResistancePercent: 0
   attackSpeed: 0
   attackRange: 1
   movementSpeed: 0

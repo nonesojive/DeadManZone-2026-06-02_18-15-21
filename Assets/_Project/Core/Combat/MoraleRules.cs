@@ -11,5 +11,20 @@ namespace DeadManZone.Core.Combat
         /// 8 → 6 after the 2026-07-12 34-unit cascade smoke — packed blobs should
         /// bleed morale, not domino.</summary>
         public const int DeathShockDamage = 6;
+
+        /// <summary>2026-07-15 faction-roster-v1: the seam for per-piece morale-damage
+        /// resistance (Iron Guard's own stat, Breakthrough Tank's aura). Percent is clamped
+        /// 0-100; damage is floored at 0, never negative.</summary>
+        public static int ApplyResistance(int rawDamage, int resistancePercent)
+        {
+            if (rawDamage <= 0)
+                return 0;
+
+            int clampedPercent = System.Math.Clamp(resistancePercent, 0, 100);
+            if (clampedPercent <= 0)
+                return rawDamage;
+
+            return System.Math.Max(0, rawDamage * (100 - clampedPercent) / 100);
+        }
     }
 }

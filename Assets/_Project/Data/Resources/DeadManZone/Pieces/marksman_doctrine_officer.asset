@@ -44,6 +44,7 @@ MonoBehaviour:
   salvageChanceBonus: 0
   maxMorale: 30
   terrorDamage: 0
+  moraleDamageResistancePercent: 0
   attackSpeed: 0
   attackRange: 3
   movementSpeed: 3
@@ -71,6 +72,7 @@ MonoBehaviour:
     magnitude: 1
     countTagId: sniper
     applyToSelf: 0
+    radius: 1
   combatArenaSprite: {fileID: 0}
   combatArena2DAnimations: {fileID: 0}
   combatArenaPrefab: {fileID: 0}

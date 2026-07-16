@@ -59,6 +59,11 @@ namespace DeadManZone.Core.Tags
         public const string Echo = "echo";
         public const string Toxic = "toxic";
         public const string Ironclad = "ironclad";
+        /// <summary>2026-07-15 faction-roster-v1 §2.1 Trench Works: while this piece stands,
+        /// adjacent enemy units' movement charge accrual is slowed (TickCombatRun.TryMoveSide).
+        /// Deliberately NOT the Suppression tag (§1.8 border rule reserves Suppression for
+        /// Crimson) — this is a narrower, permanent-while-adjacent movement debuff only.</summary>
+        public const string MovementSlowAura = "movement_slow_aura";
 
         // Flavor
         public const string Fortified = "fortified";

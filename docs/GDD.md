@@ -83,6 +83,9 @@ Spent on shop offers and rerolls. Running out means you can't buy; it does not k
   - **Survived but damaged** → partial bodies: `DamageTaken / (MaxHp / ManpowerCost)`, capped at
     `ManpowerCost`.
   - **Routed (`IsBroken`)** → **costs nothing.** *Routing is how you save lives.*
+  - **`field_hospital` fielded** (2026-07-15 faction-roster-v1): the "survived but damaged" bodies
+    figure is cut **-50%** (PROVISIONAL). `ComputeCasualties` takes an optional HQ `BoardState` and
+    checks for the piece by id there (`field_hospital` is Building-primary, always HQ-board).
 - **Income (Muster):** `faction.baseMusterPerShop + Σ piece.MusterPerShop + supply-synergy pairs`
   (`MusterCalculator`). Each adjacent pair of `supplier`/`supply_line` pieces = **+2**.
 - **Emergency Draft:** once per run, covers a shortfall (`EmergencyDraft.TryUse`).
@@ -364,7 +367,12 @@ minimum 1
 - **Attack speed** → cooldown: Slow ×1.5, Medium ×1.0, Fast ×0.75.
 - **Range** (Chebyshev): Melee 1, Short 3, Medium 5, Long 8.
 - **Movement:** charge accrues `movementSpeed + 1`/tick; a step costs **100** (**200** through
-  neutral ground — see §5).
+  neutral ground — see §5). `trench_works` (2026-07-15 faction-roster-v1) cuts a tick's charge
+  accrual **-50%** (PROVISIONAL) for any enemy unit within 1 cell (Chebyshev) of it —
+  `MovementSlowRules.IsSlowed`, keyed off `GameTagIds.MovementSlowAura`. This
+  is a live cross-side check in the tick loop, not the pre-fight `AdjacentAura` engine (which only
+  ever sees one side's own board) — and deliberately not Suppression (§1.8 reserves that for
+  Crimson).
 - **Accuracy:** Melee 92, Piercing 80, Gas 75, Explosive 72, Shredding 68, default 78.
   Snipers 88; Artillery floor 72.
 
@@ -375,6 +383,12 @@ minimum 1
 - **Terror damage** is morale damage on hit (e.g. `machine_gun_nest`).
 - **Routed units cost no Manpower.** Dead ones cost full. Morale is the difference between a
   bloodied army and a dead run.
+- **Morale-damage resistance** (2026-07-15 faction-roster-v1, `MoraleRules.ApplyResistance` +
+  `CombatantState.MoraleDamageResistancePercent`): a percent (0-100, clamped) reduction applied to
+  every incoming morale hit before the break check. Two sources stack: a piece's own
+  `PieceDefinition.MoraleDamageResistancePercent` (Iron Guard, **-40%** PROVISIONAL) and
+  Breakthrough Tank's `AdjacentAura` (`SynergyStat.MoraleResistancePercent`, **-25%** PROVISIONAL,
+  infantry within 2 board-adjacency hops).
 
 ### Win / loss / draw
 - A side loses when it has no `IsActive` fighters with `MaxHp > 0` — **all dead *or* all routed**.
@@ -422,8 +436,8 @@ instruction; see `IronmarchUnionContentFactory.Pieces.cs` for the `// PROVISIONA
 | supply_depot | building | utility | C | 10 | 0 | 50 | — | **+5 Supplies/round** |
 | recruitment_office | building | utility | C | 10 | 0 | 35 | — | +Muster/shop |
 | machine_gun_nest | structure | defender | U | 15 | 2 | 100 | 2 | terror ping (`maxMorale`40/`terrorDamage`4); **Combat** board |
-| trench_works | structure | defender | U | 15 | 2 | 140 | — | HP wall; enemy-adjacency movement slow **omitted** (no seam — new tech) |
-| field_hospital | building | support | U | 15 | 0 | 60 | — | post-fight Manpower reduction **omitted** (no seam — new tech) |
+| trench_works | structure | defender | U | 15 | 2 | 140 | — | HP wall; adjacent enemy movement-charge accrual **-50%** (PROVISIONAL) while it lives — live tick-sim proximity check, `GameTagIds.MovementSlowAura` (`MovementSlowRules.IsSlowed`); deliberately not Suppression (Crimson-exclusive, §1.8) |
+| field_hospital | building | support | U | 15 | 0 | 60 | — | post-fight: damaged survivors' Manpower-cost bodies **-50%** (PROVISIONAL) — `ManpowerCalculator.ComputeCasualties(playerCombatants, hqBoard)` detects it by id on the HQ board |
 
 ### IronMarch Union — "The Relentless War Machine" (§2.2)
 
@@ -433,17 +447,34 @@ instruction; see `IronmarchUnionContentFactory.Pieces.cs` for the `// PROVISIONA
 | line_grenadiers | infantry | assault | C | 10 | 1 | 45 | 8 | explosive — anti-structure/anti-heavy via the attack-type triangle |
 | field_mortar_team | infantry | artillery | C | 10 | 2 | 30 | 7 | artillery count piece |
 | sharpshooter | infantry | sniper | C | 10 | 1 | 30 | 6 | sniper count piece |
-| iron_guard | infantry | defender | C | 10 | 2 | 70 | 4 | reduced morale damage **omitted** (no per-piece morale-resist stat — new tech) |
+| iron_guard | infantry | defender | C | 10 | 2 | 70 | 4 | takes **-40%** morale damage (PROVISIONAL) — `PieceDefinition.MoraleDamageResistancePercent` + `MoraleRules.ApplyResistance` |
 | command_outpost | building | utility | C | 10 | 0 | 40 | — | **+1 Authority/round**, `command` |
 | forward_observer | infantry | support | U | 15 | 1 | 25 | — | adjacent artillery: +1 attack-speed tier |
 | shock_sergeant | infantry | utility | U | 15 | 1 | 35 | 5 | `command`; adjacent assault infantry: +2 damage |
-| artillery_park | building | utility | U | 15 | 0 | 90 | — | *Ranging Barrage* tactic **omitted** — HQ pause-abilities aren't wired (§4 ledger, 🟡) |
-| breakthrough_tank | vehicle | tank | R | 25 | 4 | 90 | 8 | terror ≥2× dmg (wired: `terrorDamage`16); nearby-infantry morale resistance **omitted** (new tech) |
-| grand_battery | structure | artillery | R | 25 | 3 | 110 | 10 | **Combat board.** *Rolling Barrage* approximated with the existing `GrantedAbility.MortarShot`; artillery-count scaling **not** implemented |
+| artillery_park | building | utility | U | 15 | 0 | 90 | — | **HQ board.** *Ranging Barrage* = `GrantedAbility.MortarShot`, now fires from the HQ board — see §10's new HQ-ability wire |
+| breakthrough_tank | vehicle | tank | R | 25 | 4 | 90 | 8 | terror ≥2× dmg (wired: `terrorDamage`16 = 2×`baseDamage`8); adjacent infantry **within 2 board-hops** take **-25%** morale damage (PROVISIONAL) — `AdjacentAura` at `Radius`2 |
+| grand_battery | structure | artillery | R | 25 | 3 | 110 | 10 | **Combat board.** *Rolling Barrage* = its own `GrantedAbility.RollingBarrage`: radius-2 strike, damage `40 + 8×armyArtilleryCount` (PROVISIONAL) |
 | marksman_doctrine_officer | infantry | sniper | R | 25 | 2 | 35 | 6 | stealth until 2nd window (`CombatStealthRules`); snipers +1 dmg per sniper in army (`BoardPerTagCount`) |
 
-**Granted abilities:** `MortarShot` (area, pause 0), `ShieldAllies` (protect allies at pause),
-`CannonBlast` (heavy blast, pause 1 — **defined but unused by any piece**).
+**Granted abilities:** `MortarShot` (area, pause 0/1 — Grand Battery no longer uses this, Artillery
+Park now does), `ShieldAllies` (protect allies at pause), `CannonBlast` (heavy blast, pause 1 —
+**defined but unused by any piece**), `RollingBarrage` (bigger area strike scaling with artillery
+count — Grand Battery only).
+
+### HQ-board granted abilities (2026-07-15 faction-roster-v1 §4, was 🟡 "new wire")
+Fight-start ability evaluation already read both boards for auras/counts
+(`PieceAbilityEngine.EvaluateFightStart(combatBoard, buildBoards)`), but pause-window
+**`GrantedAbility` execution** only ever scanned the combat board — HQ buildings could never
+surface or fire an ability. Minimal fix, no new abstraction:
+- `TickCombatRun` now keeps the player's HQ `BoardState` (`_playerHqBoard`) alongside the combat
+  board it already held.
+- `CommandProcessor.GetAvailableCommands(board, requisition, checkpointIndex, hqBoard)` scans
+  `board.Pieces.Concat(hqBoard.Pieces)` so HQ granted-ability sources show up as commands.
+- `CombatAbilityExecutor.Execute(..., hqBoard, artilleryCount)`: if the source instance isn't a
+  live combatant (HQ pieces are never spawned into the fight), it falls back to looking the piece
+  up on `hqBoard` and treats it as always-active — buildings can't be attacked off-board, so
+  there's no "is it alive" question to ask.
+- Consumer: `artillery_park`'s *Ranging Barrage* (`GrantedAbility.MortarShot`).
 
 ---
 

@@ -169,7 +169,8 @@ namespace DeadManZone.Data.Editor
             PieceAbilityInlineEntry[] customAbilities = null,
             Rarity rarity = Rarity.Common,
             int? maxMorale = null,
-            int terrorDamage = 0)
+            int terrorDamage = 0,
+            int moraleDamageResistancePercent = 0)
         {
             var piece = DemoContentGenerator.SavePiece(
                 id,
@@ -197,7 +198,8 @@ namespace DeadManZone.Data.Editor
                 abilityTags: abilityTags ?? Array.Empty<string>(),
                 rarity: rarity,
                 maxMorale: maxMorale,
-                terrorDamage: terrorDamage);
+                terrorDamage: terrorDamage,
+                moraleDamageResistancePercent: moraleDamageResistancePercent);
 
             piece.flavorTags = flavorTags ?? Array.Empty<string>();
             piece.catalogAbilities = Array.Empty<AbilityDefinitionSO>();
@@ -224,7 +226,8 @@ namespace DeadManZone.Data.Editor
             int magnitude,
             string countTagId = null,
             NeighborFilter neighborFilter = default,
-            bool applyToSelf = false) => new()
+            bool applyToSelf = false,
+            int radius = 1) => new()
             {
                 id = id,
                 trigger = trigger,
@@ -233,7 +236,8 @@ namespace DeadManZone.Data.Editor
                 magnitude = magnitude,
                 countTagId = countTagId,
                 neighborFilter = neighborFilter,
-                applyToSelf = applyToSelf
+                applyToSelf = applyToSelf,
+                radius = radius
             };
 
         private static FactionSO SaveIronmarchFaction()

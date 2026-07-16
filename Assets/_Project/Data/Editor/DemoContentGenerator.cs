@@ -60,7 +60,8 @@ namespace DeadManZone.Data.Editor
             int movementSpeed = 2,
             Rarity rarity = Rarity.Common,
             int? maxMorale = null,
-            int terrorDamage = 0)
+            int terrorDamage = 0,
+            int moraleDamageResistancePercent = 0)
         {
             var path = $"{Root}/Pieces/{id}.asset";
             var asset = LoadOrCreate<PieceDefinitionSO>(path);
@@ -90,6 +91,7 @@ namespace DeadManZone.Data.Editor
             // (vehicles ride higher at their call sites). M5 initial, tune in playtest.
             asset.maxMorale = maxMorale ?? (category == PieceCategory.Building ? 0 : 30);
             asset.terrorDamage = terrorDamage;
+            asset.moraleDamageResistancePercent = moraleDamageResistancePercent;
             asset.baseDamage = baseDamage;
             asset.cooldownTicks = cooldownTicks;
             asset.requisitionCost = requisitionCost;

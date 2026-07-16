@@ -47,12 +47,13 @@ MonoBehaviour:
   salvageChanceBonus: 0
   maxMorale: 30
   terrorDamage: 0
+  moraleDamageResistancePercent: 0
   attackSpeed: 0
   attackRange: 3
   movementSpeed: 0
   armorType: 1
   attackType: 2
-  grantedAbility: 1
+  grantedAbility: 4
   accuracyOverride: 0
   factionId: ironmarch_union
   icon: {fileID: 0}

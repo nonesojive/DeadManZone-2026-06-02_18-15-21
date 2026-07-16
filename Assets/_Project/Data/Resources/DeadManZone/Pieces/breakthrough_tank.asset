@@ -45,6 +45,7 @@ MonoBehaviour:
   salvageChanceBonus: 0
   maxMorale: 50
   terrorDamage: 16
+  moraleDamageResistancePercent: 0
   attackSpeed: 0
   attackRange: 2
   movementSpeed: 1
@@ -57,7 +58,22 @@ MonoBehaviour:
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
   cellSprites: []
   catalogAbilities: []
-  customAbilities: []
+  customAbilities:
+  - id: breakthrough_tank_infantry_morale_resist
+    cardDescription: 
+    trigger: 0
+    neighborFilter:
+      PrimaryTagId: infantry
+      CombatRoleTagId: 
+      SystemTagId: 
+      SynergyTagId: 
+      AbilityTagId: 
+    stat: 7
+    modType: 2
+    magnitude: 25
+    countTagId: 
+    applyToSelf: 0
+    radius: 2
   combatArenaSprite: {fileID: 0}
   combatArena2DAnimations: {fileID: 0}
   combatArenaPrefab: {fileID: 0}

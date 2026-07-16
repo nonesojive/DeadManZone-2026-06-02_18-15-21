@@ -69,23 +69,24 @@ namespace DeadManZone.Data.Editor
                 AttackSpeedTier.Medium, AttackRangeTier.Medium, 0, synergyTags: new[] { GameTagIds.Entrenched }, flavorTags: new[] { GameTagIds.Fortification },
                 rarity: Rarity.Uncommon, maxMorale: 40, terrorDamage: 4),
 
-            // Uncommon — HP wall; footprint matches §2.1's "3 (L)" exactly.
-            // TODO (new-tech boundary): "slows adjacent enemy movement" is an enemy-facing
-            // adjacency debuff. No such seam exists (AdjacentAura only resolves within one
-            // side's own board; any enemy-slow effect is a suppression variant per §1.8's
-            // border rule and Suppression is Crimson-exclusive). Stubbed — stat body only.
+            // Uncommon — HP wall; footprint matches §2.1's "3 (L)" exactly. "Slows adjacent
+            // enemy movement": a live tick-sim proximity check (TickCombatRun.TryMoveSide +
+            // GameTagIds.MovementSlowAura), NOT the Suppression tag — §1.8's border rule
+            // reserves Suppression for Crimson; this is a narrower, permanent-while-adjacent
+            // movement debuff only.
             SavePiece("trench_works", "Trench Works", PieceCategory.Unit, Tromino3,
                 GameTagIds.Structure, GameTagIds.Defender, "neutral", 140, 0, 2, AttackType.None, ArmorType.Light,
-                AttackSpeedTier.Slow, AttackRangeTier.Short, 0, flavorTags: new[] { GameTagIds.Fortification },
+                AttackSpeedTier.Slow, AttackRangeTier.Short, 0,
+                abilityTags: new[] { GameTagIds.MovementSlowAura },
+                flavorTags: new[] { GameTagIds.Fortification },
                 rarity: Rarity.Uncommon),
 
             // Uncommon — "priced painfully": Neutral has no rares to push this into, and price
             // is rarity-derived (GDD §14 principle 8), so the spec's pricing intent can't be
             // represented; flagged here rather than faked with an authored price override.
-            // TODO (new-tech boundary): post-fight "reduces Manpower lost to damaged survivors"
-            // needs a building-aware hook into ManpowerCalculator.ComputeCasualties (currently a
-            // pure function of combatants only, no board/building parameter) — that's new
-            // wiring, not a one-liner. Stubbed — stat body only.
+            // Post-fight "reduces Manpower lost to damaged survivors" wired via
+            // ManpowerCalculator.ComputeCasualties(playerCombatants, hqBoard) — field_hospital
+            // is detected by id on the HQ board (Building-primary pieces always live there).
             SavePiece("field_hospital", "Field Hospital", PieceCategory.Building, Tromino3,
                 GameTagIds.Building, GameTagIds.Support, "neutral", 60, 0, 0, AttackType.None, ArmorType.Light,
                 AttackSpeedTier.Slow, AttackRangeTier.Short, 0, synergyTags: new[] { GameTagIds.Medic },
@@ -130,14 +131,12 @@ namespace DeadManZone.Data.Editor
             // Common — defender. PROVISIONAL: footprint kept at 1 cell (spec says 3), same
             // smallest-diff reasoning as conscript_rifles (preserves the old bulwark_squad
             // anchors in BossRoster.cs / IronmarchEnemyFactory.cs).
-            // TODO (new-tech boundary): "takes reduced morale damage" needs a per-piece morale-
-            // damage-resistance stat. No such stat exists on SynergyStat/CombatantState/
-            // MoraleRules today — stubbed, stat body only (HP/armor carry the "line-holder"
-            // identity instead).
+            // "Takes reduced morale damage" wired via PieceDefinition.MoraleDamageResistancePercent
+            // + MoraleRules.ApplyResistance (TickCombatRun.ApplyMoraleDamage). PROVISIONAL magnitude.
             SavePiece("iron_guard", "Iron Guard", PieceCategory.Unit, DemoSandboxShapes.Single,
                 GameTagIds.Infantry, GameTagIds.Defender, FactionIds.IronmarchUnion, 70, 4, 2, AttackType.Ballistic, ArmorType.Medium,
                 AttackSpeedTier.Slow, AttackRangeTier.Short, 1,
-                rarity: Rarity.Common),
+                rarity: Rarity.Common, moraleDamageResistancePercent: 40),
 
             // Common — +1 Authority/round, `command`. Id/ability/footprint kept identical;
             // combat role reclassified Support→Utility to match §2.2's Role column exactly
@@ -173,30 +172,39 @@ namespace DeadManZone.Data.Editor
                 rarity: Rarity.Uncommon),
 
             // Uncommon — HQ building. Footprint matches §2.2's "3" exactly.
-            // TODO (new-tech boundary): *Ranging Barrage* (a tactic/pause-window ability) can't
-            // fire from here — HQ-board pieces are never fielded as combatants (§5: HQ is
-            // economy-only), and "HQ buildings granting pause abilities" is an unwired 🟡 ledger
-            // item (§4). Stubbed — no grantedAbility; stat body only.
+            // *Ranging Barrage* now fires from here: CommandProcessor/CombatAbilityExecutor were
+            // extended to also scan the HQ board for GrantedAbility sources (§4 ledger 🟡, now
+            // wired — see TickCombatRun._playerHqBoard). Reuses the existing small-area
+            // GrantedAbility.MortarShot (unscaled) — Grand Battery's Rolling Barrage is the
+            // scaled, bigger sibling on its own enum value.
             SavePiece("artillery_park", "Artillery Park", PieceCategory.Building, Tromino3,
                 GameTagIds.Building, GameTagIds.Utility, FactionIds.IronmarchUnion, 90, 0, 0, AttackType.None, ArmorType.Light,
-                AttackSpeedTier.Slow, AttackRangeTier.Short, 0,
+                AttackSpeedTier.Slow, AttackRangeTier.Short, 0, grantedAbility: GrantedAbility.MortarShot,
                 rarity: Rarity.Uncommon),
 
-            // Rare — terror ≥2x damage (🟢 existing seam, wired: terrorDamage = 2x baseDamage).
-            // TODO (new-tech boundary): "infantry within 2 cells gain morale resistance" needs
-            // a per-piece morale-damage-resistance stat (same gap as iron_guard) — stubbed.
+            // Rare — terror ≥2x damage (🟢 existing seam, wired: terrorDamage = 2x baseDamage;
+            // 16 = 2x the 8 baseDamage). "Infantry within 2 cells gain morale resistance" wired
+            // via an AdjacentAura at radius 2 (PieceAbilityEngine BFS over board-adjacency hops)
+            // targeting SynergyStat.MoraleResistancePercent — same resistance stat as Iron Guard.
             SavePiece("breakthrough_tank", "Breakthrough Tank", PieceCategory.Unit, DemoSandboxShapes.Square2x2,
                 GameTagIds.Vehicle, GameTagIds.Tank, FactionIds.IronmarchUnion, 90, 8, 4, AttackType.Ballistic, ArmorType.Heavy,
                 AttackSpeedTier.Slow, AttackRangeTier.Medium, 1, flavorTags: new[] { GameTagIds.Shells },
+                customAbilities: new[]
+                {
+                    Ability("breakthrough_tank_infantry_morale_resist", PieceAbilityTrigger.AdjacentAura, SynergyStat.MoraleResistancePercent, SynergyModType.Percent, 25,
+                        neighborFilter: new NeighborFilter { PrimaryTagId = GameTagIds.Infantry },
+                        radius: 2)
+                },
                 rarity: Rarity.Rare, maxMorale: 50, terrorDamage: 16),
 
             // Rare — combat-board structure (primary: structure → Combat board per §5's
-            // machine_gun_nest gotcha). *Rolling Barrage* approximated with the existing
-            // GrantedAbility.MortarShot pause-window area strike (one-liner reuse of already-
-            // wired tech); "scaling with artillery count" is NOT implemented — TODO.
+            // machine_gun_nest gotcha). *Rolling Barrage* is its own GrantedAbility (bigger
+            // radius than MortarShot) scaling with the army's artillery-tag count, read directly
+            // from TickCombatRun._playerArtilleryCount (BuildBoardTagCounter over both boards) —
+            // no new Critical-Mass rule needed, per §3's "tactic-scaling may read counts directly".
             SavePiece("grand_battery", "Grand Battery", PieceCategory.Unit, DemoSandboxShapes.Square2x2,
                 GameTagIds.Structure, GameTagIds.Artillery, FactionIds.IronmarchUnion, 110, 10, 3, AttackType.Explosive, ArmorType.Light,
-                AttackSpeedTier.Slow, AttackRangeTier.Long, 0, grantedAbility: GrantedAbility.MortarShot,
+                AttackSpeedTier.Slow, AttackRangeTier.Long, 0, grantedAbility: GrantedAbility.RollingBarrage,
                 flavorTags: new[] { GameTagIds.Shells, GameTagIds.Siege },
                 rarity: Rarity.Rare),
 

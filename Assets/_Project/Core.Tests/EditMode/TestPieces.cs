@@ -119,6 +119,17 @@ namespace DeadManZone.Core.Tests
             CommandActions = CommandActionFlags.SpendRequisitionBuff
         };
 
+        /// <summary>2026-07-15 faction-roster-v1: id-detected by ManpowerCalculator.ComputeCasualties on the HQ board.</summary>
+        public static PieceDefinition FieldHospital() => new()
+        {
+            Id = "field_hospital",
+            DisplayName = "Field Hospital",
+            Category = PieceCategory.Building,
+            Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
+            MaxHp = 60,
+            ManpowerCost = 0
+        };
+
         public static PieceDefinition CommandOutpost() => new()
         {
             Id = "command_outpost",

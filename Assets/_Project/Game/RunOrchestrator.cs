@@ -426,7 +426,8 @@ namespace DeadManZone.Game
             return _commandProcessor.GetAvailableCommands(
                 GetCombatBoard(),
                 _activeCombat.Requisition,
-                _activeCombat.CurrentPauseIndex);
+                _activeCombat.CurrentPauseIndex,
+                GetBuildBoards()?.Hq);
         }
 
         public int GetPrimaryActionBudget() => 1;
@@ -642,7 +643,8 @@ namespace DeadManZone.Game
             // round's salvage offers toward rarer spoils (boss tiers are null → false).
             State.SalvageHardBoost = playerWon && activeTier == FightOptionTier.Hard && !isBossFight;
             var playerCombatants = result.PlayerCombatantsAtEnd ?? Array.Empty<CombatantState>();
-            int casualties = ManpowerCalculator.ComputeCasualties(playerCombatants);
+            // field_hospital is Building-primary => always resolves to the HQ board.
+            int casualties = ManpowerCalculator.ComputeCasualties(playerCombatants, GetBuildBoards()?.Hq);
             // Manpower is run health (ADR-0005): no clamp here — the deficit must
             // survive until AFTER the post-fight grants (muster, hard-victory package)
             // so they get their chance to save the run before the defeat check.

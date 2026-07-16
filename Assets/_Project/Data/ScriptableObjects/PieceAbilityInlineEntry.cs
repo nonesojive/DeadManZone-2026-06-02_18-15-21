@@ -15,6 +15,8 @@ namespace DeadManZone.Data
         public int magnitude;
         public string countTagId;
         public bool applyToSelf;
+        /// <summary>AdjacentAura hop count. 0/1 = literal board-touching adjacency (default).</summary>
+        public int radius = 1;
 
         public PieceAbilityDefinition ToCore() => new()
         {
@@ -26,7 +28,8 @@ namespace DeadManZone.Data
             ModType = modType,
             Magnitude = magnitude,
             CountTagId = countTagId,
-            ApplyToSelf = applyToSelf
+            ApplyToSelf = applyToSelf,
+            Radius = radius
         };
     }
 }

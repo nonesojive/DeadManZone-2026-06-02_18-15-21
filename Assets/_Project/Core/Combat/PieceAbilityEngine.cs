@@ -16,6 +16,7 @@ namespace DeadManZone.Core.Combat
             public int MaxHpPercent { get; init; }
             public int AttackSpeedSteps { get; init; }
             public int MovementSpeedBonus { get; init; }
+            public int MoraleResistancePercent { get; init; }
         }
 
         public readonly struct SynergyLink
@@ -100,6 +101,7 @@ namespace DeadManZone.Core.Combat
                 combatant.MoveCharge += bonuses.MoveChargeBonus;
                 combatant.AttackSpeedSteps += bonuses.AttackSpeedSteps;
                 combatant.MovementSpeedBonus += bonuses.MovementSpeedBonus;
+                combatant.MoraleDamageResistancePercent += bonuses.MoraleResistancePercent;
 
                 if (bonuses.MaxHpFlat == 0 && bonuses.MaxHpPercent == 0)
                     continue;
@@ -124,23 +126,21 @@ namespace DeadManZone.Core.Combat
                 if (abilities == null || abilities.Count == 0)
                     continue;
 
-                var adjacentPieces = GetAdjacentPieces(board, source.InstanceId, piecesById);
-                if (adjacentPieces.Count == 0)
-                    continue;
-
                 for (int i = 0; i < abilities.Count; i++)
                 {
                     var ability = abilities[i];
                     if (ability.Trigger != PieceAbilityTrigger.AdjacentAura)
                         continue;
 
-                    for (int neighborIndex = 0; neighborIndex < adjacentPieces.Count; neighborIndex++)
+                    int radius = ability.Radius <= 1 ? 1 : ability.Radius;
+                    var reachablePieces = GetPiecesWithinHops(board, source.InstanceId, piecesById, radius);
+                    for (int neighborIndex = 0; neighborIndex < reachablePieces.Count; neighborIndex++)
                     {
-                        var adjacentPiece = adjacentPieces[neighborIndex];
-                        if (!ability.NeighborFilter.Matches(adjacentPiece.Definition))
+                        var reachablePiece = reachablePieces[neighborIndex];
+                        if (!ability.NeighborFilter.Matches(reachablePiece.Definition))
                             continue;
 
-                        string targetId = ability.ApplyToSelf ? source.InstanceId : adjacentPiece.InstanceId;
+                        string targetId = ability.ApplyToSelf ? source.InstanceId : reachablePiece.InstanceId;
                         ApplyEffect(source.InstanceId, targetId, ability, resultsById, links);
                     }
                 }
@@ -222,22 +222,42 @@ namespace DeadManZone.Core.Combat
             }
         }
 
-        private static List<PlacedPiece> GetAdjacentPieces(
+        /// <summary>BFS over board-touching adjacency out to <paramref name="hops"/> steps.
+        /// hops=1 is exactly <see cref="GetAdjacentPieces"/>; "within 2 cells" (Breakthrough
+        /// Tank) reuses this same board-topology adjacency at hops=2 rather than introducing
+        /// raw grid-distance geometry (2026-07-15 faction-roster-v1 §2.2).</summary>
+        private static List<PlacedPiece> GetPiecesWithinHops(
             BoardState board,
             string sourceId,
-            IReadOnlyDictionary<string, PlacedPiece> piecesById)
+            IReadOnlyDictionary<string, PlacedPiece> piecesById,
+            int hops)
         {
-            // ponytail: duplicated adjacency helper for this engine; ceiling is dual maintenance drift, upgrade path is a shared internal adjacency utility.
-            var adjacentPieces = new List<PlacedPiece>();
-            foreach (var adjacentId in board.GetAdjacentInstanceIds(sourceId))
-            {
-                if (!piecesById.TryGetValue(adjacentId, out var adjacentPiece))
-                    continue;
+            var visited = new HashSet<string>(System.StringComparer.Ordinal) { sourceId };
+            var frontier = new List<string> { sourceId };
+            var result = new List<PlacedPiece>();
 
-                adjacentPieces.Add(adjacentPiece);
+            for (int hop = 0; hop < hops; hop++)
+            {
+                var nextFrontier = new List<string>();
+                foreach (var id in frontier)
+                {
+                    foreach (var adjacentId in board.GetAdjacentInstanceIds(id))
+                    {
+                        if (!visited.Add(adjacentId))
+                            continue;
+
+                        nextFrontier.Add(adjacentId);
+                        if (piecesById.TryGetValue(adjacentId, out var piece))
+                            result.Add(piece);
+                    }
+                }
+
+                frontier = nextFrontier;
+                if (frontier.Count == 0)
+                    break;
             }
 
-            return adjacentPieces;
+            return result;
         }
 
         private static void ApplyEffect(
@@ -281,7 +301,8 @@ namespace DeadManZone.Core.Combat
                         MaxHpFlat = result.MaxHpFlat,
                         MaxHpPercent = result.MaxHpPercent,
                         AttackSpeedSteps = result.AttackSpeedSteps,
-                        MovementSpeedBonus = result.MovementSpeedBonus
+                        MovementSpeedBonus = result.MovementSpeedBonus,
+                        MoraleResistancePercent = result.MoraleResistancePercent
                     };
                     break;
                 case SynergyStat.ArmorType:
@@ -293,7 +314,8 @@ namespace DeadManZone.Core.Combat
                         MaxHpFlat = result.MaxHpFlat,
                         MaxHpPercent = result.MaxHpPercent,
                         AttackSpeedSteps = result.AttackSpeedSteps,
-                        MovementSpeedBonus = result.MovementSpeedBonus
+                        MovementSpeedBonus = result.MovementSpeedBonus,
+                        MoraleResistancePercent = result.MoraleResistancePercent
                     };
                     break;
                 case SynergyStat.MoveChargePercent:
@@ -305,7 +327,8 @@ namespace DeadManZone.Core.Combat
                         MaxHpFlat = result.MaxHpFlat,
                         MaxHpPercent = result.MaxHpPercent,
                         AttackSpeedSteps = result.AttackSpeedSteps,
-                        MovementSpeedBonus = result.MovementSpeedBonus
+                        MovementSpeedBonus = result.MovementSpeedBonus,
+                        MoraleResistancePercent = result.MoraleResistancePercent
                     };
                     break;
                 case SynergyStat.MaxHp:
@@ -319,7 +342,8 @@ namespace DeadManZone.Core.Combat
                             MaxHpFlat = result.MaxHpFlat,
                             MaxHpPercent = result.MaxHpPercent + amount,
                             AttackSpeedSteps = result.AttackSpeedSteps,
-                            MovementSpeedBonus = result.MovementSpeedBonus
+                            MovementSpeedBonus = result.MovementSpeedBonus,
+                            MoraleResistancePercent = result.MoraleResistancePercent
                         };
                     }
                     else
@@ -332,7 +356,8 @@ namespace DeadManZone.Core.Combat
                             MaxHpFlat = result.MaxHpFlat + amount,
                             MaxHpPercent = result.MaxHpPercent,
                             AttackSpeedSteps = result.AttackSpeedSteps,
-                            MovementSpeedBonus = result.MovementSpeedBonus
+                            MovementSpeedBonus = result.MovementSpeedBonus,
+                            MoraleResistancePercent = result.MoraleResistancePercent
                         };
                     }
 
@@ -346,7 +371,8 @@ namespace DeadManZone.Core.Combat
                         MaxHpFlat = result.MaxHpFlat,
                         MaxHpPercent = result.MaxHpPercent,
                         AttackSpeedSteps = result.AttackSpeedSteps + amount,
-                        MovementSpeedBonus = result.MovementSpeedBonus
+                        MovementSpeedBonus = result.MovementSpeedBonus,
+                        MoraleResistancePercent = result.MoraleResistancePercent
                     };
                     break;
                 case SynergyStat.MovementSpeed:
@@ -358,7 +384,21 @@ namespace DeadManZone.Core.Combat
                         MaxHpFlat = result.MaxHpFlat,
                         MaxHpPercent = result.MaxHpPercent,
                         AttackSpeedSteps = result.AttackSpeedSteps,
-                        MovementSpeedBonus = result.MovementSpeedBonus + amount
+                        MovementSpeedBonus = result.MovementSpeedBonus + amount,
+                        MoraleResistancePercent = result.MoraleResistancePercent
+                    };
+                    break;
+                case SynergyStat.MoraleResistancePercent:
+                    result = new SynergyResult
+                    {
+                        DamageBonus = result.DamageBonus,
+                        ArmorBuffSteps = result.ArmorBuffSteps,
+                        MoveChargeBonus = result.MoveChargeBonus,
+                        MaxHpFlat = result.MaxHpFlat,
+                        MaxHpPercent = result.MaxHpPercent,
+                        AttackSpeedSteps = result.AttackSpeedSteps,
+                        MovementSpeedBonus = result.MovementSpeedBonus,
+                        MoraleResistancePercent = result.MoraleResistancePercent + amount
                     };
                     break;
                 case SynergyStat.AttackRange:

@@ -8,15 +8,20 @@ namespace DeadManZone.Core.Combat
     {
         private readonly TacticPauseValidator _tacticValidator = new();
 
+        /// <param name="hqBoard">2026-07-15 faction-roster-v1 §4 (🟡 ledger): HQ-board buildings
+        /// (Artillery Park) can grant pause-window abilities too — scanned alongside the combat
+        /// board so they show up as available commands.</param>
         public IReadOnlyList<AvailableCommand> GetAvailableCommands(
             BoardState board,
             int requisition,
-            int checkpointIndex)
+            int checkpointIndex,
+            BoardState hqBoard = null)
         {
             var list = new List<AvailableCommand>();
             var usedAbilities = new HashSet<GrantedAbility>();
 
-            foreach (var piece in board.Pieces)
+            var pieces = hqBoard == null ? board.Pieces : board.Pieces.Concat(hqBoard.Pieces);
+            foreach (var piece in pieces)
             {
                 var ability = piece.Definition.GrantedAbility;
                 if (ability != GrantedAbility.None &&
@@ -73,7 +78,9 @@ namespace DeadManZone.Core.Combat
             int checkpointIndex,
             int logSegment,
             int globalTick,
-            TacticType[] startingTactics = null)
+            TacticType[] startingTactics = null,
+            BoardState hqBoard = null,
+            int artilleryCount = 0)
         {
             int authoritySnapshot = authority;
             var tacticCommand = commands?.FirstOrDefault(c =>
@@ -128,7 +135,9 @@ namespace DeadManZone.Core.Combat
                     log,
                     logSegment,
                     globalTick,
-                    command.TargetCell);
+                    command.TargetCell,
+                    hqBoard,
+                    artilleryCount);
                 if (!result.Success)
                 {
                     authority = authoritySnapshot;

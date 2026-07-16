@@ -576,7 +576,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         // ---------------------------------------------------------------- helpers
 
         private static bool RequiresTarget(GrantedAbility ability) =>
-            ability is GrantedAbility.MortarShot or GrantedAbility.CannonBlast;
+            ability is GrantedAbility.MortarShot or GrantedAbility.CannonBlast or GrantedAbility.RollingBarrage;
 
         private static string BuildSubtitle(PauseContext ctx)
         {
@@ -617,6 +617,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 GrantedAbility.MortarShot => "MORTAR SHOT",
                 GrantedAbility.ShieldAllies => "SHIELD ALLIES",
                 GrantedAbility.CannonBlast => "CANNON BLAST",
+                GrantedAbility.RollingBarrage => "ROLLING BARRAGE",
                 _ => ability.ToString().ToUpperInvariant()
             };
 

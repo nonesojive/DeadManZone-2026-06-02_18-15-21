@@ -36,6 +36,11 @@ namespace DeadManZone.Core.Combat
         /// <summary>Pause-granted armor (ShieldAllies). Expires when the next pause boundary fires.</summary>
         public int PauseArmorBuffSteps { get; set; }
 
+        /// <summary>Percent (0-100, clamped) incoming morale damage is reduced by: own
+        /// Definition value + any aura contribution (Breakthrough Tank). Set at spawn,
+        /// added to by PieceAbilityEngine.ApplyToCombatants.</summary>
+        public int MoraleDamageResistancePercent { get; set; }
+
         /// <summary>Effective armor steps for damage resolution: permanent + pause-scoped.</summary>
         public int TotalArmorSteps => ArmorBuffSteps + PauseArmorBuffSteps;
         public int DamageDealtThisFight { get; set; }

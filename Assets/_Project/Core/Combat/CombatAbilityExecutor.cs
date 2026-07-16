@@ -11,6 +11,13 @@ namespace DeadManZone.Core.Combat
         public const int CannonBlastPrimaryDamage = 50;
         public const int CannonBlastSplashDamage = 25;
 
+        // PROVISIONAL — 2026-07-15 faction-roster-v1 §2.2 Grand Battery's Rolling Barrage:
+        // bigger radius than MortarShot, damage scales with the army's artillery-tag count
+        // (TickCombatRun._playerArtilleryCount, computed once at fight start).
+        public const int RollingBarrageBaseDamage = 40;
+        public const int RollingBarragePerArtilleryDamage = 8;
+        public const int RollingBarrageRadius = 2;
+
         public static bool CanUseAtPause(GrantedAbility ability, int checkpointIndex) =>
             ability switch
             {
@@ -25,9 +32,18 @@ namespace DeadManZone.Core.Combat
                 GrantedAbility.MortarShot => 3,
                 GrantedAbility.ShieldAllies => 2,
                 GrantedAbility.CannonBlast => 4,
+                GrantedAbility.RollingBarrage when checkpointIndex == 0 => 3,
+                GrantedAbility.RollingBarrage => 4,
                 _ => 0
             };
 
+        /// <param name="hqBoard">2026-07-15 faction-roster-v1 §4 (🟡 ledger): HQ-board buildings
+        /// (Artillery Park) can grant pause-window abilities too. HQ pieces are never spawned as
+        /// combatants, so a source not found in <paramref name="playerCombatants"/> is looked up
+        /// here instead and treated as always-active (buildings can't be attacked off-board).</param>
+        /// <param name="artilleryCount">Army-wide artillery-tag count at fight start, read
+        /// directly per the roster spec's "tactic-scaling may read counts directly" (§3) —
+        /// consumed by RollingBarrage only.</param>
         public static CommandResult Execute(
             GrantedAbility ability,
             string sourcePieceId,
@@ -37,24 +53,46 @@ namespace DeadManZone.Core.Combat
             CombatEventLog log,
             int logSegment,
             int logTick,
-            GridCoord? targetCell = null)
+            GridCoord? targetCell = null,
+            BoardState hqBoard = null,
+            int artilleryCount = 0)
         {
             var sourceCombatant = playerCombatants.FirstOrDefault(c =>
                 c.InstanceId == sourcePieceId && c.IsActive);
-            if (sourceCombatant == null)
-                return CommandResult.Fail("Ability source not alive");
 
-            if (sourceCombatant.Definition.GrantedAbility != ability)
-                return CommandResult.Fail("Source cannot grant ability");
+            CombatantState sourceForAbility;
+            if (sourceCombatant != null)
+            {
+                if (sourceCombatant.Definition.GrantedAbility != ability)
+                    return CommandResult.Fail("Source cannot grant ability");
+
+                sourceForAbility = sourceCombatant;
+            }
+            else
+            {
+                var hqPiece = hqBoard?.Pieces.FirstOrDefault(p => p.InstanceId == sourcePieceId);
+                if (hqPiece == null || hqPiece.Definition.GrantedAbility != ability)
+                    return CommandResult.Fail("Ability source not alive");
+
+                sourceForAbility = new CombatantState
+                {
+                    InstanceId = hqPiece.InstanceId,
+                    Side = CombatSide.Player,
+                    Definition = hqPiece.Definition,
+                    CurrentHp = 1
+                };
+            }
 
             switch (ability)
             {
                 case GrantedAbility.MortarShot:
-                    return ExecuteMortarShot(sourceCombatant, enemyCombatants, log, logSegment, logTick, targetCell);
+                    return ExecuteMortarShot(sourceForAbility, enemyCombatants, log, logSegment, logTick, targetCell);
                 case GrantedAbility.ShieldAllies:
-                    return ExecuteShieldAllies(sourceCombatant, playerCombatants, log, logSegment, logTick);
+                    return ExecuteShieldAllies(sourceForAbility, playerCombatants, log, logSegment, logTick);
                 case GrantedAbility.CannonBlast:
-                    return ExecuteCannonBlast(sourceCombatant, enemyCombatants, log, logSegment, logTick, targetCell);
+                    return ExecuteCannonBlast(sourceForAbility, enemyCombatants, log, logSegment, logTick, targetCell);
+                case GrantedAbility.RollingBarrage:
+                    return ExecuteRollingBarrage(sourceForAbility, enemyCombatants, log, logSegment, logTick, targetCell, artilleryCount);
                 default:
                     return CommandResult.Fail("Unknown ability");
             }
@@ -83,6 +121,34 @@ namespace DeadManZone.Core.Combat
                 logSegment,
                 logTick,
                 "mortar_shot");
+            return CommandResult.Ok();
+        }
+
+        private static CommandResult ExecuteRollingBarrage(
+            CombatantState source,
+            IList<CombatantState> enemies,
+            CombatEventLog log,
+            int logSegment,
+            int logTick,
+            GridCoord? targetCell,
+            int artilleryCount)
+        {
+            var target = ResolveTargetCell(enemies, targetCell);
+            if (target == null)
+                return CommandResult.Fail("No valid rolling barrage target");
+
+            int damage = RollingBarrageBaseDamage + System.Math.Max(0, artilleryCount) * RollingBarragePerArtilleryDamage;
+            ApplyAreaDamage(
+                source,
+                enemies,
+                target.Value,
+                radius: RollingBarrageRadius,
+                damage,
+                AttackType.Explosive,
+                log,
+                logSegment,
+                logTick,
+                "rolling_barrage");
             return CommandResult.Ok();
         }
 

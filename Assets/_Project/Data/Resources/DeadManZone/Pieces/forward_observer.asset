@@ -40,6 +40,7 @@ MonoBehaviour:
   salvageChanceBonus: 0
   maxMorale: 30
   terrorDamage: 0
+  moraleDamageResistancePercent: 0
   attackSpeed: 1
   attackRange: 1
   movementSpeed: 2
@@ -67,6 +68,7 @@ MonoBehaviour:
     magnitude: 1
     countTagId: 
     applyToSelf: 0
+    radius: 1
   combatArenaSprite: {fileID: 0}
   combatArena2DAnimations: {fileID: 0}
   combatArenaPrefab: {fileID: 0}

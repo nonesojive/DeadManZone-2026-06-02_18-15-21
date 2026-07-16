@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
+using DeadManZone.Core.Run;
 
 namespace DeadManZone.Core.Tags
 {
@@ -62,6 +63,7 @@ namespace DeadManZone.Core.Tags
                 GrantedAbility.MortarShot => "Mortar Shot — Area damage at pause 0.",
                 GrantedAbility.ShieldAllies => "Shield Allies — Protect nearby allies at pause.",
                 GrantedAbility.CannonBlast => "Cannon Blast — Heavy blast at pause 1.",
+                GrantedAbility.RollingBarrage => "Rolling Barrage — Big area strike, scales with artillery in your army.",
                 _ => string.Empty
             };
 
@@ -109,6 +111,15 @@ namespace DeadManZone.Core.Tags
                 case "marksman_doctrine_officer":
                     lines.Add("Untargetable until after the 2nd tactics checkpoint.");
                     break;
+                case "iron_guard":
+                    lines.Add($"Takes -{piece.MoraleDamageResistancePercent}% morale damage.");
+                    break;
+                case "trench_works":
+                    lines.Add("Adjacent enemy units' movement charge is slowed.");
+                    break;
+                case "field_hospital":
+                    lines.Add($"Post-fight: -{ManpowerCalculator.FieldHospitalSurvivorCasualtyReductionPercent}% Manpower lost to damaged survivors.");
+                    break;
             }
 
             if (piece.MusterPerShop > 0)
@@ -126,6 +137,7 @@ namespace DeadManZone.Core.Tags
                 SynergyStat.Damage => $"+{magnitude} Damage",
                 SynergyStat.ArmorType => $"+{magnitude} Armor",
                 SynergyStat.MoveChargePercent => $"+{magnitude}% Move charge",
+                SynergyStat.MoraleResistancePercent => $"-{magnitude}% Morale damage taken",
                 _ => string.Empty
             };
         }
