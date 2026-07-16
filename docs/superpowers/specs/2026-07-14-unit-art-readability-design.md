@@ -46,8 +46,8 @@ chibi-cute), but whether stocky or realistic survives the Meshy pipeline better 
 **(Phase 0 verdict, 2026-07-14): MID-STOCKY, pending rerun confirmation.** Target ~5
 head-heights — between current stocky (~4.5) and realistic. Slightly oversized head/hands but
 not full toy-soldier chunk (`Screenshots/phase0/battle_distance.png`, `blackshape_sim.png`).
-Commit roster-wide once the focused cel rerun confirms. Do not lock full stocky or realistic
-until then.
+Commit roster-wide (locked with style template 2026-07-15). Do not use full stocky or realistic
+as the default.
 
 ### 2.2 Stance joins silhouette (bible §2 amendment)
 Each archetype's idle **stance is part of its silhouette signature** — the black-shape test is run
@@ -156,8 +156,9 @@ the same spike.
 | 2 | Morale guttering | **Pass as-is** (0.35 subtle OK) | `crowd_gutter.png`, `crowd_gutter_play_*.png` |
 | 3 | Within-archetype cue | **Upgrade** — body-mass cue rule | `blackshape_sim.png` |
 | 4 | Oversized scale | **Pass** — ring shrink to ~0.9×CELL | `crowd_gutter.png`, `battle_distance.png` |
-| 5 | Ref style | **Inconclusive → rerun** (do not lock cel) | `closeup_cel_*` vs `closeup_neutral_*` |
-| 6 | Proportions | **Mid-stocky** (~5 head-heights, pending rerun) | `battle_distance.png`, `blackshape_sim.png` |
+| 5 | Ref style | **Locked — heavy-ink comic (`s09_comic_noir`)** | `combat_pick_9_comic.png`, multi-style bake-off 2026-07-15 |
+| 6 | Proportions | **Mid-stocky** (~5 head-heights) | `battle_distance.png`, `blackshape_sim.png`, combat pick |
+
 
 Full owner calls and follow-up queue: `2026-07-phase0-verdicts.md`.
 
@@ -208,11 +209,11 @@ but generates a mushy model is a failed ref.
 - The piece's **cue and archetype dressing at silhouette-affecting size** (§2.3).
 - Proportions and style keywords per the §7.4 verdicts, then locked as template defaults.
 
-**(Phase 0 verdict, 2026-07-14): TBD pending rerun.** Ref style (inked flat-cel vs neutral
-geometry) and proportion keywords are **not cel-locked** — verdict 5 was inconclusive due to
-neutral-column Meshy junk geometry. Template defaults lock after the focused cel rerun matrix
-(see `2026-07-phase0-verdicts.md` follow-up queue item a). Provisional proportion target:
-mid-stocky (~5 head-heights).
+**(Locked 2026-07-15):** Style = **heavy-ink comic** (`s09_comic_noir` — thick contour,
+crosshatch shadow, high contrast). Proportions = **mid-stocky** (~5 head-heights, slightly
+oversized head/hands). See `2026-07-15-multi-style-bakeoff.md`. Refs must be **single-figure**
+only (no turnaround sheets — Meshy extrudes multi-view sheets into multi-body meshes).
+
 
 ### 7.3 Pre-Meshy gate — black-shape the ref itself
 Before a ref spends a Meshy chain: threshold to flat black, shrink to combat size (~40px), check
@@ -225,9 +226,10 @@ Conscript ×4: (inked flat-cel | neutral geometry) × (stocky | realistic), full
 through the ink shader at combat scale beside the enlisted baseline. Outputs: ref style verdict
 (where the ink lives) and proportion verdict. Both lock the template.
 
-**(Phase 0 verdict, 2026-07-14): INCONCLUSIVE on ref style; MID-STOCKY provisional on
-proportions.** Ref style verdict deferred — focused cel rerun queued. Proportion target
-mid-stocky (~5 head-heights), roster-wide commit pending rerun confirmation.
+**(Locked 2026-07-15):** Ref style = heavy-ink comic (`s09`); proportions = mid-stocky
+(~5 head-heights). Multi-style bake-off superseded the cel-vs-neutral 2×2. Roster refs follow
+§7.2 keywords.
+
 
 ### 7.5 Rollout
 After the template locks, regenerate the roster in **confusion-priority order**: most-confused

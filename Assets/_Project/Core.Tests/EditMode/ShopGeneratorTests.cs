@@ -166,7 +166,6 @@ namespace DeadManZone.Core.Tests
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
             CombatRole = combatRole,
             FactionId = FactionIds.IronmarchUnion,
-            GoldCost = 5,
             MaxHp = 10
         };
     }

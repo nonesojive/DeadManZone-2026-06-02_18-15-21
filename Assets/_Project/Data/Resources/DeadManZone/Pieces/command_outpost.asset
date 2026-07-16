@@ -20,10 +20,10 @@ MonoBehaviour:
   - {x: 1, y: 0}
   tags:
   - Building
-  - Support
+  - Utility
   - Command
   primary: building
-  combatRole: support
+  combatRole: utility
   systemTag: 
   synergyTags:
   - command
@@ -32,7 +32,6 @@ MonoBehaviour:
   maxHp: 40
   baseDamage: 0
   cooldownTicks: 3
-  goldCost: 15
   requisitionCost: 0
   manpowerCost: 0
   musterPerShop: 0
@@ -42,6 +41,8 @@ MonoBehaviour:
   includeInShopPool: 1
   rarity: 0
   salvageChanceBonus: 0
+  maxMorale: 0
+  terrorDamage: 0
   attackSpeed: 0
   attackRange: 1
   movementSpeed: 0
@@ -50,16 +51,12 @@ MonoBehaviour:
   grantedAbility: 0
   accuracyOverride: 0
   factionId: ironmarch_union
-  icon: {fileID: 21300000, guid: 3605748af8c249c0a708804f19cde426, type: 3}
-  categoryTint: {r: 1, g: 1, b: 1, a: 1}
-  cellSprites:
-  - localCell: {x: 0, y: 0}
-    sprite: {fileID: 21300000, guid: 43a233e3b987273498a65976215b63ba, type: 3}
-  - localCell: {x: 1, y: 0}
-    sprite: {fileID: 21300000, guid: 57a530e43407e8642b542d7057ba629b, type: 3}
+  icon: {fileID: 0}
+  categoryTint: {r: 0.48, g: 0.4, b: 0.28, a: 1}
+  cellSprites: []
   catalogAbilities: []
   customAbilities: []
-  combatArenaSprite: {fileID: 21300000, guid: 2762af4d9a0342d8bc4cadc75a61b01b, type: 3}
+  combatArenaSprite: {fileID: 0}
   combatArena2DAnimations: {fileID: 0}
   combatArenaPrefab: {fileID: 0}
   combatArenaModelScale: 1

@@ -27,6 +27,7 @@ Material:
     m_Floats:
     - _DiscRadius: 0.4
     - _Fill: 1
+    - _Gutter: 0
     - _RimInnerRadius: 0.435
     - _RimOuterRadius: 0.48
     m_Colors:

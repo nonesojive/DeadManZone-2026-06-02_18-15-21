@@ -20,28 +20,6 @@ namespace DeadManZone.Data
             FactionIds.CartelOfEchoes
         };
 
-        /// <summary>Demo shop roster piece ids.</summary>
-        public static readonly HashSet<string> DemoShopPieceIds = new()
-        {
-            "supply_depot",
-            "field_hospital",
-            "officer_quarters",
-            "command_outpost",
-            "surgical_center",
-            "recruitment_office",
-            "field_medic",
-            "conscript_rifleman",
-            "armored_transport",
-            "ironmarch_surgeon",
-            "bulwark_squad",
-            "enlisted_rifleman",
-            "ironmarch_iron_horse",
-            "ironclad_mortars",
-            "ironclad_marksman",
-            "ironclad_field_marshal",
-            "machine_gun_nest"
-        };
-
         [SerializeField] private PieceDefinitionSO[] pieces = System.Array.Empty<PieceDefinitionSO>();
         [SerializeField] private FactionSO[] factions = System.Array.Empty<FactionSO>();
         [SerializeField] private EnemyTemplateSO[] enemyTemplates = System.Array.Empty<EnemyTemplateSO>();

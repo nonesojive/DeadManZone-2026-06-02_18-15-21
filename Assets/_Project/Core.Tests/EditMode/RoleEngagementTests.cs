@@ -237,7 +237,6 @@ namespace DeadManZone.Core.Tests.EditMode
                 MaxHp = maxHp,
                 BaseDamage = baseDefinition.BaseDamage,
                 CooldownTicks = baseDefinition.CooldownTicks,
-                GoldCost = baseDefinition.GoldCost,
                 RequisitionCost = baseDefinition.RequisitionCost,
                 ManpowerCost = baseDefinition.ManpowerCost,
                 ShopModifiers = baseDefinition.ShopModifiers,

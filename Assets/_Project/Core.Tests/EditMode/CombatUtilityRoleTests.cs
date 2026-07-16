@@ -47,7 +47,10 @@ namespace DeadManZone.Core.Tests.EditMode
             var database = ContentDatabase.Load();
             Assert.NotNull(database);
             var registry = ContentRegistryProvider.Build(database);
-            Assert.IsTrue(registry.TryGetById("ironclad_field_marshal", out var marshal));
+            // 2026-07-15 faction-roster-v1: ironclad_field_marshal → shock_sergeant, which
+            // kept the same Utility combatRole + positive BaseDamage combination this test
+            // exercises (utility-role pieces that deal damage must still be targetable/attack).
+            Assert.IsTrue(registry.TryGetById("shock_sergeant", out var marshal));
             Assert.AreEqual(GameTagIds.Utility, marshal.CombatRole);
 
             var player = new BoardState(TestBoards.CombatLayout);

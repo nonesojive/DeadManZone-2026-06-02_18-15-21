@@ -19,7 +19,6 @@ namespace DeadManZone.Core.Tests
             piece.tags = new[] { "Infantry" };
             piece.maxHp = 10;
             piece.baseDamage = 2;
-            piece.goldCost = 5;
             piece.shopLane = ShopLane.Offensive;
 
             var core = piece.ToCore();

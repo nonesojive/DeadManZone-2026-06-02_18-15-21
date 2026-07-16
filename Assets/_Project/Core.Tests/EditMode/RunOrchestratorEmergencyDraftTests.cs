@@ -37,7 +37,7 @@ namespace DeadManZone.Core.Tests
         {
             _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 777);
             var board = _orchestrator.GetPlayerBoard();
-            var rifle = _database.Pieces.First(p => p.id == "conscript_rifleman").ToCore();
+            var rifle = _database.Pieces.First(p => p.id == "conscript_rifles").ToCore();
             Assert.IsTrue(board.TryPlace(rifle, TestBoards.CombatBoardAnchor(5, 3), "rifle_1").Success);
             _orchestrator.SaveCombatBoard(board);
 
@@ -60,7 +60,7 @@ namespace DeadManZone.Core.Tests
         {
             _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 777);
             var board = _orchestrator.GetPlayerBoard();
-            var rifle = _database.Pieces.First(p => p.id == "conscript_rifleman").ToCore();
+            var rifle = _database.Pieces.First(p => p.id == "conscript_rifles").ToCore();
             Assert.IsTrue(board.TryPlace(rifle, TestBoards.CombatBoardAnchor(5, 3), "rifle_1").Success);
             _orchestrator.SaveCombatBoard(board);
 

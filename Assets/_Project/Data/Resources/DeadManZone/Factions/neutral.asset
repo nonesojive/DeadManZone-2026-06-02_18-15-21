@@ -14,6 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.FactionSO
   factionId: neutral
   displayName: Neutral Militia
+  combatBoardSize: 6
+  combatSpecialTileCoords: []
+  hqBoardWidth: 3
+  hqBoardHeight: 6
+  hqBlockedCells: []
+  hqSpecialTileCoords: []
   boardWidth: 9
   boardHeight: 10
   rearCols: 4
@@ -24,8 +30,11 @@ MonoBehaviour:
   - {x: 7, y: 4}
   startingSupplies: 80
   startingManpower: 100
+  baseSuppliesPerRound: 0
   baseMusterPerShop: 12
   startingAuthority: 2
-  startingMorale: 100
+  startingTactics: 020000000100000000000000
+  startingPieces: []
   baseSalvageChancePercent: 10
+  shopOverride: {fileID: 0}
   tokenBackgroundColor: {r: 0.32, g: 0.33, b: 0.36, a: 0.42}

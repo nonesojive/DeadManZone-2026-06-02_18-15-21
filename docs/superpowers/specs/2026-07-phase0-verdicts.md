@@ -3,6 +3,8 @@
 > **FINAL.** Owner verdicts locked 2026-07-14 from `Assets/_Project/Scenes/StyleSpike_Phase0.unity`.
 > Evidence captures live in `Screenshots/phase0/` (untracked by convention). Spec amendments
 > marked **(Phase 0 verdict, 2026-07-14)** in the sibling design docs.
+> **Style template lock (2026-07-15):** heavy-ink comic — start future sessions at
+> `docs/superpowers/specs/2026-07-15-comic-noir-template-handoff.md`.
 
 ## Capture setup
 
@@ -96,33 +98,28 @@ units at battle distance don't visually collide (`battle_distance.png`).
 so rims don't touch at 1-cell spacing. Bodies and grid read are good; only the ring scale
 needs implementation.
 
-### 5. Ref style column: cel vs neutral — **INCONCLUSIVE → RERUN**
+### 5. Ref style — **LOCKED: heavy-ink comic (`s09_comic_noir`)** (2026-07-15)
 
-**Evidence:** Geometry: cel_stocky and cel_real came back as clean single figures;
-neutral_stocky shipped with a cluster of extra rifles fused beside the figure (Meshy junk
-geometry, visible in `closeup_neutral_stocky.png` and photobombing `closeup_neutral_real.png`).
-Final look through `DMZ/UnitCelInk`: the cel textures' baked line + flat planes cooperate with
-the shader (reads stylized at punch-in), while the neutral textures' soft gradients read as
-generic CG through the same shader — the shader does not stylize them by itself
-(`closeup_cel_*.png` vs `closeup_neutral_*.png`).
+**Evidence:** 10-style bake-off (`2026-07-15-multi-style-bakeoff.md`) judged through
+`DMZ/UnitCelInk` at ArenaCamera combat framing. Owner pick: comic noir fits tone/feel and
+reads decently at combat view (`Screenshots/phase0/combat_pick_lineup.png`,
+`combat_pick_9_comic.png`). Flat-cel (`s01`) was competitive; woodblock (`s08`) adjacent;
+non-ink styles lost intent through the shader.
 
-**Owner ruling:** **Inconclusive — do not lock cel yet.** A focused cel rerun is queued (see
-follow-up queue). The neutral column was contaminated by Meshy junk geometry; the cel column
-showed promise but the bake-off matrix was not decisive enough to commit template defaults.
-§7.2 template defaults remain **TBD pending rerun**.
+**Owner ruling:** Lock §7.2 style keywords to **heavy-ink comic** — thick black contour,
+crosshatch/hatched shadow, high contrast, hard part boundaries, single figure only.
 
-### 6. Proportions: stocky vs realistic at battle distance — **MID-STOCKY (pending rerun confirmation)**
+### 6. Proportions: stocky vs realistic at battle distance — **MID-STOCKY (LOCKED)**
 
 **Evidence:** At battle distance the stocky variants hold chunkier, more solid masses with
 larger head reads; realistic proportions go spindly — thin limbs start to break up into noise
 at rendered scale (`battle_distance.png`, silhouette solidity in `blackshape_sim.png`: stocky
 tiles ~1.72k silhouette px vs ~1.4k for realistic at equal height). Stocky also matches the
-tabletop-miniature framing of the ring bases.
+tabletop-miniature framing of the ring bases. Confirmed again on 2026-07-15 combat pick row.
 
-**Owner ruling:** **Mid-stocky** — between current stocky (~4.5 head-heights) and realistic.
-Target **~5 head-heights**, slightly oversized head/hands but not full toy-soldier chunk.
-Commit roster-wide once the focused rerun confirms. Do not lock full stocky or realistic until
-then.
+**Owner ruling:** **Mid-stocky** — **~5 head-heights**, slightly oversized head/hands but not
+full toy-soldier chunk. Roster-wide default with the comic-noir style lock.
+
 
 ## Tuning notes / issues found while capturing
 
@@ -145,7 +142,7 @@ then.
 
 | # | Item | Owner verdict driver | Notes |
 |---|---|---|---|
-| a | **Focused cel rerun matrix** | Verdict 5 inconclusive | Re-run conscript 2×2 bake-off with clean neutral refs (no junk geometry); judge ink-at-combat-scale before locking §7.2 template defaults. Sibling worker owns execution. |
+| a | ~~Focused cel / multi-style bake-off~~ | Verdict 5 | **Done 2026-07-15** — locked `s09_comic_noir` + mid-stocky. See `2026-07-15-multi-style-bakeoff.md`. |
 | b | **Ring diameter shrink implementation** | Verdict 4 pass-with-shrink | Shrink ring outer diameter to ~0.9×CELL; keep 1.3× unit body height. Presentation-layer shader/ring prefab change. |
 | c | **Enlisted baseline blue-patch material fix** | Capture tuning note | Submesh albedo binding on enlisted_baseline pack/helmet — saturated blue at grazing angles (`closeup_cel_stocky.png`). |
 | d | **Gutter runtime driver for `_Gutter`** | Capture tuning note | Material assets on disk have `_Gutter=0`; gameplay must set per-unit `_Gutter` via MPB at runtime. Matches shader design intent. |

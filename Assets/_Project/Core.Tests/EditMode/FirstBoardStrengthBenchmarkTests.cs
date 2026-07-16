@@ -6,6 +6,7 @@ using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Content;
 using DeadManZone.Core.Run;
+using DeadManZone.Core.Shop;
 using DeadManZone.Data;
 using NUnit.Framework;
 
@@ -43,7 +44,7 @@ namespace DeadManZone.Core.Tests.EditMode
                          .OrderBy(PieceCombatRating.ComputeBase))
             {
                 log.AppendLine(
-                    $"  {pieceSo.Id,-24} {PieceCombatRating.ComputeBase(pieceSo),4}  ({pieceSo.GoldCost}G" +
+                    $"  {pieceSo.Id,-24} {PieceCombatRating.ComputeBase(pieceSo),4}  ({RarityPricing.BaseCost(pieceSo.Rarity)}G" +
                     (pieceSo.RequisitionCost > 0 ? $" +{pieceSo.RequisitionCost}A" : string.Empty) +
                     $", {pieceSo.ManpowerCost}MP)");
             }
@@ -54,35 +55,35 @@ namespace DeadManZone.Core.Tests.EditMode
             log.AppendLine();
             log.AppendLine("Scenario boards (combat fielding only):");
             LogScenario(log, "Empty", BuildCombat());
-            LogScenario(log, "1× conscript (12G, 1MP)", BuildCombat(("conscript_rifleman", 0, 0)));
+            LogScenario(log, "1× conscript (12G, 1MP)", BuildCombat(("conscript_rifles", 0, 0)));
             LogScenario(log, "2× conscript (24G, 2MP)", BuildCombat(
-                ("conscript_rifleman", 0, 0),
-                ("conscript_rifleman", 1, 0)));
+                ("conscript_rifles", 0, 0),
+                ("conscript_rifles", 1, 0)));
             LogScenario(log, "3× conscript (36G, 3MP)", BuildCombat(
-                ("conscript_rifleman", 0, 0),
-                ("conscript_rifleman", 1, 0),
-                ("conscript_rifleman", 2, 0)));
+                ("conscript_rifles", 0, 0),
+                ("conscript_rifles", 1, 0),
+                ("conscript_rifles", 2, 0)));
             LogScenario(log, "4× conscript (48G, 4MP)", BuildCombat(
-                ("conscript_rifleman", 0, 0),
-                ("conscript_rifleman", 1, 0),
-                ("conscript_rifleman", 2, 0),
-                ("conscript_rifleman", 3, 0)));
+                ("conscript_rifles", 0, 0),
+                ("conscript_rifles", 1, 0),
+                ("conscript_rifles", 2, 0),
+                ("conscript_rifles", 3, 0)));
             LogScenario(log, "2× conscript + medic (46G, 3MP)", BuildCombat(
-                ("conscript_rifleman", 0, 0),
-                ("conscript_rifleman", 1, 0),
+                ("conscript_rifles", 0, 0),
+                ("conscript_rifles", 1, 0),
                 ("field_medic", 2, 0)));
-            LogScenario(log, "enlisted + bulwark + conscript (45G, 3MP)", BuildCombat(
-                ("enlisted_rifleman", 0, 0),
-                ("bulwark_squad", 1, 0),
-                ("conscript_rifleman", 2, 0)));
-            LogScenario(log, "iron horse + 2× conscript (48G, 6MP)", BuildCombat(
-                ("ironmarch_iron_horse", 0, 0),
-                ("conscript_rifleman", 3, 0),
-                ("conscript_rifleman", 4, 0)));
+            LogScenario(log, "shock sergeant + iron guard + conscript (45G, 3MP)", BuildCombat(
+                ("shock_sergeant", 0, 0),
+                ("iron_guard", 1, 0),
+                ("conscript_rifles", 2, 0)));
+            LogScenario(log, "breakthrough tank + 2× conscript (48G, 6MP)", BuildCombat(
+                ("breakthrough_tank", 0, 0),
+                ("conscript_rifles", 3, 0),
+                ("conscript_rifles", 4, 0)));
             LogScenario(log, "MG nest + 2× conscript (44G, 4MP)", BuildCombat(
                 ("machine_gun_nest", 0, 0),
-                ("conscript_rifleman", 2, 0),
-                ("conscript_rifleman", 3, 0)));
+                ("conscript_rifles", 2, 0),
+                ("conscript_rifles", 3, 0)));
 
             TestContext.WriteLine(log.ToString());
             Assert.Greater(_fight1.EffectiveTotal, 0);

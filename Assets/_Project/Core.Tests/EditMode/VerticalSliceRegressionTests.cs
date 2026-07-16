@@ -157,7 +157,7 @@ namespace DeadManZone.Core.Tests
                     new()
                     {
                         InstanceId = "reserve_rifle",
-                        PieceId = "conscript_rifleman",
+                        PieceId = "conscript_rifles",
                         AnchorX = 0,
                         AnchorY = 0,
                         RotationDegrees = 0
@@ -177,7 +177,7 @@ namespace DeadManZone.Core.Tests
                             {
                                 OfferId = "general_test_0",
                                 Lane = Core.Shop.ShopLane.Offensive,
-                                PieceId = "conscript_rifleman",
+                                PieceId = "conscript_rifles",
                                 GoldPrice = 5,
                                 RequisitionPrice = 0
                             }
@@ -189,7 +189,7 @@ namespace DeadManZone.Core.Tests
                         {
                             OfferId = "general_test_0",
                             Lane = Core.Shop.ShopLane.Offensive,
-                            PieceId = "conscript_rifleman",
+                            PieceId = "conscript_rifles",
                             GoldPrice = 5,
                             RequisitionPrice = 0,
                             SlotIndex = 0

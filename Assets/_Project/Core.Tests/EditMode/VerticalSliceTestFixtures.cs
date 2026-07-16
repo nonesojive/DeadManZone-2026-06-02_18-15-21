@@ -22,14 +22,18 @@ namespace DeadManZone.Core.Tests
             var faction = database.GetFaction(FactionIds.IronmarchUnion);
             Assert.NotNull(faction, "ironmarch_union faction required for regression tests.");
 
+            // 2026-07-15 faction-roster-v1: ids updated (mortars→field_mortar_team,
+            // enlisted→shock_sergeant, transport→iron_guard, conscript→conscript_rifles,
+            // horse→breakthrough_tank, bulwark→iron_guard). All footprints kept 1:1 with
+            // the pieces they replace, so these anchors still land unchanged.
             var combat = new BoardState(faction.CreateCombatBoardLayout());
-            Place(combat, database, "ironclad_mortars", new GridCoord(0, 0), "mortars_1");
-            Place(combat, database, "enlisted_rifleman", new GridCoord(3, 0), "enlisted_1");
-            Place(combat, database, "armored_transport", new GridCoord(4, 2), "transport_1");
+            Place(combat, database, "field_mortar_team", new GridCoord(0, 0), "mortars_1");
+            Place(combat, database, "shock_sergeant", new GridCoord(3, 0), "enlisted_1");
+            Place(combat, database, "iron_guard", new GridCoord(4, 2), "transport_1");
             Place(combat, database, "field_medic", new GridCoord(4, 5), "medic_1");
-            Place(combat, database, "conscript_rifleman", new GridCoord(5, 4), "conscript_1");
-            Place(combat, database, "ironmarch_iron_horse", new GridCoord(0, 3), "horse_1");
-            Place(combat, database, "bulwark_squad", new GridCoord(5, 0), "bulwark_1");
+            Place(combat, database, "conscript_rifles", new GridCoord(5, 4), "conscript_1");
+            Place(combat, database, "breakthrough_tank", new GridCoord(0, 3), "horse_1");
+            Place(combat, database, "iron_guard", new GridCoord(5, 0), "bulwark_1");
 
             var hq = new BoardState(faction.CreateHqBoardLayout());
             Place(hq, database, "command_outpost", new GridCoord(1, 0), "outpost_1");

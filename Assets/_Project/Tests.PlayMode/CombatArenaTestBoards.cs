@@ -18,10 +18,10 @@ namespace DeadManZone.PlayMode.Tests
             Assert.NotNull(faction, "ironmarch_union faction required for arena replay tests.");
 
             var player = new BoardState(faction.CreateCombatBoardLayout());
-            Place(player, database, "conscript_rifleman", new GridCoord(3, 2), "field_gun_1");
+            Place(player, database, "conscript_rifles", new GridCoord(3, 2), "field_gun_1");
 
             var enemy = new BoardState(faction.CreateCombatBoardLayout());
-            Place(enemy, database, "conscript_rifleman", new GridCoord(5, 3), "enemy_rifle_1");
+            Place(enemy, database, "conscript_rifles", new GridCoord(5, 3), "enemy_rifle_1");
 
             return BattlefieldState.FromBoards(player, enemy);
         }

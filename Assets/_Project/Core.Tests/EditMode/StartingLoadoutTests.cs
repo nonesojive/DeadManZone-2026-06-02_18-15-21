@@ -42,8 +42,8 @@ namespace DeadManZone.Core.Tests
 
             Assert.IsTrue(combat.Pieces.Any(p => p.InstanceId == "start_field_medic"),
                 "field medic starts on the combat board");
-            Assert.IsTrue(combat.Pieces.Any(p => p.InstanceId == "start_conscript_rifleman"),
-                "conscript rifleman starts on the combat board");
+            Assert.IsTrue(combat.Pieces.Any(p => p.InstanceId == "start_conscript_rifles"),
+                "conscript rifles start on the combat board");
             Assert.IsTrue(hq.Pieces.Any(p => p.InstanceId == "start_supply_depot"),
                 "supply depot starts on the HQ board");
             Assert.IsTrue(hq.Pieces.Any(p => p.InstanceId == "start_command_outpost"),

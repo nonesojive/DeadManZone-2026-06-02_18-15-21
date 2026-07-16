@@ -41,7 +41,7 @@ namespace DeadManZone.PlayMode.Tests
             {
                 OfferId = "test",
                 Lane = ShopLane.Offensive,
-                PieceId = "conscript_rifleman",
+                PieceId = "conscript_rifles",
                 GoldPrice = 3
             };
 

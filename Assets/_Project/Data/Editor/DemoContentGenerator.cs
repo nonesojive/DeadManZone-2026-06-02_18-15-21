@@ -45,7 +45,6 @@ namespace DeadManZone.Data.Editor
             int maxHp = 10,
             int baseDamage = 0,
             int cooldownTicks = 3,
-            int goldCost = 5,
             int requisitionCost = 0,
             int manpowerCost = 1,
             int musterPerShop = 0,
@@ -93,7 +92,6 @@ namespace DeadManZone.Data.Editor
             asset.terrorDamage = terrorDamage;
             asset.baseDamage = baseDamage;
             asset.cooldownTicks = cooldownTicks;
-            asset.goldCost = goldCost;
             asset.requisitionCost = requisitionCost;
             asset.manpowerCost = manpowerCost;
             asset.musterPerShop = musterPerShop;

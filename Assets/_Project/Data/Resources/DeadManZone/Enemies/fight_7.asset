@@ -17,16 +17,19 @@ MonoBehaviour:
   previewTag: Artillery
   enemyFactionId: ironmarch_union
   placements:
-  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
+  - piece: {fileID: 11400000, guid: 86c3c71425601e548bf038d23d528ab0, type: 2}
     anchor: {x: 4, y: 3}
     instanceId: 
-  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
+  - piece: {fileID: 11400000, guid: 86c3c71425601e548bf038d23d528ab0, type: 2}
     anchor: {x: 5, y: 3}
     instanceId: 
-  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
+  - piece: {fileID: 11400000, guid: 86c3c71425601e548bf038d23d528ab0, type: 2}
     anchor: {x: 5, y: 4}
     instanceId: 
-  - piece: {fileID: 11400000, guid: 6af7cb41902c7194a9529edab7e0b137, type: 2}
+  - piece: {fileID: 11400000, guid: 86c3c71425601e548bf038d23d528ab0, type: 2}
+    anchor: {x: 4, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: cbb82453e892d2741a7e4ad6c2db78e3, type: 2}
     anchor: {x: 5, y: 5}
     instanceId: 
   - piece: {fileID: 11400000, guid: f3a4b5c6d7e8498899aabbccddeeff03, type: 2}
@@ -35,9 +38,9 @@ MonoBehaviour:
   - piece: {fileID: 11400000, guid: e10a0eb33766a3647af92eddfc733c09, type: 2}
     anchor: {x: 0, y: 5}
     instanceId: 
-  - piece: {fileID: 11400000, guid: df18f35855a663941afa4616960520f9, type: 2}
+  - piece: {fileID: 11400000, guid: 7a1884fac3369324d91fe1fe13750b76, type: 2}
     anchor: {x: 0, y: 3}
     instanceId: 
-  - piece: {fileID: 11400000, guid: c51b9248d944ee84fb08538c41638b52, type: 2}
+  - piece: {fileID: 11400000, guid: 1b75393fedea3e04ab3ca34ef752d3cd, type: 2}
     anchor: {x: 2, y: 4}
     instanceId: 

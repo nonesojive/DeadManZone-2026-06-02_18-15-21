@@ -38,22 +38,25 @@ namespace DeadManZone.Presentation.Editor
         // A unit with broken/missing GLBs is skipped with a warning - actors with its piece id
         // fall back to the default rifleman visuals instead of blocking the scene build.
         //
-        // Coverage of the 11 combat-eligible (category Unit) pieces:
-        // - conscript_rifleman + enlisted_rifleman: intentionally NOT listed. The default
-        //   rifleman model/controller (IdleGlbPath etc., Models/enlisted_rifleman/) IS their
-        //   visual; archetype entries would just duplicate those same assets.
-        // - armored_transport, ironmarch_iron_horse, machine_gun_nest: awaiting reference
-        //   images AND non-humanoid (vehicles/emplacement) — the Meshy humanoid rig pipeline
-        //   doesn't fit them. They fall back to rifleman visuals by design until the owner
-        //   decides their treatment.
+        // 2026-07-15 faction-roster-v1 (comic-noir §7.2 regen): every combat-eligible
+        // humanoid piece has its own model folder under Models/<piece_id>/ from
+        // run_roster_batch.ps1. conscript_rifles is generated from the canonical
+        // s09_comic_noir ref. Any piece missing its GLBs falls back to the default
+        // rifleman visuals (IdleGlbPath etc.) until its chain lands.
         private static readonly (string folder, string pieceId)[] RosterUnits =
         {
-            ("bulwark_squad", "bulwark_squad"),
+            // neutral
+            ("militia_squad", "militia_squad"),
             ("field_medic", "field_medic"),
-            ("ironclad_mortars", "ironclad_mortars"),
-            ("ironclad_field_marshal", "ironclad_field_marshal"),
-            ("ironclad_marksman", "ironclad_marksman"),
-            ("ironmarch_surgeon", "ironmarch_surgeon"),
+            // ironmarch union
+            ("conscript_rifles", "conscript_rifles"),
+            ("line_grenadiers", "line_grenadiers"),
+            ("field_mortar_team", "field_mortar_team"),
+            ("sharpshooter", "sharpshooter"),
+            ("iron_guard", "iron_guard"),
+            ("forward_observer", "forward_observer"),
+            ("shock_sergeant", "shock_sergeant"),
+            ("marksman_doctrine_officer", "marksman_doctrine_officer"),
         };
 
         // Non-humanoid units (owner spec, audit "non-humanoid treatment"): single static
@@ -64,11 +67,13 @@ namespace DeadManZone.Presentation.Editor
         // authored forward); tuned live in Play mode, baked here.
         private static readonly (string folder, string pieceId, float height, float yaw)[] VehicleUnits =
         {
-            // Facing verified per gen via isolated probes (identity rotation, Front view):
-            // tank/transport authored +X → -90; nest barrel authored -X → +90.
-            ("ironmarch_iron_horse", "ironmarch_iron_horse", 2.4f, -90f),
-            ("armored_transport", "armored_transport", 2.5f, -90f),
+            // PROVISIONAL heights/yaws (roster-v1 comic-noir regen 2026-07-15): facing is
+            // per-gen roulette — verify each via isolated probe in Play mode and bake the
+            // corrected yaw here, same procedure as the retired iron_horse/transport gens.
+            ("breakthrough_tank", "breakthrough_tank", 2.6f, -90f),
+            ("grand_battery", "grand_battery", 3.0f, -90f),
             ("machine_gun_nest", "machine_gun_nest", 1.6f, 90f),
+            ("trench_works", "trench_works", 1.2f, 0f),
         };
 
         private static string RosterModelFolder(string unitFolder) =>

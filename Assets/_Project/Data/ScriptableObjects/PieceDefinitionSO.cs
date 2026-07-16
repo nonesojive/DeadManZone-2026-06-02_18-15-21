@@ -25,7 +25,6 @@ namespace DeadManZone.Data
         public int maxHp = 10;
         public int baseDamage;
         public int cooldownTicks = 3;
-        public int goldCost = 5;
         public int requisitionCost;
         public int manpowerCost = 1;
 
@@ -142,7 +141,6 @@ namespace DeadManZone.Data
                 BaseDamage = baseDamage,
                 TerrorDamage = terrorDamage,
                 CooldownTicks = cooldownTicks,
-                GoldCost = goldCost,
                 RequisitionCost = requisitionCost,
                 ManpowerCost = manpowerCost,
                 MusterPerShop = musterPerShop,

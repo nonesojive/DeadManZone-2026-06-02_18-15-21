@@ -25,7 +25,6 @@ namespace DeadManZone.Core.Board
         /// <summary>Morale damage dealt to the target on any damaging attack (ADR-0005 terror channel).</summary>
         public int TerrorDamage { get; init; }
         public int CooldownTicks { get; init; }
-        public int GoldCost { get; init; }
         public int RequisitionCost { get; init; }
         public int ManpowerCost { get; init; }
         public int MusterPerShop { get; init; }

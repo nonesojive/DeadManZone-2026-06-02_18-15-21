@@ -86,7 +86,7 @@ namespace DeadManZone.Core.Tests
             {
                 Pieces = new List<PlacedPieceRecord>
                 {
-                    new() { InstanceId = "enemy_a", PieceId = "conscript_rifleman" },
+                    new() { InstanceId = "enemy_a", PieceId = "conscript_rifles" },
                     new() { InstanceId = "enemy_b", PieceId = "field_medic" }
                 }
             };

@@ -19,7 +19,7 @@ namespace DeadManZone.Core.Shop
 
         public static SalvageRefund Compute(PieceDefinition piece, string factionId = null)
         {
-            int supplies = (int)(piece.GoldCost * SuppliesRefundRatio);
+            int supplies = (int)(RarityPricing.BaseCost(piece.Rarity) * SuppliesRefundRatio);
             int authority = (int)(piece.RequisitionCost * AuthorityRefundRatio);
             int manpower = 0;
 

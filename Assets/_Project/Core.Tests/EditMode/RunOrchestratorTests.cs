@@ -5,6 +5,7 @@ using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Run;
+using DeadManZone.Core.Shop;
 using DeadManZone.Core.Tags;
 using DeadManZone.Data;
 using DeadManZone.Game;
@@ -111,12 +112,12 @@ namespace DeadManZone.Core.Tests
             int startingSupplies = _orchestrator.State.Supplies;
 
             var board = _orchestrator.GetCombatBoard();
-            var rifle = _database.Pieces.First(p => p.id == "conscript_rifleman").ToCore();
+            var rifle = _database.Pieces.First(p => p.id == "conscript_rifles").ToCore();
             var place = board.TryPlace(rifle, new Core.Common.GridCoord(0, 0), "rifle_1");
             Assert.IsTrue(place.Success, place.Reason);
             _orchestrator.SaveCombatBoard(board);
 
-            int refund = rifle.GoldCost / 2;
+            int refund = SalvageCalculator.Compute(rifle, FactionIds.IronmarchUnion).Supplies;
             Assert.IsTrue(_orchestrator.TrySellPlacedPiece("rifle_1"));
             Assert.AreEqual(startingSupplies + refund, _orchestrator.State.Supplies);
             Assert.IsFalse(_orchestrator.GetCombatBoard().Pieces.Any(p => p.InstanceId == "rifle_1"),
@@ -537,8 +538,11 @@ namespace DeadManZone.Core.Tests
         {
             _orchestrator.StartNewRun(FactionIds.IronmarchUnion, runSeed: 187463421);
             var board = _orchestrator.GetCombatBoard();
+            // Uses RifleSquad (a real content id) rather than the retired
+            // ironclad_field_marshal fixture: this test only needs a piece that survives
+            // a save/reload cycle, and restore now resolves pieces via the ContentRegistry.
             Assert.IsTrue(board.TryPlace(
-                TestPieces.IroncladFieldMarshal(),
+                TestPieces.RifleSquad(),
                 TestBoards.CombatBoardAnchor(1, 3),
                 "marshal_1").Success);
             _orchestrator.SaveCombatBoard(board);

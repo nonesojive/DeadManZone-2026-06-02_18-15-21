@@ -33,7 +33,6 @@ MonoBehaviour:
   baseSuppliesPerRound: 10
   baseMusterPerShop: 1
   startingAuthority: 2
-  startingMorale: 30
   startingTactics: 020000000100000000000000
   startingPieces:
   - pieceId: supply_depot
@@ -42,7 +41,7 @@ MonoBehaviour:
     anchor: {x: 0, y: 3}
   - pieceId: field_medic
     anchor: {x: 2, y: 2}
-  - pieceId: conscript_rifleman
+  - pieceId: conscript_rifles
     anchor: {x: 3, y: 2}
   baseSalvageChancePercent: 1
   shopOverride: {fileID: 0}

@@ -20,11 +20,11 @@ MonoBehaviour:
   - {x: 1, y: 0}
   tags:
   - Structure
-  - Utility
+  - Defender
   - Entrenched
   - Fortification
   primary: structure
-  combatRole: utility
+  combatRole: defender
   systemTag: 
   synergyTags:
   - entrenched
@@ -34,7 +34,6 @@ MonoBehaviour:
   maxHp: 100
   baseDamage: 2
   cooldownTicks: 3
-  goldCost: 20
   requisitionCost: 0
   manpowerCost: 2
   musterPerShop: 0
@@ -42,29 +41,25 @@ MonoBehaviour:
   commandActions: 0
   shopLane: 1
   includeInShopPool: 1
-  rarity: 2
+  rarity: 1
   salvageChanceBonus: 0
   maxMorale: 40
   terrorDamage: 4
   attackSpeed: 1
   attackRange: 2
   movementSpeed: 0
-  armorType: 3
-  attackType: 4
+  armorType: 1
+  attackType: 1
   grantedAbility: 0
   accuracyOverride: 0
   factionId: neutral
-  icon: {fileID: 21300000, guid: 207e881b01454e81b4a38a29bc55e8c3, type: 3}
-  categoryTint: {r: 1, g: 1, b: 1, a: 1}
-  cellSprites:
-  - localCell: {x: 0, y: 0}
-    sprite: {fileID: 21300000, guid: 8e51d8ddee4f6694ebcc38e65f4fe075, type: 3}
-  - localCell: {x: 1, y: 0}
-    sprite: {fileID: 21300000, guid: 3e50b622642dbbf4d8a35a866cb6fd30, type: 3}
+  icon: {fileID: 0}
+  categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  cellSprites: []
   catalogAbilities: []
   customAbilities: []
   combatArenaSprite: {fileID: 0}
-  combatArena2DAnimations: {fileID: 11400000, guid: d5478ac9e34d4ec190d858d7c42c6477, type: 2}
+  combatArena2DAnimations: {fileID: 0}
   combatArenaPrefab: {fileID: 0}
   combatArenaModelScale: 1
   combatArenaModelHeight: 0

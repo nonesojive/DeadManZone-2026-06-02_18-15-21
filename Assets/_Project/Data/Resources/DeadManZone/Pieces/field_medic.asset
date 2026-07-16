@@ -33,7 +33,6 @@ MonoBehaviour:
   maxHp: 30
   baseDamage: 3
   cooldownTicks: 3
-  goldCost: 10
   requisitionCost: 0
   manpowerCost: 1
   musterPerShop: 0
@@ -41,23 +40,21 @@ MonoBehaviour:
   commandActions: 0
   shopLane: 1
   includeInShopPool: 1
-  rarity: 1
+  rarity: 0
   salvageChanceBonus: 0
   maxMorale: 30
   terrorDamage: 0
   attackSpeed: 0
   attackRange: 1
   movementSpeed: 2
-  armorType: 1
+  armorType: 0
   attackType: 1
   grantedAbility: 0
   accuracyOverride: 0
   factionId: neutral
-  icon: {fileID: 21300000, guid: df0fc13cca774fcc8052b32aabca1cd6, type: 3}
-  categoryTint: {r: 1, g: 1, b: 1, a: 1}
-  cellSprites:
-  - localCell: {x: 0, y: 0}
-    sprite: {fileID: 21300000, guid: d9076fafc8f115541a5cad5b88d339d1, type: 3}
+  icon: {fileID: 0}
+  categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  cellSprites: []
   catalogAbilities: []
   customAbilities:
   - id: field_medic_adjacent_infantry_hp
@@ -74,8 +71,8 @@ MonoBehaviour:
     magnitude: 10
     countTagId: 
     applyToSelf: 0
-  combatArenaSprite: {fileID: 21300000, guid: d95c4fc0ad814e70a3299d64a18c3a54, type: 3}
-  combatArena2DAnimations: {fileID: 11400000, guid: 41d1709fd5ff7cc459f1e9f08fb90bb0, type: 2}
+  combatArenaSprite: {fileID: 0}
+  combatArena2DAnimations: {fileID: 0}
   combatArenaPrefab: {fileID: 0}
   combatArenaModelScale: 1
   combatArenaModelHeight: 0

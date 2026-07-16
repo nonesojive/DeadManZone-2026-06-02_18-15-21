@@ -102,8 +102,8 @@ namespace DeadManZone.Core.Tests.EditMode
             Side = CombatSide.Player,
             Definition = new PieceDefinition
             {
-                Id = "ironclad_marksman",
-                DisplayName = "Ironclad Marksman",
+                Id = CombatStealthRules.MarksmanPieceId,
+                DisplayName = "Marksman-Doctrine Officer",
                 Category = PieceCategory.Unit,
                 Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
                 MaxHp = 35,

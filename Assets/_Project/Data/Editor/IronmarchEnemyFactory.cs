@@ -25,15 +25,20 @@ namespace DeadManZone.Data.Editor
         {
             var byId = pieces.ToDictionary(p => p.id);
 
-            var conscript = byId["conscript_rifleman"];
+            // 2026-07-15 faction-roster-v1: local vars keep their old names (conscript,
+            // enlisted, bulwark, mortars, ironHorse, marksman, marshal) — only the piece
+            // ids they resolve changed. Footprints were kept 1:1 with the old shapes
+            // (see IronmarchUnionContentFactory.Pieces.cs PROVISIONAL notes) so none of
+            // the anchors below needed to move.
+            var conscript = byId["conscript_rifles"];
             var medic = byId["field_medic"];
             var mgNest = byId["machine_gun_nest"];
-            var enlisted = byId["enlisted_rifleman"];
-            var bulwark = byId["bulwark_squad"];
-            var mortars = byId["ironclad_mortars"];
-            var ironHorse = byId["ironmarch_iron_horse"];
-            var marksman = byId["ironclad_marksman"];
-            var marshal = byId["ironclad_field_marshal"];
+            var enlisted = byId["shock_sergeant"];
+            var bulwark = byId["iron_guard"];
+            var mortars = byId["field_mortar_team"];
+            var ironHorse = byId["breakthrough_tank"];
+            var marksman = byId["marksman_doctrine_officer"];
+            var marshal = byId["forward_observer"];
 
             return new[]
             {
@@ -62,10 +67,14 @@ namespace DeadManZone.Data.Editor
                     Placement(conscript, 2, 4), Placement(conscript, 3, 4), Placement(conscript, 3, 3),
                     Placement(medic, 2, 5), Placement(enlisted, 3, 5),
                     Placement(bulwark, 4, 4), Placement(bulwark, 5, 4), Placement(mgNest, 4, 5)),
-                // 7: armor debut — iron horse hugged by infantry (self +10 HP per
-                // adjacent foot unit), medic patching the mortar crew.
+                // 7: armor debut — iron horse (breakthrough_tank) escorted by a full
+                // conscript wedge, medic patching the mortar crew. A 4th conscript at
+                // (4,4) keeps EffectiveTotal non-decreasing over fight 6's phalanx pair
+                // now that breakthrough_tank's adjacent-infantry aura is stubbed (see
+                // IronmarchUnionContentFactory.Pieces.cs TODO) — BalancePassTests guards it.
                 Save(7, "Iron Battery", "Artillery",
                     Placement(conscript, 4, 3), Placement(conscript, 5, 3), Placement(conscript, 5, 4),
+                    Placement(conscript, 4, 4),
                     Placement(enlisted, 5, 5), Placement(medic, 1, 4),
                     Placement(mgNest, 0, 5), Placement(mortars, 0, 3), Placement(ironHorse, 2, 4)),
                 // 8: horse screened by the phalanx pair, infantry riding its flank.

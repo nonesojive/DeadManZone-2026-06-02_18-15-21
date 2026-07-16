@@ -1,6 +1,5 @@
 using System.Linq;
 using DeadManZone.Core.Board;
-using DeadManZone.Core.Tags;
 
 namespace DeadManZone.Core.Run
 {
@@ -24,12 +23,14 @@ namespace DeadManZone.Core.Run
             if (boards == null)
                 return 0;
 
+            // 2026-07-15 faction-roster-v1: officer_quarters was cut from the IronMarch
+            // roster (§2.2) with no direct replacement, so its "+1 Authority per Command
+            // piece" hook is gone too — command_outpost's flat +1/round is IronMarch's only
+            // Authority building now.
             foreach (var piece in boards.AllPieces)
             {
                 if (piece.Definition.Id == "command_outpost")
                     bonus += 1;
-                if (piece.Definition.Id == "officer_quarters")
-                    bonus += BuildBoardTagCounter.Count(boards, GameTagIds.Command);
             }
 
             return bonus;

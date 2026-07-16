@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
+using DeadManZone.Core.Shop;
 using DeadManZone.Core.Tags;
 using DeadManZone.Presentation.Combat;
 using TMPro;
@@ -144,7 +145,7 @@ namespace DeadManZone.Presentation.ShopV2
             // then the board-context lines (synergy firing / critical-mass / salvage) in dim,
             // because "what it does" outranks "what the board is doing to it".
             BindAbilities(vm);
-            Set(_supVal, def.GoldCost.ToString());
+            Set(_supVal, RarityPricing.BaseCost(def.Rarity).ToString());
             Set(_manVal, def.ManpowerCost.ToString());
 
             RegenerateShape(def);

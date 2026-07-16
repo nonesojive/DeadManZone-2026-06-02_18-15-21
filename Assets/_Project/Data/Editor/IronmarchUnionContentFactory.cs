@@ -19,25 +19,31 @@ namespace DeadManZone.Data.Editor
         private const string FactionsRoot = Root + "/Factions";
         private const string EnemiesRoot = Root + "/Enemies";
 
+        // 2026-07-15 faction-roster-v1: Neutral (§2.1, 4C/3U/0R) + IronMarch Union
+        // (§2.2, 6C/3U/3R) — 19 pieces total. Replaces the old 17-piece roster.
         private static readonly string[] PieceIds =
         {
-            "supply_depot",
-            "field_hospital",
-            "officer_quarters",
-            "command_outpost",
-            "surgical_center",
-            "recruitment_office",
+            // Neutral
+            "militia_squad",
             "field_medic",
-            "conscript_rifleman",
-            "armored_transport",
-            "ironmarch_surgeon",
-            "bulwark_squad",
-            "enlisted_rifleman",
-            "ironmarch_iron_horse",
-            "ironclad_mortars",
-            "ironclad_marksman",
-            "ironclad_field_marshal",
-            "machine_gun_nest"
+            "supply_depot",
+            "recruitment_office",
+            "machine_gun_nest",
+            "trench_works",
+            "field_hospital",
+            // IronMarch Union
+            "conscript_rifles",
+            "line_grenadiers",
+            "field_mortar_team",
+            "sharpshooter",
+            "iron_guard",
+            "command_outpost",
+            "forward_observer",
+            "shock_sergeant",
+            "artillery_park",
+            "breakthrough_tank",
+            "grand_battery",
+            "marksman_doctrine_officer"
         };
 
         [MenuItem(DeadManZoneEditorMenus.Content + "Generate IronMarch Union Content Pass")]
@@ -48,7 +54,16 @@ namespace DeadManZone.Data.Editor
             EnsureFolder(FactionsRoot);
             EnsureFolder(EnemiesRoot);
 
+            // Force a synchronous flush between delete and recreate: without it,
+            // AssetDatabase.LoadAssetAtPath immediately after DeleteAsset can race
+            // Unity's async import queue and hand CreatePieces() a ghost object for
+            // one of the just-deleted paths — the piece then saves with every field
+            // left at its ScriptableObject default (blank id, "neutral" faction).
+            // Regular Refresh() alone was observed to still race right after a domain
+            // reload; ForceSynchronousImport is what actually closed it out.
             DeleteExistingPieces();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
             var pieces = CreatePieces();
             ValidatePieceRoster(pieces);
@@ -137,7 +152,6 @@ namespace DeadManZone.Data.Editor
             string primary,
             string combatRole,
             string factionId,
-            int goldCost,
             int maxHp,
             int baseDamage,
             int manpowerCost,
@@ -171,7 +185,6 @@ namespace DeadManZone.Data.Editor
                 maxHp: maxHp,
                 baseDamage: baseDamage,
                 cooldownTicks: 3,
-                goldCost: goldCost,
                 manpowerCost: manpowerCost,
                 requisitionCost: requisitionCost,
                 musterPerShop: musterPerShop,
@@ -250,7 +263,7 @@ namespace DeadManZone.Data.Editor
                 new FactionSO.StartingPieceEntry { pieceId = "supply_depot", anchor = new Vector2Int(0, 0) },
                 new FactionSO.StartingPieceEntry { pieceId = "command_outpost", anchor = new Vector2Int(0, 3) },
                 new FactionSO.StartingPieceEntry { pieceId = "field_medic", anchor = new Vector2Int(2, 2) },
-                new FactionSO.StartingPieceEntry { pieceId = "conscript_rifleman", anchor = new Vector2Int(3, 2) },
+                new FactionSO.StartingPieceEntry { pieceId = "conscript_rifles", anchor = new Vector2Int(3, 2) },
             };
             EditorUtility.SetDirty(faction);
             return faction;

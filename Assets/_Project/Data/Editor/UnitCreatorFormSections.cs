@@ -42,7 +42,6 @@ namespace DeadManZone.Data.Editor
             draft.maxHp = EditorGUILayout.IntField("Max HP", draft.maxHp);
             draft.baseDamage = EditorGUILayout.IntField("Base Damage", draft.baseDamage);
             draft.cooldownTicks = EditorGUILayout.IntField("Cooldown Ticks", draft.cooldownTicks);
-            draft.goldCost = EditorGUILayout.IntField("Gold Cost", draft.goldCost);
             draft.requisitionCost = EditorGUILayout.IntField("Requisition Cost", draft.requisitionCost);
             draft.manpowerCost = EditorGUILayout.IntField("Manpower Cost", draft.manpowerCost);
             draft.musterPerShop = EditorGUILayout.IntField("Muster Per Shop", draft.musterPerShop);

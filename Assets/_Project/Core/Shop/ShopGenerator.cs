@@ -355,7 +355,7 @@ namespace DeadManZone.Core.Shop
             int round,
             bool isSalvaged = false)
         {
-            int gold = ApplyGoldDiscount(piece.GoldCost, modifiers.GoldDiscountPercent);
+            int gold = ApplyGoldDiscount(RarityPricing.BaseCost(piece.Rarity), modifiers.GoldDiscountPercent);
             int requisition = piece.RequisitionCost;
             gold += Math.Max(0, round - 1);
 

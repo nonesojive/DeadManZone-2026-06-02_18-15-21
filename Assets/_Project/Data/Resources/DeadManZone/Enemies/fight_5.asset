@@ -17,19 +17,19 @@ MonoBehaviour:
   previewTag: Infantry
   enemyFactionId: ironmarch_union
   placements:
-  - piece: {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
+  - piece: {fileID: 11400000, guid: 86c3c71425601e548bf038d23d528ab0, type: 2}
     anchor: {x: 3, y: 4}
     instanceId: 
   - piece: {fileID: 11400000, guid: f3a4b5c6d7e8498899aabbccddeeff03, type: 2}
     anchor: {x: 3, y: 5}
     instanceId: 
-  - piece: {fileID: 11400000, guid: 1a5806fd52cd96847aee87be5a566886, type: 2}
+  - piece: {fileID: 11400000, guid: d0f91a8f843e58f41aa2364b10961efb, type: 2}
     anchor: {x: 4, y: 4}
     instanceId: 
-  - piece: {fileID: 11400000, guid: 1a5806fd52cd96847aee87be5a566886, type: 2}
+  - piece: {fileID: 11400000, guid: d0f91a8f843e58f41aa2364b10961efb, type: 2}
     anchor: {x: 4, y: 5}
     instanceId: 
-  - piece: {fileID: 11400000, guid: 6af7cb41902c7194a9529edab7e0b137, type: 2}
+  - piece: {fileID: 11400000, guid: cbb82453e892d2741a7e4ad6c2db78e3, type: 2}
     anchor: {x: 5, y: 4}
     instanceId: 
   - piece: {fileID: 11400000, guid: e10a0eb33766a3647af92eddfc733c09, type: 2}

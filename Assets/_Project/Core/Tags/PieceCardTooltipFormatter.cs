@@ -106,10 +106,7 @@ namespace DeadManZone.Core.Tags
                 case "command_outpost":
                     lines.Add("+1 Authority per round.");
                     break;
-                case "officer_quarters":
-                    lines.Add("+1 Authority per Command tag on your boards.");
-                    break;
-                case "ironclad_marksman":
+                case "marksman_doctrine_officer":
                     lines.Add("Untargetable until after the 2nd tactics checkpoint.");
                     break;
             }

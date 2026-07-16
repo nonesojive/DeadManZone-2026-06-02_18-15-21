@@ -243,7 +243,7 @@ namespace DeadManZone.Core.Tests
                         }
             }
 
-            var filler = _database.Pieces.First(p => p.id == "conscript_rifleman").ToCore();
+            var filler = _database.Pieces.First(p => p.id == "conscript_rifles").ToCore();
             for (int y = 0; y < board.Layout.Height; y++)
                 for (int x = 0; x < board.Layout.Width; x++)
                     if (board.TryPlace(filler, new GridCoord(x, y), $"steam_f_{y}_{x}").Success)

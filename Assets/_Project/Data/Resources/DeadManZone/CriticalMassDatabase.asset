@@ -162,29 +162,53 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
-  - id: sniper
+  - id: sniper_accuracy
     countTagId: sniper
     countCategory: 1
     tiers:
-    - threshold: 3
-      magnitude: 1
-    - threshold: 5
-      magnitude: 2
-    - threshold: 7
-      magnitude: 3
-    stat: 3
-    modType: 1
+    - threshold: 2
+      magnitude: 5
+    - threshold: 4
+      magnitude: 5
+    - threshold: 6
+      magnitude: 5
+    stat: 2
+    modType: 2
     scope: 0
     target:
       primaryTagIds: []
-      combatRoleTagId: 
+      combatRoleTagId: sniper
       synergyTagId: 
       abilityTagId: 
       flavorTagId: 
       attackType: 0
       useAttackType: 0
-      attackRange: 3
-      useAttackRange: 1
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+  - id: sniper_damage
+    countTagId: sniper
+    countCategory: 1
+    tiers:
+    - threshold: 2
+      magnitude: 0
+    - threshold: 4
+      magnitude: 5
+    - threshold: 6
+      magnitude: 10
+    stat: 1
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: sniper
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
       factionId: 
   - id: defender
     countTagId: defender

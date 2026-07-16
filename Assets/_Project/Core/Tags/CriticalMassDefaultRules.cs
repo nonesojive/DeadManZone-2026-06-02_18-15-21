@@ -15,7 +15,12 @@ namespace DeadManZone.Core.Tags
             RoleRule("assault", GameTagIds.Assault, T(5, 1, 7, 2, 10, 3), CriticalMassStat.Damage, SynergyModType.Flat, TargetPrimary(GameTagIds.Infantry)),
             RoleRule("tank", GameTagIds.Tank, T(3, 1, 5, 2, 7, 3), CriticalMassStat.Damage, SynergyModType.Flat, TargetPrimary(GameTagIds.Vehicle)),
             RoleRule("artillery", GameTagIds.Artillery, T(3, 1, 5, 2, 7, 3), CriticalMassStat.AttackSpeed, SynergyModType.TierStep, TargetAttackType(AttackType.Explosive)),
-            RoleRule("sniper", GameTagIds.Sniper, T(3, 1, 5, 2, 7, 3), CriticalMassStat.AttackSpeed, SynergyModType.TierStep, TargetAttackRange(AttackRangeTier.Long)),
+            // 2026-07-15 faction-roster-v1 §3: approved sniper CM rule, ≈2/4/6 → +accuracy,
+            // then +damage% (sniper counts run small, so thresholds sit low). Two rules
+            // share the "sniper" count tag because a CriticalMassRuleDefinition carries one
+            // stat; splitting early-accuracy from later-damage% needs two tiers lists.
+            RoleRule("sniper_accuracy", GameTagIds.Sniper, T(2, 5, 4, 5, 6, 5), CriticalMassStat.Accuracy, SynergyModType.Percent, TargetRole(GameTagIds.Sniper)),
+            RoleRule("sniper_damage", GameTagIds.Sniper, T(2, 0, 4, 5, 6, 10), CriticalMassStat.Damage, SynergyModType.Percent, TargetRole(GameTagIds.Sniper)),
             RoleRule("defender", GameTagIds.Defender, T(3, 5, 5, 10, 7, 15), CriticalMassStat.MaxHp, SynergyModType.Percent, TargetPrimary(GameTagIds.Infantry, GameTagIds.Vehicle)),
             RoleRule("utility", GameTagIds.Utility, T(3, 1, 5, 2, 7, 3), CriticalMassStat.MovementSpeed, SynergyModType.TierStep, CriticalMassTargetFilter.Any),
             RoleRule("support", GameTagIds.Support, T(3, 1, 5, 2, 7, 3), CriticalMassStat.AttackSpeed, SynergyModType.TierStep, TargetPrimary(GameTagIds.Infantry, GameTagIds.Vehicle)),
@@ -125,8 +130,5 @@ namespace DeadManZone.Core.Tags
 
         private static CriticalMassTargetFilter TargetAttackType(AttackType attackType) =>
             new() { AttackType = attackType };
-
-        private static CriticalMassTargetFilter TargetAttackRange(AttackRangeTier range) =>
-            new() { AttackRange = range };
     }
 }

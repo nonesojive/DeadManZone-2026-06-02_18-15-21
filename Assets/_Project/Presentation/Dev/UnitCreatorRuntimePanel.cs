@@ -86,7 +86,6 @@ namespace DeadManZone.Presentation.Dev
             _draft.primary = LabeledTextField("Primary Tag", _draft.primary);
             _draft.maxHp = LabeledInt("Max HP", _draft.maxHp);
             _draft.baseDamage = LabeledInt("Damage", _draft.baseDamage);
-            _draft.goldCost = LabeledInt("Gold", _draft.goldCost);
             _draft.includeInShopPool = LabeledToggle("Shop Pool", _draft.includeInShopPool);
             _draft.addToContentDatabase = LabeledToggle("Add to DB on Save", _draft.addToContentDatabase);
             GUILayout.Label($"Shop Lane: {_draft.ComputedShopLane}");

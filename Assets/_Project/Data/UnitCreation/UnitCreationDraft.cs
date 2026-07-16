@@ -34,7 +34,6 @@ namespace DeadManZone.Data.UnitCreation
         public int maxHp = 10;
         public int baseDamage;
         public int cooldownTicks = 3;
-        public int goldCost = 5;
         public int requisitionCost;
         public int manpowerCost = 1;
         public int musterPerShop;
@@ -88,7 +87,6 @@ namespace DeadManZone.Data.UnitCreation
                 maxHp = piece.maxHp,
                 baseDamage = piece.baseDamage,
                 cooldownTicks = piece.cooldownTicks,
-                goldCost = piece.goldCost,
                 requisitionCost = piece.requisitionCost,
                 manpowerCost = piece.manpowerCost,
                 musterPerShop = piece.musterPerShop,
@@ -147,7 +145,6 @@ namespace DeadManZone.Data.UnitCreation
             piece.maxHp = maxHp;
             piece.baseDamage = baseDamage;
             piece.cooldownTicks = cooldownTicks;
-            piece.goldCost = goldCost;
             piece.requisitionCost = requisitionCost;
             piece.manpowerCost = manpowerCost;
             piece.musterPerShop = musterPerShop;

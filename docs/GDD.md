@@ -64,6 +64,10 @@ Spent on shop offers and rerolls. Running out means you can't buy; it does not k
 - Income per Build: `faction.baseSuppliesPerRound + board bonuses` (`RoundIncomeCalculator`).
 - `supply_depot` → **+5 flat each** (`BuildingIncomeRules.cs:16-17`), plus Critical-Mass Supplies
   rules (flat + percent).
+- **A piece's Supplies price is derived from its rarity, not authored per piece**
+  (`Core/Shop/RarityPricing.cs` — Common **10**, Uncommon **15**, Rare **25**; one table for
+  units, structures and buildings alike). See §6 for the Dread-tax formula and §11 for the
+  per-piece table.
 
 ### Manpower — the run health bar
 **The only resource that can end your run.**
@@ -86,8 +90,10 @@ Spent on shop offers and rerolls. Running out means you can't buy; it does not k
 ### Authority — the command currency
 A **per-round pool**, not a bank.
 
-- Pool = **2 base** (`AuthorityCalculator.cs:8`) + buildings: `command_outpost` **+1**;
-  `officer_quarters` **+1 per `command`-tagged piece on your boards**.
+- Pool = **2 base** (`AuthorityCalculator.cs:8`) + buildings: `command_outpost` **+1/round**.
+  > 2026-07-15 faction-roster-v1: `officer_quarters` (the old "+1 per `command`-tagged piece"
+  > building) was cut with no direct replacement — `command_outpost`'s flat bonus is IronMarch's
+  > only Authority building now (`BuildingIncomeRules.cs`).
 - Spent on: the **Easy** front (2), **each offer lock past the first** (1), and **tactical orders**
   mid-fight. Critical-Mass `command` also grants flat Authority.
 
@@ -150,8 +156,11 @@ through neutral ground" (§10) refers to.
 - **Reroll cost:** `1 + rerolls this round` — climbs within a round, resets between rounds.
 - **Lock:** right-click to keep an offer through a reroll. **First lock free; each extra lock costs
   1 Authority** (`max(0, locks - 1)`).
-- **Sell (Smelter):** **50%** of Supplies cost + **50%** of Authority cost; **0% Manpower**
-  (`SalvageCalculator`). Dust Scourge: **×1.25** Supplies.
+- **Sell (Smelter):** **50%** of the rarity-derived Supplies base cost (`RarityPricing.BaseCost`,
+  int-truncated — 5/7/12 by tier) + **50%** of Authority cost; **0% Manpower** (`SalvageCalculator`).
+  Dust Scourge: **×1.25** Supplies (applied after the 50% truncation, then truncated again — e.g.
+  Common 10 → 5 → **6**, not 6.25). Refund is 50% of the **base** tier cost while purchases pay the
+  Dread-inflated price — late-run flips are deliberately lossy.
   > Trap: `SalvageCalculator.ManpowerRefundRatio = 0.25f` is **declared but never used** —
   > manpower is hardcoded to 0. The constant lies.
 
@@ -159,8 +168,22 @@ through neutral ground" (§10) refers to.
 1. **Source roll** per slot: **neutral 10% / faction 80% / salvage 10%** (`ShopSlotProfileSO`), with
    a fallback chain. **No duplicate piece within a batch** (`ShopGenerator.cs:183,224`).
 2. **Rarity roll** — table below.
-3. **Price** = base cost **+ `max(0, FightEquivalent - 1)`** (`ShopGenerator.cs:360`).
-   **Shop prices inflate with the Dread clock.**
+3. **Price** = `discount(tierBase)` **+ `max(0, FightEquivalent - 1)`** (`ShopGenerator.cs:358-360`).
+   **Shop prices inflate with the Dread clock.** The Gold-discount modifier (below) is applied to
+   the tier base *before* the Dread tax is added — never to the taxed total.
+
+**Tier base is rarity-derived, not authored per piece** (`Core/Shop/RarityPricing.cs`,
+2026-07-13 rarity-standardized-pricing spec):
+
+| Rarity | Base cost | Salvage refund (50%) |
+|---|---|---|
+| Common | **10** | 5 |
+| Uncommon | **15** | 7 |
+| Rare | **25** | 12 |
+
+One table for every category — units, structures and economy buildings share it. Building
+viability is tuned via *yields* (building income, supplier Critical-Mass thresholds), never via
+a per-piece price exception. Moving a tier price is the intended tuning surface; see §14.
 
 ### Rarity odds — keyed on `FightEquivalent`, not fight count
 
@@ -246,12 +269,14 @@ type**, **synergy**, **ability**, **flavor**.
 Authored **per piece** as `customAbilities` (neighbour filter → stat → mod type → magnitude) and
 resolved by **`PieceAbilityEngine`**.
 
-> **`SynergyTraitRegistry` is DESCRIPTION-ONLY and referenced by nothing.** Its blurbs are stale
-> (e.g. it says phalanx buffs "per adjacent infantry"; the real `bulwark_squad` ability filters on
-> `SynergyTagId: phalanx` — i.e. **per adjacent phalanx**). Read the piece assets, not the registry.
+> **`SynergyTraitRegistry` is DESCRIPTION-ONLY and referenced by nothing.** Its blurbs can drift from
+> the real per-piece `customAbilities` (the 2026-07-15 faction-roster-v1 pass retired the
+> `bulwark_squad`/phalanx example this section used to cite — `iron_guard` is its replacement and
+> carries no phalanx ability). Read the piece assets, not the registry.
 
 ### Critical Mass (army-wide)
-`CriticalMassDefaultRules.Build()` — **30 rules**. Count a tag, cross a threshold, get a **tiered**
+`CriticalMassDefaultRules.Build()` — **31 rules** (2026-07-15: the old single `sniper` rule split
+into `sniper_accuracy` + `sniper_damage`, §3). Count a tag, cross a threshold, get a **tiered**
 bonus applied to a **filtered target set**.
 
 > **Scope trap.** At fight start, Critical Mass counts the **COMBAT BOARD ONLY**
@@ -272,9 +297,15 @@ Representative rules:
 | `supplier` | run | 2→+20, 4→+45, 6→+70, 8→+100 | **Supplies** *(both boards)* |
 | `ballistic` | attack type | 5→+5%, 7→+10%, 10→+15% | Damage % |
 | `ironmarch_union` | faction | 5→+1, 7→+2, 10→+3 | **Damage** (flat), infantry |
+| `sniper_accuracy` | role | 2→+5%, 4→+5%, 6→+5% | Accuracy %, sniper role |
+| `sniper_damage` | role | 2→+0%, 4→+5%, 6→+10% | Damage %, sniper role |
 
-> The faction rule counts `definition.FactionId` — and **7 of the 17 pieces are `neutral`, not
+> The faction rule counts `definition.FactionId` — and **7 of the 19 pieces are `neutral`, not
 > `ironmarch_union`** (§11). Neutral pieces do **not** count toward it.
+>
+> 2026-07-15 faction-roster-v1 §3: the approved **sniper** rule is two `CriticalMassRuleDefinition`s
+> sharing the `sniper` combat-role count tag (one rule = one stat, so the "accuracy first, then
+> damage%" design needs two) — thresholds land low (≈2/4/6) because sniper counts run small.
 
 **Design intent:** the shop sells *pieces*, but you are buying **counts**. The real question is
 rarely "is this unit good" — it's "does this tip a threshold".
@@ -359,35 +390,57 @@ minimum 1
 `neutral`, `crimson_legion`, `ash_wraiths` are enemy pools; `dust_scourge` and `cartel_of_echoes`
 have faction assets and identity hooks (Dust Scourge's ×1.25 salvage refund) but **no roster yet**.
 
-**17 pieces total** — but only **10 carry `factionId: ironmarch_union`**. The other **7**
-(`field_medic`, `machine_gun_nest`, `armored_transport`, `supply_depot`, `field_hospital`,
-`recruitment_office`, `surgical_center`) are **`factionId: neutral`** — a **shared pool**. This
-matters: they do **not** count toward the `ironmarch_union` Critical-Mass rule.
+**2026-07-15 faction-roster-v1 pass:** the Neutral and IronMarch Union rosters below replace the
+old 17-piece set per `docs/superpowers/specs/2026-07-15-faction-roster-v1-design.md` §2.1/§2.2.
+The other five factions (Dust Scourge, Cartel of Echoes, Crimson Legion, Ash Wraiths, plus the
+design's Oathborn/Paradox/Blightborn/Ashen slate) are **unchanged pending their own passes** — the
+demo pipeline's Crimson Legion / Ash Wraiths pieces (`crimson_elite`, `wraith_stalker`, etc., see
+`DemoPieceFactory.cs`) are untouched, and `BossRoster.cs`'s Crimson Marshal / Wraith Harbinger
+bosses still field IronMarch/neutral pieces as their (documented) rifleman-fallback armies.
+
+**19 pieces total** — **7 `factionId: neutral`** (§2.1, 4 Common / 3 Uncommon, no rares, no
+vehicles/tactics/build-around tags) + **12 `factionId: ironmarch_union`** (§2.2, 6 Common / 3
+Uncommon / 3 Rare). Neutral pieces do **not** count toward the `ironmarch_union` Critical-Mass rule.
 
 **Faction baseline** (`ironmarch_union.asset`): Supplies **50**, Manpower **15**, Authority **2**,
 Supplies/round **10**, Muster/shop **1**, base salvage **1%**, Combat **6×6**, HQ **3×6**.
-**Starting board:** `supply_depot`, `command_outpost` (HQ); `field_medic`, `conscript_rifleman`
+**Starting board:** `supply_depot`, `command_outpost` (HQ); `field_medic`, `conscript_rifles`
 (Combat).
 
-| Piece | Faction | Primary | Role | Rar | S | M | HP | Dmg | Notes |
-|---|---|---|---|---|---|---|---|---|---|
-| conscript_rifleman | IM | infantry | assault | C | 12 | 1 | 50 | 5 | |
-| enlisted_rifleman | IM | infantry | assault | C | 15 | 1 | 55 | 6 | +1 atk-speed tier per adjacent Command |
-| bulwark_squad | IM | infantry | assault | U | 18 | 1 | 55 | 3 | phalanx (per adjacent **phalanx**) |
-| ironmarch_surgeon | IM | infantry | support | U | 15 | 1 | 40 | 3 | |
-| ironclad_marksman | IM | infantry | sniper | U | 20 | 2 | 35 | 6 | **stealth until the 2nd tactics window** |
-| ironclad_mortars | IM | infantry | artillery | R | 20 | 3 | 25 | 8 | **Mortar Shot** (area, pause 0) |
-| ironclad_field_marshal | IM | infantry | utility | R | 30 | 2 | 50 | 3 | |
-| ironmarch_iron_horse | IM | vehicle | tank | R | 24 | 4 | 75 | 6 | |
-| officer_quarters | IM | building | utility | U | 25 | 0 | 45 | — | **+1 Authority per Command piece** |
-| command_outpost | IM | building | support | C | 15 | 0 | 40 | — | **+1 Authority/round** |
-| field_medic | neutral | infantry | support | U | 10 | 1 | 30 | 3 | adjacency HP buff |
-| armored_transport | neutral | vehicle | defender | R | 18 | 3 | 75 | 2 | **Shield Allies** at pause |
-| machine_gun_nest | neutral | structure | utility | R | 20 | 2 | 100 | 2 | terror; **Combat** board |
-| supply_depot | neutral | building | utility | U | 15 | 0 | 50 | — | **+5 Supplies/round** |
-| recruitment_office | neutral | building | utility | C | 15 | 0 | 35 | — | Muster |
-| field_hospital | neutral | building | support | U | 20 | 0 | 60 | — | |
-| surgical_center | neutral | building | support | U | 20 | 0 | 35 | — | |
+**"S" (Supplies price) is rarity-derived, not authored** (`Core/Shop/RarityPricing.cs`: Common 10 /
+Uncommon 15 / Rare 25 — see §6). `ManpowerCost` and `RequisitionCost` ("M" below) remain authored
+per piece — they are the within-tier differentiators. **Every HP/Dmg/M value below is PROVISIONAL
+(balance pass pending)** — anchored to the closest pre-existing piece per the design spec's own
+instruction; see `IronmarchUnionContentFactory.Pieces.cs` for the `// PROVISIONAL` call-outs.
+
+### Neutral — "The War's Flotsam" (§2.1)
+
+| Piece | Primary | Role | Rar | S | M | HP | Dmg | Notes |
+|---|---|---|---|---|---|---|---|---|
+| militia_squad | infantry | assault | C | 10 | 1 | 45 | 5 | baseline body, no text |
+| field_medic | infantry | support | C | 10 | 1 | 30 | 3 | adjacent allies +HP |
+| supply_depot | building | utility | C | 10 | 0 | 50 | — | **+5 Supplies/round** |
+| recruitment_office | building | utility | C | 10 | 0 | 35 | — | +Muster/shop |
+| machine_gun_nest | structure | defender | U | 15 | 2 | 100 | 2 | terror ping (`maxMorale`40/`terrorDamage`4); **Combat** board |
+| trench_works | structure | defender | U | 15 | 2 | 140 | — | HP wall; enemy-adjacency movement slow **omitted** (no seam — new tech) |
+| field_hospital | building | support | U | 15 | 0 | 60 | — | post-fight Manpower reduction **omitted** (no seam — new tech) |
+
+### IronMarch Union — "The Relentless War Machine" (§2.2)
+
+| Piece | Primary | Role | Rar | S | M | HP | Dmg | Notes |
+|---|---|---|---|---|---|---|---|---|
+| conscript_rifles | infantry | assault | C | 10 | 1 | 50 | 5 | the faction body |
+| line_grenadiers | infantry | assault | C | 10 | 1 | 45 | 8 | explosive — anti-structure/anti-heavy via the attack-type triangle |
+| field_mortar_team | infantry | artillery | C | 10 | 2 | 30 | 7 | artillery count piece |
+| sharpshooter | infantry | sniper | C | 10 | 1 | 30 | 6 | sniper count piece |
+| iron_guard | infantry | defender | C | 10 | 2 | 70 | 4 | reduced morale damage **omitted** (no per-piece morale-resist stat — new tech) |
+| command_outpost | building | utility | C | 10 | 0 | 40 | — | **+1 Authority/round**, `command` |
+| forward_observer | infantry | support | U | 15 | 1 | 25 | — | adjacent artillery: +1 attack-speed tier |
+| shock_sergeant | infantry | utility | U | 15 | 1 | 35 | 5 | `command`; adjacent assault infantry: +2 damage |
+| artillery_park | building | utility | U | 15 | 0 | 90 | — | *Ranging Barrage* tactic **omitted** — HQ pause-abilities aren't wired (§4 ledger, 🟡) |
+| breakthrough_tank | vehicle | tank | R | 25 | 4 | 90 | 8 | terror ≥2× dmg (wired: `terrorDamage`16); nearby-infantry morale resistance **omitted** (new tech) |
+| grand_battery | structure | artillery | R | 25 | 3 | 110 | 10 | **Combat board.** *Rolling Barrage* approximated with the existing `GrantedAbility.MortarShot`; artillery-count scaling **not** implemented |
+| marksman_doctrine_officer | infantry | sniper | R | 25 | 2 | 35 | 6 | stealth until 2nd window (`CombatStealthRules`); snipers +1 dmg per sniper in army (`BoardPerTagCount`) |
 
 **Granted abilities:** `MortarShot` (area, pause 0), `ShieldAllies` (protect allies at pause),
 `CannonBlast` (heavy blast, pause 1 — **defined but unused by any piece**).
@@ -432,6 +485,15 @@ Supplies/round **10**, Muster/shop **1**, base salvage **1%**, Combat **6×6**, 
    threshold" — which is why tag legibility in the UI is a first-class concern.
 7. **Determinism is non-negotiable.** Seeded sub-streams everywhere; a run must reproduce from its
    seed or balance work is guesswork.
+8. **Price is never the tuning lever (2026-07-13 rarity-standardized-pricing spec).** A piece's
+   Supplies price is derived from its rarity tier (`Core/Shop/RarityPricing.cs`), not authored —
+   one table for units, structures and buildings alike. Tuning policy:
+   - **Mis-tuned piece:** decide per piece. If its role tolerates being *seen less often*, move its
+     rarity (accepting the coupled shop-odds and salvage-weighting changes that come with it). If
+     its current visibility is right, adjust its stats instead. Price is never the lever.
+   - **"Economy isn't worth building":** fix the payoff side (building yields, supplier
+     Critical-Mass thresholds), never the global price table.
+   - Moving a tier price is a one-line change in `RarityPricing` — the intended tuning surface.
 
 ---
 

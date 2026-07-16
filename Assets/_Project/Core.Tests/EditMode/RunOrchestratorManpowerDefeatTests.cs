@@ -104,7 +104,7 @@ namespace DeadManZone.Core.Tests
                 combat.TryRemove(piece.InstanceId, out _);
             orchestrator.SaveCombatBoard(combat);
 
-            var rifle = _database.Pieces.First(p => p.id == "conscript_rifleman").ToCore();
+            var rifle = _database.Pieces.First(p => p.id == "conscript_rifles").ToCore();
             var board = orchestrator.GetPlayerBoard();
             Assert.IsTrue(board.TryPlace(rifle, TestBoards.CombatBoardAnchor(3, 3), "lone_rifle").Success);
             orchestrator.SaveCombatBoard(board);

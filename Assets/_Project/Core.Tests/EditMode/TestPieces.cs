@@ -10,8 +10,8 @@ namespace DeadManZone.Core.Tests
     {
         public static PieceDefinition RifleSquadTenMan() => new()
         {
-            Id = "conscript_rifleman",
-            DisplayName = "Conscript Rifleman",
+            Id = "conscript_rifles",
+            DisplayName = "Conscript Rifles",
             Category = PieceCategory.Unit,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
             MaxHp = 100,
@@ -35,15 +35,14 @@ namespace DeadManZone.Core.Tests
 
         public static PieceDefinition RifleSquad() => new()
         {
-            Id = "conscript_rifleman",
-            DisplayName = "Conscript Rifleman",
+            Id = "conscript_rifles",
+            DisplayName = "Conscript Rifles",
             Category = PieceCategory.Unit,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
             Tags = new[] { GameTagIds.Infantry },
             MaxHp = 100,
             BaseDamage = 20,
             CooldownTicks = 3,
-            GoldCost = 10,
             ManpowerCost = 10,
             FactionId = FactionIds.IronmarchUnion
         };
@@ -82,7 +81,6 @@ namespace DeadManZone.Core.Tests
                 BaseDamage = baseDamage ?? source.BaseDamage,
                 TerrorDamage = terrorDamage ?? source.TerrorDamage,
                 CooldownTicks = cooldownTicks ?? source.CooldownTicks,
-                GoldCost = source.GoldCost,
                 RequisitionCost = source.RequisitionCost,
                 ManpowerCost = source.ManpowerCost,
                 ShopModifiers = source.ShopModifiers,
@@ -104,7 +102,6 @@ namespace DeadManZone.Core.Tests
             Category = PieceCategory.Building,
             Shape = MultiCellHorizontalPairShape(),
             MaxHp = 20,
-            GoldCost = 8,
             CommandActions = CommandActionFlags.ChangeStance,
             ShopModifiers = ShopModifierFlags.ExtraGeneralSlot
         };
@@ -116,7 +113,6 @@ namespace DeadManZone.Core.Tests
             Category = PieceCategory.Building,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
             MaxHp = 50,
-            GoldCost = 6,
             ManpowerCost = 0,
             MusterPerShop = 3,
             ShopModifiers = ShopModifierFlags.GoldDiscount10,
@@ -129,18 +125,7 @@ namespace DeadManZone.Core.Tests
             DisplayName = "Command Outpost",
             Category = PieceCategory.Building,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
-            MaxHp = 40,
-            GoldCost = 8
-        };
-
-        public static PieceDefinition OfficerQuarters() => new()
-        {
-            Id = "officer_quarters",
-            DisplayName = "Officer Quarters",
-            Category = PieceCategory.Building,
-            Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
-            MaxHp = 35,
-            GoldCost = 7
+            MaxHp = 40
         };
 
         public static PieceDefinition FieldWorkshop() => new()
@@ -150,7 +135,6 @@ namespace DeadManZone.Core.Tests
             Category = PieceCategory.Building,
             Shape = new PieceShape(new[] { new GridCoord(0, 0) }),
             MaxHp = 120,
-            GoldCost = 7,
             MusterPerShop = 2,
             ShopModifiers = ShopModifierFlags.GuaranteeEngineerOffer
         };
@@ -164,7 +148,6 @@ namespace DeadManZone.Core.Tests
             AttackType = AttackType.Gas,
             MaxHp = 8,
             BaseDamage = 4,
-            GoldCost = 5,
             RequisitionCost = 3,
             ManpowerCost = 1,
             CommandActions = CommandActionFlags.CallStrike

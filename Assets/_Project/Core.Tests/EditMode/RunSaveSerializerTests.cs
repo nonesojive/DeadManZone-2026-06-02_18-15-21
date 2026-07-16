@@ -95,7 +95,7 @@ namespace DeadManZone.Core.Tests
                     {
                         OfferId = "offer-abc",
                         SlotIndex = 3,
-                        PieceId = "ironclad_marksman",
+                        PieceId = "marksman_doctrine_officer",
                         GoldPrice = 20
                     }
                 }
@@ -115,7 +115,7 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual("offer-abc", locked.OfferId);
             Assert.AreEqual(3, locked.SlotIndex,
                 "SlotIndex is what ShopV2ShopBandPresenter matches on to paint the lock");
-            Assert.AreEqual("ironclad_marksman", locked.PieceId);
+            Assert.AreEqual("marksman_doctrine_officer", locked.PieceId);
         }
 
         [Test]
@@ -155,7 +155,7 @@ namespace DeadManZone.Core.Tests
                         {
                             OfferId = "general_rifle_0",
                             Lane = ShopLane.Offensive,
-                            PieceId = "conscript_rifleman",
+                            PieceId = "conscript_rifles",
                             GoldPrice = 10,
                             RequisitionPrice = 0
                         }
@@ -168,7 +168,7 @@ namespace DeadManZone.Core.Tests
 
             Assert.AreEqual(42, loaded.Shop.Seed);
             Assert.AreEqual(1, loaded.Shop.Offers.Count);
-            Assert.AreEqual("conscript_rifleman", loaded.Shop.Offers.First().PieceId);
+            Assert.AreEqual("conscript_rifles", loaded.Shop.Offers.First().PieceId);
             Assert.AreEqual("general_rifle_0", loaded.FrozenOfferId);
         }
 
@@ -270,7 +270,7 @@ namespace DeadManZone.Core.Tests
                 "{\n" +
                 "  \"SaveSchemaVersion\": 8,\n" +
                 "  \"Phase\": \"Build\",\n" +
-                "  \"LockedOffer\": { \"SlotIndex\": 2, \"PieceId\": \"conscript_rifleman\", \"GoldPrice\": 13 },\n" +
+                "  \"LockedOffer\": { \"SlotIndex\": 2, \"PieceId\": \"conscript_rifles\", \"GoldPrice\": 13 },\n" +
                 "  \"PlayerBoard\": { \"Width\": 8, \"Height\": 6 }\n" +
                 "}";
 
@@ -278,7 +278,7 @@ namespace DeadManZone.Core.Tests
 
             Assert.AreEqual(1, loaded.LockedOffers.Count, "singular LockedOffer folds into the list");
             Assert.AreEqual(2, loaded.LockedOffers[0].SlotIndex);
-            Assert.AreEqual("conscript_rifleman", loaded.LockedOffers[0].PieceId);
+            Assert.AreEqual("conscript_rifles", loaded.LockedOffers[0].PieceId);
             Assert.AreEqual(10, loaded.SaveSchemaVersion);
         }
 

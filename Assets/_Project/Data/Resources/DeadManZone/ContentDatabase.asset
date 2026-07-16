@@ -13,23 +13,25 @@ MonoBehaviour:
   m_Name: ContentDatabase
   m_EditorClassIdentifier: 
   pieces:
-  - {fileID: 11400000, guid: ee6b934080063644aa7945a89189ffa5, type: 2}
-  - {fileID: 11400000, guid: 395926f7f1a4cf24f97983dfcd4e3157, type: 2}
-  - {fileID: 11400000, guid: 7bcffe8fe97ee0643967d9f54f0fa821, type: 2}
-  - {fileID: 11400000, guid: e2f8193405a720244b17f767cae6be12, type: 2}
-  - {fileID: 11400000, guid: 139356a82795af646adb391187561e22, type: 2}
-  - {fileID: 11400000, guid: 08da0de7b9e5dfe46b8deafc41e3c415, type: 2}
+  - {fileID: 11400000, guid: 2909076279ef42a4e883f208a010f4d9, type: 2}
   - {fileID: 11400000, guid: f3a4b5c6d7e8498899aabbccddeeff03, type: 2}
-  - {fileID: 11400000, guid: f1a2b3c4d5e6478899aabbccddeeff01, type: 2}
-  - {fileID: 11400000, guid: f4a5b6c7d8e9508899aabbccddeeff04, type: 2}
-  - {fileID: 11400000, guid: ef7a607c387fc5847b6d5ae8a5598b5a, type: 2}
-  - {fileID: 11400000, guid: 1a5806fd52cd96847aee87be5a566886, type: 2}
-  - {fileID: 11400000, guid: 6af7cb41902c7194a9529edab7e0b137, type: 2}
-  - {fileID: 11400000, guid: c51b9248d944ee84fb08538c41638b52, type: 2}
-  - {fileID: 11400000, guid: df18f35855a663941afa4616960520f9, type: 2}
-  - {fileID: 11400000, guid: e421f8f68fb74a54f9ea3ebf8b8818be, type: 2}
-  - {fileID: 11400000, guid: c51d7dc1441c41e40b488db073d0de73, type: 2}
+  - {fileID: 11400000, guid: ee6b934080063644aa7945a89189ffa5, type: 2}
+  - {fileID: 11400000, guid: 08da0de7b9e5dfe46b8deafc41e3c415, type: 2}
   - {fileID: 11400000, guid: e10a0eb33766a3647af92eddfc733c09, type: 2}
+  - {fileID: 11400000, guid: b98337da778bf1b4981882c720c2c314, type: 2}
+  - {fileID: 11400000, guid: 395926f7f1a4cf24f97983dfcd4e3157, type: 2}
+  - {fileID: 11400000, guid: 86c3c71425601e548bf038d23d528ab0, type: 2}
+  - {fileID: 11400000, guid: 3742f3916416ca74189fa575c23b2ac4, type: 2}
+  - {fileID: 11400000, guid: 7a1884fac3369324d91fe1fe13750b76, type: 2}
+  - {fileID: 11400000, guid: 04be66a60da1ae74588c6359347d4341, type: 2}
+  - {fileID: 11400000, guid: d0f91a8f843e58f41aa2364b10961efb, type: 2}
+  - {fileID: 11400000, guid: e2f8193405a720244b17f767cae6be12, type: 2}
+  - {fileID: 11400000, guid: 8bf66a43d8f5c3f4f85aa5131362fbc4, type: 2}
+  - {fileID: 11400000, guid: cbb82453e892d2741a7e4ad6c2db78e3, type: 2}
+  - {fileID: 11400000, guid: 0f1de22bd20c54b42841fe559a28a984, type: 2}
+  - {fileID: 11400000, guid: 1b75393fedea3e04ab3ca34ef752d3cd, type: 2}
+  - {fileID: 11400000, guid: 1cd26a3233493da4aaaeba599d99f94d, type: 2}
+  - {fileID: 11400000, guid: a97443f6a2b24c04aaefb5b16d9cba47, type: 2}
   factions:
   - {fileID: 11400000, guid: 2fd2c6378baacfd4787b66b4ee914fae, type: 2}
   enemyTemplates:

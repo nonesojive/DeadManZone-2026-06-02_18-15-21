@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
+  m_Name: marksman_doctrine_officer
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
+  id: marksman_doctrine_officer
+  displayName: Marksman-Doctrine Officer
+  category: 1
+  shapeCells:
+  - {x: 0, y: 0}
+  tags:
+  - Infantry
+  - Sniper
+  - Command
+  - Stealth
+  primary: infantry
+  combatRole: sniper
+  systemTag: 
+  synergyTags:
+  - command
+  abilityTags:
+  - stealth
+  flavorTags: []
+  maxHp: 35
+  baseDamage: 6
+  cooldownTicks: 3
+  requisitionCost: 0
+  manpowerCost: 2
+  musterPerShop: 0
+  shopModifiers: 0
+  commandActions: 0
+  shopLane: 0
+  includeInShopPool: 1
+  rarity: 2
+  salvageChanceBonus: 0
+  maxMorale: 30
+  terrorDamage: 0
+  attackSpeed: 0
+  attackRange: 3
+  movementSpeed: 3
+  armorType: 0
+  attackType: 3
+  grantedAbility: 0
+  accuracyOverride: 0
+  factionId: ironmarch_union
+  icon: {fileID: 0}
+  categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  cellSprites: []
+  catalogAbilities: []
+  customAbilities:
+  - id: marksman_doctrine_officer_sniper_count_damage
+    cardDescription: 
+    trigger: 2
+    neighborFilter:
+      PrimaryTagId: 
+      CombatRoleTagId: sniper
+      SystemTagId: 
+      SynergyTagId: 
+      AbilityTagId: 
+    stat: 0
+    modType: 0
+    magnitude: 1
+    countTagId: sniper
+    applyToSelf: 0
+  combatArenaSprite: {fileID: 0}
+  combatArena2DAnimations: {fileID: 0}
+  combatArenaPrefab: {fileID: 0}
+  combatArenaModelScale: 1
+  combatArenaModelHeight: 0

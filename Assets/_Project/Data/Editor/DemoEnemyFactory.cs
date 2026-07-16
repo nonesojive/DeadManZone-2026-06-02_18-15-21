@@ -9,24 +9,28 @@ namespace DeadManZone.Data.Editor
         {
             var byId = pieces.ToDictionary(p => p.id);
 
+            // 2026-07-15 faction-roster-v1: "Neutral Armor"/"Neutral Battery" used the old
+            // Neutral rares (armored_transport/mobile_cannon/grenade_thrower), all deleted —
+            // §2.1 gives Neutral no vehicles and no rares. Substituted with the nearest
+            // surviving/new Neutral pieces (smallest-diff — see agent report).
             return new[]
             {
                 Save(1, "Conscript Line", "Infantry", "neutral",
-                    Placement(byId["conscript_rifleman"], 4, 4)),
+                    Placement(byId["militia_squad"], 4, 4)),
                 Save(2, "Patrol", "Infantry", "neutral",
-                    Placement(byId["conscript_rifleman"], 4, 4), Placement(byId["field_medic"], 5, 4)),
+                    Placement(byId["militia_squad"], 4, 4), Placement(byId["field_medic"], 5, 4)),
                 Save(3, "Field Support", "Infantry", "neutral",
-                    Placement(byId["conscript_rifleman"], 4, 4), Placement(byId["conscript_rifleman"], 5, 4)),
-                Save(4, "Neutral Armor", "Vehicle", "neutral",
-                    Placement(byId["armored_transport"], 3, 4), Placement(byId["mobile_cannon"], 1, 1)),
+                    Placement(byId["militia_squad"], 4, 4), Placement(byId["militia_squad"], 5, 4)),
+                Save(4, "Neutral Redoubt", "Defense", "neutral",
+                    Placement(byId["machine_gun_nest"], 3, 4), Placement(byId["trench_works"], 1, 1)),
                 Save(5, "Crimson Assault", "Boss", "crimson_legion",
                     Placement(byId["crimson_tank"], 4, 4), Placement(byId["crimson_elite"], 5, 4),
                     Placement(byId["crimson_artillery"], 0, 0)),
                 Save(6, "Ash Phantoms", "Stealth", "ash_wraiths",
                     Placement(byId["wraith_stalker"], 3, 4), Placement(byId["wraith_stalker"], 4, 4),
                     Placement(byId["wraith_phantom"], 5, 4)),
-                Save(7, "Neutral Battery", "Artillery", "neutral",
-                    Placement(byId["mobile_cannon"], 3, 3), Placement(byId["grenade_thrower"], 4, 4),
+                Save(7, "Neutral Battery", "Defense", "neutral",
+                    Placement(byId["machine_gun_nest"], 3, 3), Placement(byId["militia_squad"], 4, 4),
                     Placement(byId["field_medic"], 4, 5)),
                 Save(8, "Crimson Armor Push", "Mechanical", "crimson_legion",
                     Placement(byId["crimson_tank"], 4, 4), Placement(byId["crimson_tank"], 3, 5),
