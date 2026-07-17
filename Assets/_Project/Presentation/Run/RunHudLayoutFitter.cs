@@ -18,16 +18,25 @@ namespace DeadManZone.Presentation.Run
             buildPanel = panelRoot;
             mainRowLayout = rowLayout;
             EnsureHudParent();
-            ApplyLayout();
+            // Force: EnsureHudParent just moved hudPanel onto buildPanel (full-screen), which
+            // still carries its pre-reparent stretch anchors (0,0)-(1,1) until the anchor fix
+            // below runs. The authoring lock exists to stop LATER re-migration from fighting a
+            // hand-tweaked scene, not to block finishing the reparent this same call started —
+            // skipping here left the panel full-screen-stretched (RunSceneSetup calls this
+            // right after RunUiAuthoringLock.EnsureOn locks the fresh scene, so the very first
+            // ApplyLayout was always skipped and the HUD scattered over the whole screen).
+            ApplyLayoutInternal(force: true);
         }
 
         private void OnEnable() => ApplyLayout();
 
         private void OnRectTransformDimensionsChange() => ApplyLayout();
 
-        public void ApplyLayout()
+        public void ApplyLayout() => ApplyLayoutInternal(force: false);
+
+        private void ApplyLayoutInternal(bool force)
         {
-            if (buildPanel != null && RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel))
+            if (!force && buildPanel != null && RunUiAuthoringLock.ShouldSkipVisualMigration(buildPanel))
                 return;
 
             if (hudPanel == null)

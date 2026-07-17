@@ -327,7 +327,9 @@ namespace DeadManZone.Presentation.Run
                 if (topBar != null)
                     RemoveLegacyStatusText(topBar);
 
-                var built = RunHudPanelBuilder.Create(buildPanel, UiThemeProvider.Current);
+                // Same fix as RunSceneSetup: must build under TopBar, not the full-screen
+                // buildPanel root, or the HUD stretches across the whole screen.
+                var built = RunHudPanelBuilder.Create(topBar != null ? topBar : buildPanel, UiThemeProvider.Current);
                 if (hud != null)
                 {
                     RunHudPanelBuilder.WireRunHudView(hud, built);

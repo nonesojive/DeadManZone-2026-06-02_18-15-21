@@ -41,14 +41,25 @@ namespace DeadManZone.Presentation.Editor
             var shopScene = CreateRegion(controllerRoot.transform, "ShopScene", Vector2.zero, Vector2.one);
             var shopCanvasGroup = shopScene.AddComponent<CanvasGroup>();
             UiThemeSceneStyling.AddPanelBackground(shopScene.transform, theme);
-            RunUiAuthoringLock.EnsureOn(shopScene.transform);
-            RunBuildUiBootstrap.EnsureOnBuildPanel(shopScene.transform, null);
+            // The authoring lock is applied at the END of this method (see below), after every
+            // layout fitter/sizer (RunHudLayoutFitter, BoardScaledRect, ...) has computed its
+            // real board-relative geometry. Locking here — before any of that ran — made every
+            // one of those calls treat the fresh scene as already "hand-authored" and skip its
+            // own computation, e.g. BoardScaledRect fell back to the (0,0) size it captured at
+            // AddComponent-time and RunHudLayoutFitter left the HUD full-screen-stretched.
+            // (RunBuildUiBootstrap.EnsureOnBuildPanel(shopScene, null) used to run here too — it
+            // was a no-op even before this fix, since the lock it depends on wasn't set until
+            // after it ran; RunSceneController.Start() adds/configures it for real at Play time.)
 
             var topBar = CreateRegion(shopScene.transform, "TopBar", new Vector2(0f, 0.92f), Vector2.one);
             UiThemeSceneStyling.AddSidebarBackground(topBar.transform, theme);
 
             var hud = topBar.AddComponent<RunHudView>();
-            var builtHud = RunHudPanelBuilder.Create(shopScene.transform, theme);
+            // Build under TopBar (RunHudLayoutFitter.EnsureOnBuildPanel below reparents this
+            // onto shopScene and re-anchors it to the board-aligned band; building it here
+            // first, rather than under the full-screen shopScene root, avoids a frame where
+            // it briefly carries full-screen stretch anchors under the wrong parent).
+            var builtHud = RunHudPanelBuilder.Create(topBar.transform, theme);
             RunHudPanelBuilder.WireRunHudView(hud, builtHud);
             hud.ApplyTheme(theme);
 
@@ -146,6 +157,11 @@ namespace DeadManZone.Presentation.Editor
             directorSerialized.ApplyModifiedPropertiesWithoutUndo();
 
             CreateRunVisualProfileApplier();
+
+            // Freeze the layout the fitters/sizers above just computed as the "authored"
+            // baseline — must be the LAST thing BuildRunScene does (see the comment where
+            // shopScene was created for why locking any earlier breaks board-relative sizing).
+            RunUiAuthoringLock.EnsureOn(shopScene.transform);
         }
 
         private static void CreateRunVisualProfileApplier()

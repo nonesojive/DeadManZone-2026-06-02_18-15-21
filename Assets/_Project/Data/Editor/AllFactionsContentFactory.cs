@@ -90,6 +90,12 @@ namespace DeadManZone.Data.Editor
             // Pick up the 7 new faction Critical-Mass rules added to CriticalMassDefaultRules.
             CriticalMassDatabaseGenerator.Generate();
 
+            // Re-assign placeholder shop icons: the delete-all above wipes every piece's icon
+            // reference, which is exactly how the owner's first Oathborn run ended up with
+            // blank shop cards (2026-07-17). Generator is idempotent — existing PNGs are
+            // reused, only the SO references are re-linked.
+            PlaceholderIconGenerator.Generate();
+
             Debug.Log($"Full faction roster generated: {pieceArrayFinal.Length} pieces, {factionsFinal.Length} factions, {enemies.Length} enemy templates.");
         }
 
