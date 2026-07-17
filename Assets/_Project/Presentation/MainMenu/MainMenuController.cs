@@ -1,5 +1,3 @@
-using DeadManZone.Core;
-using DeadManZone.Core.Meta;
 using DeadManZone.Core.Run;
 using DeadManZone.Data;
 using DeadManZone.Game;
@@ -29,11 +27,7 @@ namespace DeadManZone.Presentation.MainMenu
 
         [Header("Faction select")]
         [SerializeField] private GameObject factionPanel;
-        [SerializeField] private Button ironmarchUnionButton;
-        [SerializeField] private Button dustScourgeButton;
-        [SerializeField] private Button cartelButton;
-        [SerializeField] private Button factionBackButton;
-        [SerializeField] private TMP_Text factionDetailText;
+        [SerializeField] private FactionSelectView factionSelectView;
 
         [Header("Meta panels")]
         [SerializeField] private AchievementsPanelView achievementsPanel;
@@ -62,14 +56,8 @@ namespace DeadManZone.Presentation.MainMenu
                 exitButton.onClick.AddListener(OnExitClicked);
             if (optionsBackButton != null)
                 optionsBackButton.onClick.AddListener(ShowMainPanel);
-            if (ironmarchUnionButton != null)
-                ironmarchUnionButton.onClick.AddListener(() => StartFaction(FactionIds.IronmarchUnion));
-            if (dustScourgeButton != null)
-                dustScourgeButton.onClick.AddListener(() => StartFaction(FactionIds.DustScourge));
-            if (cartelButton != null)
-                cartelButton.onClick.AddListener(() => StartFaction(FactionIds.CartelOfEchoes));
-            if (factionBackButton != null)
-                factionBackButton.onClick.AddListener(ShowMainPanel);
+            factionSelectView?.SetConfirmHandler(StartFaction);
+            factionSelectView?.SetBackHandler(ShowMainPanel);
 
             achievementsPanel?.SetBackHandler(ShowMainPanel);
             leaderboardPanel?.SetBackHandler(ShowMainPanel);
@@ -84,11 +72,11 @@ namespace DeadManZone.Presentation.MainMenu
         private void ApplyGrimdarkSkin()
         {
             // Sub-panels: flatten frames to the smoky card surface, leather the buttons.
+            // factionPanel is NOT included here — FactionSelectView.ApplyGrimdarkSkin does its
+            // own targeted pass; a blanket StyleCard/StylePanelText would null out the crest and
+            // roster-icon sprites it manages (see that method's doc comment).
             CombatGrimdarkSkin.StyleCard(optionsPanel);
-            CombatGrimdarkSkin.StyleCard(factionPanel);
             CombatGrimdarkSkin.StylePanelText(optionsPanel);
-            CombatGrimdarkSkin.StylePanelText(factionPanel);
-            CombatGrimdarkSkin.StyleBody(factionDetailText);
 
             // Main panel: title band + bone lettering, leather buttons.
             if (mainPanel != null)
@@ -108,7 +96,6 @@ namespace DeadManZone.Presentation.MainMenu
             // Primary CTAs keep the brass accent on their labels.
             AccentLabel(continueButton);
             AccentLabel(newRunButton);
-            AccentLabel(ironmarchUnionButton);
         }
 
         private static void AccentLabel(Button button)
@@ -136,33 +123,6 @@ namespace DeadManZone.Presentation.MainMenu
                     ? "Resume your campaign or begin a new run."
                     : "No saved run found. Start a new campaign.";
             }
-
-            RefreshFactionButtons();
-        }
-
-        private void RefreshFactionButtons()
-        {
-            SetFactionButton(ironmarchUnionButton, FactionIds.IronmarchUnion, "IronMarch Union");
-            SetFactionButtonHidden(dustScourgeButton);
-            SetFactionButtonHidden(cartelButton);
-        }
-
-        private static void SetFactionButtonHidden(Button button)
-        {
-            if (button != null)
-                button.gameObject.SetActive(false);
-        }
-
-        private static void SetFactionButton(Button button, string factionId, string displayName)
-        {
-            if (button == null)
-                return;
-
-            bool unlocked = MetaProgressionService.IsFactionUnlocked(factionId);
-            button.interactable = unlocked;
-            var label = button.GetComponentInChildren<TMP_Text>();
-            if (label != null)
-                label.text = unlocked ? displayName : $"{displayName} (Locked)";
         }
 
         private void OnContinueClicked()
@@ -193,15 +153,15 @@ namespace DeadManZone.Presentation.MainMenu
             achievementsPanel?.Hide();
             leaderboardPanel?.Hide();
 
-            if (factionDetailText != null)
-                factionDetailText.text = "IronMarch Union — heavy industry and command.";
+            // factionPanel.SetActive(true) above triggers FactionSelectView.OnEnable, which
+            // Show()s itself — see that class's OnEnable doc comment. No explicit call needed.
         }
 
+        /// <summary>Wired as FactionSelectView's confirm handler (MARCH button). The view
+        /// already gates on FactionSelectView's own unlock seam before invoking this — see
+        /// that class's IsFactionUnlocked doc comment.</summary>
         private void StartFaction(string factionId)
         {
-            if (!MetaProgressionService.IsFactionUnlocked(factionId))
-                return;
-
             EnsureRunManager();
             RunManager.Instance.StartNewRun(factionId);
             if (cameraDirector != null)

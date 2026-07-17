@@ -13,21 +13,21 @@ MonoBehaviour:
   m_Name: DeadManZoneMenuTheme
   m_EditorClassIdentifier: Assembly-CSharp::SlimUI.ModernMenu.ThemedUIData
   custom1:
-    graphic1: {r: 0.72, g: 0.62, b: 0.32, a: 1}
+    graphic1: {r: 0.72, g: 0.58, b: 0.28, a: 1}
     text1:
       serializedVersion: 2
-      rgba: 4291616998
+      rgba: 4292273899
   custom2:
-    graphic2: {r: 0.48, g: 0.42, b: 0.22, a: 1}
+    graphic2: {r: 0.45, g: 0.36, b: 0.18, a: 1}
     text2:
       serializedVersion: 2
-      rgba: 4286222228
+      rgba: 4287602342
   custom3:
-    graphic3: {r: 0.34, g: 0.35, b: 0.3, a: 1}
+    graphic3: {r: 0.32, g: 0.34, b: 0.42, a: 1}
     text3:
       serializedVersion: 2
-      rgba: 4279375642
-  currentColor: {r: 0.72, g: 0.62, b: 0.32, a: 1}
+      rgba: 4279507487
+  currentColor: {r: 0.72, g: 0.58, b: 0.28, a: 1}
   textColor:
     serializedVersion: 2
-    rgba: 4291616998
+    rgba: 4292273899

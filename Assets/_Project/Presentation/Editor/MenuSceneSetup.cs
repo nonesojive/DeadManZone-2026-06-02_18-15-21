@@ -1,3 +1,4 @@
+using System.Linq;
 using DeadManZone.Data;
 using DeadManZone.Data.Editor;
 using DeadManZone.Game;
@@ -40,6 +41,7 @@ namespace DeadManZone.Presentation.Editor
             else
                 UiThemeEditor.EnsureThemeAsset();
             MenuThemeEditor.EnsureMenuTheme();
+            FactionCrestAssigner.Assign();
             EnsureFolder(ScenesFolder);
             CreateMainMenuScene();
             CreateRunScene();
@@ -53,6 +55,7 @@ namespace DeadManZone.Presentation.Editor
         {
             UiThemeEditor.EnsureThemeAsset();
             MenuThemeEditor.EnsureMenuTheme();
+            FactionCrestAssigner.Assign();
             EnsureFolder(ScenesFolder);
             CreateMainMenuScene();
             AssetDatabase.SaveAssets();
@@ -138,13 +141,21 @@ namespace DeadManZone.Presentation.Editor
             return manager;
         }
 
+        /// <summary>Ensures MainMenu/Run are registered and enabled without dropping any other
+        /// scene (e.g. CombatArena3D) a dev already added to Build Settings for their own
+        /// testing — this used to hard-replace the whole list, which silently broke
+        /// CombatArenaReplayPlayModeTests every time this menu item ran.</summary>
         private static void UpdateBuildSettings()
         {
+            var others = EditorBuildSettings.scenes
+                .Where(s => s.path != MainMenuPath && s.path != RunPath);
+
             var scenes = new[]
             {
                 new EditorBuildSettingsScene(MainMenuPath, true),
                 new EditorBuildSettingsScene(RunPath, true)
-            };
+            }.Concat(others).ToArray();
+
             EditorBuildSettings.scenes = scenes;
         }
 

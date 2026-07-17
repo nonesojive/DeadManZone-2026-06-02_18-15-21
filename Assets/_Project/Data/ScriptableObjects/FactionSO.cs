@@ -77,6 +77,10 @@ namespace DeadManZone.Data
         [Header("Visuals")]
         [Tooltip("Semi-transparent fill behind unit tokens on board, shop, and drag ghost.")]
         public Color tokenBackgroundColor = new Color(0f, 0f, 0f, 0f);
+        [Tooltip("Faction select crest (Wave 4 icon-forge set). Assigned by " +
+                 "FactionCrestAssigner from Assets/_Project/Data/Resources/DeadManZone/Icons/Crests/ — " +
+                 "leave null and re-run 'DeadManZone/Content/Assign Faction Crests' rather than dragging manually.")]
+        public Sprite crest;
 
         public BoardLayout CreateCombatBoardLayout()
         {

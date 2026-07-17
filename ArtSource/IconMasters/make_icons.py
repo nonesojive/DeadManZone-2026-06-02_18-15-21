@@ -355,6 +355,79 @@ ICONS["ironmarch_union"] = (
     rect(17, 47, 31, 6, 2)
 )
 
+# ---------- FACTION CRESTS (Wave 4 faction-select overhaul) ----------
+# Compound badges, same idiom as ironmarch_union above (a dominant object silhouette
+# plus a small flourish) rather than single-metaphor tag icons -- crests get their
+# frame from the UI card they sit on, not from a baked-in ring/border. Each picks a
+# DIFFERENT metaphor from any reserved single-tag icon (see SKILL.md collision list)
+# even where the theme overlaps (fire, shield, crosshair already exist as glyphs).
+
+ICONS["dust_scourge"] = (
+    # vulture skull: domed cranium, deep sockets, long hooked beak
+    path("M18,20 C18,9 46,9 46,20 C46,27 41,30 32,30 C23,30 18,27 18,20 Z") +
+    circ(25, 22, 4.6, PLATE) + circ(39, 22, 4.6, PLATE) +
+    path("M27,29 C26,36 28,46 31,55 C31.5,57 32.5,57 33,55 C36,46 38,36 37,29 Z") +
+    poly([(30, 54), (24, 59), (31, 52)]) +
+    circ(32, 31, 1.6, PLATE)
+)
+
+ICONS["cartel_of_echoes"] = (
+    # ledger book behind, stamped coin overlapping front-right
+    rect(9, 15, 26, 37, 2) +
+    "".join(f'<rect x="13" y="{y}" width="18" height="2.2" fill="{PLATE}"/>' for y in (22, 29, 36, 43)) +
+    circ(41, 40, 17) +
+    ring(41, 40, 12, 4, PLATE) +
+    circ(41, 40, 3, PLATE)
+)
+
+ICONS["oathborn_accord"] = (
+    # heater shield, Templar cross cutout, small pennant tail (echoes ironmarch's flourish)
+    path("M14,15 C8,15 6,20 9,23 L18,24 Z") +
+    path("M18,13 H46 V33 C46,45 40,53 32,58 C24,53 18,45 18,33 Z") +
+    rect(29.5, 20, 5, 28, 0, PLATE) +
+    rect(20, 31, 24, 5, 0, PLATE)
+)
+
+ICONS["paradox_engine"] = (
+    # hourglass ringed by a tick-marked clock face
+    ring(32, 32, 25, 4) +
+    "".join(thick_line(32 + 21 * dx, 32 + 21 * dy, 32 + 26 * dx, 32 + 26 * dy, 3)
+            for dx, dy in ((0, -1), (0, 1), (-1, 0), (1, 0))) +
+    rect(23, 10, 18, 4, 1) + rect(23, 50, 18, 4, 1) +
+    poly([(25, 14), (39, 14), (32, 31)]) +
+    poly([(25, 50), (39, 50), (32, 33)]) +
+    circ(32, 32, 1.8, PLATE)
+)
+
+ICONS["blightborn_pact"] = (
+    # censer on a chain, perforated lid, vapor wisps
+    ring(32, 12, 3.6, 2.4) +
+    thick_line(32, 15.5, 26, 26, 2.2) + thick_line(32, 15.5, 38, 26, 2.2) +
+    path("M20,30 A12,9 0 0 1 44,30 Z") +
+    poly([(22, 32), (42, 32), (38, 46), (26, 46)]) +
+    rect(27, 46, 10, 4, 1) +
+    circ(26, 27, 1.5, PLATE) + circ(32, 24, 1.5, PLATE) + circ(38, 27, 1.5, PLATE) +
+    path("M24,18 C20,14 27,11 23,7", "none", BONE, 2.6) +
+    path("M40,18 C44,14 37,11 41,7", "none", BONE, 2.6)
+)
+
+ICONS["crimson_assembly"] = (
+    # tactical viewfinder brackets + center target diamond (distinct from sniper's crosshair)
+    thick_line(12, 12, 12, 23, 4) + thick_line(12, 12, 23, 12, 4) +
+    thick_line(52, 12, 52, 23, 4) + thick_line(52, 12, 41, 12, 4) +
+    thick_line(12, 52, 12, 41, 4) + thick_line(12, 52, 23, 52, 4) +
+    thick_line(52, 52, 52, 41, 4) + thick_line(52, 52, 41, 52, 4) +
+    poly([(32, 26), (38, 32), (32, 38), (26, 32)]) +
+    circ(32, 32, 1.8, PLATE)
+)
+
+ICONS["ashen_covenant"] = (
+    # guttering flame over an ash mound, drifting cinders (distinct from the fire glyph)
+    poly([(14, 54), (50, 54), (45, 47), (19, 47)]) +
+    path("M34,8 C40,15 43,24 39,32 C37,28 33,29 33,33 C28,27 25,19 29,12 C30,17 32,15 34,8 Z") +
+    circ(16, 44, 1.8) + circ(46, 40, 1.6) + circ(40, 44, 1.4)
+)
+
 ICONS["lock"] = (
     path("M22,30 V22 A10,10 0 0 1 42,22 V30", "none", BONE, 6) +
     rect(16, 30, 32, 24, 4) +
@@ -367,7 +440,13 @@ GROUPS = [
     ("COMBAT ROLES", ["assault", "tank", "artillery", "support", "utility", "sniper", "defender"]),
 ]
 
-LABELS = {"army_strength": "ARMY STRENGTH", "sell_zone": "SELL ZONE", "salvage": "SALVAGE CHANCE", "ironmarch_union": "IRONMARCH CREST"}
+LABELS = {
+    "army_strength": "ARMY STRENGTH", "sell_zone": "SELL ZONE", "salvage": "SALVAGE CHANCE",
+    "ironmarch_union": "IRONMARCH CREST", "dust_scourge": "DUST SCOURGE CREST",
+    "cartel_of_echoes": "CARTEL CREST", "oathborn_accord": "OATHBORN CREST",
+    "paradox_engine": "PARADOX CREST", "blightborn_pact": "BLIGHTBORN CREST",
+    "crimson_assembly": "CRIMSON CREST", "ashen_covenant": "ASHEN CREST",
+}
 
 def label(n):
     return LABELS.get(n, n.upper())
@@ -417,5 +496,10 @@ if __name__ == "__main__":
         ("ABILITIES + UTILITY GLYPHS", ["berserk", "grenadier", "hp", "morale", "lock"]),
     ]
     build_sheet(os.path.join(here, "buff_contact_sheet.svg"), BUFF_GROUPS)
+    FACTION_GROUPS = [
+        ("FACTION CRESTS I", ["ironmarch_union", "dust_scourge", "cartel_of_echoes", "oathborn_accord"]),
+        ("FACTION CRESTS II", ["paradox_engine", "blightborn_pact", "crimson_assembly", "ashen_covenant"]),
+    ]
+    build_sheet(os.path.join(here, "faction_crest_sheet.svg"), FACTION_GROUPS)
     write_singles(os.path.join(here, "icon_svgs"))
     print("done")

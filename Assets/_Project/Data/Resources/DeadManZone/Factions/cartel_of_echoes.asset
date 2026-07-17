@@ -46,3 +46,4 @@ MonoBehaviour:
   baseSalvageChancePercent: 1
   shopOverride: {fileID: 0}
   tokenBackgroundColor: {r: 0.32, g: 0.26, b: 0.42, a: 0.45}
+  crest: {fileID: 21300000, guid: 08172fce2e34497ca6463da33836f3c6, type: 3}
