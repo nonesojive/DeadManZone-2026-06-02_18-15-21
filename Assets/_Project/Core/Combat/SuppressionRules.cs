@@ -25,13 +25,15 @@ namespace DeadManZone.Core.Combat
         // aura is permanent-while-adjacent (see MovementSlowRules' header note).
         public const int SuppressionMovementSlowPercent = 50;
 
-        /// <summary>Applies (or refreshes) Suppression on <paramref name="target"/>.</summary>
-        public static void Apply(CombatantState target)
+        /// <summary>Applies (or refreshes) Suppression on <paramref name="target"/>. Duration is
+        /// the base tick count plus the ATTACKER's CM-granted bonus, if any (2026-07-15
+        /// faction-roster-v1 §1.9 Crimson faction CM rule — "+suppression duration").</summary>
+        public static void Apply(CombatantState target, int attackerDurationBonusTicks = 0)
         {
             if (target == null)
                 return;
 
-            target.SuppressionTicksRemaining = SuppressionDurationTicks;
+            target.SuppressionTicksRemaining = SuppressionDurationTicks + System.Math.Max(0, attackerDurationBonusTicks);
         }
 
         /// <summary>Ticks the duration down by one; call once per combatant per sim tick.</summary>

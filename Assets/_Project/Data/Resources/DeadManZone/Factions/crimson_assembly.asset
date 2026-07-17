@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8029bd9261705740a7d667e9d3459dd, type: 3}
+  m_Name: crimson_assembly
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.FactionSO
+  factionId: crimson_assembly
+  displayName: Crimson Assembly
+  combatBoardSize: 6
+  combatSpecialTileCoords: []
+  hqBoardWidth: 3
+  hqBoardHeight: 6
+  hqBlockedCells: []
+  hqSpecialTileCoords: []
+  boardWidth: 9
+  boardHeight: 10
+  rearCols: 4
+  supportCols: 3
+  specialTileCoords:
+  - {x: 1, y: 4}
+  - {x: 4, y: 4}
+  - {x: 7, y: 4}
+  startingSupplies: 55
+  startingManpower: 15
+  baseSuppliesPerRound: 8
+  baseMusterPerShop: 1
+  startingAuthority: 2
+  startingTactics: 00000000010000000200000003000000
+  startingPieces:
+  - pieceId: research_annex
+    anchor: {x: 0, y: 0}
+  - pieceId: ballistics_analyst
+    anchor: {x: 0, y: 3}
+  - pieceId: assembly_trooper
+    anchor: {x: 2, y: 2}
+  - pieceId: suppression_team
+    anchor: {x: 3, y: 2}
+  baseSalvageChancePercent: 1
+  shopOverride: {fileID: 0}
+  tokenBackgroundColor: {r: 0.45, g: 0.2, b: 0.18, a: 0.45}

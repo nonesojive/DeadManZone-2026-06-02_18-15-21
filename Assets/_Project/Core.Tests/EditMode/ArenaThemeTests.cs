@@ -16,7 +16,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void HomeThemes_KnownPools_AreSubsetsOfTheCanonicalList()
         {
-            foreach (var pool in new[] { "neutral", "crimson_legion", "ash_wraiths", "ironmarch_union" })
+            foreach (var pool in new[] { "neutral", "crimson_assembly", "ashen_covenant", "ironmarch_union" })
             {
                 var home = ArenaThemes.HomeThemes(pool);
                 Assert.IsNotEmpty(home, pool);
@@ -34,7 +34,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void SignatureTheme_IsInsideThePoolsHomeSet()
         {
-            foreach (var pool in new[] { "neutral", "crimson_legion", "ash_wraiths" })
+            foreach (var pool in new[] { "neutral", "crimson_assembly", "ashen_covenant" })
                 CollectionAssert.Contains(
                     ArenaThemes.HomeThemes(pool).ToList(), ArenaThemes.SignatureTheme(pool), pool);
         }
@@ -43,8 +43,8 @@ namespace DeadManZone.Core.Tests
         public void SignatureTheme_PerPool_MatchesTheAuthoredKeying()
         {
             Assert.AreEqual(ArenaThemes.Trenchline, ArenaThemes.SignatureTheme("neutral"));
-            Assert.AreEqual(ArenaThemes.RavagedTown, ArenaThemes.SignatureTheme("crimson_legion"));
-            Assert.AreEqual(ArenaThemes.FogField, ArenaThemes.SignatureTheme("ash_wraiths"));
+            Assert.AreEqual(ArenaThemes.RavagedTown, ArenaThemes.SignatureTheme("crimson_assembly"));
+            Assert.AreEqual(ArenaThemes.FogField, ArenaThemes.SignatureTheme("ashen_covenant"));
             Assert.AreEqual(ArenaThemes.Default, ArenaThemes.SignatureTheme("no_such_pool"));
         }
 
@@ -55,15 +55,15 @@ namespace DeadManZone.Core.Tests
         {
             for (int slot = 0; slot < 3; slot++)
                 Assert.AreEqual(
-                    ArenaThemes.Roll(4242, 3, slot, "crimson_legion"),
-                    ArenaThemes.Roll(4242, 3, slot, "crimson_legion"),
+                    ArenaThemes.Roll(4242, 3, slot, "crimson_assembly"),
+                    ArenaThemes.Roll(4242, 3, slot, "crimson_assembly"),
                     $"slot {slot}");
         }
 
         [Test]
         public void Roll_AlwaysLandsInThePoolsHomeSet()
         {
-            foreach (var pool in new[] { "neutral", "crimson_legion", "ash_wraiths" })
+            foreach (var pool in new[] { "neutral", "crimson_assembly", "ashen_covenant" })
             for (int round = 1; round <= 8; round++)
             for (int slot = 0; slot < 3; slot++)
                 CollectionAssert.Contains(
@@ -80,7 +80,7 @@ namespace DeadManZone.Core.Tests
             var rolls = new List<string>();
             for (int round = 1; round <= 8; round++)
             for (int slot = 0; slot < 3; slot++)
-                rolls.Add(ArenaThemes.Roll(777, round, slot, "crimson_legion"));
+                rolls.Add(ArenaThemes.Roll(777, round, slot, "crimson_assembly"));
             Assert.Greater(rolls.Distinct().Count(), 1);
         }
 
@@ -126,8 +126,8 @@ namespace DeadManZone.Core.Tests
         {
             var armies = new List<FightOptionArmySource>
             {
-                Source(1, "neutral"), Source(2, "crimson_legion"),
-                Source(1, "ash_wraiths"), Source(2, "neutral")
+                Source(1, "neutral"), Source(2, "crimson_assembly"),
+                Source(1, "ashen_covenant"), Source(2, "neutral")
             };
 
             var options = FightOptionGenerator.Generate(4242, 3, dread: 2, armies);
@@ -143,7 +143,7 @@ namespace DeadManZone.Core.Tests
         {
             var armies = new List<FightOptionArmySource>
             {
-                Source(1, "neutral"), Source(2, "crimson_legion"), Source(1, "ash_wraiths")
+                Source(1, "neutral"), Source(2, "crimson_assembly"), Source(1, "ashen_covenant")
             };
 
             var first = FightOptionGenerator.Generate(1337, 5, dread: 3, armies)

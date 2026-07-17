@@ -14,12 +14,13 @@ namespace DeadManZone.Core.Tests.EditMode
         public void TearDown() => CriticalMassRuleSource.ClearTestOverride();
 
         [Test]
-        public void DefaultRules_ContainsAllThirtyOneEntries()
+        public void DefaultRules_ContainsAllThirtyEightEntries()
         {
             // 2026-07-15 faction-roster-v1 §3: the old single "sniper" rule split into
             // "sniper_accuracy" + "sniper_damage" (one CriticalMassRuleDefinition = one
             // stat, so the "accuracy first, then damage%" design needs two rules) — 30→31.
-            Assert.AreEqual(31, CriticalMassDefaultRules.Build().Length);
+            // §1.9/§3 W2: the 7 remaining factions' own identity-stack CM rules — 31→38.
+            Assert.AreEqual(38, CriticalMassDefaultRules.Build().Length);
         }
 
         [Test]

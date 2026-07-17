@@ -12,12 +12,19 @@ namespace DeadManZone.Data
     {
         private const string ResourcesPath = "DeadManZone/ContentDatabase";
 
-        /// <summary>Playable factions shown in faction select.</summary>
+        /// <summary>Playable factions shown in faction select. 2026-07-15 faction-roster-v1
+        /// Wave 2: all 8 factions now have a full content pass — see FactionIds.Playable
+        /// (kept in sync with this array by the same commit).</summary>
         public static readonly string[] PlayableFactionIds =
         {
             FactionIds.IronmarchUnion,
             FactionIds.DustScourge,
-            FactionIds.CartelOfEchoes
+            FactionIds.CartelOfEchoes,
+            FactionIds.OathbornAccord,
+            FactionIds.ParadoxEngine,
+            FactionIds.BlightbornPact,
+            FactionIds.CrimsonAssembly,
+            FactionIds.AshenCovenant
         };
 
         [SerializeField] private PieceDefinitionSO[] pieces = System.Array.Empty<PieceDefinitionSO>();

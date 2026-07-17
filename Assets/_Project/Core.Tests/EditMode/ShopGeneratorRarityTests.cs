@@ -181,7 +181,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void HardVictorySalvage_UpweightsRarerSpoils()
         {
-            const string enemyFaction = "crimson_legion";
+            const string enemyFaction = "crimson_assembly";
             var registry = MixedRarityRegistry();
             registry.Register(Piece("spoil_common", Rarity.Common, factionId: enemyFaction), ShopLane.Offensive);
             registry.Register(Piece("spoil_uncommon", Rarity.Uncommon, factionId: enemyFaction), ShopLane.Offensive);

@@ -28,13 +28,21 @@ MonoBehaviour:
   - {x: 1, y: 4}
   - {x: 4, y: 4}
   - {x: 7, y: 4}
-  startingSupplies: 100
-  startingManpower: 100
-  baseSuppliesPerRound: 0
-  baseMusterPerShop: 12
-  startingAuthority: 5
-  startingTactics: 020000000100000000000000
-  startingPieces: []
-  baseSalvageChancePercent: 10
+  startingSupplies: 60
+  startingManpower: 15
+  baseSuppliesPerRound: 8
+  baseMusterPerShop: 1
+  startingAuthority: 2
+  startingTactics: 020000000100000003000000
+  startingPieces:
+  - pieceId: freight_depot
+    anchor: {x: 0, y: 0}
+  - pieceId: company_store
+    anchor: {x: 0, y: 3}
+  - pieceId: company_rifleman
+    anchor: {x: 2, y: 2}
+  - pieceId: strikebreaker
+    anchor: {x: 3, y: 2}
+  baseSalvageChancePercent: 1
   shopOverride: {fileID: 0}
   tokenBackgroundColor: {r: 0.32, g: 0.26, b: 0.42, a: 0.45}

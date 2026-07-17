@@ -39,5 +39,7 @@ namespace DeadManZone.Data
         public AttackRangeTier attackRange = AttackRangeTier.Medium;
         public bool useAttackRange;
         public string factionId;
+        /// <summary>2026-07-15 faction-roster-v1 §1.9 Dust Scourge: see CriticalMassTargetFilter.RequireSalvage.</summary>
+        public bool requireSalvage;
     }
 }

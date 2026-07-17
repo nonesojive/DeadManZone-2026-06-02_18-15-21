@@ -103,7 +103,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void SalvagePity_ForcesASalvageOffer_AtTheDryBatchThreshold()
         {
-            const string enemyFaction = "crimson_legion";
+            const string enemyFaction = "crimson_assembly";
             var registry = RichPlayerRegistry(FactionIds.IronmarchUnion, enemyFaction);
             var generator = new ShopGenerator(registry);
 
@@ -120,7 +120,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void SalvagePity_BelowThreshold_DoesNotForceAnything()
         {
-            const string enemyFaction = "crimson_legion";
+            const string enemyFaction = "crimson_assembly";
             var registry = RichPlayerRegistry(FactionIds.IronmarchUnion, enemyFaction);
             var generator = new ShopGenerator(registry);
 
@@ -138,7 +138,7 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void SalvagePity_DustScourgeForcesAtTwo_NotFour()
         {
-            const string enemyFaction = "crimson_legion";
+            const string enemyFaction = "crimson_assembly";
             var registry = RichPlayerRegistry(FactionIds.DustScourge, enemyFaction);
             var generator = new ShopGenerator(registry);
 

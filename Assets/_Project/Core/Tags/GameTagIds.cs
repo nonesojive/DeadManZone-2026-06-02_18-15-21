@@ -16,6 +16,8 @@ namespace DeadManZone.Core.Tags
         public const string Utility = "utility";
         public const string Sniper = "sniper";
         public const string Defender = "defender";
+        /// <summary>2026-07-15 faction-roster-v1 §2.5 Oathborn's Armored Ark: the one transport role in the game.</summary>
+        public const string Transport = "transport";
 
         // Attack type
         public const string Ballistic = "ballistic";

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
@@ -45,9 +46,12 @@ namespace DeadManZone.Core.Run
     /// Code-authored boss roster v1 (no SO pipeline). Loadouts follow the same
     /// anchor-legality rules as the IronMarch enemy templates (6x6 unzoned combat
     /// board; BuildStageBoard throws on any illegal placement, and BalancePassTests
-    /// builds every stage). Crimson Legion / Ash Wraiths have faction assets but no
-    /// pieces of their own yet, so their armies are rifleman-fallback compositions
-    /// until their content passes land.
+    /// builds every stage). 2026-07-15 faction-roster-v1 Wave 2: crimson_legion /
+    /// ash_wraiths (enemy-only pools, never had pieces of their own) are retired;
+    /// Crimson Assembly and Ashen Covenant now own the same two boss slots. Their
+    /// armies are still IronMarch/Neutral-piece fallback compositions — rebuilding
+    /// these loadouts from the new factions' own rosters is explicitly W5 scope
+    /// ("Enemy templates + bosses + rotation"), not touched here.
     /// 2026-07-15 faction-roster-v1: piece ids updated to the new Neutral/IronMarch
     /// roster (conscript_rifleman→conscript_rifles, enlisted_rifleman→shock_sergeant,
     /// bulwark_squad→iron_guard, ironclad_mortars→field_mortar_team,
@@ -97,7 +101,7 @@ namespace DeadManZone.Core.Run
             new BossDefinition
             {
                 BossId = CrimsonMarshal,
-                EnemyFactionId = "crimson_legion",
+                EnemyFactionId = FactionIds.CrimsonAssembly,
                 DisplayName = "Crimson Marshal",
                 TwistId = TwistCatalog.IronDiscipline,
                 StageLoadouts = new IReadOnlyList<BossStagePlacement>[]
@@ -128,7 +132,7 @@ namespace DeadManZone.Core.Run
             new BossDefinition
             {
                 BossId = WraithHarbinger,
-                EnemyFactionId = "ash_wraiths",
+                EnemyFactionId = FactionIds.AshenCovenant,
                 DisplayName = "Wraith Harbinger",
                 TwistId = TwistCatalog.DeathlessCold,
                 StageLoadouts = new IReadOnlyList<BossStagePlacement>[]

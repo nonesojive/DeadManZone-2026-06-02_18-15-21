@@ -13,6 +13,14 @@ namespace DeadManZone.Core.Combat
         public int MovementSpeedSteps;
         public int AttackRangeSteps;
         public int MoveChargePercentBonus;
+        /// <summary>Oathborn faction CM rule: flat bonus to a combatant's max morale pool.</summary>
+        public int MaxMoraleFlat;
+        /// <summary>Crimson faction CM rule: extra ticks folded into this combatant's on-hit
+        /// Suppression applications (SuppressionRules.Apply), harmless on non-suppressing pieces.</summary>
+        public int SuppressionDurationTicksBonus;
+        /// <summary>Ashen faction CM rule: percent uplift to this combatant's own
+        /// LowStateDamageBonus while in low-state.</summary>
+        public int LowStateDamageBonusPercent;
 
         public void Add(CriticalMassStat stat, SynergyModType modType, int magnitude)
         {
@@ -21,6 +29,15 @@ namespace DeadManZone.Core.Combat
 
             switch (stat)
             {
+                case CriticalMassStat.MaxMorale when modType == SynergyModType.Flat:
+                    MaxMoraleFlat += magnitude;
+                    break;
+                case CriticalMassStat.SuppressionDuration when modType == SynergyModType.Flat:
+                    SuppressionDurationTicksBonus += magnitude;
+                    break;
+                case CriticalMassStat.LowStateDamageBonus when modType == SynergyModType.Percent:
+                    LowStateDamageBonusPercent += magnitude;
+                    break;
                 case CriticalMassStat.MaxHp when modType == SynergyModType.Flat:
                     MaxHpFlat += magnitude;
                     break;
@@ -58,6 +75,9 @@ namespace DeadManZone.Core.Combat
             && AttackSpeedSteps == 0
             && MovementSpeedSteps == 0
             && AttackRangeSteps == 0
-            && MoveChargePercentBonus == 0;
+            && MoveChargePercentBonus == 0
+            && MaxMoraleFlat == 0
+            && SuppressionDurationTicksBonus == 0
+            && LowStateDamageBonusPercent == 0;
     }
 }

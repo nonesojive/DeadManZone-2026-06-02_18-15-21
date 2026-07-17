@@ -53,6 +53,18 @@ MonoBehaviour:
   grantedAbility: 0
   accuracyOverride: 0
   factionId: ironmarch_union
+  appliesSuppressionOnHit: 0
+  isTransport: 0
+  transportCapacity: 0
+  lowStateDamageBonus: 0
+  lowStateAttackSpeedSteps: 0
+  healPulseAmount: 0
+  healPulseRadius: 0
+  healPulseIntervalTicks: 0
+  gasDealsMoraleDamage: 0
+  hijacksAmbientGas: 0
+  addsPauseWindow: 0
+  repeatsPauseAbilities: 0
   icon: {fileID: 0}
   categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
   cellSprites: []

@@ -48,6 +48,16 @@ namespace DeadManZone.Core.Combat
 
         public bool IsSuppressed => SuppressionTicksRemaining > 0;
 
+        /// <summary>2026-07-15 faction-roster-v1 §1.9 Crimson faction CM rule: extra ticks folded
+        /// into this piece's own on-hit Suppression applications (SuppressionRules.Apply). Set at
+        /// fight start by CriticalMassEngine.ApplyToCombatants; harmless (never read) on pieces
+        /// without AppliesSuppressionOnHit.</summary>
+        public int SuppressionDurationBonusTicks { get; set; }
+
+        /// <summary>2026-07-15 faction-roster-v1 §1.9 Ashen faction CM rule: percent uplift to this
+        /// piece's own Definition.LowStateDamageBonus while in low-state (LowStateRules).</summary>
+        public int LowStateDamageBonusPercentFromCM { get; set; }
+
         /// <summary>2026-07-15 faction-roster-v1 §2.5 transport tentpole: true for a fielded
         /// transport piece (Definition.IsTransport). Transports are never embarked themselves.</summary>
         public bool IsTransport { get; set; }

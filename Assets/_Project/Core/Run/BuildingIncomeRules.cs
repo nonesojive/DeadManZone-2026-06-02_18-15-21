@@ -12,6 +12,17 @@ namespace DeadManZone.Core.Run
             {
                 if (piece.Definition.Id == "supply_depot")
                     bonus += 5;
+
+                // 2026-07-15 faction-roster-v1 W2: each faction's "+Supplies/round" common
+                // building, id-hardcoded the same way supply_depot is above (no generic
+                // tag-driven path exists yet for a flat per-round bonus — Supplier/SupplyLine
+                // tags feed a different, Critical-Mass-based mechanism instead).
+                if (piece.Definition.Id == "scavengers_cache" // Dust Scourge §2.3
+                    || piece.Definition.Id == "freight_depot" // Cartel of Echoes §2.4
+                    || piece.Definition.Id == "chrono_lab" // Paradox Engine §2.6
+                    || piece.Definition.Id == "poison_garden" // Blightborn Pact §2.7
+                    || piece.Definition.Id == "research_annex") // Crimson Assembly §2.8
+                    bonus += 5;
             }
 
             return bonus;

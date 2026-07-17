@@ -109,6 +109,15 @@ namespace DeadManZone.Core.Combat
                 combatant.AttackSpeedSteps += mods.AttackSpeedSteps;
                 combatant.AttackRangeSteps += mods.AttackRangeSteps;
                 combatant.MoveChargePercentBonus += mods.MoveChargePercentBonus;
+
+                if (mods.MaxMoraleFlat != 0 && combatant.Definition.MaxMorale > 0)
+                {
+                    int maxMorale = combatant.Definition.MaxMorale + mods.MaxMoraleFlat;
+                    combatant.CurrentMorale = System.Math.Max(0, maxMorale);
+                }
+
+                combatant.SuppressionDurationBonusTicks += mods.SuppressionDurationTicksBonus;
+                combatant.LowStateDamageBonusPercentFromCM += mods.LowStateDamageBonusPercent;
             }
         }
 
@@ -178,6 +187,9 @@ namespace DeadManZone.Core.Combat
                 if (piece.Definition == null || !rule.Target.Matches(piece.Definition))
                     continue;
 
+                if (rule.Target.RequireSalvage && !OffFactionRules.IsSalvage(piece, rule.CountTagId))
+                    continue;
+
                 if (!modifiersById.TryGetValue(piece.InstanceId, out var mods))
                     mods = default;
 
@@ -188,24 +200,53 @@ namespace DeadManZone.Core.Combat
 
         private static int CountMatchingPieces(BoardState board, CriticalMassRuleDefinition rule)
         {
+            // SalvageForFaction's CountTagId is "the faction whose salvage-count identity rule
+            // this is" (e.g. dust_scourge), NOT "the piece's own faction" — OffFactionRules
+            // .IsSalvage(piece, playerFactionId) treats that id as the ACTUAL PLAYER'S faction
+            // and returns true for every piece that ISN'T it. Fired unguarded, this rule would
+            // trigger on ANY board with >=2 non-Dust, non-neutral, non-mercenary pieces — i.e.
+            // virtually every board in the game, including every other faction's own runs and
+            // every plain IronMarch test fixture. Gate it: only count/apply salvage-for-X when
+            // the board actually has an X piece on it (a cheap, parameter-free proxy for "the
+            // player is actually running faction X", since that faction's own purchases are the
+            // only way its pieces land on a board at all).
+            if (rule.CountCategory == CriticalMassCountCategory.SalvageForFaction
+                && !BoardHasFactionPiece(board, rule.CountTagId))
+            {
+                return 0;
+            }
+
             int count = 0;
             foreach (var piece in board.Pieces)
             {
                 if (piece.Definition == null)
                     continue;
 
-                if (MatchesCountTag(piece.Definition, rule.CountTagId, rule.CountCategory))
+                if (MatchesCountTag(piece, rule.CountTagId, rule.CountCategory))
                     count++;
             }
 
             return count;
         }
 
+        private static bool BoardHasFactionPiece(BoardState board, string factionId)
+        {
+            foreach (var piece in board.Pieces)
+            {
+                if (piece.Definition != null
+                    && string.Equals(piece.Definition.FactionId, factionId, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
+        }
+
         private static bool MatchesCountTag(
-            PieceDefinition definition,
+            PlacedPiece piece,
             string tagId,
             CriticalMassCountCategory countCategory)
         {
+            var definition = piece.Definition;
             return countCategory switch
             {
                 CriticalMassCountCategory.Primary => PieceTagQueries.HasPrimaryTag(definition, tagId),
@@ -215,6 +256,7 @@ namespace DeadManZone.Core.Combat
                 CriticalMassCountCategory.Flavor => PieceTagQueries.HasFlavorTag(definition, tagId),
                 CriticalMassCountCategory.AttackType => MatchesAttackType(definition, tagId),
                 CriticalMassCountCategory.Faction => MatchesFaction(definition, tagId),
+                CriticalMassCountCategory.SalvageForFaction => OffFactionRules.IsSalvage(piece, tagId),
                 _ => false
             };
         }

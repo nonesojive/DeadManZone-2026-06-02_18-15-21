@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
+  m_Name: armored_ark
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
+  id: armored_ark
+  displayName: Armored Ark
+  category: 1
+  shapeCells:
+  - {x: 0, y: 0}
+  - {x: 1, y: 0}
+  - {x: 0, y: 1}
+  - {x: 1, y: 1}
+  tags:
+  - Vehicle
+  - Transport
+  primary: vehicle
+  combatRole: transport
+  systemTag: 
+  synergyTags: []
+  abilityTags: []
+  flavorTags: []
+  maxHp: 150
+  baseDamage: 0
+  cooldownTicks: 3
+  requisitionCost: 0
+  manpowerCost: 5
+  musterPerShop: 0
+  shopModifiers: 0
+  commandActions: 0
+  shopLane: 0
+  includeInShopPool: 1
+  rarity: 2
+  salvageChanceBonus: 0
+  maxMorale: 50
+  terrorDamage: 0
+  moraleDamageResistancePercent: 0
+  attackSpeed: 0
+  attackRange: 0
+  movementSpeed: 1
+  armorType: 3
+  attackType: 0
+  grantedAbility: 0
+  accuracyOverride: 0
+  factionId: oathborn_accord
+  appliesSuppressionOnHit: 0
+  isTransport: 1
+  transportCapacity: 3
+  lowStateDamageBonus: 0
+  lowStateAttackSpeedSteps: 0
+  healPulseAmount: 0
+  healPulseRadius: 0
+  healPulseIntervalTicks: 0
+  gasDealsMoraleDamage: 0
+  hijacksAmbientGas: 0
+  addsPauseWindow: 0
+  repeatsPauseAbilities: 0
+  icon: {fileID: 0}
+  categoryTint: {r: 0.35, g: 0.42, b: 0.55, a: 1}
+  cellSprites: []
+  catalogAbilities: []
+  customAbilities: []
+  combatArenaSprite: {fileID: 0}
+  combatArena2DAnimations: {fileID: 0}
+  combatArenaPrefab: {fileID: 0}
+  combatArenaModelScale: 1
+  combatArenaModelHeight: 0

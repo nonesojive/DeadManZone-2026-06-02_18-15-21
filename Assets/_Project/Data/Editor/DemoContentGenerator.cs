@@ -153,8 +153,8 @@ namespace DeadManZone.Data.Editor
                 FactionIds.IronmarchUnion => new Color(0.22f, 0.28f, 0.38f, 0.45f),
                 FactionIds.DustScourge => new Color(0.42f, 0.34f, 0.24f, 0.45f),
                 FactionIds.CartelOfEchoes => new Color(0.32f, 0.26f, 0.42f, 0.45f),
-                "crimson_legion" => new Color(0.45f, 0.20f, 0.18f, 0.45f),
-                "ash_wraiths" => new Color(0.28f, 0.28f, 0.30f, 0.45f),
+                FactionIds.CrimsonAssembly => new Color(0.45f, 0.20f, 0.18f, 0.45f),
+                FactionIds.AshenCovenant => new Color(0.28f, 0.28f, 0.30f, 0.45f),
                 "neutral" => new Color(0.32f, 0.33f, 0.36f, 0.42f),
                 _ => new Color(0f, 0f, 0f, 0f)
             };
@@ -187,8 +187,8 @@ namespace DeadManZone.Data.Editor
             {
                 FactionIds.DustScourge => new Color(r + 0.1f, g + 0.05f, b - 0.1f, 1f),
                 FactionIds.CartelOfEchoes => new Color(r - 0.05f, g, b + 0.15f, 1f),
-                "crimson_legion" => new Color(r + 0.15f, g - 0.1f, b - 0.1f, 1f),
-                "ash_wraiths" => new Color(r - 0.05f, g - 0.05f, b - 0.05f, 1f),
+                FactionIds.CrimsonAssembly => new Color(r + 0.15f, g - 0.1f, b - 0.1f, 1f),
+                FactionIds.AshenCovenant => new Color(r - 0.05f, g - 0.05f, b - 0.05f, 1f),
                 _ => new Color(r, g, b, 1f)
             };
         }
@@ -201,7 +201,16 @@ namespace DeadManZone.Data.Editor
 
             asset = ScriptableObject.CreateInstance<T>();
             AssetDatabase.CreateAsset(asset, path);
-            return asset;
+            // CreateAsset triggers an import that can REPLACE the native object behind the
+            // managed instance we just created (observed after a delete-all + synchronous
+            // refresh: field assignments made on the pre-import instance never serialize —
+            // 84 pieces landed on disk with default/blank fields while SetDirty+SaveAssets
+            // silently no-op'd on the ghost). Force the import to COMPLETE synchronously,
+            // then hand callers the canonical imported instance. A plain LoadAssetAtPath
+            // without the forced import still returned the ghost.
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+            var canonical = AssetDatabase.LoadAssetAtPath<T>(path);
+            return canonical != null ? canonical : asset;
         }
 
         private static void EnsureFolder(string path)

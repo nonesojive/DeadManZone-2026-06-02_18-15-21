@@ -83,7 +83,7 @@ namespace DeadManZone.Core.Tests
                     new FightOptionRecord
                     {
                         Tier = FightOptionTier.Hard,
-                        EnemyFactionId = "ash_wraiths",
+                        EnemyFactionId = "ashen_covenant",
                         TemplateFightNumber = 2,
                         ConditionId = "gas_drift"
                     }

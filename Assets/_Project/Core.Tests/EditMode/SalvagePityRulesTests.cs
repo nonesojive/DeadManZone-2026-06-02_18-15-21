@@ -56,7 +56,7 @@ namespace DeadManZone.Core.Tests
             var registry = new ContentRegistry();
             registry.Register(TestPieces.RifleSquad(), ShopLane.Offensive); // FactionId = IronmarchUnion
 
-            Assert.IsTrue(SalvagePoolAvailability.IsEmpty(registry, "crimson_legion", FactionIds.IronmarchUnion));
+            Assert.IsTrue(SalvagePoolAvailability.IsEmpty(registry, "crimson_assembly", FactionIds.IronmarchUnion));
         }
 
         [Test]

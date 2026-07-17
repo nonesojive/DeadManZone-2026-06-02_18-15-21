@@ -14,25 +14,30 @@ namespace DeadManZone.Core
         public const string DustScourge = "dust_scourge";
         public const string CartelOfEchoes = "cartel_of_echoes";
 
-        /// <summary>2026-07-15 faction-roster-v1 §2.9/§4: the only other faction id wired this
-        /// wave — MoraleRules.IsDeathShockInverted keys off it directly (smaller than adding a
-        /// per-piece flag for a whole-faction passive). Content (roster/pass) lands later.</summary>
+        /// <summary>2026-07-15 faction-roster-v1 §2.9/§4: MoraleRules.IsDeathShockInverted keys
+        /// off it directly (smaller than adding a per-piece flag for a whole-faction passive).
+        /// Wave 2 landed its full 12-piece content pass (AshenCovenantContentFactory).</summary>
         public const string AshenCovenant = "ashen_covenant";
 
-        // ---- W1b (2026-07-16, faction-roster-v1 §1.9/§4): economy/shop passives key off
-        // these directly (FactionPassives) — no FactionSO asset exists for them yet, so
-        // they are unreachable via StartNewRun until W2 lands their content pass.
+        // ---- W1b (2026-07-16, faction-roster-v1 §1.9/§4) economy/shop passives key off
+        // these directly (FactionPassives). Wave 2 landed each of these factions' full content
+        // pass (12 pieces + FactionSO) via their own *ContentFactory.
         public const string OathbornAccord = "oathborn_accord";
         public const string ParadoxEngine = "paradox_engine";
         public const string BlightbornPact = "blightborn_pact";
         public const string CrimsonAssembly = "crimson_assembly";
 
         /// <summary>
-        /// Playable factions in selection order (matches ContentDatabase.PlayableFactionIds contract).
+        /// Playable factions in selection order (matches ContentDatabase.PlayableFactionIds
+        /// contract). 2026-07-15 faction-roster-v1 Wave 2: all 8 factions now have a full
+        /// content pass (12 pieces + FactionSO each) — see AllFactionsContentFactory. Faction
+        /// SELECT UI gating (MetaProgressionService.IsFactionUnlocked / MainMenuController) is
+        /// a separate, later concern (faction-select overhaul) and is untouched here.
         /// </summary>
         public static readonly string[] Playable =
         {
-            IronmarchUnion,
+            IronmarchUnion, DustScourge, CartelOfEchoes, OathbornAccord,
+            ParadoxEngine, BlightbornPact, CrimsonAssembly, AshenCovenant,
         };
 
         /// <summary>

@@ -59,6 +59,7 @@ namespace DeadManZone.Core.Tags
                 [GameTagIds.Utility] = Create(GameTagIds.Utility, "Utility", TagCategory.CombatRole, "Command and tool units; engages the front line when armed.", 72),
                 [GameTagIds.Sniper] = Create(GameTagIds.Sniper, "Sniper", TagCategory.CombatRole, "Precision ranged eliminator role.", 68),
                 [GameTagIds.Defender] = Create(GameTagIds.Defender, "Defender", TagCategory.CombatRole, "Frontline bulwark role focused on holding ground.", 66),
+                [GameTagIds.Transport] = Create(GameTagIds.Transport, "Transport", TagCategory.CombatRole, "Carries embarked allies to a chosen point before unloading.", 64),
 
                 // Attack type
                 [GameTagIds.Ballistic] = CreateFromProfile(AttackType.Ballistic),

@@ -43,7 +43,48 @@ namespace DeadManZone.Core.Tags
             AbilityRule("grenadier", GameTagIds.Grenadier, T(3, 1, 5, 2, 7, 3), CriticalMassStat.AttackRange, SynergyModType.TierStep, TargetAbility(GameTagIds.Grenadier)),
             FlavorRule("siege", GameTagIds.Siege, T(2, 1, 4, 2, 6, 3), CriticalMassStat.AttackSpeed, SynergyModType.TierStep, TargetRole(GameTagIds.Artillery)),
             RunRule("logistics", GameTagIds.Logistics, T(3, 5, 5, 10, 7, 15), CriticalMassStat.Supplies, SynergyModType.Percent, CriticalMassCountCategory.Flavor),
-            FactionRule("ironmarch_union", FactionIds.IronmarchUnion, T(5, 1, 7, 2, 10, 3), TargetPrimary(GameTagIds.Infantry))
+            FactionRule("ironmarch_union", FactionIds.IronmarchUnion, T(5, 1, 7, 2, 10, 3), TargetPrimary(GameTagIds.Infantry)),
+
+            // 2026-07-15 faction-roster-v1 §1.9/§3: the remaining 7 factions' CM identity-stack
+            // rules. Each counts that faction's own board presence (or, for Dust, the inverse —
+            // off-faction "salvage" presence) and grants a payoff true to its §1.9 one-liner.
+            // Thresholds mirror ironmarch_union's 5/7/10 cadence except where a faction's native
+            // fighter count runs smaller (Dust's salvage count, Cartel's 7-fighter roster).
+
+            // Dust Scourge: "counts salvage-tagged pieces instead → buffs the strays." Salvage
+            // counts run small and are luck-gated (loot, not shop buys), so thresholds sit low.
+            Rule("dust_scourge_salvage", FactionIds.DustScourge, CriticalMassCountCategory.SalvageForFaction,
+                T(2, 1, 4, 2, 6, 3), CriticalMassStat.Damage, SynergyModType.Flat,
+                new CriticalMassTargetFilter { RequireSalvage = true }),
+
+            // Cartel of Echoes: "+Supplies." Run-resource scope, mirrors the `supplier` rule's
+            // shape; thresholds lowered vs. ironmarch_union to fit Cartel's 7-native-fighter cap.
+            FactionRule("cartel_of_echoes", FactionIds.CartelOfEchoes, T(3, 20, 5, 40, 7, 60), CriticalMassTargetFilter.Any,
+                CriticalMassStat.Supplies, SynergyModType.Flat, CriticalMassScope.RunResources),
+
+            // Oathborn Accord: "+max Morale, army-wide."
+            FactionRule("oathborn_accord", FactionIds.OathbornAccord, T(5, 10, 7, 20, 10, 30), CriticalMassTargetFilter.Any,
+                CriticalMassStat.MaxMorale, SynergyModType.Flat),
+
+            // Paradox Engine: "+attack-speed tier steps."
+            FactionRule("paradox_engine", FactionIds.ParadoxEngine, T(5, 1, 7, 2, 10, 3), CriticalMassTargetFilter.Any,
+                CriticalMassStat.AttackSpeed, SynergyModType.TierStep),
+
+            // Blightborn Pact: "+% gas damage" — targets gas-attack pieces specifically (not the
+            // whole army), stacking with the generic `gas` AttackType CM rule above.
+            FactionRule("blightborn_pact", FactionIds.BlightbornPact, T(5, 10, 7, 20, 10, 30), TargetAttackType(AttackType.Gas),
+                CriticalMassStat.Damage, SynergyModType.Percent),
+
+            // Crimson Assembly: "+suppression duration/potency" — PROVISIONAL: only the duration
+            // half is wired (extra ticks on the attacker's own Suppression applications); potency
+            // (a scaling debuff strength beyond the flat step-down/slow-percent consts) has no
+            // seam yet and is deliberately left for a later balance pass rather than invented here.
+            FactionRule("crimson_assembly", FactionIds.CrimsonAssembly, T(5, 10, 7, 20, 10, 30), CriticalMassTargetFilter.Any,
+                CriticalMassStat.SuppressionDuration, SynergyModType.Flat),
+
+            // Ashen Covenant: "low-state trigger bonuses strengthen."
+            FactionRule("ashen_covenant", FactionIds.AshenCovenant, T(5, 10, 7, 20, 10, 30), CriticalMassTargetFilter.Any,
+                CriticalMassStat.LowStateDamageBonus, SynergyModType.Percent)
         };
 
         public static void RegisterWithCatalog() =>
@@ -93,8 +134,11 @@ namespace DeadManZone.Core.Tags
             CriticalMassCountCategory countCategory = CriticalMassCountCategory.Synergy) =>
             Rule(id, tag, countCategory, tiers, stat, modType, CriticalMassTargetFilter.Any, CriticalMassScope.RunResources);
 
-        private static CriticalMassRuleDefinition FactionRule(string id, string factionId, CriticalMassTier[] tiers, CriticalMassTargetFilter target) =>
-            Rule(id, factionId, CriticalMassCountCategory.Faction, tiers, CriticalMassStat.Damage, SynergyModType.Flat, target);
+        private static CriticalMassRuleDefinition FactionRule(
+            string id, string factionId, CriticalMassTier[] tiers, CriticalMassTargetFilter target,
+            CriticalMassStat stat = CriticalMassStat.Damage, SynergyModType modType = SynergyModType.Flat,
+            CriticalMassScope scope = CriticalMassScope.FightCombat) =>
+            Rule(id, factionId, CriticalMassCountCategory.Faction, tiers, stat, modType, target, scope);
 
         private static CriticalMassRuleDefinition Rule(
             string id,

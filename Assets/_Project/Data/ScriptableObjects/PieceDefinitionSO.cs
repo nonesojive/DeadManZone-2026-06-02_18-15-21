@@ -60,6 +60,32 @@ namespace DeadManZone.Data
         public int accuracyOverride;
         public string factionId = "neutral";
 
+        [Header("2026-07-15 faction-roster-v1 new-tech fields (W1a/W2)")]
+        [Tooltip("Crimson tentpole (§1.8): on-hit application of Suppression (SuppressionRules).")]
+        public bool appliesSuppressionOnHit;
+        [Tooltip("Oathborn tentpole (§2.5): this piece is a transport — never itself embarked.")]
+        public bool isTransport;
+        [Tooltip("Oathborn tentpole: how many pieces this transport can carry.")]
+        public int transportCapacity;
+        [Tooltip("Ashen (§2.9): flat damage bonus while this piece is in low-state (<50% HP or morale).")]
+        public int lowStateDamageBonus;
+        [Tooltip("Ashen (§2.9): attack-speed tier steps while this piece is in low-state.")]
+        public int lowStateAttackSpeedSteps;
+        [Tooltip("Oathborn medics (§4 heal-pulse tech): HP restored per pulse.")]
+        public int healPulseAmount;
+        [Tooltip("Oathborn medics: radius (in cells) the heal pulse reaches.")]
+        public int healPulseRadius;
+        [Tooltip("Oathborn medics: ticks between heal pulses.")]
+        public int healPulseIntervalTicks;
+        [Tooltip("Blightborn Duchess of Sighs: this piece's gas damage also deals equal morale damage.")]
+        public bool gasDealsMoraleDamage;
+        [Tooltip("Blightborn Yellow Autumn: ambient anti-stall gas starts earlier and this piece's own units are immune.")]
+        public bool hijacksAmbientGas;
+        [Tooltip("Paradox The Second Hand: adds a third tactical pause window.")]
+        public bool addsPauseWindow;
+        [Tooltip("Paradox Doctor Recursion: your pause-window abilities each fire twice.")]
+        public bool repeatsPauseAbilities;
+
         [Header("Visuals")]
         public Sprite icon;
         public Color categoryTint = Color.white;
@@ -159,7 +185,19 @@ namespace DeadManZone.Data
                 AccuracyOverride = accuracyOverride <= 0 ? null : accuracyOverride,
                 FactionId = factionId,
                 Rarity = rarity,
-                Abilities = ResolveAbilities()
+                Abilities = ResolveAbilities(),
+                AppliesSuppressionOnHit = appliesSuppressionOnHit,
+                IsTransport = isTransport,
+                TransportCapacity = transportCapacity,
+                LowStateDamageBonus = lowStateDamageBonus,
+                LowStateAttackSpeedSteps = lowStateAttackSpeedSteps,
+                HealPulseAmount = healPulseAmount,
+                HealPulseRadius = healPulseRadius,
+                HealPulseIntervalTicks = healPulseIntervalTicks,
+                GasDealsMoraleDamage = gasDealsMoraleDamage,
+                HijacksAmbientGas = hijacksAmbientGas,
+                AddsPauseWindow = addsPauseWindow,
+                RepeatsPauseAbilities = repeatsPauseAbilities
             };
         }
 

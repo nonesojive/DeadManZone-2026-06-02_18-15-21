@@ -79,7 +79,8 @@ namespace DeadManZone.Data
                 FlavorTagId = target.flavorTagId,
                 AttackType = target.useAttackType ? target.attackType : null,
                 AttackRange = target.useAttackRange ? target.attackRange : null,
-                FactionId = target.factionId
+                FactionId = target.factionId,
+                RequireSalvage = target.requireSalvage
             };
         }
     }

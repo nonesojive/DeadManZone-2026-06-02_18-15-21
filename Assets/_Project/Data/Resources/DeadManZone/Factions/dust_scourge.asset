@@ -28,13 +28,21 @@ MonoBehaviour:
   - {x: 1, y: 4}
   - {x: 4, y: 4}
   - {x: 7, y: 4}
-  startingSupplies: 100
-  startingManpower: 112
-  baseSuppliesPerRound: 0
-  baseMusterPerShop: 12
+  startingSupplies: 45
+  startingManpower: 14
+  baseSuppliesPerRound: 8
+  baseMusterPerShop: 1
   startingAuthority: 2
-  startingTactics: 020000000100000000000000
-  startingPieces: []
-  baseSalvageChancePercent: 10
+  startingTactics: 0100000003000000
+  startingPieces:
+  - pieceId: scavengers_cache
+    anchor: {x: 0, y: 0}
+  - pieceId: waste_raider
+    anchor: {x: 0, y: 3}
+  - pieceId: gasflinger
+    anchor: {x: 2, y: 2}
+  - pieceId: outrider
+    anchor: {x: 3, y: 2}
+  baseSalvageChancePercent: 3
   shopOverride: {fileID: 0}
   tokenBackgroundColor: {r: 0.42, g: 0.34, b: 0.24, a: 0.45}

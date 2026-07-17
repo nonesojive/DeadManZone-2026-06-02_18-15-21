@@ -18,6 +18,13 @@ namespace DeadManZone.Core.Tags
         public AttackRangeTier? AttackRange { get; init; }
         public string FactionId { get; init; }
 
+        /// <summary>2026-07-15 faction-roster-v1 §1.9 Dust Scourge: when true, an additional
+        /// AND-condition is checked by the caller (CriticalMassEngine.ApplyCombatRule) via
+        /// OffFactionRules.IsSalvage against the rule's own CountTagId (the player faction id) —
+        /// this struct only carries pure PieceDefinition data, so the salvage check itself lives
+        /// at the call site where the PlacedPiece (and its IsMercenary flag) is in scope.</summary>
+        public bool RequireSalvage { get; init; }
+
         public bool Matches(PieceDefinition piece)
         {
             if (piece == null)

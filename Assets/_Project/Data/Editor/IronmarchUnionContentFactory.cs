@@ -240,7 +240,7 @@ namespace DeadManZone.Data.Editor
                 radius = radius
             };
 
-        private static FactionSO SaveIronmarchFaction()
+        internal static FactionSO SaveIronmarchFaction()
         {
             var faction = DemoContentGenerator.SaveFaction(
                 FactionIds.IronmarchUnion,

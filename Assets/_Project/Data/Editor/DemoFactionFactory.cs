@@ -5,6 +5,10 @@ namespace DeadManZone.Data.Editor
 {
     internal static class DemoFactionFactory
     {
+        // 2026-07-15 faction-roster-v1 Wave 2: crimson_legion/ash_wraiths entries replaced by
+        // crimson_assembly/ashen_covenant (their real content pass lives in
+        // CrimsonAssemblyContentFactory/AshenCovenantContentFactory — this legacy "5 Factions"
+        // pipeline only needs a self-consistent FactionSO per id so it still compiles/runs).
         internal static FactionSO[] CreateAll() =>
             new[]
             {
@@ -20,8 +24,8 @@ namespace DeadManZone.Data.Editor
                 DemoContentGenerator.SaveFaction(FactionIds.CartelOfEchoes, "Cartel of Echoes",
                     startingAuthority: 5),
                 DemoContentGenerator.SaveFaction("neutral", "Neutral Militia", startingSupplies: 80),
-                DemoContentGenerator.SaveFaction("crimson_legion", "Crimson Legion"),
-                DemoContentGenerator.SaveFaction("ash_wraiths", "Ash Wraiths")
+                DemoContentGenerator.SaveFaction(FactionIds.CrimsonAssembly, "Crimson Assembly"),
+                DemoContentGenerator.SaveFaction(FactionIds.AshenCovenant, "Ashen Covenant")
             };
     }
 }

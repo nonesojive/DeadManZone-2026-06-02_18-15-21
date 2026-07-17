@@ -25,8 +25,20 @@ namespace DeadManZone.Core.Combat
             return false;
         }
 
-        public static int GetDamageBonus(CombatantState combatant) =>
-            IsLowState(combatant) ? combatant.Definition.LowStateDamageBonus : 0;
+        /// <summary>2026-07-15 faction-roster-v1 §1.9 Ashen faction CM rule ("low-state trigger
+        /// bonuses strengthen"): folds in a percent uplift on top of the piece's own authored
+        /// bonus, set at fight start by CriticalMassEngine.ApplyToCombatants.</summary>
+        public static int GetDamageBonus(CombatantState combatant)
+        {
+            if (!IsLowState(combatant))
+                return 0;
+
+            int baseBonus = combatant.Definition.LowStateDamageBonus;
+            if (combatant.LowStateDamageBonusPercentFromCM > 0)
+                baseBonus += (int)System.Math.Round(baseBonus * (combatant.LowStateDamageBonusPercentFromCM / 100f));
+
+            return baseBonus;
+        }
 
         public static int GetAttackSpeedSteps(CombatantState combatant) =>
             IsLowState(combatant) ? combatant.Definition.LowStateAttackSpeedSteps : 0;

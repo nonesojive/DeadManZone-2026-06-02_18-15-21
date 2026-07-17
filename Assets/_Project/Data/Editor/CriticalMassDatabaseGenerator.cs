@@ -89,7 +89,8 @@ namespace DeadManZone.Data.Editor
                     attackType = target.AttackType ?? AttackType.None,
                     useAttackRange = target.AttackRange.HasValue,
                     attackRange = target.AttackRange ?? AttackRangeTier.Medium,
-                    factionId = target.FactionId
+                    factionId = target.FactionId,
+                    requireSalvage = target.RequireSalvage
                 }
             };
         }
@@ -131,6 +132,7 @@ namespace DeadManZone.Data.Editor
             target.FindPropertyRelative("useAttackRange").boolValue = entry.useAttackRange;
             target.FindPropertyRelative("attackRange").enumValueIndex = (int)entry.attackRange;
             target.FindPropertyRelative("factionId").stringValue = entry.factionId ?? string.Empty;
+            target.FindPropertyRelative("requireSalvage").boolValue = entry.requireSalvage;
         }
     }
 }

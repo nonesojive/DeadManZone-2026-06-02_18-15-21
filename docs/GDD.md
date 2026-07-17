@@ -417,12 +417,249 @@ minimum 1
 
 **Attack-type triangle** (`AttackTypeProfileCatalog`; weak multiplier defaults **0.85**):
 
-| Attack type | Strong vs | × | Weak vs |
-|---|---|---|---|
-| Ballistic | Medium armor | 1.25 | Heavy |
-| Piercing | Heavy armor | 1.35 | Light |
-| Shredding | Light armor | 1.25 | Medium |
-| Explosive | Heavy armor **+ structures AND buildings** | 1.30 | — |
+| Attack type | Strong vs | × | Weak vs | × |
+|---|---|---|---|---|
+| Ballistic | Medium armor | 1.25 | Heavy | 0.85 |
+| Piercing | Heavy armor | 1.35 | Light | 0.85 |
+| Shredding | Light armor | 1.25 | Medium | 0.85 |
+| Explosive | Heavy armor **+ structures** | 1.30 | — | — |
+| Fire | Light armor; applies burn | 1.20 | Heavy | 0.85 |
+| Melee | Light armor | 1.25 | Heavy | 0.80 |
+| Gas | Infantry | 1.25 | Buildings | 0.85 |
+
+> **Recovered 2026-07-17:** this table (and everything past it) was truncated mid-row in a prior
+> edit — no NUL bytes remained, but the file's own content stopped mid-sentence. Rebuilt verbatim
+> from `AttackTypeProfileCatalog.cs` (the only source of truth for these multipliers); nothing
+> past §10 in this document is a design decision, it never existed. §11 below is new, added by the
+> 2026-07-15 faction-roster-v1 Wave 2 pass alongside the 7 new faction content passes.
+
+---
+
+## 11. Piece rosters
+
+*(`Data/Editor/*ContentFactory.cs` — the content-generation pipeline. `AllFactionsContentFactory`
+regenerates all 103 pieces + 8 factions + the Critical-Mass database in one pass. Every number
+below is **PROVISIONAL** — a balance pass anchors HP/damage/costs later; only rarity, roles, and
+tentpole mechanics are load-bearing today.)*
+
+**Roster arithmetic (§1.1):** Neutral is 4 common / 3 uncommon / 0 rare (7 pieces, no vehicles, no
+tactics, no rares — "boring but reliable"). Every other faction is 6 common / 3 uncommon / 3 rare
+(12 pieces). 7 pieces + 8 × 12 = **103 pieces total**, verified by `RosterArithmeticTests`.
+
+### 11.1 Neutral — "The War's Flotsam"
+
+| Piece | Rar | Role | Attack | Cells | Sketch |
+|---|---|---|---|---|---|
+| Militia Squad | C | assault | ballistic | 2 | Baseline body, no text |
+| Field Medic | C | support | — | 1 | Adjacent allies +HP |
+| Supply Depot | C | utility (building) | — | 2 | +5 Supplies/round |
+| Recruitment Office | C | utility (building) | — | 2 | +Muster/shop |
+| Machine-Gun Nest | U | defender (structure) | ballistic | 2 | Small terror ping |
+| Trench Works | U | defender (structure) | — | 3 | HP wall, slows adjacent enemy movement |
+| Field Hospital | U | support (building) | — | 3 | Post-fight: reduces Manpower lost to damaged survivors |
+
+### 11.2 IronMarch Union — "The Relentless War Machine"
+
+6C/3U/3R · 2 buildings · 2 tactics · 1 vehicle. Rares: infantry-mass / artillery / snipers. Faction
+CM rule: flat **+damage** to infantry. Economy passive: **none, deliberately** (fallback: +1
+Muster/shop if bland in playtest).
+
+| Piece | Rar | Role | Attack | Cells | Sketch |
+|---|---|---|---|---|---|
+| Conscript Rifles | C | assault | ballistic | 2 | The faction body |
+| Line Grenadiers | C | assault | explosive | 2 | Anti-structure/anti-heavy |
+| Field Mortar Team | C | artillery | explosive | 2 | Artillery count piece |
+| Sharpshooter | C | sniper | piercing | 1 | Sniper count piece |
+| Iron Guard | C | defender | ballistic | 3 | Reduced morale damage taken |
+| Command Outpost | C | utility (building) | — | 2 | +1 Authority/round, `command` |
+| Forward Observer | U | support | — | 1 | Adjacent artillery +1 attack-speed tier |
+| Shock Sergeant | U | command | ballistic | 1 | Adjacent assault infantry +damage |
+| Artillery Park | U | utility (building) | — | 3 | Tactic: *Ranging Barrage* |
+| Breakthrough Tank | R | tank (vehicle) | ballistic | 4 | Terror ≥2× dmg; nearby infantry +morale resist |
+| Grand Battery | R | artillery (structure) | explosive | 4 | Tactic: *Rolling Barrage*, scales with artillery count |
+| Marksman-Doctrine Officer | R | sniper/command | piercing | 1 | Stealth until 2nd window; snipers +damage per sniper |
+
+### 11.3 Dust Scourge — "Scavengers of the Wastes"
+
+6C/3U/3R · 3 buildings · 2 tactics · 0 native vehicles. CM rule: counts **salvage-tagged** pieces
+(off-faction, not native) instead of its own — buffs the strays. Economy passive: ×1.25 salvage
+refund + salvage pity tightened to 2 dry batches (vs the global 4).
+
+| Piece | Rar | Role | Attack | Cells | Sketch |
+|---|---|---|---|---|---|
+| Waste Raider | C | assault | shredding | 2 | Scrap-shotgun body |
+| Outrider | C | assault | ballistic | 1 | High-movement harasser |
+| Gasflinger | C | gas | gas | 2 | Gas count piece |
+| Rust Spear | C | defender | melee | 2 | Scrap-plated line-holder |
+| Vulture Crew | C | support | — | 1 | +salvage chance % while fielded |
+| Scavenger's Cache | C | utility (building) | — | 2 | +Supplies/round, small +salvage chance |
+| Raid Captain | U | command | ballistic | 1 | Adjacent infantry +damage (salvage-aura TODO, §11.9) |
+| Chop-Shop | U | utility (building) | — | 3 | Salvage-tagged pieces +HP (TODO, §11.9) |
+| Fume Still | U | utility (building) | — | 2 | Tactic: *Gas Cloud* |
+| Corpse-Tithe Caravan | R | support (structure) | — | 3 | Rule-bend: routed enemies count as kills for salvage share (TODO) |
+| Stormcaller of the Yellow Wind | R | gas | gas | 1 | Tactic: *Yellow Wind*, wide gas storm |
+| Warlord of Many Banners | R | command | melee | 2 | Big stat buffs per distinct faction represented (neutral excluded) |
+
+### 11.4 Cartel of Echoes — "War as Profit"
+
+6C/3U/3R · **4 buildings** · 2 tactics · 0 native vehicles · 7 native fighters (fewest in game). CM
+rule: **+Supplies** (run-resource scope). Economy passive: mercenary 6th shop slot
+(`CartelMercenarySlotProvider`), +25% surcharge (Freelance Colonel's 25→10% reduction is TODO —
+see §11.9).
+
+| Piece | Rar | Role | Attack | Cells | Sketch |
+|---|---|---|---|---|---|
+| Company Rifleman | C | assault | ballistic | 2 | PMC trooper — better-equipped, pricier |
+| Strikebreaker | C | defender | melee | 2 | Riot-shield muscle |
+| Repo Crew | C | assault | shredding | 1 | Close-range collections |
+| Paymaster's Aide | C | support | — | 1 | `supply_line` — forms Muster pairs |
+| Freight Depot | C | utility (building) | — | 3 | `supplier`, +Supplies/round |
+| Company Store | C | utility (building) | — | 2 | +Muster/shop |
+| Contract Officer | U | command | ballistic | 1 | Adjacent mercenaries +damage (TODO, §11.9) |
+| Executive Suite | U | utility (building) | — | 3 | +1 Authority per `command` piece (generic CM rule) |
+| Munitions Exchange | U | utility (building) | — | 2 | Tactic: *Overtime Bonus* |
+| Freelance Colonel | R | command | ballistic | 2 | Mercenaries +HP/+damage; surcharge 25→10% (TODO) |
+| Echo Chairman | R | command | — | 1 | +2 Authority pool; Tactic: *Executive Order* (TODO, no free-order tech) |
+| War Profiteer | R | utility | ballistic | 2 | +damage per 25 Supplies held, capped (TODO) |
+
+### 11.5 Oathborn Accord — "Peacekeepers Turned Crusaders"
+
+6C/3U/3R · 2 buildings · 2 tactics · 1 vehicle. 🔴 Tentpole: **transport load/unload** (Armored
+Ark). CM rule: **+max Morale**, army-wide. Economy passive: medic/healing hook, soft-TBD (leans on
+the heal-pulse tech below).
+
+| Piece | Rar | Role | Attack | Cells | Sketch |
+|---|---|---|---|---|---|
+| Truncheon Line | C | assault | melee | 2 | Riot-shield peacekeepers |
+| Pilgrim Spears | C | assault | melee | 3 | Cheap swarm |
+| Vow Warden | C | defender | melee | 2 | Shield wall anchor |
+| Banner Bearer | C | support | — | 1 | Adjacent allies +morale (TODO, §11.9) |
+| Mercy Sister | C | support | — | 1 | Heal pulse (6/radius 2/every 25 ticks) |
+| Oathhall | C | utility (building) | — | 2 | +Muster/shop |
+| Confessor | U | command | melee | 1 | Adjacent allies +20% morale-damage resist |
+| Field Chirurgeon | U | support | — | 2 | Stronger heal pulse (12/radius 2/every 20 ticks) |
+| Sanctum Command | U | utility (building) | — | 3 | Tactic: *Rally* |
+| Armored Ark | R | transport (vehicle) | — | 4 | 🔴 Load in Build, target a cell, unload on arrival; spills cargo if destroyed in transit |
+| High Exarch | R | command | melee | 2 | 50% morale-damage resist; army-wide morale-resist aura |
+| Hospitaller-General | R | support | — | 2 | Strongest heal pulse (18/radius 2/every 20 ticks) |
+
+### 11.6 Paradox Engine — "The Experiment That Won't End"
+
+6C/3U/3R · 3 buildings · **3 tactics** · 0 vehicles. 🔴 Tentpole: **repeat activations** (Doctor
+Recursion). Self-tempo only, zero randomness. CM rule: **+attack-speed tier steps**. Economy
+passive: first shop reroll each Build is free.
+
+| Piece | Rar | Role | Attack | Cells | Sketch |
+|---|---|---|---|---|---|
+| Chrono-Fusilier | C | assault | ballistic | 2 | The body, slightly out of sync |
+| Phase Vanguard | C | defender | ballistic | 2 | Line-holder |
+| Arc Lancer | C | sniper | piercing | 1 | Beam-rifle marksman |
+| Field Dynamo | C | support | — | 1 | Adjacent allies +1 attack-speed tier |
+| Chrono-Lab | C | utility (building) | — | 2 | +Supplies/round (TODO wiring, §11.9) |
+| Assembly Loop | C | utility (building) | — | 2 | +Muster/shop |
+| Overclock Engineer | U | support | — | 1 | Adjacent piece +20% movement charge rate |
+| Chronometry Station | U | utility (building) | — | 3 | Tactic: *Time Dilation* |
+| Resonance Coil | U | utility (structure) | — | 2 | Tactic: *Echo* — repeats the last order/tactic free |
+| The Second Hand | R | utility (building) | — | 4 | 🟡 Adds a third tactical pause window (only piece in the game) |
+| Doctor Recursion | R | command | — | 1 | 🔴 Own pause-window abilities fire twice |
+| Perpetual Engine | R | utility (structure) | — | 4 | ALL units +1 attack-speed tier, faction-blind |
+
+### 11.7 Blightborn Pact — "The Rot of Old Houses"
+
+6C/3U/3R · 3 buildings · 2 tactics · 0 vehicles. Honest weakness (deliberate, unpatched): gas is
+weak vs structures/buildings. CM rule: **+% gas damage** (targets gas-attack pieces specifically).
+Economy passive: **Despair Dividend** — +1 Supply per enemy unit routed, any faction.
+
+| Piece | Rar | Role | Attack | Cells | Sketch |
+|---|---|---|---|---|---|
+| Threadbare Guard | C | assault | ballistic | 2 | Moth-eaten uniforms, family muskets |
+| Censer Carrier | C | gas | gas | 2 | Gas count piece |
+| Iron Veil Guard | C | defender | melee | 2 | Halberdiers in tarnished plate |
+| Court Physician | C | support | — | 1 | Adjacent infantry +10 HP |
+| Dirge Piper | C | support | — | 1 | Adjacent allies +morale damage on attacks (TODO, §11.9) |
+| Poison Garden | C | utility (building) | — | 2 | +Supplies/round (TODO wiring) |
+| Gas Alchemist | U | support | — | 1 | Adjacent gas-role neighbors +3 damage |
+| Widow of the House | U | command | ballistic | 1 | Attacks deal terror (14); ally terror aura TODO |
+| Fumigation Works | U | utility (building) | — | 3 | Tactic: *Creeping Cloud* |
+| The Yellow Autumn | R | utility (building) | — | 3 | 🟡 Ambient anti-stall gas starts earlier; own side immune |
+| Duchess of Sighs | R | command | gas | 2 | 🟡 Side-wide: gas attacks also deal equal morale damage |
+| Vitriol Throne | R | artillery (structure) | gas | 4 | Tactic: *Vitriol Rain*, huge gas bombardment |
+
+### 11.8 Crimson Assembly — "Clinical Optimization"
+
+6C/3U/3R · 2 buildings · **4 tactics** · **3 vehicles** (the sanctioned Scout Tankette exception is
+Uncommon; every other vehicle in the game is Rare). Owns all enemy-facing debuffs game-wide. 🔴
+Tentpole: **suppression** (attack-speed tier down + movement charge slow on hit). CM rule:
+**+suppression duration** (potency scaling deferred — no seam yet). Economy passive: **Ahead of
+Schedule** — shop rarity odds roll as if FightEquivalent+1 (prices unaffected).
+
+| Piece | Rar | Role | Attack | Cells | Sketch |
+|---|---|---|---|---|---|
+| Assembly Trooper | C | assault | ballistic | 2 | Best-equipped common in the game |
+| Suppression Team | C | assault | ballistic | 2 | Attacks apply suppression on hit |
+| Hazmat Vanguard | C | defender | ballistic | 2 | Sealed-suit line troops |
+| Ballistics Analyst | C | support | — | 1 | Adjacent ranged +accuracy (TODO, no Accuracy SynergyStat) |
+| Research Annex | C | utility (building) | — | 2 | +Supplies/round (TODO wiring) |
+| Bunker Emplacement | C | defender (structure) | ballistic | 2 | Combat-board strongpoint |
+| Scout Tankette | U | tank (vehicle) | ballistic | 2 | The one sanctioned Uncommon vehicle; Tactic: *Smoke Discharge* |
+| Fire-Plan Officer | U | command | ballistic | 1 | Adjacent infantry +2 damage |
+| Operations Bunker | U | utility (building) | — | 3 | Tactic: *Suppressive Sweep* (damage-only stand-in, TODO) |
+| "Vanquisher" Doctrine Tank | R | tank (vehicle) | ballistic | 4 | Terror ≥2× dmg, suppresses on hit; Tactic: *Cannon Blast* |
+| "Stiller" Suppression Platform | R | tank (vehicle) | ballistic | 4 | Low damage, high terror, suppresses every hit |
+| Director of Programs | R | command | — | 1 | Tactic: *Fire Mission* — targeted-area suppression |
+
+### 11.9 Ashen Covenant — "The Revolution of Cinders"
+
+6C/3U/3R · 2 buildings · 2 tactics · 0 vehicles. Faction-wide rule: low-state trigger threshold =
+**below 50%** HP or morale, evaluated live per-unit. Combat pieces carry **ManpowerCost 1**
+(buildings 0); faction baseline Muster is high (4/shop, vs IronMarch's 1) so the martyrdom identity
+doesn't fight the run's own economy. CM rule: **low-state trigger bonuses strengthen** (`+% low-
+state damage bonus`). Economy passive: **inverted death-shock** — an Ashen death grants morale to
+allies within 2 cells instead of draining it (`MoraleRules.IsDeathShockInverted`).
+
+| Piece | Rar | Role | Attack | Cells | Sketch |
+|---|---|---|---|---|---|
+| Zealot Mob | C | assault | melee | 3 | Cheap fervent swarm, `fanatic` |
+| Ash Acolyte | C | assault | melee | 1 | `fanatic`; +3 damage below half HP/morale |
+| Torchbearer | C | assault | fire | 2 | Flamethrower common, `fanatic` |
+| Penitent | C | defender | melee | 2 | No armor, unusually high HP |
+| Hymnal Leader | C | support | — | 1 | Adjacent allies +morale (TODO, no Morale SynergyStat) |
+| Shrine of Ash | C | utility (building) | — | 2 | +Muster/shop |
+| Reliquary Bearer | U | support | ballistic | 1 | +2 damage to self per adjacent `fanatic` |
+| Firebrand Vicar | U | command | fire | 1 | Adjacent flamethrower-tagged neighbors +3 damage |
+| Pyre Altar | U | utility (building) | — | 2 | Tactic: *Fervor* |
+| Saint of the Embers | R | command | melee | 1 | Strengthens its OWN low-state bonuses (army-wide version TODO) |
+| The Ash Martyr | R | utility | melee | 1 | On death: morale to allies within 2 cells (free, via faction passive); +damage-to-allies half is TODO |
+| Pyre Cathedral | R | utility (building) | — | 4 | Tactic: *Firestorm*, huge fire barrage |
+
+### 11.10 Faction identity stack (§1.9)
+
+Every faction = roster + a Critical-Mass rule (counts *its own* faction tag, except Dust) + one
+economy/shop passive. `CriticalMassDefaultRules.Build()` carries all 8; `FactionPassives` carries
+the economy half.
+
+| Faction | CM payoff | Economy/shop passive |
+|---|---|---|
+| IronMarch | +flat damage, infantry | None, deliberately |
+| Dust Scourge | Counts **salvage-tagged** pieces instead → +damage to the strays | ×1.25 salvage refund + salvage pity at 2 dry batches |
+| Cartel of Echoes | +Supplies | Mercenary 6th shop slot, +25% surcharge |
+| Oathborn Accord | +max Morale, army-wide | Medic/healing hook (soft-TBD) |
+| Paradox Engine | +attack-speed tier steps | First shop reroll each Build is free |
+| Blightborn Pact | +% gas damage | Despair Dividend: +1 Supply per enemy routed |
+| Crimson Assembly | +suppression duration (potency TBD) | Ahead of Schedule: rarity odds roll as FightEquivalent+1 |
+| Ashen Covenant | Low-state bonuses strengthen | Inverted death-shock: nearby allies gain morale, not lose it |
+
+### 11.9-note: known content gaps (flagged during authoring, not invented around)
+
+A handful of per-piece abilities in §11.3-§11.9 have no execution seam yet in `Core` — they're
+authored as flat-stat bodies with the gap called out in each `*ContentFactory.Pieces.cs` file
+rather than faked onto an unrelated mechanic: salvage-tag NeighborFilter matching (Raid Captain,
+Chop-Shop), mercenary-flag NeighborFilter matching (Contract Officer, Freelance Colonel), a Morale/
+Accuracy `SynergyStat` entry (Banner Bearer, Hymnal Leader, Ballistics Analyst), a distinct-faction
+board counter (Warlord of Many Banners), fight-start Supplies-read triggers (War Profiteer), and a
+few building income/Authority hooks still hardcoded to specific IronMarch piece ids
+(`BuildingIncomeRules`, `AuthorityCalculator`). None of these block the roster from being playable;
+they're each a future Core seam, not a Wave 2 blocker.s** | 1.30 | — |
 | Fire | Light armor | 1.20 | Heavy |
 | Melee | Light armor | 1.25 | Heavy (**×0.80**, not the 0.85 default) |
 | Gas | **Infantry primary** (not armor-keyed) | 1.25 | Buildings / structures |

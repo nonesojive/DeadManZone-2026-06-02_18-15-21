@@ -582,8 +582,10 @@ namespace DeadManZone.Core.Combat
                         // debuff family (border rule).
                         if (actor.Definition.AppliesSuppressionOnHit)
                         {
-                            SuppressionRules.Apply(target);
-                            _log.Append(segment, GlobalTick, actor.InstanceId, "suppress", target.InstanceId, SuppressionRules.SuppressionDurationTicks);
+                            SuppressionRules.Apply(target, actor.SuppressionDurationBonusTicks);
+                            int suppressionDuration = SuppressionRules.SuppressionDurationTicks
+                                + System.Math.Max(0, actor.SuppressionDurationBonusTicks);
+                            _log.Append(segment, GlobalTick, actor.InstanceId, "suppress", target.InstanceId, suppressionDuration);
                         }
 
                         // §2.7 Duchess of Sighs: "your gas damage also deals equal morale

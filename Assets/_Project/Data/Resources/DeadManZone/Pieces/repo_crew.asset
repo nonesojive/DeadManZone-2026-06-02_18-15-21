@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5fb2f91481ca4c4888ee9094ae7faa6, type: 3}
+  m_Name: repo_crew
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.PieceDefinitionSO
+  id: repo_crew
+  displayName: Repo Crew
+  category: 1
+  shapeCells:
+  - {x: 0, y: 0}
+  tags:
+  - Infantry
+  - Assault
+  primary: infantry
+  combatRole: assault
+  systemTag: 
+  synergyTags: []
+  abilityTags: []
+  flavorTags: []
+  maxHp: 35
+  baseDamage: 9
+  cooldownTicks: 3
+  requisitionCost: 0
+  manpowerCost: 1
+  musterPerShop: 0
+  shopModifiers: 0
+  commandActions: 0
+  shopLane: 0
+  includeInShopPool: 1
+  rarity: 0
+  salvageChanceBonus: 0
+  maxMorale: 30
+  terrorDamage: 0
+  moraleDamageResistancePercent: 0
+  attackSpeed: 2
+  attackRange: 1
+  movementSpeed: 2
+  armorType: 0
+  attackType: 4
+  grantedAbility: 0
+  accuracyOverride: 0
+  factionId: cartel_of_echoes
+  appliesSuppressionOnHit: 0
+  isTransport: 0
+  transportCapacity: 0
+  lowStateDamageBonus: 0
+  lowStateAttackSpeedSteps: 0
+  healPulseAmount: 0
+  healPulseRadius: 0
+  healPulseIntervalTicks: 0
+  gasDealsMoraleDamage: 0
+  hijacksAmbientGas: 0
+  addsPauseWindow: 0
+  repeatsPauseAbilities: 0
+  icon: {fileID: 0}
+  categoryTint: {r: 0.29999998, g: 0.42, b: 0.70000005, a: 1}
+  cellSprites: []
+  catalogAbilities: []
+  customAbilities: []
+  combatArenaSprite: {fileID: 0}
+  combatArena2DAnimations: {fileID: 0}
+  combatArenaPrefab: {fileID: 0}
+  combatArenaModelScale: 1
+  combatArenaModelHeight: 0

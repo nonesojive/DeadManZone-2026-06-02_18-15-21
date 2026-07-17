@@ -76,8 +76,8 @@ namespace DeadManZone.Presentation.Board
                 FactionIds.IronmarchUnion => new Color(0.22f, 0.28f, 0.38f, 0.45f),
                 FactionIds.DustScourge => new Color(0.42f, 0.34f, 0.24f, 0.45f),
                 FactionIds.CartelOfEchoes => new Color(0.32f, 0.26f, 0.42f, 0.45f),
-                "crimson_legion" => new Color(0.45f, 0.20f, 0.18f, 0.45f),
-                "ash_wraiths" => new Color(0.28f, 0.28f, 0.30f, 0.45f),
+                FactionIds.CrimsonAssembly => new Color(0.45f, 0.20f, 0.18f, 0.45f),
+                FactionIds.AshenCovenant => new Color(0.28f, 0.28f, 0.30f, 0.45f),
                 _ => neutralFallback
             };
         }

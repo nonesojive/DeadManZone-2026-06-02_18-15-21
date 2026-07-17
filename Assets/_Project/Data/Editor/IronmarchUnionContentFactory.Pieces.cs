@@ -23,7 +23,7 @@ namespace DeadManZone.Data.Editor
             new Vector2Int(1, 1)
         };
 
-        private static PieceDefinitionSO[] CreatePieces() => new[]
+        internal static PieceDefinitionSO[] CreatePieces() => new[]
         {
             // ---------------------------------------------------------------
             // NEUTRAL — "The War's Flotsam" (§2.1): 4C / 3U / 0R, no vehicles/tactics/rares.

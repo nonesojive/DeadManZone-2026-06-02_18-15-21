@@ -16,8 +16,6 @@ namespace DeadManZone.Data.Editor
             list.AddRange(CreateNeutralPieces());
             list.AddRange(CreateDustScourgePieces());
             list.AddRange(CreateCartelPieces());
-            list.AddRange(CreateCrimsonLegionPieces());
-            list.AddRange(CreateAshWraithPieces());
             return list.ToArray();
         }
 
@@ -177,43 +175,12 @@ namespace DeadManZone.Data.Editor
                 rarity: Rarity.Rare)
         };
 
-        private static PieceDefinitionSO[] CreateCrimsonLegionPieces() => new[]
-        {
-            SaveMappedPiece("crimson_elite", "Crimson Elite", PieceCategory.Unit, ShopLane.Offensive,
-                DemoSandboxShapes.Single, "crimson_legion",
-                maxHp: 120, baseDamage: 24, 
-                attackType: AttackType.Melee, armorType: ArmorType.Medium),
-            SaveMappedPiece("crimson_tank", "Crimson Tank", PieceCategory.Unit, ShopLane.Offensive,
-                DemoSandboxShapes.Walker, "crimson_legion",
-                maxHp: 280, baseDamage: 40, 
-                attackType: AttackType.Piercing, armorType: ArmorType.Heavy,
-                rarity: Rarity.Rare),
-            SaveMappedPiece("crimson_artillery", "Crimson Battery", PieceCategory.Building, ShopLane.Defensive,
-                DemoSandboxShapes.HorizontalPair, "crimson_legion",
-                maxHp: 200, baseDamage: 32, 
-                attackType: AttackType.Explosive, armorType: ArmorType.Heavy, attackRange: AttackRangeTier.Long,
-                rarity: Rarity.Uncommon)
-        };
-
-        private static PieceDefinitionSO[] CreateAshWraithPieces() => new[]
-        {
-            SaveMappedPiece("wraith_stalker", "Wraith Stalker", PieceCategory.Unit, ShopLane.Offensive,
-                DemoSandboxShapes.Single, "ash_wraiths",
-                maxHp: 80, baseDamage: 32, 
-                abilityTags: new[] { GameTagIds.Stealth },
-                attackType: AttackType.Piercing, armorType: ArmorType.Light,
-                mappingOverride: new TagContentMigrator.PieceTagMapping(GameTagIds.Infantry, GameTagIds.Sniper, string.Empty),
-                rarity: Rarity.Uncommon),
-            SaveMappedPiece("wraith_phantom", "Ash Phantom", PieceCategory.Unit, ShopLane.Offensive,
-                DemoSandboxShapes.Single, "ash_wraiths",
-                maxHp: 100, baseDamage: 24, 
-                attackType: AttackType.Shredding, armorType: ArmorType.Light),
-            SaveMappedPiece("wraith_bombard", "Grave Bombard", PieceCategory.Hybrid, ShopLane.Specialty,
-                DemoSandboxShapes.HorizontalPair, "ash_wraiths",
-                maxHp: 150, baseDamage: 40, 
-                attackType: AttackType.Explosive, armorType: ArmorType.Medium, attackRange: AttackRangeTier.Long,
-                rarity: Rarity.Rare)
-        };
+        // 2026-07-15 faction-roster-v1 Wave 2: CreateCrimsonLegionPieces()/CreateAshWraithPieces()
+        // deleted — crimson_legion/ash_wraiths were enemy-only pools with no playable identity;
+        // Crimson Assembly and Ashen Covenant replace them with full 12-piece rosters authored in
+        // CrimsonAssemblyContentFactory/AshenCovenantContentFactory (see AllFactionsContentFactory).
+        // This "5 Factions" legacy demo pipeline never produced those two pools' pieces under the
+        // new ids, so nothing else needs remapping here.
 
         private static PieceDefinitionSO SaveMappedPiece(
             string id,

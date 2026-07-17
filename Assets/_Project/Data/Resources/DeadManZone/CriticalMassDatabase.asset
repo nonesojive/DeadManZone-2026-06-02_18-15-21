@@ -38,6 +38,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: vehicle
     countTagId: vehicle
     countCategory: 0
@@ -63,6 +64,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: structure
     countTagId: structure
     countCategory: 0
@@ -88,6 +90,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: assault
     countTagId: assault
     countCategory: 1
@@ -113,6 +116,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: tank
     countTagId: tank
     countCategory: 1
@@ -138,6 +142,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: artillery
     countTagId: artillery
     countCategory: 1
@@ -162,6 +167,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: sniper_accuracy
     countTagId: sniper
     countCategory: 1
@@ -186,6 +192,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: sniper_damage
     countTagId: sniper
     countCategory: 1
@@ -210,6 +217,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: defender
     countTagId: defender
     countCategory: 1
@@ -236,6 +244,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: utility
     countTagId: utility
     countCategory: 1
@@ -260,6 +269,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: support
     countTagId: support
     countCategory: 1
@@ -286,6 +296,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: explosive
     countTagId: explosive
     countCategory: 5
@@ -310,6 +321,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: melee
     countTagId: melee
     countCategory: 5
@@ -334,6 +346,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: gas
     countTagId: gas
     countCategory: 5
@@ -358,6 +371,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: fire
     countTagId: fire
     countCategory: 5
@@ -382,6 +396,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: ballistic
     countTagId: ballistic
     countCategory: 5
@@ -406,6 +421,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: piercing
     countTagId: piercing
     countCategory: 5
@@ -430,6 +446,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: shredding
     countTagId: shredding
     countCategory: 5
@@ -454,6 +471,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: phalanx
     countTagId: phalanx
     countCategory: 2
@@ -478,6 +496,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: command
     countTagId: command
     countCategory: 2
@@ -504,6 +523,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: supplier
     countTagId: supplier
     countCategory: 2
@@ -530,6 +550,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: convoy
     countTagId: convoy
     countCategory: 2
@@ -554,6 +575,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: medic
     countTagId: medic
     countCategory: 2
@@ -579,6 +601,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: mechanic
     countTagId: mechanic
     countCategory: 2
@@ -604,6 +627,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: fanatic
     countTagId: fanatic
     countCategory: 2
@@ -628,6 +652,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: entrenched
     countTagId: entrenched
     countCategory: 2
@@ -652,6 +677,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: berserk
     countTagId: berserk
     countCategory: 3
@@ -676,6 +702,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: grenadier
     countTagId: grenadier
     countCategory: 3
@@ -700,6 +727,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: siege
     countTagId: siege
     countCategory: 4
@@ -724,6 +752,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: logistics
     countTagId: logistics
     countCategory: 4
@@ -748,6 +777,7 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
   - id: ironmarch_union
     countTagId: ironmarch_union
     countCategory: 6
@@ -773,3 +803,179 @@ MonoBehaviour:
       attackRange: 2
       useAttackRange: 0
       factionId: 
+      requireSalvage: 0
+  - id: dust_scourge_salvage
+    countTagId: dust_scourge
+    countCategory: 7
+    tiers:
+    - threshold: 2
+      magnitude: 1
+    - threshold: 4
+      magnitude: 2
+    - threshold: 6
+      magnitude: 3
+    stat: 1
+    modType: 0
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+      requireSalvage: 1
+  - id: cartel_of_echoes
+    countTagId: cartel_of_echoes
+    countCategory: 6
+    tiers:
+    - threshold: 3
+      magnitude: 20
+    - threshold: 5
+      magnitude: 40
+    - threshold: 7
+      magnitude: 60
+    stat: 7
+    modType: 0
+    scope: 1
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+      requireSalvage: 0
+  - id: oathborn_accord
+    countTagId: oathborn_accord
+    countCategory: 6
+    tiers:
+    - threshold: 5
+      magnitude: 10
+    - threshold: 7
+      magnitude: 20
+    - threshold: 10
+      magnitude: 30
+    stat: 8
+    modType: 0
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+      requireSalvage: 0
+  - id: paradox_engine
+    countTagId: paradox_engine
+    countCategory: 6
+    tiers:
+    - threshold: 5
+      magnitude: 1
+    - threshold: 7
+      magnitude: 2
+    - threshold: 10
+      magnitude: 3
+    stat: 3
+    modType: 1
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+      requireSalvage: 0
+  - id: blightborn_pact
+    countTagId: blightborn_pact
+    countCategory: 6
+    tiers:
+    - threshold: 5
+      magnitude: 10
+    - threshold: 7
+      magnitude: 20
+    - threshold: 10
+      magnitude: 30
+    stat: 1
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 7
+      useAttackType: 1
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+      requireSalvage: 0
+  - id: crimson_assembly
+    countTagId: crimson_assembly
+    countCategory: 6
+    tiers:
+    - threshold: 5
+      magnitude: 10
+    - threshold: 7
+      magnitude: 20
+    - threshold: 10
+      magnitude: 30
+    stat: 9
+    modType: 0
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+      requireSalvage: 0
+  - id: ashen_covenant
+    countTagId: ashen_covenant
+    countCategory: 6
+    tiers:
+    - threshold: 5
+      magnitude: 10
+    - threshold: 7
+      magnitude: 20
+    - threshold: 10
+      magnitude: 30
+    stat: 10
+    modType: 2
+    scope: 0
+    target:
+      primaryTagIds: []
+      combatRoleTagId: 
+      synergyTagId: 
+      abilityTagId: 
+      flavorTagId: 
+      attackType: 0
+      useAttackType: 0
+      attackRange: 2
+      useAttackRange: 0
+      factionId: 
+      requireSalvage: 0

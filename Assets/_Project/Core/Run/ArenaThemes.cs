@@ -32,11 +32,15 @@ namespace DeadManZone.Core.Run
         // Pool → home-theme set. Order matters: the seeded roll indexes into it,
         // so reordering (not just renaming) changes every seeded run's themes.
         private static readonly IReadOnlyList<string> NeutralHome = new[] { Trenchline, RavagedTown };
+        // 2026-07-15 faction-roster-v1 Wave 2: crimson_legion/ash_wraiths (enemy-only, no
+        // pieces of their own) are retired — Crimson Assembly and Ashen Covenant are the
+        // playable factions that replace them as BossRoster's enemy-pool ids. Same theme
+        // sets carried over unchanged (theming, not roster, is what these keys drive here).
         private static readonly IReadOnlyList<string> CrimsonHome = new[] { Trenchline, RavagedTown, WartornForest };
         private static readonly IReadOnlyList<string> WraithHome = new[] { FogField, WartornForest };
         // The shipped enemy TEMPLATES all carry pool id "ironmarch_union" until the
-        // balance pass re-authors them onto the canonical pools (neutral / crimson_legion
-        // / ash_wraiths — today only bosses use those). Without this entry every normal
+        // balance pass re-authors them onto the canonical pools (neutral / crimson_assembly
+        // / ashen_covenant — today only bosses use those). Without this entry every normal
         // fight would sit on the Trenchline default and wave 1 would be boss-only.
         private static readonly IReadOnlyList<string> IronmarchHome = new[] { Trenchline, RavagedTown, WartornForest };
         private static readonly IReadOnlyList<string> DefaultHome = new[] { Default };
@@ -45,8 +49,8 @@ namespace DeadManZone.Core.Run
         public static IReadOnlyList<string> HomeThemes(string enemyFactionId) => enemyFactionId switch
         {
             "neutral" => NeutralHome,
-            "crimson_legion" => CrimsonHome,
-            "ash_wraiths" => WraithHome,
+            "crimson_assembly" => CrimsonHome,
+            "ashen_covenant" => WraithHome,
             "ironmarch_union" => IronmarchHome,
             _ => DefaultHome
         };
@@ -55,8 +59,8 @@ namespace DeadManZone.Core.Run
         public static string SignatureTheme(string enemyFactionId) => enemyFactionId switch
         {
             "neutral" => Trenchline,
-            "crimson_legion" => RavagedTown,
-            "ash_wraiths" => FogField,
+            "crimson_assembly" => RavagedTown,
+            "ashen_covenant" => FogField,
             _ => Default
         };
 
