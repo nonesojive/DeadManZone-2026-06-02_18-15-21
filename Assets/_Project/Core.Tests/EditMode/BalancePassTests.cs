@@ -1,3 +1,4 @@
+using System.Linq;
 using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
@@ -48,6 +49,43 @@ namespace DeadManZone.Core.Tests
                 Assert.GreaterOrEqual(effective, previous,
                     $"fight {fight} (effective {effective}) must not be weaker than fight {fight - 1} (effective {previous}) — the gauntlet ramps");
                 previous = effective;
+            }
+        }
+
+        /// <summary>Wave 5 (2026-07-17): each of the 8 factions now authors its own 10-fight
+        /// enemy ladder (DustScourgeEnemyFactory etc.) — this is the per-faction version of
+        /// the golden above. Filters ContentDatabase.EnemyTemplates by enemyFactionId directly
+        /// (not ContentDatabase.GetEnemyTemplate, which is deliberately faction-blind for
+        /// fightNumber-only legacy callers) so each pool's own curve is verified in isolation.</summary>
+        [Test]
+        public void EnemyTemplates_PerFaction_EffectiveTotal_NonDecreasingAcrossFights1To10()
+        {
+            RequireDatabase();
+
+            foreach (var factionId in FactionIds.Playable)
+            {
+                var faction = _database.GetFaction(factionId);
+                Assert.NotNull(faction, $"missing FactionSO for '{factionId}'");
+
+                var templatesByFight = _database.EnemyTemplates
+                    .Where(t => t != null && t.enemyFactionId == factionId)
+                    .ToDictionary(t => t.fightNumber);
+
+                int previous = 0;
+                for (int fight = 1; fight <= 10; fight++)
+                {
+                    Assert.IsTrue(templatesByFight.TryGetValue(fight, out var template),
+                        $"'{factionId}' is missing a dedicated enemy template for fight {fight}");
+
+                    var board = template.BuildBoard(faction, _registry);
+                    Assert.AreEqual(template.placements.Length, board.Pieces.Count,
+                        $"'{factionId}' fight {fight}: every authored placement must land");
+
+                    int effective = ArmyStrengthCalculator.Evaluate(board).EffectiveTotal;
+                    Assert.GreaterOrEqual(effective, previous,
+                        $"'{factionId}' fight {fight} (effective {effective}) must not be weaker than fight {fight - 1} (effective {previous})");
+                    previous = effective;
+                }
             }
         }
 

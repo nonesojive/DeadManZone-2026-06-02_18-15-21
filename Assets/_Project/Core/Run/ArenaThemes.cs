@@ -43,6 +43,27 @@ namespace DeadManZone.Core.Run
         // / ashen_covenant — today only bosses use those). Without this entry every normal
         // fight would sit on the Trenchline default and wave 1 would be boss-only.
         private static readonly IReadOnlyList<string> IronmarchHome = new[] { Trenchline, RavagedTown, WartornForest };
+
+        // Wave 5 (2026-07-17): the other 5 factions now field their own enemy templates
+        // (FightOptionGenerator draws from all 8 pools) — every one needs a home-theme entry
+        // or it silently falls through to DefaultHome (Trenchline only). No new environments
+        // ship this wave (task scope), so each faction is mapped onto the existing four,
+        // picked for the closest thematic fit:
+        //   Dust Scourge (wasteland scavengers) -> Ravaged Town, Wartorn Forest (broken
+        //     ground to pick over); signature Ravaged Town (they live in the ruins).
+        //   Cartel of Echoes (PMC war-for-profit) -> Trenchline, Ravaged Town (contracted
+        //     onto whatever battlefield pays); signature Trenchline (line warfare for hire).
+        //   Oathborn Accord (crusading peacekeepers) -> Wartorn Forest, Fog Field (marching
+        //     columns through contested country); signature Wartorn Forest (the long march).
+        //   Paradox Engine (experimental tempo faction) -> Fog Field, Trenchline (an
+        //     uncanny, half-real backdrop for its own machines); signature Fog Field.
+        //   Blightborn Pact (gas/rot) -> Fog Field, Ravaged Town (gas reads naturally over
+        //     both); signature Fog Field (their gas IS the fog).
+        private static readonly IReadOnlyList<string> DustScourgeHome = new[] { RavagedTown, WartornForest };
+        private static readonly IReadOnlyList<string> CartelHome = new[] { Trenchline, RavagedTown };
+        private static readonly IReadOnlyList<string> OathbornHome = new[] { WartornForest, FogField };
+        private static readonly IReadOnlyList<string> ParadoxHome = new[] { FogField, Trenchline };
+        private static readonly IReadOnlyList<string> BlightbornHome = new[] { FogField, RavagedTown };
         private static readonly IReadOnlyList<string> DefaultHome = new[] { Default };
 
         /// <summary>Home-theme set for an enemy pool; unknown/null pools get the default.</summary>
@@ -52,6 +73,11 @@ namespace DeadManZone.Core.Run
             "crimson_assembly" => CrimsonHome,
             "ashen_covenant" => WraithHome,
             "ironmarch_union" => IronmarchHome,
+            "dust_scourge" => DustScourgeHome,
+            "cartel_of_echoes" => CartelHome,
+            "oathborn_accord" => OathbornHome,
+            "paradox_engine" => ParadoxHome,
+            "blightborn_pact" => BlightbornHome,
             _ => DefaultHome
         };
 
@@ -61,6 +87,11 @@ namespace DeadManZone.Core.Run
             "neutral" => Trenchline,
             "crimson_assembly" => RavagedTown,
             "ashen_covenant" => FogField,
+            "dust_scourge" => RavagedTown,
+            "cartel_of_echoes" => Trenchline,
+            "oathborn_accord" => WartornForest,
+            "paradox_engine" => FogField,
+            "blightborn_pact" => FogField,
             _ => Default
         };
 

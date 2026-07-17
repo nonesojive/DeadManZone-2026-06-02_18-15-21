@@ -295,6 +295,21 @@ Three fronts per Build, **one of each tier** (tier = slot index):
 - Each front shows a **strength preview** and an **arena theme**.
 - **COMBAT is gated on choosing a front** — `BeginCombat` throws otherwise.
 
+> **Wave 5 (2026-07-17): the rotation is all 8 factions, not just IronMarch.** Every faction now
+> authors its own 10-fight enemy ladder (`Data/Editor/*EnemyFactory.cs` — e.g.
+> `DustScourgeEnemyFactory`, `CrimsonAssemblyEnemyFactory`), all fed into the same
+> `FightOptionArmySource` pool `FightOptionGenerator` rolls from (`RunOrchestrator.GenerateFightOptions`).
+> Each fight's three options can land on any faction's army within the ±1 `FightNumber` window —
+> a single round might offer an IronMarch Easy, a Dust Scourge Normal, and a Crimson Assembly Hard.
+> Because more than one faction now shares the same `FightNumber`, the chosen option's enemy board
+> is resolved with `ContentDatabase.GetEnemyTemplate(fightNumber, enemyFactionId)` (faction-aware) —
+> the older single-argument overload stays only as the pre-M2-save/legacy fallback and always
+> resolves to IronMarch's ladder (it's `FirstOrDefault` with no faction filter, and IronMarch's
+> templates are written first). Early fights (1-2) are green commons-only patrols per faction; each
+> faction's own Uncommons/Rares debut from roughly fight 5 onward, escalating to a fight-9/10
+> finale that stacks in that faction's signature rares (e.g. Crimson's two sanctioned rare tanks,
+> Ashen's Saint of the Embers doubling up). See each `*EnemyFactory.cs` class doc for the exact curve.
+
 > **The Easy front's hidden discount:** taking Easy **suppresses the enemy's fight-start engines
 > entirely** — no enemy synergies, no enemy Critical Mass (`TickCombatRun.cs:83-92`,
 > `suppressEnemyFightStartEngines`). It is far softer than "+1 Dread instead of +2" implies. This is
@@ -318,12 +333,26 @@ Three, fixed roster, seeded order. A boss replaces the front choice.
 
 | Boss | Faction | Twist |
 |---|---|---|
-| Militia Warden | neutral | `endless_muster` — all enemies **+30% HP** |
-| Crimson Marshal | crimson_legion | `iron_discipline` — all enemies **+1 armor step** |
-| Wraith Harbinger | ash_wraiths | `deathless_cold` — enemy **front rank +60% HP** |
+| Militia Warden | `neutral` | `endless_muster` — all enemies **+30% HP** |
+| Crimson Marshal | `crimson_assembly` | `iron_discipline` — all enemies **+1 armor step** |
+| Wraith Harbinger | `ashen_covenant` | `deathless_cold` — enemy **front rank +60% HP** |
 
 - Each has **3 stage loadouts** escalating with `BossesDefeated` — the same boss is harder later.
 - Twists and Battle Conditions share one `ICombatRuleModifier` seam, so a save stores one id.
+- **Faction ids corrected 2026-07-17 (Wave 5):** the retired enemy-only pools `crimson_legion` /
+  `ash_wraiths` (never had pieces of their own) were replaced by the playable `crimson_assembly` /
+  `ashen_covenant` back in Wave 2 (`BossRoster.cs`); this table just hadn't caught up.
+- **Boss-faction selection is still the smallest coherent rule, unchanged by the 8-faction
+  rotation:** exactly these 3 fixed boss identities exist, independent of which factions a given
+  round's Fight Options draw from. All 3 already name a faction present in the rotation
+  (`FactionIds.Playable`), so nothing further was needed to keep bosses "in-rotation."
+- **Wave 5:** Crimson Marshal's and Wraith Harbinger's stage loadouts are now built from
+  Crimson Assembly's and Ashen Covenant's **own** 12-piece rosters (they used to field
+  IronMarch/Neutral placeholder pieces — see `BossRoster.cs`'s pre-Wave-5 comment history).
+  Each boss's 3 stages introduce that faction's Uncommons then Rares as the escalation, mirroring
+  its own `*EnemyFactory.cs` enemy ladder (e.g. Crimson Marshal's stage 3 fields both of Crimson's
+  sanctioned rare tanks together). Militia Warden is untouched — it was already built from the
+  Neutral roster, which is correct for a `neutral`-pool boss.
 
 ---
 

@@ -41,7 +41,10 @@ namespace DeadManZone.Core.Tests
 
             _orchestrator.ChooseFightOption(1);
             var chosen = _orchestrator.State.FightOptions[1];
-            var template = _database.GetEnemyTemplate(chosen.TemplateFightNumber);
+            // Wave 5: faction-aware lookup — the single-arg overload is faction-blind and
+            // always resolves to IronMarch's template for a given fightNumber now that other
+            // factions share fight numbers too, so it no longer reflects what actually rolled.
+            var template = _database.GetEnemyTemplate(chosen.TemplateFightNumber, chosen.EnemyFactionId);
             Assert.IsNotNull(template, "chosen option's enemy template required.");
 
             _orchestrator.BeginCombat();

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b370e8ab04c19d043822dbe180de8c83, type: 3}
+  m_Name: fight_4
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.EnemyTemplateSO
+  fightNumber: 4
+  displayName: Payroll Escort
+  previewTag: Support
+  enemyFactionId: cartel_of_echoes
+  placements:
+  - piece: {fileID: 11400000, guid: 08bee075c3f873145af7caf5b624fe3f, type: 2}
+    anchor: {x: 4, y: 2}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 08bee075c3f873145af7caf5b624fe3f, type: 2}
+    anchor: {x: 2, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 08bee075c3f873145af7caf5b624fe3f, type: 2}
+    anchor: {x: 2, y: 2}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 8b592f27f73840f47bf26ea2d617d119, type: 2}
+    anchor: {x: 0, y: 2}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 4cab9104d5c1f1c4282082fc2e5c984b, type: 2}
+    anchor: {x: 4, y: 4}
+    instanceId: 

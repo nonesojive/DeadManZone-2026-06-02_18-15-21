@@ -50,7 +50,23 @@ namespace DeadManZone.Data.Editor
             var pieceArray = GenerateAllPieces();
             var factions = GenerateAllFactions();
 
-            var enemies = IronmarchEnemyFactory.CreateAll(pieceArray);
+            // Wave 5 (2026-07-17): IronMarch's array MUST come first — ContentDatabase.
+            // GetEnemyTemplate(int) (the single-arg legacy lookup, still used by
+            // GetEnemyTemplateForDifficulty's pre-M2-save fallback and by BalancePassTests'/
+            // VerticalSliceRegressionTests' IronMarch-specific goldens) is a plain
+            // FirstOrDefault over fightNumber with no faction filter, so whichever faction's
+            // fight_N template lands first in this combined array is what it resolves to.
+            // Every other call site that needs a SPECIFIC faction's template already uses the
+            // faction-aware ContentDatabase.GetEnemyTemplate(int, string) overload.
+            var enemies = IronmarchEnemyFactory.CreateAll(pieceArray)
+                .Concat(DustScourgeEnemyFactory.CreateAll(pieceArray))
+                .Concat(CartelOfEchoesEnemyFactory.CreateAll(pieceArray))
+                .Concat(OathbornAccordEnemyFactory.CreateAll(pieceArray))
+                .Concat(ParadoxEngineEnemyFactory.CreateAll(pieceArray))
+                .Concat(BlightbornPactEnemyFactory.CreateAll(pieceArray))
+                .Concat(CrimsonAssemblyEnemyFactory.CreateAll(pieceArray))
+                .Concat(AshenCovenantEnemyFactory.CreateAll(pieceArray))
+                .ToArray();
 
             // Written TWICE deliberately, with a full flush between: observed in testing, a
             // single SerializedObject write of the ContentDatabase's `factions` array right

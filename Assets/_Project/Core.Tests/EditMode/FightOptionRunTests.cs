@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core;
+using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Run;
@@ -198,7 +199,16 @@ namespace DeadManZone.Core.Tests
             string before = Fingerprint(orchestrator.State.FightOptions);
             orchestrator.ChooseFightOption(1);
 
-            // Empty combat board: a deterministic loss.
+            // Wave 5 (2026-07-17): StartNewRun always pre-places the faction's starting kit
+            // (ApplyStartingLoadout) — the board is never truly empty by default, it just
+            // reliably lost to whichever single-faction enemy the pre-rotation pool always
+            // rolled. Now that Fight Options draw from all 8 factions, this fixed seed can land
+            // on a genuinely weak early template (e.g. Ashen Covenant's glass-cannon fight-1
+            // pair) that the starting kit alone can beat — so the deterministic loss this test
+            // needs must be forced explicitly rather than assumed from the default board.
+            orchestrator.SaveCombatBoard(new BoardState(
+                BoardLayout.CreateCombatBoard(orchestrator.Faction.combatBoardSize)));
+
             bool won = RunFightToCompletion(orchestrator, chooseIfUnchosen: false);
             Assert.IsFalse(won);
 

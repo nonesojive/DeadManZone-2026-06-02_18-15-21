@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core;
@@ -84,6 +85,35 @@ namespace DeadManZone.Data
 
             int index = (fightNumber - 1) % sorted.Length;
             return sorted[index];
+        }
+
+        /// <summary>Faction-aware lookup — Wave 5 (2026-07-17): once more than one faction's
+        /// enemy templates share the same fightNumber, <see cref="GetEnemyTemplate(int)"/>'s
+        /// plain FirstOrDefault can no longer tell which pool a Fight Option actually rolled;
+        /// every call site that already knows the chosen option's/boss's EnemyFactionId
+        /// (RunOrchestrator.GetOptionEnemyBoard/BeginCombat/GetNextEnemyPreviewTag) must use
+        /// this overload instead. Falls back to the plain lookup if the faction has no
+        /// templates of its own (keeps legacy/partial content working).</summary>
+        public EnemyTemplateSO GetEnemyTemplate(int fightNumber, string enemyFactionId)
+        {
+            if (string.IsNullOrEmpty(enemyFactionId))
+                return GetEnemyTemplate(fightNumber);
+
+            var ofFaction = enemyTemplates
+                .Where(e => e != null && e.enemyFactionId == enemyFactionId)
+                .ToArray();
+            if (ofFaction.Length == 0)
+                return GetEnemyTemplate(fightNumber);
+
+            var exact = ofFaction.FirstOrDefault(e => e.fightNumber == fightNumber);
+            if (exact != null)
+                return exact;
+
+            // Nearest fight number WITHIN the same faction — never cross pools.
+            return ofFaction
+                .OrderBy(e => Math.Abs(e.fightNumber - fightNumber))
+                .ThenBy(e => e.fightNumber)
+                .First();
         }
 
         public static ContentDatabase Load()

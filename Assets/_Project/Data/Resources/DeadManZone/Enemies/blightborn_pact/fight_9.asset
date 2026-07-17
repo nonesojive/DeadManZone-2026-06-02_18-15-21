@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b370e8ab04c19d043822dbe180de8c83, type: 3}
+  m_Name: fight_9
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.EnemyTemplateSO
+  fightNumber: 9
+  displayName: The Vitriol Throne
+  previewTag: Boss
+  enemyFactionId: blightborn_pact
+  placements:
+  - piece: {fileID: 11400000, guid: bab38eec0c0bb7846a913a32f2cb3372, type: 2}
+    anchor: {x: 4, y: 2}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: bab38eec0c0bb7846a913a32f2cb3372, type: 2}
+    anchor: {x: 2, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: bab38eec0c0bb7846a913a32f2cb3372, type: 2}
+    anchor: {x: 2, y: 2}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 3c3f59c64179672468a35862ecfc07f7, type: 2}
+    anchor: {x: 0, y: 2}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: d41262b3290cee24bb5e5710da664a0b, type: 2}
+    anchor: {x: 4, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 2de314f3f058deb4db22a7dfc599ec81, type: 2}
+    anchor: {x: 0, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: f257210c1a524c743a4fef59cdc451ed, type: 2}
+    anchor: {x: 4, y: 0}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 900bc48e4b7361d4a93bb47b92d65e50, type: 2}
+    anchor: {x: 2, y: 0}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 4d906df3e10abd64ca829a8ed4598376, type: 2}
+    anchor: {x: 0, y: 0}
+    instanceId: 

@@ -160,14 +160,26 @@ namespace DeadManZone.Data.Editor
             };
         }
 
+        /// <summary>
+        /// <paramref name="folder"/> (Wave 5, 2026-07-17): when null, writes IronMarch's
+        /// original path (Enemies/fight_{n}.asset) unchanged — no consumer keys off asset
+        /// PATH (ContentDatabase.enemyTemplates is a serialized object-reference array, not a
+        /// folder scan), so this is purely organizational. Other factions pass their factionId
+        /// to land at Enemies/{factionId}/fight_{n}.asset so 8 factions' fight_N assets don't
+        /// collide on disk.
+        /// </summary>
         internal static EnemyTemplateSO SaveEnemy(
             int fightNumber,
             string displayName,
             string previewTag,
             string enemyFactionId,
-            EnemyPiecePlacement[] placements)
+            EnemyPiecePlacement[] placements,
+            string folder = null)
         {
-            var path = $"{Root}/Enemies/fight_{fightNumber}.asset";
+            var enemiesRoot = string.IsNullOrEmpty(folder) ? $"{Root}/Enemies" : $"{Root}/Enemies/{folder}";
+            if (!string.IsNullOrEmpty(folder))
+                EnsureFolder(enemiesRoot);
+            var path = $"{enemiesRoot}/fight_{fightNumber}.asset";
             var asset = LoadOrCreate<EnemyTemplateSO>(path);
             asset.fightNumber = fightNumber;
             asset.displayName = displayName;

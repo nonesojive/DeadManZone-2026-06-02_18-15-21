@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b370e8ab04c19d043822dbe180de8c83, type: 3}
+  m_Name: fight_9
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.EnemyTemplateSO
+  fightNumber: 9
+  displayName: The Exarch's Crusade
+  previewTag: Boss
+  enemyFactionId: oathborn_accord
+  placements:
+  - piece: {fileID: 11400000, guid: 7c49fd6675eb9eb4c901bd94a5652366, type: 2}
+    anchor: {x: 4, y: 2}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 7c49fd6675eb9eb4c901bd94a5652366, type: 2}
+    anchor: {x: 2, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 7c49fd6675eb9eb4c901bd94a5652366, type: 2}
+    anchor: {x: 2, y: 2}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 3bac635782bd5084ba062b414a2b6334, type: 2}
+    anchor: {x: 0, y: 2}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: c9307df803ba40742b09ba792b1f24dd, type: 2}
+    anchor: {x: 4, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: e6da3c082015cfc4786e9a959e8e0da4, type: 2}
+    anchor: {x: 0, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 7e3b429c39884124f82ba07e65d677b1, type: 2}
+    anchor: {x: 4, y: 0}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 7d768615adc226a41a1cd712b9de41ce, type: 2}
+    anchor: {x: 2, y: 0}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 3ac6584c57197b8468a654ff2444be6e, type: 2}
+    anchor: {x: 0, y: 0}
+    instanceId: 

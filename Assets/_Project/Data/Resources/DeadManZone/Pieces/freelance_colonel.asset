@@ -64,7 +64,7 @@ MonoBehaviour:
   hijacksAmbientGas: 0
   addsPauseWindow: 0
   repeatsPauseAbilities: 0
-  icon: {fileID: 21300000, guid: 114e3d2751297bc4eb9750e84ed98632, type: 3}
+  icon: {fileID: 0}
   categoryTint: {r: 0.29999998, g: 0.42, b: 0.70000005, a: 1}
   cellSprites: []
   catalogAbilities: []

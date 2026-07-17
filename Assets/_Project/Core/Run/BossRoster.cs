@@ -48,10 +48,7 @@ namespace DeadManZone.Core.Run
     /// board; BuildStageBoard throws on any illegal placement, and BalancePassTests
     /// builds every stage). 2026-07-15 faction-roster-v1 Wave 2: crimson_legion /
     /// ash_wraiths (enemy-only pools, never had pieces of their own) are retired;
-    /// Crimson Assembly and Ashen Covenant now own the same two boss slots. Their
-    /// armies are still IronMarch/Neutral-piece fallback compositions — rebuilding
-    /// these loadouts from the new factions' own rosters is explicitly W5 scope
-    /// ("Enemy templates + bosses + rotation"), not touched here.
+    /// Crimson Assembly and Ashen Covenant now own the same two boss slots.
     /// 2026-07-15 faction-roster-v1: piece ids updated to the new Neutral/IronMarch
     /// roster (conscript_rifleman→conscript_rifles, enlisted_rifleman→shock_sergeant,
     /// bulwark_squad→iron_guard, ironclad_mortars→field_mortar_team,
@@ -59,12 +56,31 @@ namespace DeadManZone.Core.Run
     /// forward_observer, ironmarch_iron_horse→breakthrough_tank). Footprints were
     /// chosen 1:1 with the old shapes so these hand-authored anchors keep landing
     /// unchanged — see IronmarchUnionContentFactory.Pieces.cs PROVISIONAL notes.
+    ///
+    /// Wave 5 (2026-07-17): Crimson Marshal and Wraith Harbinger's loadouts are
+    /// rebuilt from Crimson Assembly's and Ashen Covenant's OWN 12-piece rosters
+    /// (previously IronMarch/Neutral fallback pieces, flagged above as W5 scope —
+    /// now done). Boss-faction selection is UNCHANGED and stays the smallest
+    /// coherent rule: 3 fixed boss identities (neutral / crimson_assembly /
+    /// ashen_covenant), each already a faction present in the Fight Option rotation
+    /// (FactionIds.Playable / ContentDatabase.PlayableFactionIds), so "the boss you
+    /// meet matches a faction present in the rotation" falls out for free — no new
+    /// per-faction boss needed for the other 5 factions; BossRoster stays a run-clock
+    /// concept (3 Dread thresholds), separate from the 8-faction fight rotation.
+    /// Anchors reuse EnemyTemplateAnchors' 9-slot grid (see that class's doc comment
+    /// for the collision-avoidance invariant) so these loadouts are trivially legal
+    /// and each stage is a strict superset of the previous (guarantees the strictly
+    /// increasing EffectiveTotal BalancePassTests.BossStages_* requires).
     /// </summary>
     public static class BossRoster
     {
         public const string MilitiaWarden = "boss_militia_warden";
         public const string CrimsonMarshal = "boss_crimson_marshal";
         public const string WraithHarbinger = "boss_wraith_harbinger";
+
+        // EnemyTemplateAnchors' 9-slot grid, duplicated here as plain ints (Core/Run cannot
+        // reference Data/Editor — that assembly is editor-only and Core must stay Unity-clean).
+        // P1=(0,0) P2=(2,0) P3=(4,0) P4=(0,2) P5=(2,2) P6=(4,2) P7=(0,4) P8=(2,4) P9=(4,4).
 
         public static readonly IReadOnlyList<BossDefinition> All = new[]
         {
@@ -104,29 +120,33 @@ namespace DeadManZone.Core.Run
                 EnemyFactionId = FactionIds.CrimsonAssembly,
                 DisplayName = "Crimson Marshal",
                 TwistId = TwistCatalog.IronDiscipline,
+                // Wave 5: rebuilt from Crimson Assembly's own roster (was IronMarch/Neutral
+                // fallback pieces). Mirrors CrimsonAssemblyEnemyFactory's fights 5→7→9 —
+                // suppression teams and the assembly line, then Fire-Plan Officer/Scout
+                // Tankette join, then the Marshal fields BOTH sanctioned rare tanks
+                // (§1.6's "two rare tanks is a sanctioned archetype stack") as her finale.
+                // Anchors are 9 distinct slots from EnemyTemplateAnchors' grid (max one
+                // piece per slot) — each stage is a strict superset of the last.
                 StageLoadouts = new IReadOnlyList<BossStagePlacement>[]
                 {
-                    // ≈ fight 4-5: assault veterans behind a gun nest.
+                    // ≈ fight 4-5: suppression teams behind the assembly line.
                     Loadout(
-                        P("conscript_rifles", 4, 4), P("conscript_rifles", 5, 4),
-                        P("shock_sergeant", 3, 5), P("iron_guard", 5, 5),
-                        P("machine_gun_nest", 0, 4)),
-                    // ≈ fight 5-6: armor joins the push.
+                        P("suppression_team", 4, 2), P("suppression_team", 2, 4),
+                        P("assembly_trooper", 2, 2), P("ballistics_analyst", 0, 2)),
+                    // ≈ fight 6-7: hazmat vanguard, Fire-Plan Officer, and the Scout Tankette join.
                     Loadout(
-                        P("conscript_rifles", 3, 4), P("conscript_rifles", 5, 4),
-                        P("field_medic", 4, 5), P("machine_gun_nest", 0, 4),
-                        P("shock_sergeant", 3, 5), P("iron_guard", 5, 5),
-                        P("breakthrough_tank", 2, 0)),
-                    // ≈ fight 8: the legion in battle order behind its armor.
-                    // Balance pass 2026-07-12: dropped the field marshal — the Marshal
-                    // IS the commander; the iron horse stays because armor is the
-                    // legion's identity.
+                        P("suppression_team", 4, 2), P("suppression_team", 2, 4),
+                        P("assembly_trooper", 2, 2), P("ballistics_analyst", 0, 2),
+                        P("hazmat_vanguard", 4, 4), P("fire_plan_officer", 0, 4),
+                        P("scout_tankette", 4, 0)),
+                    // ≈ fight 8-9: both sanctioned rare tanks debut together — the
+                    // Marshal's clinical-optimization doctrine at full strength.
                     Loadout(
-                        P("conscript_rifles", 3, 4), P("conscript_rifles", 4, 4),
-                        P("conscript_rifles", 5, 4), P("field_medic", 2, 5),
-                        P("machine_gun_nest", 0, 4), P("shock_sergeant", 3, 5),
-                        P("iron_guard", 5, 5), P("field_mortar_team", 0, 0),
-                        P("breakthrough_tank", 2, 0))
+                        P("suppression_team", 4, 2), P("suppression_team", 2, 4),
+                        P("assembly_trooper", 2, 2), P("ballistics_analyst", 0, 2),
+                        P("hazmat_vanguard", 4, 4), P("fire_plan_officer", 0, 4),
+                        P("scout_tankette", 4, 0), P("vanquisher_doctrine_tank", 0, 0),
+                        P("stiller_suppression_platform", 2, 0))
                 }
             },
             new BossDefinition
@@ -135,28 +155,31 @@ namespace DeadManZone.Core.Run
                 EnemyFactionId = FactionIds.AshenCovenant,
                 DisplayName = "Wraith Harbinger",
                 TwistId = TwistCatalog.DeathlessCold,
+                // Wave 5: rebuilt from Ashen Covenant's own roster (was IronMarch/Neutral
+                // fallback pieces). Mirrors AshenCovenantEnemyFactory's fights 5→7→9 — the
+                // fanatic swarm, then Reliquary Bearer/Firebrand Vicar join, then Saint of
+                // the Embers and The Ash Martyr headline the final host. Each stage is a
+                // strict superset of the last.
                 StageLoadouts = new IReadOnlyList<BossStagePlacement>[]
                 {
-                    // ≈ fight 4: a thin line screened by a marksman.
+                    // ≈ fight 4-5: a thin line of ash acolytes screened by a hymnal leader.
                     Loadout(
-                        P("conscript_rifles", 3, 4), P("conscript_rifles", 4, 4),
-                        P("conscript_rifles", 5, 4), P("field_medic", 4, 5),
-                        P("marksman_doctrine_officer", 1, 5)),
-                    // ≈ fight 5-6: long guns behind the line.
+                        P("ash_acolyte", 4, 2), P("ash_acolyte", 2, 4),
+                        P("torchbearer", 2, 2), P("hymnal_leader", 0, 2)),
+                    // ≈ fight 6-7: the penitent line holds while Reliquary Bearer and
+                    // Firebrand Vicar strengthen the fanatics.
                     Loadout(
-                        P("conscript_rifles", 3, 4), P("conscript_rifles", 4, 4),
-                        P("conscript_rifles", 5, 4), P("field_medic", 4, 5),
-                        P("machine_gun_nest", 0, 4), P("marksman_doctrine_officer", 1, 5),
-                        P("field_mortar_team", 0, 0)),
-                    // ≈ fight 7-8: the cold host — long guns and a screen. Balance
-                    // pass 2026-07-12: dropped the iron horse; wraiths field ghosts
-                    // and rifles, not armor, and stage 3 ran too hot with it.
+                        P("ash_acolyte", 4, 2), P("ash_acolyte", 2, 4),
+                        P("torchbearer", 2, 2), P("hymnal_leader", 0, 2),
+                        P("penitent", 4, 4), P("reliquary_bearer", 0, 4),
+                        P("firebrand_vicar", 2, 0)),
+                    // ≈ fight 8-9: the Saint and the Martyr lead the revolution of cinders.
                     Loadout(
-                        P("conscript_rifles", 3, 4), P("conscript_rifles", 5, 4),
-                        P("field_medic", 2, 5), P("machine_gun_nest", 0, 4),
-                        P("shock_sergeant", 3, 5), P("iron_guard", 5, 5),
-                        P("field_mortar_team", 0, 0), P("marksman_doctrine_officer", 1, 5),
-                        P("forward_observer", 4, 4))
+                        P("ash_acolyte", 4, 2), P("ash_acolyte", 2, 4),
+                        P("torchbearer", 2, 2), P("hymnal_leader", 0, 2),
+                        P("penitent", 4, 4), P("reliquary_bearer", 0, 4),
+                        P("firebrand_vicar", 2, 0), P("saint_of_the_embers", 0, 0),
+                        P("the_ash_martyr", 4, 0))
                 }
             }
         };

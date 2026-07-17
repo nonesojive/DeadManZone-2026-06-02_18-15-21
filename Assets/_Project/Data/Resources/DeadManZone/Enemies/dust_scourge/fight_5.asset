@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b370e8ab04c19d043822dbe180de8c83, type: 3}
+  m_Name: fight_5
+  m_EditorClassIdentifier: DeadManZone.Data::DeadManZone.Data.EnemyTemplateSO
+  fightNumber: 5
+  displayName: Raid Captain's Muster
+  previewTag: Command
+  enemyFactionId: dust_scourge
+  placements:
+  - piece: {fileID: 11400000, guid: 710a1e21819e6ba46abf45290726d903, type: 2}
+    anchor: {x: 4, y: 2}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 710a1e21819e6ba46abf45290726d903, type: 2}
+    anchor: {x: 2, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 710a1e21819e6ba46abf45290726d903, type: 2}
+    anchor: {x: 2, y: 2}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 684b2ea8b29b1ca4ca23e62af4898bbf, type: 2}
+    anchor: {x: 0, y: 2}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: 3d642b651d46daf4ebac723f0a434cf3, type: 2}
+    anchor: {x: 4, y: 4}
+    instanceId: 
+  - piece: {fileID: 11400000, guid: f068194972b9c1943a1cdce800e4de03, type: 2}
+    anchor: {x: 0, y: 4}
+    instanceId: 

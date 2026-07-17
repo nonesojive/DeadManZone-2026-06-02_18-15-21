@@ -282,7 +282,8 @@ namespace DeadManZone.Game
             if (State?.FightOptions == null || index < 0 || index >= State.FightOptions.Count)
                 return null;
 
-            var template = _content.GetEnemyTemplate(State.FightOptions[index].TemplateFightNumber);
+            var option = State.FightOptions[index];
+            var template = _content.GetEnemyTemplate(option.TemplateFightNumber, option.EnemyFactionId);
             return template?.BuildBoard(Faction, _registry);
         }
 
@@ -335,7 +336,7 @@ namespace DeadManZone.Game
                 // Legacy fallback: a v9 save from before M2 has no options for the
                 // round already in progress — fight the Dread-difficulty template.
                 var enemyTemplate = chosenOption != null
-                    ? _content.GetEnemyTemplate(chosenOption.TemplateFightNumber)
+                    ? _content.GetEnemyTemplate(chosenOption.TemplateFightNumber, chosenOption.EnemyFactionId)
                     : GetEnemyTemplateForDifficulty();
                 if (enemyTemplate == null)
                     throw new InvalidOperationException($"No enemy template for fight {State.FightIndex}.");
@@ -624,7 +625,7 @@ namespace DeadManZone.Game
 
             var chosen = GetChosenOption();
             if (chosen != null)
-                return _content.GetEnemyTemplate(chosen.TemplateFightNumber)?.previewTag;
+                return _content.GetEnemyTemplate(chosen.TemplateFightNumber, chosen.EnemyFactionId)?.previewTag;
 
             var next = GetEnemyTemplateForDifficulty();
             return next?.previewTag;
