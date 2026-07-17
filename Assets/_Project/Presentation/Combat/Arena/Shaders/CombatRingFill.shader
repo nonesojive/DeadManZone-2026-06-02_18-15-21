@@ -14,6 +14,11 @@ Shader "DMZ/CombatRingFill"
         _EmptyColor ("Drained Color", Color) = (0.09, 0.10, 0.12, 1)
         _Fill ("Health Fill", Range(0, 1)) = 1
         _Gutter ("Morale Gutter (0 solid - 1 breaking)", Range(0, 1)) = 0
+        // Wave 3 placeholder-art pass (2026-07-17): subtle per-faction rim accent so
+        // same-side enemies from different factions are tellable apart at a glance.
+        // Weight 0 = no-op (existing side-color rim, unchanged for anyone not setting it).
+        _FactionTint ("Faction Accent Tint", Color) = (0, 0, 0, 0)
+        _FactionTintWeight ("Faction Accent Weight", Range(0, 1)) = 0
         _DiscRadius ("Disc Radius (UV)", Range(0.1, 0.5)) = 0.40
         _RimInnerRadius ("Rim Inner Radius (UV)", Range(0.1, 0.5)) = 0.435
         _RimOuterRadius ("Rim Outer Radius (UV)", Range(0.1, 0.5)) = 0.48
@@ -43,6 +48,8 @@ Shader "DMZ/CombatRingFill"
                 float _DiscRadius;
                 float _RimInnerRadius;
                 float _RimOuterRadius;
+                float4 _FactionTint;
+                float _FactionTintWeight;
             CBUFFER_END
 
             struct Attributes { float4 positionOS : POSITION; float2 uv : TEXCOORD0; };
@@ -68,6 +75,10 @@ Shader "DMZ/CombatRingFill"
                 // purpose: shape/flicker only, hue untouched (audit spec 2026-07-14 section 2.1).
                 if (r >= _RimInnerRadius)
                 {
+                    // Faction accent: subtle hue shift on the side-color rim so two enemy
+                    // factions sharing the same side (red) still read apart. Weight 0 (default)
+                    // reproduces the old flat _RimColor exactly.
+                    float3 rimBase = lerp(_RimColor.rgb, _FactionTint.rgb, _FactionTintWeight * _FactionTint.a);
                     if (_Gutter > 0.001)
                     {
                         float ang = atan2(d.y, d.x);
@@ -79,7 +90,7 @@ Shader "DMZ/CombatRingFill"
                         if (n < _Gutter * 1.2 - 1.0)
                             return half4(_EmptyColor.rgb, 1);
                     }
-                    return half4(_RimColor.rgb, 1);
+                    return half4(rimBase, 1);
                 }
 
                 // Thin dark separator so the rim still reads against a full disc.

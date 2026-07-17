@@ -34,9 +34,15 @@ namespace DeadManZone.Presentation.Combat.Arena
         [SerializeField] private CombatArmyHealthHud armyHud;
         [SerializeField] private int combatSeed = 20260711;
         [Tooltip("ContentDatabase piece ids, one per unit. Optional ':Ability' suffix (testing aid) overrides the piece's grantedAbility via a runtime SO clone; assets untouched. Content ships real grants (armored_transport: ShieldAllies, ironclad_mortars: MortarShot), so the defaults are plain ids.")]
-        [SerializeField] private string[] playerRoster = { "conscript_rifles", "iron_guard", "field_mortar_team" };
-        // Showcase default: the three new Meshy faces (marksman/field marshal/surgeon) on the enemy side.
-        [SerializeField] private string[] enemyRoster = { "sharpshooter", "shock_sergeant", "militia_squad" };
+        // 2026-07-17 Wave 3 temp-art verification: vanquisher_doctrine_tank has no Meshy model
+        // yet (Combat3DDemoSceneBootstrap.PrimitiveFallbackUnits) — swapped in for iron_guard
+        // to confirm the grey-box primitive renders at the right footprint/height in Play mode.
+        [SerializeField] private string[] playerRoster = { "conscript_rifles", "vanquisher_doctrine_tank", "field_mortar_team" };
+        // Showcase default: the three new Meshy faces (marksman/field marshal/surgeon) on the
+        // enemy side. assembly_trooper (Crimson Assembly, assault role, no model of its own)
+        // swapped in for militia_squad to confirm humanoid-reuse (-> conscript_rifles folder)
+        // and the faction ring-tint accent both render correctly.
+        [SerializeField] private string[] enemyRoster = { "sharpshooter", "shock_sergeant", "assembly_trooper" };
         [Tooltip("Command pauses open the interactive tactics window. Off = the old auto path (no commands, pause beat between segments).")]
         [SerializeField] private bool interactivePauses = true;
         [Tooltip("Authority budget for the fight's command pauses (the real flow feeds this from the run's round pool).")]

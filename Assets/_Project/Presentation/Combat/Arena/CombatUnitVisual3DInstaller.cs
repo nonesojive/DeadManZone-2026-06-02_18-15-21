@@ -1,4 +1,5 @@
 using System;
+using DeadManZone.Core;
 using DeadManZone.Core.Combat;
 using DeadManZone.Data;
 using UnityEngine;
@@ -72,6 +73,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             var model = unitModel;
             var controller = animatorController;
+            var factionTint = ResolveFactionTint(piece);
             if (piece != null && archetypes != null)
             {
                 for (int i = 0; i < archetypes.Length; i++)
@@ -88,7 +90,8 @@ namespace DeadManZone.Presentation.Combat.Arena
                             side == CombatSide.Player ? playerUnitMaterial : enemyUnitMaterial,
                             side == CombatSide.Player ? playerRingMaterial : enemyRingMaterial,
                             archetypes[i].vehicleHeight > 0f ? archetypes[i].vehicleHeight : unitHeight,
-                            archetypes[i].vehicleYawOffsetDegrees);
+                            archetypes[i].vehicleYawOffsetDegrees,
+                            factionTint);
                         return vehicleVisual;
                     }
 
@@ -125,8 +128,37 @@ namespace DeadManZone.Presentation.Combat.Arena
                 side == CombatSide.Player ? playerRingMaterial : enemyRingMaterial,
                 riflePrefab,
                 unitHeight,
-                modelYawOffsetDegrees);
+                modelYawOffsetDegrees,
+                factionTint);
             return visual;
+        }
+
+        /// <summary>Faction accent color for the ring rim (Wave 3 placeholder-art pass):
+        /// prefers the faction's authored tokenBackgroundColor, falls back to the same
+        /// palette PieceArtResolver uses for board chips so the two stay visually related.
+        /// Deliberately independent of UiThemeProvider (unlike PieceArtResolver) — the
+        /// Combat3D scenes can build a unit before any shop UI has initialized a theme.</summary>
+        private static Color ResolveFactionTint(PieceDefinitionSO piece)
+        {
+            if (piece == null || string.IsNullOrWhiteSpace(piece.factionId) || piece.factionId == "neutral")
+                return Color.clear;
+
+            var faction = ContentDatabase.Load()?.GetFaction(piece.factionId);
+            if (faction != null && faction.tokenBackgroundColor.a > 0.01f)
+                return faction.tokenBackgroundColor;
+
+            return piece.factionId switch
+            {
+                FactionIds.IronmarchUnion => new Color(0.22f, 0.28f, 0.38f, 0.45f),
+                FactionIds.DustScourge => new Color(0.42f, 0.34f, 0.24f, 0.45f),
+                FactionIds.CartelOfEchoes => new Color(0.32f, 0.26f, 0.42f, 0.45f),
+                FactionIds.CrimsonAssembly => new Color(0.45f, 0.20f, 0.18f, 0.45f),
+                FactionIds.AshenCovenant => new Color(0.28f, 0.28f, 0.30f, 0.45f),
+                FactionIds.OathbornAccord => new Color(0.42f, 0.36f, 0.18f, 0.45f),
+                FactionIds.ParadoxEngine => new Color(0.20f, 0.34f, 0.40f, 0.45f),
+                FactionIds.BlightbornPact => new Color(0.24f, 0.38f, 0.20f, 0.45f),
+                _ => Color.clear
+            };
         }
     }
 }

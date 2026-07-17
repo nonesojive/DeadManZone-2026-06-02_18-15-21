@@ -43,6 +43,13 @@ namespace DeadManZone.Presentation.Combat.Arena
         private static readonly int DissolveId = Shader.PropertyToID("_DissolveAmount");
         private static readonly int RingFillId = Shader.PropertyToID("_Fill");
         private static readonly int RingGutterId = Shader.PropertyToID("_Gutter");
+        private static readonly int FactionTintId = Shader.PropertyToID("_FactionTint");
+        private static readonly int FactionTintWeightId = Shader.PropertyToID("_FactionTintWeight");
+
+        // Wave 3 placeholder-art pass: subtle per-faction rim accent (CombatRingFill's
+        // _FactionTint/_FactionTintWeight) so same-side enemies from different factions are
+        // tellable apart. Kept low so the side color (blue/red) stays dominant.
+        private const float FactionTintWeight = 0.35f;
 
         // Phase 0 verdict 2: the morale gutter (achromatic rim flicker) reads fine even at
         // the louder 0.7/1.0 bands from the crowd captures, but the runtime driver stays on
@@ -102,6 +109,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private float _ringTargetFill = 1f;
         private float _ringDisplayedFill = 1f;
         private float _ringGutter;
+        private Color _factionTint = Color.clear;
         private float _visualHeight = 1.7f;
         private float _dieClipSeconds = FallbackDieClipSeconds;
         private float _yawOffsetDegrees;
@@ -230,13 +238,15 @@ namespace DeadManZone.Presentation.Combat.Arena
             Material ringMaterial,
             GameObject riflePrefab,
             float targetHeight,
-            float yawOffsetDegrees)
+            float yawOffsetDegrees,
+            Color factionTint = default)
         {
             Clear();
 
             if (modelSource == null)
                 return;
 
+            _factionTint = factionTint;
             _yawOffsetDegrees = yawOffsetDegrees;
             _visualHeight = Mathf.Max(0.5f, targetHeight);
 
@@ -504,6 +514,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _ringTargetFill = 1f;
             _ringDisplayedFill = 1f;
             _ringGutter = 0f;
+            _factionTint = Color.clear;
             _animator = null;
             _renderers.Clear();
             _spineBone = null;
@@ -1034,6 +1045,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             _ringRenderer.GetPropertyBlock(_ringMpb);
             _ringMpb.SetFloat(RingFillId, _ringDisplayedFill);
             _ringMpb.SetFloat(RingGutterId, _ringGutter);
+            _ringMpb.SetColor(FactionTintId, _factionTint);
+            _ringMpb.SetFloat(FactionTintWeightId, _factionTint.a > 0.001f ? FactionTintWeight : 0f);
             _ringRenderer.SetPropertyBlock(_ringMpb);
         }
 

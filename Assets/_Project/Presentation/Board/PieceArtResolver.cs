@@ -78,6 +78,13 @@ namespace DeadManZone.Presentation.Board
                 FactionIds.CartelOfEchoes => new Color(0.32f, 0.26f, 0.42f, 0.45f),
                 FactionIds.CrimsonAssembly => new Color(0.45f, 0.20f, 0.18f, 0.45f),
                 FactionIds.AshenCovenant => new Color(0.28f, 0.28f, 0.30f, 0.45f),
+                // Wave 3 placeholder-art pass (2026-07-17): these three factions' FactionSO
+                // assets never got a tokenBackgroundColor authored (still {0,0,0,0}), so this
+                // switch was the only place their board-chip/ring color was actually falling
+                // through to neutral gray. Filled in for the same reason as the five above.
+                FactionIds.OathbornAccord => new Color(0.42f, 0.36f, 0.18f, 0.45f),
+                FactionIds.ParadoxEngine => new Color(0.20f, 0.34f, 0.40f, 0.45f),
+                FactionIds.BlightbornPact => new Color(0.24f, 0.38f, 0.20f, 0.45f),
                 _ => neutralFallback
             };
         }

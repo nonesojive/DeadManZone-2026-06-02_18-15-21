@@ -41,6 +41,12 @@ namespace DeadManZone.Presentation.Combat.Arena
         private static readonly int DissolveId = Shader.PropertyToID("_DissolveAmount");
         private static readonly int RingFillId = Shader.PropertyToID("_Fill");
         private static readonly int RingGutterId = Shader.PropertyToID("_Gutter");
+        private static readonly int FactionTintId = Shader.PropertyToID("_FactionTint");
+        private static readonly int FactionTintWeightId = Shader.PropertyToID("_FactionTintWeight");
+
+        // Wave 3 placeholder-art pass: same subtle per-faction rim accent as the humanoid
+        // visual (CombatUnitVisual3D) — see that class for the rationale.
+        private const float FactionTintWeight = 0.35f;
 
         // Phase 0 verdict 2 — same subtle cap as the humanoid visual (CombatUnitVisual3D).
         private const float MoraleGutterMaxIntensity = 0.35f;
@@ -55,6 +61,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private float _ringTargetFill = 1f;
         private float _ringDisplayedFill = 1f;
         private float _ringGutter;
+        private Color _factionTint = Color.clear;
 
         private float _visualHeight = 2.2f;
         private float _yawOffsetDegrees;
@@ -175,13 +182,15 @@ namespace DeadManZone.Presentation.Combat.Arena
             Material unitMaterial,
             Material ringMaterial,
             float targetHeight,
-            float yawOffsetDegrees)
+            float yawOffsetDegrees,
+            Color factionTint = default)
         {
             Clear();
 
             if (modelSource == null)
                 return;
 
+            _factionTint = factionTint;
             _visualHeight = Mathf.Max(0.5f, targetHeight);
 
             var rootGo = new GameObject("VehicleModelRoot3D");
@@ -335,6 +344,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             _ringTargetFill = 1f;
             _ringDisplayedFill = 1f;
             _ringGutter = 0f;
+            _factionTint = Color.clear;
             _renderers.Clear();
             _walking = false;
             _dying = false;
@@ -556,6 +566,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             _ringRenderer.GetPropertyBlock(_ringMpb);
             _ringMpb.SetFloat(RingFillId, _ringDisplayedFill);
             _ringMpb.SetFloat(RingGutterId, _ringGutter);
+            _ringMpb.SetColor(FactionTintId, _factionTint);
+            _ringMpb.SetFloat(FactionTintWeightId, _factionTint.a > 0.001f ? FactionTintWeight : 0f);
             _ringRenderer.SetPropertyBlock(_ringMpb);
         }
     }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DeadManZone.Core.Board;
 using DeadManZone.Data;
 using DeadManZone.Presentation.Combat;
 using DeadManZone.Presentation.Combat.Arena;
@@ -56,8 +57,32 @@ namespace DeadManZone.Presentation.Editor
             ("iron_guard", "iron_guard"),
             ("forward_observer", "forward_observer"),
             ("shock_sergeant", "shock_sergeant"),
-            ("marksman_doctrine_officer", "marksman_doctrine_officer"),
+            // marksman_doctrine_officer has no model folder of its own (never got a
+            // §7.2 regen pass) — it's picked up by BuildHumanoidReuseArchetypes below
+            // via its sniper combatRole, same as every other faction's modelless humanoid.
         };
+
+        // 2026-07-17 Wave 3 (temp-art pass, faction-roster-v1 §11): every faction's roster
+        // beyond IronMarch/neutral still has zero dedicated models. Rather than hand-list
+        // ~55 (folder, pieceId) tuples, every modelless combat-eligible humanoid piece
+        // (PieceCategory.Unit, primary "infantry") is assigned the closest-role existing
+        // model by its combatRole tag. One controller/clip set is built PER FOLDER (not per
+        // piece) and shared across every piece mapped to it — building it per-piece would
+        // re-run SaveClipCopy/CreateAnimatorControllerAtPath at the same asset path for each
+        // piece sharing a folder, which DELETES+RECREATES that path's assets every time and
+        // invalidates the C# object references already handed to earlier archetypes in the
+        // same build (Unity replaces the object behind the path on CreateAsset/DeleteAsset).
+        private static readonly Dictionary<string, string> HumanoidReuseFolderByCombatRole = new()
+        {
+            ["assault"] = "conscript_rifles",   // line infantry — rifle-assault posture
+            ["defender"] = "iron_guard",         // heavy defender body
+            ["sniper"] = "sharpshooter",
+            ["artillery"] = "field_mortar_team", // crew-served weapon team
+            ["gas"] = "conscript_rifles",        // attacker posture closest to assault
+            ["support"] = "field_medic",
+            ["utility"] = "shock_sergeant",      // command/officer archetype
+        };
+        private const string HumanoidReuseDefaultFolder = "conscript_rifles";
 
         // Non-humanoid units (owner spec, audit "non-humanoid treatment"): single static
         // model.glb from generate_unit.py --vehicle, rendered by CombatUnitVisual3DVehicle
@@ -74,6 +99,30 @@ namespace DeadManZone.Presentation.Editor
             ("grand_battery", "grand_battery", 3.0f, -90f),
             ("machine_gun_nest", "machine_gun_nest", 1.6f, 90f),
             ("trench_works", "trench_works", 1.2f, 0f),
+        };
+
+        /// <summary>Coarse silhouette family for a generated primitive fallback — decides the
+        /// box's proportions and added greebles (turret+barrel / roof block / bare slab).</summary>
+        private enum PrimitiveKind { Tank, Structure, Wall }
+
+        // 2026-07-17 Wave 3: combat-eligible vehicles/structures with no Meshy model yet
+        // (Meshy credits pending) get an outlined grey-box primitive instead of the rifleman
+        // fallback. Heights are PROVISIONAL (owner call, same status as VehicleUnits' own
+        // heights above) — tank/structure/wall are the three silhouette bands the temp-art
+        // pass asked for. HQ-only buildings (PieceCategory.Building) never spawn in combat
+        // and are excluded — this list is combat-board pieces only.
+        private static readonly (string pieceId, int cellsX, int cellsY, PrimitiveKind kind, float height)[]
+            PrimitiveFallbackUnits =
+        {
+            ("scout_tankette", 2, 1, PrimitiveKind.Tank, 2.4f),
+            ("vanquisher_doctrine_tank", 2, 2, PrimitiveKind.Tank, 2.4f),
+            ("stiller_suppression_platform", 2, 2, PrimitiveKind.Tank, 2.4f),
+            ("armored_ark", 2, 2, PrimitiveKind.Structure, 1.6f),
+            ("corpse_tithe_caravan", 3, 1, PrimitiveKind.Structure, 1.6f),
+            ("perpetual_engine", 2, 2, PrimitiveKind.Structure, 1.6f),
+            ("resonance_coil", 2, 1, PrimitiveKind.Structure, 1.6f),
+            ("vitriol_throne", 2, 2, PrimitiveKind.Structure, 1.6f),
+            ("bunker_emplacement", 2, 1, PrimitiveKind.Wall, 1.0f),
         };
 
         private static string RosterModelFolder(string unitFolder) =>
@@ -276,6 +325,7 @@ namespace DeadManZone.Presentation.Editor
         private static List<ArchetypeSpec> BuildRosterArchetypes()
         {
             var archetypes = new List<ArchetypeSpec>();
+            var covered = new HashSet<string>();
             foreach (var (unitFolder, pieceId) in RosterUnits)
             {
                 string folder = RosterModelFolder(unitFolder);
@@ -305,7 +355,10 @@ namespace DeadManZone.Presentation.Editor
                     Model = model,
                     Controller = controller,
                 });
+                covered.Add(pieceId);
             }
+
+            archetypes.AddRange(BuildHumanoidReuseArchetypes(covered));
 
             foreach (var (unitFolder, pieceId, height, yaw) in VehicleUnits)
             {
@@ -329,7 +382,174 @@ namespace DeadManZone.Presentation.Editor
                 });
             }
 
+            archetypes.AddRange(BuildPrimitiveFallbackArchetypes());
+
             return archetypes;
+        }
+
+        /// <summary>Every PieceDefinitionSO under the Pieces folder that is combat-eligible
+        /// (category Unit) infantry and not already covered by <see cref="RosterUnits"/>:
+        /// grouped by its combatRole's reuse folder, one controller/clip set built per folder
+        /// (see the comment on <see cref="HumanoidReuseFolderByCombatRole"/> for why), then one
+        /// archetype per piece sharing that folder's model+controller.</summary>
+        private static List<ArchetypeSpec> BuildHumanoidReuseArchetypes(HashSet<string> alreadyCovered)
+        {
+            var byFolder = new Dictionary<string, List<string>>();
+            var guids = AssetDatabase.FindAssets("t:PieceDefinitionSO", new[] { PiecesFolder });
+            foreach (var guid in guids)
+            {
+                var piece = AssetDatabase.LoadAssetAtPath<PieceDefinitionSO>(AssetDatabase.GUIDToAssetPath(guid));
+                if (piece == null || alreadyCovered.Contains(piece.id))
+                    continue;
+                if (piece.category != PieceCategory.Unit || piece.primary != "infantry")
+                    continue;
+
+                string folder = HumanoidReuseFolderByCombatRole.TryGetValue(piece.combatRole ?? "", out var mapped)
+                    ? mapped
+                    : HumanoidReuseDefaultFolder;
+                if (!byFolder.TryGetValue(folder, out var pieceIds))
+                    byFolder[folder] = pieceIds = new List<string>();
+                pieceIds.Add(piece.id);
+            }
+
+            var archetypes = new List<ArchetypeSpec>();
+            foreach (var (unitFolder, pieceIds) in byFolder)
+            {
+                string folder = RosterModelFolder(unitFolder);
+                var unitMissing = new List<string>();
+                var model = LoadOrFlag<GameObject>(folder + "/idle.glb", unitMissing);
+                var idle = FindClip(folder + "/idle.glb", unitMissing, "idle");
+                var walk = FindClip(folder + "/walk.glb", unitMissing, "walk");
+                var die = FindClip(folder + "/die.glb", unitMissing, "dead", "die");
+
+                if (unitMissing.Count > 0)
+                {
+                    Debug.LogWarning(
+                        $"[Combat3D] Humanoid reuse folder '{unitFolder}' unavailable — " +
+                        $"{pieceIds.Count} piece(s) fall back to rifleman visuals:\n - " +
+                        string.Join("\n - ", unitMissing));
+                    continue;
+                }
+
+                // Distinct asset paths from RosterUnits' own controller for this folder
+                // (suffixed _Reuse) — this is a SEPARATE build shared by every mapped piece,
+                // not a rebuild of the folder's primary archetype.
+                var controller = BuildAnimatorController(
+                    idle, walk, die,
+                    $"{folder}/{unitFolder}_Reuse_Idle.anim",
+                    $"{folder}/{unitFolder}_Reuse_Walk.anim",
+                    $"{folder}/{unitFolder}_Reuse_Die.anim",
+                    $"{folder}/{unitFolder}_ReuseCombat3D.controller");
+
+                foreach (var pieceId in pieceIds)
+                {
+                    archetypes.Add(new ArchetypeSpec
+                    {
+                        PieceId = pieceId,
+                        Model = model,
+                        Controller = controller,
+                    });
+                }
+            }
+
+            return archetypes;
+        }
+
+        /// <summary>Outlined grey-box placeholder for every combat-eligible vehicle/structure
+        /// with no model yet (<see cref="PrimitiveFallbackUnits"/>) — same ArchetypeSpec shape
+        /// as <see cref="VehicleUnits"/> (IsVehicle=true, no controller), so it renders through
+        /// the existing CombatUnitVisual3DVehicle path and inherits its side material (cel/ink
+        /// shading, hit-flash, dissolve) automatically; nothing extra to wire there.</summary>
+        private static List<ArchetypeSpec> BuildPrimitiveFallbackArchetypes()
+        {
+            var archetypes = new List<ArchetypeSpec>();
+            foreach (var (pieceId, cellsX, cellsY, kind, height) in PrimitiveFallbackUnits)
+            {
+                var model = EnsurePrimitiveModel(pieceId, cellsX, cellsY, kind);
+                if (model == null)
+                    continue;
+
+                archetypes.Add(new ArchetypeSpec
+                {
+                    PieceId = pieceId,
+                    Model = model,
+                    IsVehicle = true,
+                    VehicleHeight = height,
+                    VehicleYawOffsetDegrees = 0f,
+                });
+            }
+
+            return archetypes;
+        }
+
+        private const string PiecesFolder = "Assets/_Project/Data/Resources/DeadManZone/Pieces";
+        private const string PrimitivesFolder = GeneratedFolder + "/Models/Primitives";
+
+        /// <summary>Builds (once) or loads a generated grey-box prefab sized to the piece's
+        /// footprint (shapeCells count) with a per-kind greeble so it reads as an intentional
+        /// placeholder, not an empty crate. CombatUnitVisual3DVehicle.Build() overrides every
+        /// renderer's material with the side's tuned toon-ink material, so no material work is
+        /// needed here — Unity's default primitive material is only ever visible for one frame
+        /// before Build() runs, if that.</summary>
+        private static GameObject EnsurePrimitiveModel(string pieceId, int cellsX, int cellsY, PrimitiveKind kind)
+        {
+            string path = $"{PrimitivesFolder}/{pieceId}.prefab";
+            var existing = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (existing != null)
+                return existing;
+
+            EnsureFolder(PrimitivesFolder);
+
+            float width = Mathf.Max(1, cellsX) * 1.5f;
+            float depth = Mathf.Max(1, cellsY) * 1.5f;
+            float bodyHeight = kind == PrimitiveKind.Wall ? width * 0.45f : width * 0.55f;
+
+            var root = new GameObject(pieceId + "_Primitive");
+            var body = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            body.name = "Body";
+            body.transform.SetParent(root.transform, false);
+            UnityEngine.Object.DestroyImmediate(body.GetComponent<Collider>());
+            body.transform.localScale = new Vector3(width, bodyHeight, depth);
+            body.transform.localPosition = new Vector3(0f, bodyHeight * 0.5f, 0f);
+
+            if (kind == PrimitiveKind.Tank)
+            {
+                float turretSize = width * 0.45f;
+                var turret = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                turret.name = "Turret";
+                turret.transform.SetParent(root.transform, false);
+                UnityEngine.Object.DestroyImmediate(turret.GetComponent<Collider>());
+                turret.transform.localScale = new Vector3(turretSize, turretSize * 0.6f, turretSize);
+                turret.transform.localPosition = new Vector3(0f, bodyHeight + turretSize * 0.3f, 0f);
+
+                float barrelLength = width * 0.6f;
+                var barrel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                barrel.name = "Barrel";
+                barrel.transform.SetParent(root.transform, false);
+                UnityEngine.Object.DestroyImmediate(barrel.GetComponent<Collider>());
+                barrel.transform.localScale = new Vector3(turretSize * 0.16f, barrelLength * 0.5f, turretSize * 0.16f);
+                barrel.transform.localRotation = Quaternion.Euler(90f, 0f, 0f); // cylinder axis (+Y) -> +Z
+                barrel.transform.localPosition =
+                    new Vector3(0f, bodyHeight + turretSize * 0.3f, depth * 0.5f + barrelLength * 0.35f);
+            }
+            else if (kind == PrimitiveKind.Structure)
+            {
+                var roof = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                roof.name = "RoofDetail";
+                roof.transform.SetParent(root.transform, false);
+                UnityEngine.Object.DestroyImmediate(roof.GetComponent<Collider>());
+                roof.transform.localScale = new Vector3(width * 0.4f, bodyHeight * 0.3f, depth * 0.4f);
+                roof.transform.localPosition = new Vector3(0f, bodyHeight + bodyHeight * 0.15f, 0f);
+            }
+            // Wall: bare slab, no added greeble.
+
+            PrefabUtility.SaveAsPrefabAsset(root, path);
+            UnityEngine.Object.DestroyImmediate(root);
+
+            // Same AssetDatabase lesson as DemoContentGenerator.LoadOrCreate: force the import
+            // to complete and hand back the canonical imported instance, not the pre-import one.
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+            return AssetDatabase.LoadAssetAtPath<GameObject>(path);
         }
 
         private static AnimatorController BuildAnimatorController(

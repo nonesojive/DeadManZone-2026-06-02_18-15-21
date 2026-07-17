@@ -26,12 +26,14 @@ Material:
     m_Ints: []
     m_Floats:
     - _DiscRadius: 0.4
+    - _FactionTintWeight: 0
     - _Fill: 1
     - _Gutter: 0
     - _RimInnerRadius: 0.435
     - _RimOuterRadius: 0.48
     m_Colors:
     - _EmptyColor: {r: 0.12, g: 0.09, b: 0.09, a: 1}
+    - _FactionTint: {r: 0, g: 0, b: 0, a: 0}
     - _FillColor: {r: 0.4, g: 0.18, b: 0.16, a: 1}
     - _RimColor: {r: 0.56, g: 0.25, b: 0.21, a: 1}
   m_BuildTextureStacks: []
