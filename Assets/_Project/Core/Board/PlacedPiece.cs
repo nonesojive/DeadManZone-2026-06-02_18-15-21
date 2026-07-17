@@ -15,5 +15,12 @@ namespace DeadManZone.Core.Board
         /// own board cell; TickCombatRun.SpawnCombatants reads it to spawn the piece embarked
         /// (off-field) instead of independently.</summary>
         public string CarrierInstanceId { get; init; }
+
+        /// <summary>2026-07-16 faction-roster-v1 §1.4: acquisition-based and PERMANENT — set
+        /// only when this instance was bought through the Cartel mercenary shop slot
+        /// (CartelMercenarySlotProvider / ShopOffer.IsMercenary). Suppresses OffFactionRules
+        /// .IsSalvage and sells for 0 (SalvageCalculator.Compute). Carried across
+        /// moves/reserves transfers by re-passing it into TryPlace at every re-placement.</summary>
+        public bool IsMercenary { get; init; }
     }
 }

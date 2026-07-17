@@ -19,6 +19,14 @@ namespace DeadManZone.Core
         /// per-piece flag for a whole-faction passive). Content (roster/pass) lands later.</summary>
         public const string AshenCovenant = "ashen_covenant";
 
+        // ---- W1b (2026-07-16, faction-roster-v1 §1.9/§4): economy/shop passives key off
+        // these directly (FactionPassives) — no FactionSO asset exists for them yet, so
+        // they are unreachable via StartNewRun until W2 lands their content pass.
+        public const string OathbornAccord = "oathborn_accord";
+        public const string ParadoxEngine = "paradox_engine";
+        public const string BlightbornPact = "blightborn_pact";
+        public const string CrimsonAssembly = "crimson_assembly";
+
         /// <summary>
         /// Playable factions in selection order (matches ContentDatabase.PlayableFactionIds contract).
         /// </summary>

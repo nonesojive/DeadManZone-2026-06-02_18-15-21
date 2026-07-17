@@ -13,6 +13,11 @@ namespace DeadManZone.Core.Run
         public int AnchorX { get; set; }
         public int AnchorY { get; set; }
         public int RotationDegrees { get; set; }
+
+        /// <summary>2026-07-16 faction-roster-v1 §1.4: additive field, deserializes false on
+        /// older saves (no mercenaries could exist before this wave). Mirrors PlacedPiece
+        /// .IsMercenary — acquisition-based and permanent.</summary>
+        public bool IsMercenary { get; set; }
     }
 
     public sealed class BoardSnapshot
@@ -58,7 +63,8 @@ namespace DeadManZone.Core.Run
                     PieceId = p.Definition.Id,
                     AnchorX = p.Anchor.X,
                     AnchorY = p.Anchor.Y,
-                    RotationDegrees = (int)p.Rotation
+                    RotationDegrees = (int)p.Rotation,
+                    IsMercenary = p.IsMercenary
                 }).ToList()
             };
 
@@ -83,7 +89,8 @@ namespace DeadManZone.Core.Run
                     definition,
                     new GridCoord(record.AnchorX, record.AnchorY),
                     record.InstanceId,
-                    rotation);
+                    rotation,
+                    record.IsMercenary);
                 if (!result.Success)
                     throw new System.InvalidOperationException(
                         $"Failed to restore '{record.PieceId}' at ({record.AnchorX},{record.AnchorY}): {result.Reason}");

@@ -89,6 +89,10 @@ Spent on shop offers and rerolls. Running out means you can't buy; it does not k
 - **Income (Muster):** `faction.baseMusterPerShop + Σ piece.MusterPerShop + supply-synergy pairs`
   (`MusterCalculator`). Each adjacent pair of `supplier`/`supply_line` pieces = **+2**.
 - **Emergency Draft:** once per run, covers a shortfall (`EmergencyDraft.TryUse`).
+- **Despair Dividend** (Blightborn Pact's economy passive, 2026-07-15 faction-roster-v1 §1.9,
+  W1b): **+1 Supply per enemy unit that routed** that fight, win or lose (`FactionPassives
+  .DespairDividendSupplies`, applied in `RunOrchestrator.CompleteCombat` right after the fight's
+  kill share is stamped). No-op for every other faction. PROVISIONAL magnitude.
 
 ### Authority — the command currency
 A **per-round pool**, not a bank.
@@ -151,26 +155,38 @@ through neutral ground" (§10) refers to.
 ## 6. The shop
 
 - **5 live offer slots** (`ShopSlotLayoutResolver.VisibleOfferSlotCount = 5`).
-- **4 dormant/reserved slots** (indices **5–8**, all `ReservedAbility`), **not wired to anything** —
-  no ability currently unlocks one (`ShopSlotUnlockRegistry.Empty` is always used;
-  `RunOrchestrator.cs:41`). Plus **4 Bonus slots (9–12)** that are likewise never active.
+- **4 dormant/reserved slots** (indices **5–8**, all `ReservedAbility`), still not wired to
+  anything. Plus **4 Bonus slots (9–12)**: slot 9 is now live for exactly one case — the Cartel
+  mercenary slot (below); 10–12 remain inactive.
   *(The ShopV2 band authors 3 dormant slots visually — a UI/data mismatch worth reconciling.)*
+  > 2026-07-16 faction-roster-v1 W1b: `RunOrchestrator`'s `ShopGenerator` is now constructed with
+  > a non-empty `ShopSlotUnlockRegistry` containing `CartelMercenarySlotProvider` — the previous
+  > "`ShopSlotUnlockRegistry.Empty` is always used" is no longer literally true, but the provider
+  > is a no-op (`FactionPassives.HasMercenarySlot`) for every faction except Cartel of Echoes.
 - Slots 0–2 **offensive**-biased, 3–4 **defensive**-biased (`slot_0..slot_4.asset`).
 - **Reroll cost:** `1 + rerolls this round` — climbs within a round, resets between rounds.
+  **Paradox Engine** (2026-07-15 faction-roster-v1 §1.9, W1b): the **first reroll each Build is
+  free** (`RunOrchestrator.ComputeRerollGoldCost`, `FactionPassives.HasFreeFirstReroll` — Supplies
+  only, lock Authority costs are untouched). No-op for every other faction.
 - **Lock:** right-click to keep an offer through a reroll. **First lock free; each extra lock costs
   1 Authority** (`max(0, locks - 1)`).
 - **Sell (Smelter):** **50%** of the rarity-derived Supplies base cost (`RarityPricing.BaseCost`,
   int-truncated — 5/7/12 by tier) + **50%** of Authority cost; **0% Manpower** (`SalvageCalculator`).
   Dust Scourge: **×1.25** Supplies (applied after the 50% truncation, then truncated again — e.g.
   Common 10 → 5 → **6**, not 6.25). Refund is 50% of the **base** tier cost while purchases pay the
-  Dread-inflated price — late-run flips are deliberately lossy.
+  Dread-inflated price — late-run flips are deliberately lossy. **A mercenary (below) always sells
+  for 0** — Supplies, Authority, AND Manpower (`SalvageCalculator.Compute(..., isMercenary: true)`).
   > Trap: `SalvageCalculator.ManpowerRefundRatio = 0.25f` is **declared but never used** —
   > manpower is hardcoded to 0. The constant lies.
 
 ### How an offer is rolled (order matters)
 1. **Source roll** per slot: **neutral 10% / faction 80% / salvage 10%** (`ShopSlotProfileSO`), with
-   a fallback chain. **No duplicate piece within a batch** (`ShopGenerator.cs:183,224`).
-2. **Rarity roll** — table below.
+   a fallback chain. **No duplicate piece within a batch** (`ShopGenerator.cs:183,224`). The salvage
+   pity timer (below) can force the source to Salvage before this roll runs.
+2. **Rarity roll** — table below, at odds keyed on `FightEquivalent` — **or `FightEquivalent + 1`
+   for Crimson Assembly** (`FactionPassives.RarityOddsFightEquivalent`, "Ahead of Schedule",
+   2026-07-15 faction-roster-v1 §1.9, W1b) — **prices still use the real `FightEquivalent`** (next
+   step). No-op for every other faction.
 3. **Price** = `discount(tierBase)` **+ `max(0, FightEquivalent - 1)`** (`ShopGenerator.cs:358-360`).
    **Shop prices inflate with the Dread clock.** The Gold-discount modifier (below) is applied to
    the tier base *before* the Dread tax is added — never to the taxed total.
@@ -209,11 +225,59 @@ a per-piece price exception. Moving a tier price is the intended tuning surface;
   a deliberate tension with routing *your own* units to save Manpower.
 - **A Hard-front win upweights the next round's salvage picks** (Rare ×3 / Uncommon ×2 / Common ×1)
   (`RunOrchestrator.cs:643`).
+- **Salvage pity timer** (2026-07-15 faction-roster-v1 §1.5, W1b): same appear-reset architecture
+  as the rare pity above — a global salvage-drought counter (`RunState.SalvagePityBatches`) forces
+  a salvage-source offer after **4** dry batches (**Dust Scourge tightens this to 2**,
+  `FactionPassives.SalvagePityDryBatchThreshold`); counts SHOWN batches (round rolls + rerolls),
+  resets on a salvage-source offer appearing (`SalvagePityRules`). **Edge case:** while the salvage
+  pool is empty (no enemy fought yet, or that faction has no registered pieces) the counter
+  **HOLDS** — neither resets nor climbs (`SalvagePoolAvailability.IsEmpty`,
+  `RunOrchestrator.UpdateSalvagePity`).
+
+### Off-faction pieces: salvage vs. mercenary (2026-07-15 faction-roster-v1 §1.4, W1b)
+- **`salvage` is a DERIVED tag, never stored:** any board piece with `factionId ≠ player faction`,
+  `≠ neutral`, and not flagged mercenary (`OffFactionRules.IsSalvage`). Acquisition history is
+  never tracked — it's recomputed from board state every time. No inherent downside; the cost is
+  losing the piece's faction-CM contribution.
+- **`mercenary` is acquisition-based and PERMANENT:** only the Cartel mercenary slot creates it
+  (`PlacedPiece.IsMercenary`, carried through every board/reserves move and the save schema —
+  `PlacedPieceRecord.IsMercenary`, additive field, false on older saves). Mercenary suppresses the
+  salvage tag and **always sells for 0** (above).
+- **Neutral pieces are neither.**
+
+### Cartel of Echoes' mercenary shop slot (2026-07-15 faction-roster-v1 §1.9/§2.4, W1b)
+A 6th offer slot (bonus slot **9**, `ShopSlotKind.SpecialRule`), live only when the run's faction
+is Cartel of Echoes (`CartelMercenarySlotProvider`, wired through the `IShopSlotUnlockProvider`
+seam). Stocks an **off-faction FIGHTER** (`OffFactionRules.IsFighter` — excludes buildings and
+`structure`-primary pieces), drawn from the whole registry rather than gated on the last enemy
+fought (`MercenaryPoolBuilder`) — mercs are a standing contract, not battlefield spoils. Priced at
+the normal tier base **+25% surcharge** (`FactionPassives.MercenarySurchargePercent`,
+`ShopGenerator.CreateMercenaryOffer`), same Dread tax as any other offer. A later content wave's
+Freelance Colonel rare reduces the surcharge 25%→10% — `FactionPassives.MercenarySurchargeFor` is
+the hook it will retune.
 
 ### Shop modifiers (live)
 `ShopGenerator.ComputeModifiers` — board-driven: **Gold discount** (stacking, **capped 25%**),
 **ExtraGeneralSlot**, **EnemyTagPreview**, **GuaranteeEngineerOffer** (injects a defensive/building
 offer if none rolled).
+
+### Faction economy/shop passives (2026-07-15 faction-roster-v1 §1.9, W1b)
+Single home: `Core/FactionPassives.cs` — a static lookup keyed on `FactionIds`, not a plugin
+framework. Every passive is a no-op for factions that don't own it (mirrors
+`MoraleRules.IsDeathShockInverted`, W1a). Only IronMarch, Dust Scourge, and Cartel of Echoes have
+a `FactionSO` asset today; Paradox Engine, Blightborn Pact, Crimson Assembly and Oathborn Accord
+are wired at the rule level (`FactionIds`) ahead of their W2 content pass.
+
+| Faction | Economy/shop passive | Implementation |
+|---|---|---|
+| IronMarch | None (fallback: +1 Muster/shop if playtests read bland) | — |
+| Dust Scourge | ×1.25 salvage refund + salvage pity tightened to 2 | `SalvageCalculator.Compute`, `FactionPassives.SalvagePityDryBatchThreshold` |
+| Cartel of Echoes | Mercenary 6th offer slot, +25% surcharge | `CartelMercenarySlotProvider`, `FactionPassives.MercenarySurchargeFor` |
+| Oathborn Accord | Medic/healing hook (soft-TBD, leans on the heal-pulse tech) | — |
+| Paradox Engine | First shop reroll each Build is free | `RunOrchestrator.ComputeRerollGoldCost`, `FactionPassives.HasFreeFirstReroll` |
+| Blightborn Pact | Despair Dividend: +1 Supply per enemy unit that routs | `FactionPassives.DespairDividendSupplies` (§3) |
+| Crimson Assembly | Ahead of Schedule: shop rarity odds roll as if FightEquivalent+1 (prices unchanged) | `FactionPassives.RarityOddsFightEquivalent` |
+| Ashen Covenant | Inverted death-shock (combat passive, not economy — see §10 W1a) | `MoraleRules.IsDeathShockInverted` |
 
 ---
 

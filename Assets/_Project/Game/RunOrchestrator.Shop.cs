@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Run;
@@ -31,9 +32,20 @@ namespace DeadManZone.Game
             return Math.Max(0, lockCount - 1);
         }
 
+        /// <summary>Paradox Engine's passive (§1.9): the first reroll each Build phase is
+        /// free (Supplies only — lock Authority costs are untouched). No-op for every
+        /// other faction.</summary>
+        public int ComputeRerollGoldCost()
+        {
+            if (FactionPassives.HasFreeFirstReroll(State.FactionId) && State.RerollCountThisRound == 0)
+                return 0;
+
+            return BaseRerollCost + State.RerollCountThisRound;
+        }
+
         public bool CanRerollShop()
         {
-            int goldCost = BaseRerollCost + State.RerollCountThisRound;
+            int goldCost = ComputeRerollGoldCost();
             if (State.Supplies < goldCost)
                 return false;
 
@@ -80,7 +92,7 @@ namespace DeadManZone.Game
 
             PayOffer(offer);
 
-            var place = reserves.TryPlace(piece, anchor, Guid.NewGuid().ToString("N"), rotation);
+            var place = reserves.TryPlace(piece, anchor, Guid.NewGuid().ToString("N"), rotation, offer.IsMercenary);
             if (!place.Success)
             {
                 RefundOffer(offer);
@@ -125,7 +137,7 @@ namespace DeadManZone.Game
 
             PayOffer(offer);
 
-            var place = board.TryPlace(piece, anchor, instanceId, rotation);
+            var place = board.TryPlace(piece, anchor, instanceId, rotation, offer.IsMercenary);
             if (!place.Success)
             {
                 RefundOffer(offer);
@@ -152,10 +164,10 @@ namespace DeadManZone.Game
 
             var piece = removed.Definition;
             var board = GetBoardForPiece(piece);
-            var place = board.TryPlace(piece, boardAnchor, removed.InstanceId, rotation);
+            var place = board.TryPlace(piece, boardAnchor, removed.InstanceId, rotation, removed.IsMercenary);
             if (!place.Success)
             {
-                reserves.TryPlace(removed.Definition, removed.Anchor, removed.InstanceId, removed.Rotation);
+                reserves.TryPlace(removed.Definition, removed.Anchor, removed.InstanceId, removed.Rotation, removed.IsMercenary);
                 return false;
             }
 
@@ -173,7 +185,7 @@ namespace DeadManZone.Game
             if (!reserves.TryRemove(instanceId, out var removed))
                 return false;
 
-            var refund = SalvageCalculator.Compute(removed.Definition, State.FactionId);
+            var refund = SalvageCalculator.Compute(removed.Definition, State.FactionId, removed.IsMercenary);
             State.Supplies += refund.Supplies;
             State.Authority += refund.Authority;
             State.Manpower += refund.Manpower;
@@ -199,10 +211,11 @@ namespace DeadManZone.Game
                 removed.Definition,
                 reservesAnchor,
                 removed.InstanceId,
-                rotation);
+                rotation,
+                removed.IsMercenary);
             if (!place.Success)
             {
-                board.TryPlace(removed.Definition, removed.Anchor, removed.InstanceId, removed.Rotation);
+                board.TryPlace(removed.Definition, removed.Anchor, removed.InstanceId, removed.Rotation, removed.IsMercenary);
                 return false;
             }
 
@@ -289,10 +302,12 @@ namespace DeadManZone.Game
                 State.SalvageChancePercent,
                 _content.GetShopOverride(State.FactionId),
                 State.RarePityBatches,
-                State.SalvageHardBoost);
+                State.SalvageHardBoost,
+                State.SalvagePityBatches);
             ApplyLockedSlots(shop);
             State.Shop = shop;
             UpdateRarePity(shop.Offers);
+            UpdateSalvagePity(shop.Offers);
         }
 
         /// <summary>M3 pity, appear-reset: every generated batch (round roll or reroll)
@@ -304,6 +319,20 @@ namespace DeadManZone.Game
             State.RarePityBatches = ShopGenerator.ContainsRareOrAbove(offers, _registry)
                 ? 0
                 : State.RarePityBatches + 1;
+        }
+
+        /// <summary>§1.5 edge case: while the salvage pool is empty (no last-fought enemy
+        /// yet, or that faction has no registered pieces), the counter HOLDS — it neither
+        /// resets nor climbs, so a fresh run's early rounds don't burn through the pity
+        /// clock before there's anything to salvage.</summary>
+        private void UpdateSalvagePity(IEnumerable<ShopOffer> offers)
+        {
+            if (SalvagePoolAvailability.IsEmpty(_registry, State.LastEnemyFactionId, State.FactionId))
+                return;
+
+            State.SalvagePityBatches = SalvagePityRules.ContainsSalvageOffer(offers)
+                ? 0
+                : State.SalvagePityBatches + 1;
         }
 
         private void ApplyMuster()
@@ -342,10 +371,12 @@ namespace DeadManZone.Game
                 State.SalvageChancePercent,
                 _content.GetShopOverride(State.FactionId),
                 State.RarePityBatches,
-                State.SalvageHardBoost);
+                State.SalvageHardBoost,
+                State.SalvagePityBatches);
 
             State.Shop.Offers = rerolled;
             UpdateRarePity(rerolled);
+            UpdateSalvagePity(rerolled);
         }
     }
 }

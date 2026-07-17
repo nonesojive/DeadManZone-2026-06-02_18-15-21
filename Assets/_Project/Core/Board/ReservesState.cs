@@ -32,7 +32,8 @@ namespace DeadManZone.Core.Board
             PieceDefinition definition,
             GridCoord anchor,
             string instanceId = null,
-            PieceRotation rotation = PieceRotation.R0)
+            PieceRotation rotation = PieceRotation.R0,
+            bool isMercenary = false)
         {
             instanceId ??= Guid.NewGuid().ToString("N");
 
@@ -53,7 +54,8 @@ namespace DeadManZone.Core.Board
                 InstanceId = instanceId,
                 Definition = definition,
                 Anchor = anchor,
-                Rotation = rotation
+                Rotation = rotation,
+                IsMercenary = isMercenary
             };
 
             return new PlacementResult { Success = true };
@@ -84,11 +86,11 @@ namespace DeadManZone.Core.Board
 
             if (!CanPlace(removed.Definition, newAnchor, removed.Rotation))
             {
-                TryPlace(removed.Definition, removed.Anchor, removed.InstanceId, removed.Rotation);
+                TryPlace(removed.Definition, removed.Anchor, removed.InstanceId, removed.Rotation, removed.IsMercenary);
                 return new PlacementResult { Success = false, Reason = "Invalid placement" };
             }
 
-            return TryPlace(removed.Definition, newAnchor, removed.InstanceId, removed.Rotation);
+            return TryPlace(removed.Definition, newAnchor, removed.InstanceId, removed.Rotation, removed.IsMercenary);
         }
     }
 }

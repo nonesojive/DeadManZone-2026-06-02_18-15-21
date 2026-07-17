@@ -113,6 +113,16 @@ namespace DeadManZone.Core.Run
         /// <summary>True after a hard-front VICTORY: this build round's salvage
         /// offers upweight rarer spoils. Rewritten every fight completion.</summary>
         public bool SalvageHardBoost { get; set; }
+
+        // W1b (2026-07-16, faction-roster-v1 §1.5) salvage pity — additive field,
+        // deserializes 0 on older saves (pity clock restarts, matching RarePityBatches'
+        // precedent). Same appear-reset architecture: counts SHOWN batches, resets when a
+        // salvage-sourced offer appears, HOLDS (untouched) while the salvage pool is empty.
+
+        /// <summary>Consecutive generated offer batches (round rolls AND rerolls) without a
+        /// salvage-sourced offer APPEARING in the shown shop, while the salvage pool has had
+        /// stock. See Shop.SalvagePityRules / Shop.SalvagePoolAvailability.</summary>
+        public int SalvagePityBatches { get; set; }
         public int Supplies { get; set; }
         public int Manpower { get; set; }
         public int Authority { get; set; }

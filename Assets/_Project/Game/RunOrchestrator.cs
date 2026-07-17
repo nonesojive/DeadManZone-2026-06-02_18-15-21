@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
@@ -38,7 +39,14 @@ namespace DeadManZone.Game
         {
             _content = content ?? throw new ArgumentNullException(nameof(content));
             _registry = ContentRegistryProvider.Build(content);
-            _shopGenerator = new ShopGenerator(_registry, content.BuildShopConfig());
+            // CartelMercenarySlotProvider is always registered but is a no-op unless the
+            // run's FactionId is Cartel (FactionPassives.HasMercenarySlot) — the same
+            // "always present, gated by faction" shape as every other passive this wave.
+            var unlockRegistry = new ShopSlotUnlockRegistry(new IShopSlotUnlockProvider[]
+            {
+                new CartelMercenarySlotProvider()
+            });
+            _shopGenerator = new ShopGenerator(_registry, content.BuildShopConfig(), unlockRegistry);
         }
 
         public bool TryLoadSavedRun()
@@ -549,7 +557,7 @@ namespace DeadManZone.Game
             if (!CanRerollShop())
                 return false;
 
-            int goldCost = BaseRerollCost + State.RerollCountThisRound;
+            int goldCost = ComputeRerollGoldCost();
             int authorityCost = ComputeRerollLockAuthorityCost();
 
             State.Supplies -= goldCost;
@@ -571,14 +579,14 @@ namespace DeadManZone.Game
                 || !board.TryRemove(instanceId, out removed))
                 return false;
 
-            ApplySalvageRefund(removed.Definition);
+            ApplySalvageRefund(removed.Definition, removed.IsMercenary);
             SaveBoardForPiece(removed.Definition, board);
             return true;
         }
 
-        private void ApplySalvageRefund(PieceDefinition piece)
+        private void ApplySalvageRefund(PieceDefinition piece, bool isMercenary = false)
         {
-            var refund = SalvageCalculator.Compute(piece, State.FactionId);
+            var refund = SalvageCalculator.Compute(piece, State.FactionId, isMercenary);
             State.Supplies += refund.Supplies;
             State.Authority += refund.Authority;
             State.Manpower += refund.Manpower;
@@ -654,6 +662,9 @@ namespace DeadManZone.Game
             // re-syncs salvage every round and reads this back.
             State.LastFightSalvageKillPercent =
                 SalvageChanceCalculator.KillSharePercent(result.EnemyKilled, result.EnemyRouted);
+            // Blightborn's "Despair Dividend" (§1.9): +1 Supply per enemy unit that routed
+            // this fight, win or lose — a no-op for every other faction.
+            State.Supplies += FactionPassives.DespairDividendSupplies(State.FactionId, result.EnemyRouted);
             int suppliesIncome = ApplyPostCombatIncome();
 
             if (!playerWon)

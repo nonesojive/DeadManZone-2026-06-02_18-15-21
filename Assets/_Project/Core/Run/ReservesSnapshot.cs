@@ -26,7 +26,8 @@ namespace DeadManZone.Core.Run
                     PieceId = p.Definition.Id,
                     AnchorX = p.Anchor.X,
                     AnchorY = p.Anchor.Y,
-                    RotationDegrees = (int)p.Rotation
+                    RotationDegrees = (int)p.Rotation,
+                    IsMercenary = p.IsMercenary
                 }).ToList()
             };
 
@@ -54,7 +55,8 @@ namespace DeadManZone.Core.Run
                     definition,
                     new GridCoord(record.AnchorX, record.AnchorY),
                     record.InstanceId,
-                    rotation);
+                    rotation,
+                    record.IsMercenary);
                 if (!result.Success)
                     throw new System.InvalidOperationException(
                         $"Failed to restore '{record.PieceId}' at ({record.AnchorX},{record.AnchorY}): {result.Reason}");
@@ -75,12 +77,12 @@ namespace DeadManZone.Core.Run
                 var anchor = new GridCoord(record.AnchorX, record.AnchorY);
 
                 // Keep the authored spot when it still fits on the narrower board.
-                if (reserves.TryPlace(definition, anchor, record.InstanceId, rotation).Success)
+                if (reserves.TryPlace(definition, anchor, record.InstanceId, rotation, record.IsMercenary).Success)
                     continue;
 
                 // Otherwise repack: first free anchor that accepts the piece. Only a
                 // fully packed board drops a piece (16 -> 12 cells can overflow).
-                TryRepack(reserves, definition, record.InstanceId, rotation);
+                TryRepack(reserves, definition, record.InstanceId, rotation, record.IsMercenary);
             }
 
             return reserves;
@@ -90,13 +92,14 @@ namespace DeadManZone.Core.Run
             ReservesState reserves,
             PieceDefinition definition,
             string instanceId,
-            PieceRotation rotation)
+            PieceRotation rotation,
+            bool isMercenary = false)
         {
             for (int y = 0; y < ReservesState.Height; y++)
             {
                 for (int x = 0; x < ReservesState.Width; x++)
                 {
-                    if (reserves.TryPlace(definition, new GridCoord(x, y), instanceId, rotation).Success)
+                    if (reserves.TryPlace(definition, new GridCoord(x, y), instanceId, rotation, isMercenary).Success)
                         return true;
                 }
             }

@@ -17,8 +17,14 @@ namespace DeadManZone.Core.Shop
             public int Manpower { get; init; }
         }
 
-        public static SalvageRefund Compute(PieceDefinition piece, string factionId = null)
+        /// <summary>2026-07-15 faction-roster-v1 §1.4: a mercenary sells for 0 across the
+        /// board — Supplies, Authority, AND Manpower, full stop (the merc surcharge already
+        /// paid the premium; there's no salvage value left to recoup).</summary>
+        public static SalvageRefund Compute(PieceDefinition piece, string factionId = null, bool isMercenary = false)
         {
+            if (isMercenary)
+                return default;
+
             int supplies = (int)(RarityPricing.BaseCost(piece.Rarity) * SuppliesRefundRatio);
             int authority = (int)(piece.RequisitionCost * AuthorityRefundRatio);
             int manpower = 0;

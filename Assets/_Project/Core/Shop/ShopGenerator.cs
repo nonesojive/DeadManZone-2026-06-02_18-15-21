@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DeadManZone.Core;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
 using DeadManZone.Core.Content;
@@ -34,7 +35,8 @@ namespace DeadManZone.Core.Shop
             int salvageChancePercent = 0,
             FactionShopOverride factionOverride = null,
             int rarePityBatches = 0,
-            bool salvageRareBoost = false)
+            bool salvageRareBoost = false,
+            int salvagePityBatches = 0)
         {
             var rng = new Rng(seed);
             var modifiers = ComputeModifiers(board);
@@ -51,7 +53,8 @@ namespace DeadManZone.Core.Shop
                 fixedSlots: null,
                 board,
                 rarePityBatches,
-                salvageRareBoost);
+                salvageRareBoost,
+                salvagePityBatches);
 
             if (modifiers.GuaranteeEngineerOffer && !offers.Any(o => o.Lane == ShopLane.Defensive))
                 InjectDefensiveOffer(offers, modifiers, rng, round, slotLayout);
@@ -75,7 +78,8 @@ namespace DeadManZone.Core.Shop
             int salvageChancePercent = 0,
             FactionShopOverride factionOverride = null,
             int rarePityBatches = 0,
-            bool salvageRareBoost = false)
+            bool salvageRareBoost = false,
+            int salvagePityBatches = 0)
         {
             var slotLayout = ResolveSlotLayout(board, factionId, modifiers, factionOverride);
             var rng = new Rng(seed);
@@ -90,7 +94,8 @@ namespace DeadManZone.Core.Shop
                 fixedSlots,
                 board,
                 rarePityBatches,
-                salvageRareBoost);
+                salvageRareBoost,
+                salvagePityBatches);
         }
 
         /// <summary>Whether a generated batch shows a rare-or-above offer — the pity
@@ -176,7 +181,8 @@ namespace DeadManZone.Core.Shop
             IReadOnlyDictionary<int, ShopOffer> fixedSlots,
             BoardState board,
             int rarePityBatches = 0,
-            bool salvageRareBoost = false)
+            bool salvageRareBoost = false,
+            int salvagePityBatches = 0)
         {
             fixedSlots ??= new Dictionary<int, ShopOffer>();
             var offers = new List<ShopOffer>();
@@ -187,10 +193,24 @@ namespace DeadManZone.Core.Shop
 
             bool hasEnemyFaction = !string.IsNullOrEmpty(lastEnemyFactionId);
 
+            // Crimson's "Ahead of Schedule" (§1.9/§4): rarity ODDS roll as if the clock
+            // were one higher — a single lookup, reused at both odds consumption points
+            // below. Prices (CreateOffer) keep using the real `round`. No-op for every
+            // other faction (FactionPassives.RarityOddsFightEquivalent is an identity
+            // function unless factionId == CrimsonAssembly).
+            int rarityRound = FactionPassives.RarityOddsFightEquivalent(factionId, round);
+
             // Pity guarantee (M3): at the cap the FIRST slot whose candidates can host
             // a rare gets its tier forced. If no slot can, nothing is forced and the
             // orchestrator's counter simply keeps climbing.
-            bool forceRarePending = RarityWeights.ForcesRare(round, rarePityBatches);
+            bool forceRarePending = RarityWeights.ForcesRare(rarityRound, rarePityBatches);
+
+            // Salvage pity (§1.5): at the faction's dry-batch threshold (global default 4;
+            // Dust Scourge tightens to 2), the FIRST slot whose candidates can host a
+            // salvage-source offer gets its SOURCE forced. Same "first slot that can, else
+            // keep climbing" shape as the rare pity above, but forces the roll's SOURCE
+            // rather than its TIER.
+            bool forceSalvagePending = hasEnemyFaction && SalvagePityRules.ForcesSalvage(factionId, salvagePityBatches);
 
             foreach (var profile in slotLayout)
             {
@@ -203,19 +223,26 @@ namespace DeadManZone.Core.Shop
                     continue;
                 }
 
-                var rolled = RollSingleSlot(
-                    profile,
-                    modifiers,
-                    rng,
-                    round,
-                    factionId,
-                    lastEnemyFactionId,
-                    salvageChancePercent,
-                    hasEnemyFaction,
-                    consumedPieceIds,
-                    rarePityBatches,
-                    salvageRareBoost,
-                    ref forceRarePending);
+                // Cartel mercenary slot (§1.9/§2.4): bespoke roll outside the normal
+                // rarity/source pipeline — always an off-faction fighter, never a rarity
+                // tier roll, never subject to either pity counter.
+                ShopOffer rolled = profile.Kind == ShopSlotKind.SpecialRule
+                    ? RollMercenarySlot(profile, modifiers, rng, round, factionId, consumedPieceIds)
+                    : RollSingleSlot(
+                        profile,
+                        modifiers,
+                        rng,
+                        round,
+                        rarityRound,
+                        factionId,
+                        lastEnemyFactionId,
+                        salvageChancePercent,
+                        hasEnemyFaction,
+                        consumedPieceIds,
+                        rarePityBatches,
+                        salvageRareBoost,
+                        ref forceRarePending,
+                        ref forceSalvagePending);
 
                 if (rolled != null)
                 {
@@ -233,6 +260,7 @@ namespace DeadManZone.Core.Shop
             ShopModifiers modifiers,
             Rng rng,
             int round,
+            int rarityRound,
             string factionId,
             string lastEnemyFactionId,
             int salvageChancePercent,
@@ -240,15 +268,35 @@ namespace DeadManZone.Core.Shop
             HashSet<string> consumedPieceIds,
             int rarePityBatches,
             bool salvageRareBoost,
-            ref bool forceRarePending)
+            ref bool forceRarePending,
+            ref bool forceSalvagePending)
         {
             var weights = ShopOfferWeightResolver.Resolve(
                 profile,
                 salvageChancePercent,
                 hasEnemyFaction);
 
-            var source = ShopOfferSourceRoller.Roll(weights, rng);
-            var candidates = BuildCandidates(profile, source, factionId, lastEnemyFactionId, consumedPieceIds);
+            ShopOfferSource source;
+            List<PieceDefinition> candidates;
+            if (forceSalvagePending)
+            {
+                candidates = BuildCandidates(profile, ShopOfferSource.Salvage, factionId, lastEnemyFactionId, consumedPieceIds);
+                if (candidates.Count > 0)
+                {
+                    source = ShopOfferSource.Salvage;
+                    forceSalvagePending = false;
+                }
+                else
+                {
+                    source = ShopOfferSourceRoller.Roll(weights, rng);
+                    candidates = BuildCandidates(profile, source, factionId, lastEnemyFactionId, consumedPieceIds);
+                }
+            }
+            else
+            {
+                source = ShopOfferSourceRoller.Roll(weights, rng);
+                candidates = BuildCandidates(profile, source, factionId, lastEnemyFactionId, consumedPieceIds);
+            }
 
             if (candidates.Count == 0)
             {
@@ -294,7 +342,7 @@ namespace DeadManZone.Core.Shop
                 }
                 else
                 {
-                    tier = RarityWeights.RollTier(rng, round, rarePityBatches);
+                    tier = RarityWeights.RollTier(rng, rarityRound, rarePityBatches);
                 }
 
                 picked = ShopPiecePicker.PickWeighted(
@@ -325,8 +373,59 @@ namespace DeadManZone.Core.Shop
                 PieceId = source.PieceId,
                 GoldPrice = source.GoldPrice,
                 RequisitionPrice = source.RequisitionPrice,
-                IsSalvaged = source.IsSalvaged
+                IsSalvaged = source.IsSalvaged,
+                IsMercenary = source.IsMercenary
             };
+
+        /// <summary>Cartel mercenary slot (§1.9/§2.4): always an off-faction fighter, no
+        /// rarity tier roll — the slot's own price surcharge (CreateMercenaryOffer) is the
+        /// tax, not a rarer pull.</summary>
+        private ShopOffer RollMercenarySlot(
+            ShopSlotProfile profile,
+            ShopModifiers modifiers,
+            Rng rng,
+            int round,
+            string factionId,
+            HashSet<string> consumedPieceIds)
+        {
+            var candidates = MercenaryPoolBuilder.BuildCandidates(_registry, factionId)
+                .Where(p => !consumedPieceIds.Contains(p.Id))
+                .ToList();
+
+            if (candidates.Count == 0)
+                return null;
+
+            var picked = ShopPiecePicker.PickWeighted(
+                candidates, profile.PreferredCombatRoles, profile.PreferredRoleWeight, rng);
+
+            return picked == null ? null : CreateMercenaryOffer(profile, picked, modifiers, round, factionId);
+        }
+
+        private static ShopOffer CreateMercenaryOffer(
+            ShopSlotProfile profile,
+            PieceDefinition piece,
+            ShopModifiers modifiers,
+            int round,
+            string factionId)
+        {
+            int baseGold = ApplyGoldDiscount(RarityPricing.BaseCost(piece.Rarity), modifiers.GoldDiscountPercent);
+            int surchargePercent = FactionPassives.MercenarySurchargeFor(factionId);
+            int gold = baseGold + baseGold * surchargePercent / 100;
+            gold += Math.Max(0, round - 1);
+
+            return new ShopOffer
+            {
+                OfferId = $"slot{profile.SlotIndex}_{piece.Id}",
+                Lane = profile.PoolLane,
+                SlotIndex = profile.SlotIndex,
+                SlotKind = profile.Kind,
+                PieceId = piece.Id,
+                GoldPrice = gold,
+                RequisitionPrice = piece.RequisitionCost,
+                IsSalvaged = false,
+                IsMercenary = true
+            };
+        }
 
         private void InjectDefensiveOffer(
             List<ShopOffer> offers,

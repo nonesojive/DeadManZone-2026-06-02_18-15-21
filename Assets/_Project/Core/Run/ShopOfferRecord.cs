@@ -13,6 +13,9 @@ namespace DeadManZone.Core.Run
         public int RequisitionPrice { get; set; }
         public bool IsSalvaged { get; set; }
 
+        /// <summary>Additive field (2026-07-16); deserializes false on older saves.</summary>
+        public bool IsMercenary { get; set; }
+
         public static ShopOfferRecord FromOffer(ShopOffer offer) =>
             offer == null
                 ? null
@@ -25,7 +28,8 @@ namespace DeadManZone.Core.Run
                     PieceId = offer.PieceId,
                     GoldPrice = offer.GoldPrice,
                     RequisitionPrice = offer.RequisitionPrice,
-                    IsSalvaged = offer.IsSalvaged
+                    IsSalvaged = offer.IsSalvaged,
+                    IsMercenary = offer.IsMercenary
                 };
 
         public ShopOffer ToOffer() =>
@@ -38,7 +42,8 @@ namespace DeadManZone.Core.Run
                 PieceId = PieceId,
                 GoldPrice = GoldPrice,
                 RequisitionPrice = RequisitionPrice,
-                IsSalvaged = IsSalvaged
+                IsSalvaged = IsSalvaged,
+                IsMercenary = IsMercenary
             };
     }
 }
