@@ -23,6 +23,19 @@ namespace DeadManZone.Presentation.Editor
 
         public static void BuildRunScene(GameObject canvas)
         {
+            // ============================ DESTRUCTIVE — READ FIRST ============================
+            // This builder regenerates the LEGACY run HUD only. It knows NOTHING about the
+            // ShopV2 surface that commit 611de848 ("ShopV2: complete the flip") wired into
+            // Run.unity as scene state — running it STOMPS the flip (34 ShopV2 refs -> 0),
+            // which is exactly how the owner's live ShopV2 screen was destroyed on 2026-07-17
+            // and had to be restored from git. Until the ShopV2 stage is ported into this
+            // builder, do NOT run "Refresh Run Scene" / "Setup Main Menu & Run Scenes" over a
+            // scene that contains the flip. See owner backlog: "port ShopV2 flip into
+            // RunSceneSetup".
+            // ==================================================================================
+            Debug.LogWarning(
+                "[RunSceneSetup] Rebuilding Run.unity with the LEGACY HUD — this erases the " +
+                "ShopV2 flip (see 611de848). If the scene contained ShopV2, restore it via git.");
             var theme = UiThemeSceneStyling.LoadTheme();
             MenuSceneSetup.CreateRunManager();
 
