@@ -463,7 +463,16 @@ namespace DeadManZone.Game
                 PendingSelectedTactic = State.Combat.PendingSelectedTactic,
                 PendingSelectedAbilities = State.Combat.PendingSelectedAbilities,
                 StartingTactics = Faction?.startingTactics,
-                EnemyTargetCells = _activeCombat.GetLiveEnemyTargetCells()
+                EnemyTargetCells = _activeCombat.GetLiveEnemyTargetCells(),
+                TransportOrders = _activeCombat.PlayerCombatantsForTests
+                    .Where(c => c.IsTransport && c.IsActive && c.EmbarkedCargoIds != null && c.EmbarkedCargoIds.Count > 0)
+                    .Select(c => new TransportOrderOption
+                    {
+                        SourcePieceId = c.InstanceId,
+                        SourceDisplayName = c.Definition?.DisplayName ?? c.InstanceId,
+                        CargoCount = c.EmbarkedCargoIds.Count
+                    })
+                    .ToList()
             };
         }
 

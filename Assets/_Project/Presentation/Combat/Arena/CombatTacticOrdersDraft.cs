@@ -107,6 +107,42 @@ namespace DeadManZone.Presentation.Combat.Arena
         public bool IsAbilityQueued(GrantedAbility ability) =>
             _queued.Any(q => q.Command.Ability == ability);
 
+        /// <summary>2026-07-17 Oathborn transport tentpole (§2.5): the opening-window-only,
+        /// free "DEPLOY ORDER" — which fielded transport drives to which cell. Not budget or
+        /// TacticPauseValidator-gated (CommandProcessor's own opening-window-only check is the
+        /// single source of truth; this just mirrors it honestly so the button disables outside
+        /// checkpoint 0 instead of round-tripping a rejection).</summary>
+        public string TransportOrderSourceId { get; private set; }
+        public GridCoord? TransportOrderTargetCell { get; private set; }
+
+        public bool CanSetTransportOrder => _checkpointIndex == 0;
+
+        public bool TrySetTransportOrder(string transportInstanceId, GridCoord cell, out string reason)
+        {
+            if (!CanSetTransportOrder)
+            {
+                reason = "Transport targeting is opening-window only";
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(transportInstanceId))
+            {
+                reason = "No transport selected";
+                return false;
+            }
+
+            TransportOrderSourceId = transportInstanceId;
+            TransportOrderTargetCell = cell;
+            reason = null;
+            return true;
+        }
+
+        public void ClearTransportOrder()
+        {
+            TransportOrderSourceId = null;
+            TransportOrderTargetCell = null;
+        }
+
         /// <summary>The exact PhaseCommands the real flow submits: SetTactic first,
         /// then the queued abilities.</summary>
         public List<PhaseCommand> BuildCommands()
@@ -132,6 +168,17 @@ namespace DeadManZone.Presentation.Combat.Arena
                     SourcePieceId = queued.Command.SourcePieceId,
                     Cost = queued.Command.RequisitionCost,
                     TargetCell = queued.TargetCell
+                });
+            }
+
+            if (!string.IsNullOrEmpty(TransportOrderSourceId) && TransportOrderTargetCell.HasValue)
+            {
+                commands.Add(new PhaseCommand
+                {
+                    AfterCheckpoint = _checkpointIndex,
+                    Type = CommandType.TransportTarget,
+                    SourcePieceId = TransportOrderSourceId,
+                    TargetCell = TransportOrderTargetCell
                 });
             }
 

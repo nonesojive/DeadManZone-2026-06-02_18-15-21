@@ -216,6 +216,7 @@ namespace DeadManZone.Presentation.Combat
                 : null;
 
             var enemyCells = context.EnemyTargetCells;
+            var battlefieldLayout = _battlefieldLayout;
             _ordersWindow3D.Show(
                 new CombatTacticOrdersWindow.PauseContext
                 {
@@ -231,7 +232,14 @@ namespace DeadManZone.Presentation.Combat
                     IsValidAbilityTarget = cell =>
                         enemyCells != null && enemyCells.Contains(cell),
                     PendingSelectedTactic = context.PendingSelectedTactic,
-                    PendingSelectedAbilities = context.PendingSelectedAbilities
+                    PendingSelectedAbilities = context.PendingSelectedAbilities,
+                    TransportOrders = context.TransportOrders,
+                    // §2.5 Armored Ark: "target a spot on the field" — any in-bounds cell,
+                    // not a live-enemy gate like ability targeting.
+                    IsValidTransportTargetCell = cell =>
+                        battlefieldLayout != null
+                        && cell.X >= 0 && cell.X < battlefieldLayout.TotalWidth
+                        && cell.Y >= 0 && cell.Y < battlefieldLayout.Height
                 },
                 commands =>
                 {

@@ -206,6 +206,36 @@ namespace DeadManZone.Game
             return ok;
         }
 
+        // 2026-07-17 Oathborn transport tentpole (§2.5 Armored Ark): load an already-placed
+        // board piece, a reserves piece, or a fresh shop purchase into a fielded transport's
+        // cargo slots. See RunOrchestrator.Transport.cs for why each is a two-step composite.
+        public bool TryLoadCargoFromBoard(string cargoInstanceId, string transportInstanceId)
+        {
+            EnsureOrchestrator();
+            bool ok = _orchestrator.TryLoadCargoFromBoard(cargoInstanceId, transportInstanceId);
+            if (ok)
+                NotifyStateChanged();
+            return ok;
+        }
+
+        public bool TryLoadCargoFromReserves(string reservesInstanceId, string transportInstanceId)
+        {
+            EnsureOrchestrator();
+            bool ok = _orchestrator.TryLoadCargoFromReserves(reservesInstanceId, transportInstanceId);
+            if (ok)
+                NotifyStateChanged();
+            return ok;
+        }
+
+        public bool TryAcquireOfferToCargo(string offerId, string transportInstanceId)
+        {
+            EnsureOrchestrator();
+            bool ok = _orchestrator.TryAcquireOfferToCargo(offerId, transportInstanceId);
+            if (ok)
+                NotifyStateChanged();
+            return ok;
+        }
+
         public bool TryMoveBoardToReserves(
             string boardInstanceId,
             GridCoord reservesAnchor,

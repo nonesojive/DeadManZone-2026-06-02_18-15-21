@@ -18,6 +18,13 @@ namespace DeadManZone.Core.Run
         /// older saves (no mercenaries could exist before this wave). Mirrors PlacedPiece
         /// .IsMercenary — acquisition-based and permanent.</summary>
         public bool IsMercenary { get; set; }
+
+        /// <summary>2026-07-17 Oathborn transport tentpole: additive field, deserializes null on
+        /// older saves (no transports could exist before this wave). Mirrors PlacedPiece
+        /// .CarrierInstanceId — null = not cargo. Restored in a second pass after every piece
+        /// is placed (the carrier must already exist on the board for TryLoadCargo to accept
+        /// it), see <see cref="BoardSnapshotMapper.ToBoard"/>.</summary>
+        public string CarrierInstanceId { get; set; }
     }
 
     public sealed class BoardSnapshot
@@ -64,7 +71,8 @@ namespace DeadManZone.Core.Run
                     AnchorX = p.Anchor.X,
                     AnchorY = p.Anchor.Y,
                     RotationDegrees = (int)p.Rotation,
-                    IsMercenary = p.IsMercenary
+                    IsMercenary = p.IsMercenary,
+                    CarrierInstanceId = p.CarrierInstanceId
                 }).ToList()
             };
 
@@ -94,6 +102,19 @@ namespace DeadManZone.Core.Run
                 if (!result.Success)
                     throw new System.InvalidOperationException(
                         $"Failed to restore '{record.PieceId}' at ({record.AnchorX},{record.AnchorY}): {result.Reason}");
+            }
+
+            // Second pass: re-apply cargo tags now every piece (including every transport)
+            // is on the board — TryLoadCargo requires both instance ids to already exist.
+            foreach (var record in snapshot.Pieces)
+            {
+                if (string.IsNullOrEmpty(record.CarrierInstanceId))
+                    continue;
+
+                var loadResult = board.TryLoadCargo(record.InstanceId, record.CarrierInstanceId);
+                if (!loadResult.Success)
+                    throw new System.InvalidOperationException(
+                        $"Failed to restore cargo tag for '{record.InstanceId}' onto '{record.CarrierInstanceId}': {loadResult.Reason}");
             }
 
             return board;

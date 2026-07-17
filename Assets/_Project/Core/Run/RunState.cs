@@ -22,6 +22,21 @@ namespace DeadManZone.Core.Run
         /// mirroring <see cref="Combat.CombatAbilityExecutor.IsValidTargetCell"/>). Null on
         /// contexts built before combat state exists.</summary>
         public IReadOnlyList<GridCoord> EnemyTargetCells { get; init; }
+
+        /// <summary>2026-07-17 Oathborn transport tentpole (§2.5): every fielded, still-active
+        /// player transport carrying cargo — the opening-window "DEPLOY ORDER" affordance only
+        /// has something to offer when this is non-empty. Null on contexts built before combat
+        /// state exists.</summary>
+        public IReadOnlyList<TransportOrderOption> TransportOrders { get; init; }
+    }
+
+    /// <summary>One fielded transport the opening-window pause can issue a
+    /// <see cref="Combat.CommandType.TransportTarget"/> order for.</summary>
+    public sealed class TransportOrderOption
+    {
+        public string SourcePieceId { get; init; }
+        public string SourceDisplayName { get; init; }
+        public int CargoCount { get; init; }
     }
 
     public sealed class CombatSaveState

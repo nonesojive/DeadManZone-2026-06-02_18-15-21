@@ -33,8 +33,15 @@ namespace DeadManZone.Presentation.Board
 
         [SerializeField] private BoardKind boardBinding = BoardKind.Combat;
 
+        // 2026-07-17 Oathborn transport tentpole (§2.5 Armored Ark): the build-phase cargo
+        // panel prefab (Assets/_Project/Presentation/UI/Prefabs/ShopV2/TransportCargoPanel),
+        // one instance per placed transport. Null on boards that never place a transport
+        // (e.g. HQ) — SyncTransportCargoPanels no-ops if unassigned.
+        [SerializeField] private GameObject transportCargoPanelPrefab;
+
         private readonly Dictionary<GridCoord, BoardTileView> _tiles = new();
         private readonly Dictionary<string, PieceShapeVisual> _shapeVisualsByInstance = new();
+        private readonly Dictionary<string, TransportCargoPanelPresenter> _cargoPanels = new();
         private RectTransform _piecesOverlay;
         private BoardSynergyOverlay _synergyOverlay;
         private PieceAbilityEngine.FightStartSynergySnapshot _lastSynergySnapshot;
@@ -202,6 +209,43 @@ private PieceDefinition _selectedPiece;
             if (moved)
                 RefreshFromRunManager();
             return moved;
+        }
+
+        // 2026-07-17 Oathborn transport tentpole (§2.5 Armored Ark): route a cargo-slot drop
+        // (TransportCargoSlotDropTarget) into the matching RunManager composite. No zone-rule
+        // pre-check like the methods above — TryLoadCargo's own auto-anchor scan (Run
+        // Orchestrator.Transport.cs) already reuses BoardState.CanPlace, the same rule.
+        public bool TryLoadCargoFromBoard(string cargoInstanceId, string transportInstanceId)
+        {
+            if (RunManager.Instance == null)
+                return false;
+
+            bool loaded = RunManager.Instance.TryLoadCargoFromBoard(cargoInstanceId, transportInstanceId);
+            if (loaded)
+                RefreshFromRunManager();
+            return loaded;
+        }
+
+        public bool TryLoadCargoFromReserves(string reservesInstanceId, string transportInstanceId)
+        {
+            if (RunManager.Instance == null)
+                return false;
+
+            bool loaded = RunManager.Instance.TryLoadCargoFromReserves(reservesInstanceId, transportInstanceId);
+            if (loaded)
+                RefreshFromRunManager();
+            return loaded;
+        }
+
+        public bool TryAcquireOfferToCargo(string offerId, string transportInstanceId)
+        {
+            if (RunManager.Instance == null)
+                return false;
+
+            bool loaded = RunManager.Instance.TryAcquireOfferToCargo(offerId, transportInstanceId);
+            if (loaded)
+                RefreshFromRunManager();
+            return loaded;
         }
 
         private static bool TryResolveOfferPiece(string offerId, out PieceDefinition piece)
@@ -516,7 +560,79 @@ private PieceDefinition _selectedPiece;
                 _synergyOverlay.RefreshLinks(_boardState, _shapeVisualsByInstance);
 
             hoverController?.Hide();
+            SyncTransportCargoPanels();
 }
+
+        /// <summary>§2.5 Armored Ark: one TransportCargoPanelPresenter instance per placed
+        /// transport, kept in step with the board every time RefreshOccupancyVisuals runs
+        /// (piece added/removed/moved, cargo loaded/unloaded — all funnel through here).</summary>
+        private void SyncTransportCargoPanels()
+        {
+            if (transportCargoPanelPrefab == null || _boardState == null)
+                return;
+
+            // Build-phase UI only — the 3D CombatArenaPresenter owns transport presentation
+            // once a fight starts (embark/unload/spill), not this 2D board view.
+            if (RunManager.Instance?.State?.Phase != RunPhase.Build)
+            {
+                foreach (var panel in _cargoPanels.Values)
+                    if (panel != null)
+                        Destroy(panel.gameObject);
+                _cargoPanels.Clear();
+                return;
+            }
+
+            var transports = _boardState.Pieces.Where(p => p.Definition.IsTransport).ToList();
+            var liveIds = new HashSet<string>(transports.Select(p => p.InstanceId));
+
+            foreach (var staleId in _cargoPanels.Keys.Where(id => !liveIds.Contains(id)).ToList())
+            {
+                if (_cargoPanels[staleId] != null)
+                    Destroy(_cargoPanels[staleId].gameObject);
+                _cargoPanels.Remove(staleId);
+            }
+
+            foreach (var transport in transports)
+            {
+                if (!_cargoPanels.TryGetValue(transport.InstanceId, out var panel) || panel == null)
+                {
+                    var parent = _piecesOverlay != null ? _piecesOverlay : transform;
+                    var panelGo = Instantiate(transportCargoPanelPrefab, parent);
+                    // The scene template is kept disabled (it's a hidden "stamp", same
+                    // convention as BuffIconTemplate) — the clone inherits that disabled
+                    // state on Instantiate and must be switched on explicitly.
+                    panelGo.SetActive(true);
+                    panel = panelGo.GetComponent<TransportCargoPanelPresenter>();
+                    if (panel == null)
+                    {
+                        Destroy(panelGo);
+                        continue;
+                    }
+
+                    panel.Configure(transport.InstanceId, this);
+                    _cargoPanels[transport.InstanceId] = panel;
+                }
+
+                if (!panel.gameObject.activeSelf)
+                    panel.gameObject.SetActive(true);
+
+                PositionCargoPanel(panel, transport);
+                panel.Refresh(_boardState, transport.Definition);
+            }
+        }
+
+        /// <summary>Anchors the panel just past the transport's own footprint, in the same
+        /// overlay-local space the piece's own shape visual already renders in.</summary>
+        private void PositionCargoPanel(TransportCargoPanelPresenter panel, PlacedPiece transport)
+        {
+            var rect = panel.GetComponent<RectTransform>();
+            var anchorLocal = ResolveCellCenterInOverlay(transport.Anchor);
+            if (rect == null || !anchorLocal.HasValue)
+                return;
+
+            float cellSize = gridLayout != null ? gridLayout.cellSize.x : 40f;
+            rect.anchoredPosition = anchorLocal.Value + new Vector2(cellSize * 1.6f, 0f);
+        }
 
         public void HidePieceHoverCard() => pieceHoverCardController?.Hide();
 

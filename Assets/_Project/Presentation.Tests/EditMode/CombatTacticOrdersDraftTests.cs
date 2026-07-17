@@ -141,5 +141,58 @@ namespace DeadManZone.Presentation.Tests
             Assert.IsTrue(commands[1].TargetCell.HasValue);
             Assert.AreEqual(target, commands[1].TargetCell.Value);
         }
+
+        [Test]
+        public void TrySetTransportOrder_AtOpeningWindow_RecordsAndBuildsCommand()
+        {
+            var draft = NewDraft(authority: 8, checkpointIndex: 0);
+            var cell = new GridCoord(5, 3);
+
+            Assert.IsTrue(draft.CanSetTransportOrder);
+            Assert.IsTrue(draft.TrySetTransportOrder("ark_1", cell, out _));
+            Assert.AreEqual("ark_1", draft.TransportOrderSourceId);
+            Assert.AreEqual(cell, draft.TransportOrderTargetCell.Value);
+            Assert.AreEqual(0, draft.TotalCost); // free — no Authority spent
+
+            var commands = draft.BuildCommands();
+            var transportCommand = commands.Find(c => c.Type == CommandType.TransportTarget);
+            Assert.IsNotNull(transportCommand);
+            Assert.AreEqual("ark_1", transportCommand.SourcePieceId);
+            Assert.AreEqual(cell, transportCommand.TargetCell.Value);
+        }
+
+        [Test]
+        public void TrySetTransportOrder_OutsideOpeningWindow_Rejected()
+        {
+            var draft = NewDraft(authority: 8, checkpointIndex: 1);
+
+            Assert.IsFalse(draft.CanSetTransportOrder);
+            Assert.IsFalse(draft.TrySetTransportOrder("ark_1", new GridCoord(1, 1), out string reason));
+            Assert.AreEqual("Transport targeting is opening-window only", reason);
+            Assert.IsNull(draft.TransportOrderSourceId);
+        }
+
+        [Test]
+        public void ClearTransportOrder_RemovesItFromBuiltCommands()
+        {
+            var draft = NewDraft(authority: 8, checkpointIndex: 0);
+            draft.TrySetTransportOrder("ark_1", new GridCoord(2, 2), out _);
+
+            draft.ClearTransportOrder();
+
+            Assert.IsNull(draft.TransportOrderSourceId);
+            var commands = draft.BuildCommands();
+            Assert.IsFalse(commands.Exists(c => c.Type == CommandType.TransportTarget));
+        }
+
+        [Test]
+        public void NoTransportOrder_BuildCommands_OmitsTransportTargetCommand()
+        {
+            var draft = NewDraft(authority: 8);
+
+            var commands = draft.BuildCommands();
+
+            Assert.IsFalse(commands.Exists(c => c.Type == CommandType.TransportTarget));
+        }
     }
 }

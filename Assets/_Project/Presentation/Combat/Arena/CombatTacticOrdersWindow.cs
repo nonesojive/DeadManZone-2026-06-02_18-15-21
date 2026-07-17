@@ -5,6 +5,7 @@ using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
+using DeadManZone.Core.Run;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -43,6 +44,15 @@ namespace DeadManZone.Presentation.Combat.Arena
             /// so only the tactic and untargeted abilities re-seed.</summary>
             public TacticType? PendingSelectedTactic;
             public IReadOnlyList<GrantedAbility> PendingSelectedAbilities;
+
+            /// <summary>2026-07-17 Oathborn transport tentpole (§2.5): fielded transports with
+            /// live cargo — empty/null when none, in which case the DEPLOY ORDER section never
+            /// appears (nothing to order).</summary>
+            public IReadOnlyList<TransportOrderOption> TransportOrders;
+
+            /// <summary>Any battlefield cell — "target a spot on the field", not a live-enemy
+            /// gate like ability targeting.</summary>
+            public Func<GridCoord, bool> IsValidTransportTargetCell;
         }
 
         /// <summary>Fires after any draft edit (tactic, queue, cancel). The run flow uses
@@ -59,6 +69,7 @@ namespace DeadManZone.Presentation.Combat.Arena
         private CombatTacticTargetPicker _picker;
         private Action<List<PhaseCommand>> _onResume;
         private AvailableCommand _pickingCommand;
+        private TransportOrderOption _pickingTransport;
 
         private GameObject _canvasRoot;
         private CanvasGroup _windowGroup;
@@ -78,6 +89,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private readonly List<(Button button, Image background, TMP_Text label, TacticType tactic)> _tacticButtons = new();
         private readonly List<(Button button, TMP_Text label, AvailableCommand command)> _abilityButtons = new();
+        private readonly List<(Button button, TMP_Text label, TransportOrderOption transport)> _transportButtons = new();
 
         public bool IsOpen { get; private set; }
         public bool IsPickingTarget => _picker != null && _picker.IsPicking;
@@ -115,6 +127,7 @@ namespace DeadManZone.Presentation.Combat.Arena
             SeedFromPendingDraft();
             BuildTacticButtons();
             BuildAbilityButtons();
+            BuildTransportButtons();
             Refresh();
         }
 
@@ -191,6 +204,45 @@ namespace DeadManZone.Presentation.Combat.Arena
             else
                 FlashRejection(reason);
 
+            Refresh();
+        }
+
+        private void OnTransportOrderClicked(TransportOrderOption transport)
+        {
+            if (_ctx.Mapper == null || _ctx.ArenaCamera == null)
+            {
+                FlashRejection("No battlefield mapper/camera");
+                return;
+            }
+
+            _pickingTransport = transport;
+            SetPickMode(true);
+            _picker.BeginPick(
+                _ctx.Mapper,
+                _ctx.ArenaCamera,
+                _ctx.IsValidTransportTargetCell,
+                onPicked: cell =>
+                {
+                    SetPickMode(false);
+                    if (_draft.TrySetTransportOrder(_pickingTransport.SourcePieceId, cell, out string reason))
+                        ClearRejection();
+                    else
+                        FlashRejection(reason);
+                    _pickingTransport = null;
+                    Refresh();
+                },
+                onCancelled: () =>
+                {
+                    SetPickMode(false);
+                    _pickingTransport = null;
+                    Refresh();
+                });
+        }
+
+        private void OnCancelTransportOrderClicked()
+        {
+            _draft.ClearTransportOrder();
+            ClearRejection();
             Refresh();
         }
 
@@ -276,10 +328,21 @@ namespace DeadManZone.Presentation.Combat.Arena
                     : CombatGrimdarkSkin.BodyText;
             }
 
+            foreach (var (button, label, transport) in _transportButtons)
+            {
+                bool ordered = _draft.TransportOrderSourceId == transport.SourcePieceId;
+                button.interactable = _draft.CanSetTransportOrder;
+                label.text = BuildTransportOrderLabel(transport, ordered);
+            }
+
             RebuildQueuedList();
-            _picker.SetPendingMarkers(_draft.Queued
+            var markers = _draft.Queued
                 .Where(q => q.TargetCell.HasValue)
-                .Select(q => q.TargetCell.Value));
+                .Select(q => q.TargetCell.Value)
+                .ToList();
+            if (_draft.TransportOrderTargetCell.HasValue)
+                markers.Add(_draft.TransportOrderTargetCell.Value);
+            _picker.SetPendingMarkers(markers);
 
             _resumeButton.interactable = _draft.Validate(out _);
             DraftChanged?.Invoke();
@@ -303,6 +366,18 @@ namespace DeadManZone.Presentation.Combat.Arena
                 AddQueuedRow(
                     $"{FormatAbility(queued.Command.Ability)}{target}  ({queued.Command.RequisitionCost}A)",
                     cancelIndex: i);
+            }
+
+            if (!string.IsNullOrEmpty(_draft.TransportOrderSourceId) && _draft.TransportOrderTargetCell.HasValue)
+            {
+                var transport = _ctx.TransportOrders?.FirstOrDefault(t => t.SourcePieceId == _draft.TransportOrderSourceId);
+                string name = transport?.SourceDisplayName ?? _draft.TransportOrderSourceId;
+                var cell = _draft.TransportOrderTargetCell.Value;
+                AddQueuedRow(
+                    $"DEPLOY — {name} @ {cell.X},{cell.Y}",
+                    "QueuedRow_TransportOrder",
+                    "QueuedCancel_TransportOrder",
+                    OnCancelTransportOrderClicked);
             }
         }
 
@@ -548,29 +623,79 @@ namespace DeadManZone.Presentation.Combat.Arena
             }
         }
 
+        /// <summary>2026-07-17 Oathborn transport tentpole (§2.5): "DEPLOY ORDER" — one button
+        /// per fielded transport still carrying cargo, opening-window only. Appended below the
+        /// ability list rather than a whole new column (rare, at most one Ark per army).</summary>
+        private void BuildTransportButtons()
+        {
+            _transportButtons.Clear();
+
+            bool canOrder = _ctx.CheckpointIndex == 0;
+            bool hasOrders = _ctx.TransportOrders != null && _ctx.TransportOrders.Count > 0;
+            if (!canOrder || !hasOrders)
+                return;
+
+            AddSectionLabel(_abilityColumn, "DEPLOY ORDER");
+            var hint = CreateLabel(_abilityColumn, "TransportHint",
+                "NO ORDER — ARK ADVANCES & ENGAGES LIKE ANY UNIT; CARGO RIDES UNTIL IT UNLOADS OR THE ARK IS DESTROYED",
+                11f, Vector2.zero, Vector2.one, TextAlignmentOptions.Left);
+            hint.color = SectionLabelColor;
+            hint.fontStyle = FontStyles.Italic;
+            hint.enableWordWrapping = true;
+            SetColumnItemHeight(hint.rectTransform, 34f);
+
+            foreach (var transport in _ctx.TransportOrders)
+            {
+                var button = CreateColumnButton(
+                    _abilityColumn,
+                    $"TransportButton_{transport.SourcePieceId}",
+                    BuildTransportOrderLabel(transport, ordered: false),
+                    44f);
+                var captured = transport;
+                button.onClick.AddListener(() => OnTransportOrderClicked(captured));
+                _transportButtons.Add((button, button.GetComponentInChildren<TMP_Text>(), transport));
+            }
+        }
+
+        private static string BuildTransportOrderLabel(TransportOrderOption transport, bool ordered)
+        {
+            string state = ordered ? "  — TARGETED" : string.Empty;
+            return $"DEPLOY  ·  {transport.SourceDisplayName}  ({transport.CargoCount} EMBARKED){state}";
+        }
+
         private void AddQueuedRow(string text, int? cancelIndex)
+        {
+            if (!cancelIndex.HasValue)
+            {
+                AddQueuedRow(text, "QueuedRow_Doctrine", null, null);
+                return;
+            }
+
+            int captured = cancelIndex.Value;
+            AddQueuedRow(text, $"QueuedRow_{captured}", $"QueuedCancel_{captured}", () => OnCancelQueuedClicked(captured));
+        }
+
+        private void AddQueuedRow(string text, string rowName, string cancelButtonName, Action onCancel)
         {
             if (_queuedColumn.childCount == 0)
                 AddSectionLabel(_queuedColumn, "QUEUED ORDERS");
 
-            var rowGo = new GameObject(cancelIndex.HasValue ? $"QueuedRow_{cancelIndex.Value}" : "QueuedRow_Doctrine",
-                typeof(RectTransform), typeof(Image));
+            var rowGo = new GameObject(rowName, typeof(RectTransform), typeof(Image));
             rowGo.transform.SetParent(_queuedColumn, false);
             rowGo.GetComponent<Image>().color = new Color(0.10f, 0.09f, 0.075f, 0.9f);
             SetColumnItemHeight(rowGo.GetComponent<RectTransform>(), 34f);
 
             var label = CreateLabel(rowGo.transform, "RowLabel", text, 13f,
-                new Vector2(0.03f, 0f), new Vector2(cancelIndex.HasValue ? 0.72f : 0.97f, 1f),
+                new Vector2(0.03f, 0f), new Vector2(onCancel != null ? 0.72f : 0.97f, 1f),
                 TextAlignmentOptions.Left);
             label.color = CombatGrimdarkSkin.BodyText;
 
-            if (!cancelIndex.HasValue)
+            if (onCancel == null)
                 return;
 
-            var cancel = CreateButton(rowGo.transform, $"QueuedCancel_{cancelIndex.Value}", "CANCEL",
+            var cancel = CreateButton(rowGo.transform, cancelButtonName, "CANCEL",
                 new Vector2(0.86f, 0.5f), new Vector2(86f, 26f), 11f);
-            int captured = cancelIndex.Value;
-            cancel.onClick.AddListener(() => OnCancelQueuedClicked(captured));
+            cancel.onClick.AddListener(() => onCancel());
         }
 
         // ---------------------------------------------------------------- helpers

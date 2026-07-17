@@ -23,6 +23,17 @@ namespace DeadManZone.Presentation.Combat.Arena
         private readonly Dictionary<string, PieceDefinitionSO> _piecesById = new();
         private readonly ArmyHealthReplayTracker _unitHealth = new();
 
+        // 2026-07-17 Oathborn transport tentpole (§2.5 Armored Ark): every cell, keyed by
+        // instance id, so an embarked cargo piece's Definition/Side can be looked up to spawn
+        // its actor later (on "transport_unload"/"transport_spill") even though it never got
+        // one at InitializeArena time.
+        private readonly Dictionary<string, BattlefieldCell> _cellsById = new();
+
+        // Cargo instance ids that have ALREADY disembarked as of the events replayed into this
+        // presentation (used only by the save/resume path, SyncActorsToAnchors, to tell
+        // "still embarked — stay hidden" apart from "already unloaded before the save").
+        private readonly HashSet<string> _disembarkedCargoIds = new();
+
         // Replay-side morale bookkeeping (mirrors _unitHealth): only units that can break
         // (Definition.MaxMorale > 0) are registered, so morale-immune units never get a
         // strip. "morale_damage" drains it, "rout" zeroes it — no game rules, just replay.
@@ -143,6 +154,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             _actors.Clear();
             _unitHealth.Clear();
             _unitMorale.Clear();
+            _cellsById.Clear();
+            _disembarkedCargoIds.Clear();
             _pendingDeathPresentations = 0;
             _replayState.ResetFromBattlefield(null);
             _battlefield = null;
@@ -194,10 +207,14 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             _unitHealth.Clear();
             _unitMorale.Clear();
+            _cellsById.Clear();
+            _disembarkedCargoIds.Clear();
             foreach (var cell in battlefield.Cells)
             {
                 if (cell?.Definition == null)
                     continue;
+
+                _cellsById[cell.InstanceId] = cell;
 
                 if (!PieceCombatRules.ParticipatesInCombat(cell.Definition))
                     continue;
@@ -211,6 +228,12 @@ namespace DeadManZone.Presentation.Combat.Arena
                         Current = cell.Definition.MaxMorale
                     };
                 }
+
+                // §2.5 Armored Ark: a piece build-tagged as this transport's cargo rides
+                // embarked from the very first tick — no actor (visible or otherwise) until
+                // "transport_unload"/"transport_spill" replays (SpawnEmbarkedActor).
+                if (!string.IsNullOrEmpty(cell.CarrierInstanceId))
+                    continue;
 
                 var actor = _pool.Rent();
                 var source = GetPiece(cell.Definition.Id);
@@ -266,6 +289,13 @@ namespace DeadManZone.Presentation.Combat.Arena
                     continue;
                 _unitHealth.ApplyEvent(combatEvent);
                 ApplyMoraleEvent(combatEvent);
+
+                // §2.5 Armored Ark: a cargo id only earns a visible actor in SyncActorsToAnchors
+                // if it already disembarked before this save point — otherwise it's still
+                // riding and must stay hidden exactly like a fresh fight's embarked cargo.
+                if (combatEvent.ActionType is "transport_unload" or "transport_spill" &&
+                    !string.IsNullOrEmpty(combatEvent.TargetId))
+                    _disembarkedCargoIds.Add(combatEvent.TargetId);
             }
         }
 
@@ -304,6 +334,13 @@ namespace DeadManZone.Presentation.Combat.Arena
                     continue;
 
                 if (!PieceCombatRules.ParticipatesInCombat(cell.Definition))
+                    continue;
+
+                // §2.5 Armored Ark: still-embarked cargo (never disembarked before this save)
+                // stays hidden, same as a fresh fight's InitializeArena.
+                bool stillEmbarked = !string.IsNullOrEmpty(cell.CarrierInstanceId)
+                    && !_disembarkedCargoIds.Contains(cell.InstanceId);
+                if (stillEmbarked)
                     continue;
 
                 if (!_replayState.TryGetAnchor(cell.InstanceId, out var anchor) || _actors.ContainsKey(cell.InstanceId))
@@ -430,7 +467,68 @@ namespace DeadManZone.Presentation.Combat.Arena
                 case "rout":
                     PlayRoutEvent(combatEvent);
                     break;
+                // §2.5 Armored Ark: the good outcome — cargo appears on arrival, no shock.
+                case "transport_unload":
+                    SpawnEmbarkedActor(combatEvent.ActorId, combatEvent.TargetId, punchIn: false);
+                    break;
+                // §2.5 Armored Ark: the transport died in transit — cargo spills at the wreck.
+                // The morale-shock hit itself replays as an ordinary "morale_damage" event
+                // (ApplyMoraleEvent/UpdateMoraleBar) right after this one in the same log.
+                case "transport_spill":
+                    SpawnEmbarkedActor(combatEvent.ActorId, combatEvent.TargetId, punchIn: true);
+                    break;
             }
+        }
+
+        /// <summary>§2.5 Armored Ark: cargo gets no actor until this fires — spawn one now at
+        /// the transport's current position (never the cargo's own stale build-time anchor;
+        /// the transport is the one guaranteed to already be a live, correctly-tracked actor).</summary>
+        private void SpawnEmbarkedActor(string transportInstanceId, string cargoInstanceId, bool punchIn)
+        {
+            if (string.IsNullOrEmpty(cargoInstanceId) || _actors.ContainsKey(cargoInstanceId))
+                return;
+
+            if (!_cellsById.TryGetValue(cargoInstanceId, out var cell) || cell?.Definition == null)
+                return;
+
+            var bootstrap = CombatArenaBootstrap.Instance;
+            var config = bootstrap?.Config;
+            if (_pool == null || _mapper == null || config == null)
+                return;
+
+            if (!_replayState.TryGetAnchor(transportInstanceId, out var anchor))
+                anchor = cell.Position; // last-ditch fallback; should always resolve above
+
+            var actor = _pool.Rent();
+            var source = GetPiece(cell.Definition.Id);
+            float moveSpeed = CombatArenaMoveSpeedResolver.ResolveWorldSpeed(source, config);
+            actor.Initialize(
+                cargoInstanceId,
+                cell.Definition.Id,
+                _arenaCameraTransform,
+                _mapper,
+                anchor,
+                config.moveLerpSeconds,
+                moveSpeed,
+                config.moveMarchGraceSeconds,
+                CombatAttackProfileResolver.Resolve(source),
+                source,
+                cell.Side,
+                config.useTopTroopsFreeChaseMovement,
+                config.topTroopsChaseMaxLeadCells);
+
+            _actors[cargoInstanceId] = actor;
+            actor.SetFrozen(IsPresentationFrozen);
+            if (_unitHealth.TryGetUnitFraction(cargoInstanceId, out float healthFraction))
+                actor.SetHealthFraction(healthFraction);
+            if (TryGetMoraleFraction(cargoInstanceId, out float moraleFraction))
+                actor.SetMoraleFraction(moraleFraction);
+
+            // Spill's "wreck" shock: reuse the existing hurt flinch rather than invent a new
+            // VFX vocabulary entry — the morale bar drain (from the paired morale_damage event)
+            // carries the actual shock read.
+            if (punchIn)
+                actor.PlayHurt();
         }
 
         // Events within one sim tick replay on the same frame; a small random offset

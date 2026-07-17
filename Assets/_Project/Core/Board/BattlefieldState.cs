@@ -10,6 +10,13 @@ namespace DeadManZone.Core.Board
         public PieceDefinition Definition { get; init; }
         public CombatSide Side { get; init; }
         public GridCoord Position { get; set; }
+
+        /// <summary>2026-07-17 Oathborn transport tentpole (§2.5): pass-through of
+        /// PlacedPiece.CarrierInstanceId — null = not cargo. Pure data plumbing (no rule here;
+        /// TickCombatRun/TransportRules already own the actual embark/disembark behavior) so
+        /// presentation can tell "starts embarked" apart from "starts on the field" without
+        /// re-deriving it from the raw BoardState.</summary>
+        public string CarrierInstanceId { get; init; }
     }
 
     public sealed class BattlefieldState
@@ -33,7 +40,8 @@ namespace DeadManZone.Core.Board
                     InstanceId = piece.InstanceId,
                     Definition = piece.Definition,
                     Side = CombatSide.Player,
-                    Position = piece.Anchor
+                    Position = piece.Anchor,
+                    CarrierInstanceId = piece.CarrierInstanceId
                 });
             }
 
@@ -49,7 +57,8 @@ namespace DeadManZone.Core.Board
                             piece.Anchor.X,
                             piece.Definition.Shape,
                             piece.Rotation),
-                        piece.Anchor.Y)
+                        piece.Anchor.Y),
+                    CarrierInstanceId = piece.CarrierInstanceId
                 });
             }
 

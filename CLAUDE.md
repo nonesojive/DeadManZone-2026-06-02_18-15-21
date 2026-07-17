@@ -4,7 +4,7 @@ Unity 6 run-based tactics autobattler. You build an army across two spatial boar
 choose one of three fronts, and the fight auto-resolves on a deterministic tick sim with a few
 tactical pauses. **Dread** is the run clock (earned only by winning); at its thresholds you fight a
 **Boss**. Beat 3 bosses to win; run out of **Manpower** and the run is over.
-**One playable faction** (IronMarch Union); the others are enemy pools.
+**All 8 factions are playable** (full-faction rollout, 2026-07-17); every faction also feeds the enemy rotation. Neutral is shop-only, never playable.
 
 ## Design source of truth
 
