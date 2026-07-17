@@ -136,8 +136,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             _visual?.SetHealthFraction(fraction);
         }
 
-        /// <summary>Update the unit's Morale display (0..1). The presenter only calls this
-        /// for units that can break, so morale-immune units never grow a strip.</summary>
+        /// <summary>Update the unit's Morale display (0..1) — the base ring's _Gutter rim.
+        /// The presenter only calls this for units that can break, so morale-immune units
+        /// keep an unlit gutter.</summary>
         public void SetMoraleFraction(float fraction)
         {
             if (!IsAlive)

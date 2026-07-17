@@ -57,7 +57,6 @@ namespace DeadManZone.Presentation.Combat.Arena
         private GameObject _ring;
         private Renderer _ringRenderer;
         private MaterialPropertyBlock _ringMpb;
-        private CombatUnitMoraleStrip _moraleStrip;
         private float _ringTargetFill = 1f;
         private float _ringDisplayedFill = 1f;
         private float _ringGutter;
@@ -102,12 +101,9 @@ namespace DeadManZone.Presentation.Combat.Arena
         /// <inheritdoc/>
         public void SetMoraleFraction(float fraction)
         {
-            // Lazily mirrors the side-ring machinery; only breakable units get this call.
-            if (_moraleStrip == null && _modelRoot != null)
-                _moraleStrip = CombatUnitMoraleStrip.Attach(transform, RingScale);
-
-            _moraleStrip?.SetFraction(fraction);
-
+            // 2026-07-17: the old floating morale strip (CombatUnitMoraleStrip) is gone —
+            // the ring's _Gutter rim below is the only morale display now (still lazy: this
+            // is only ever called for breakable units, mirroring the side-ring machinery).
             // Ring's _Gutter: achromatic rim flicker, driven by MPB same as _Fill (no
             // per-unit material instances) — mirrors CombatUnitVisual3D's humanoid path.
             _ringGutter = (1f - Mathf.Clamp01(fraction)) * MoraleGutterMaxIntensity;
@@ -137,8 +133,6 @@ namespace DeadManZone.Presentation.Combat.Arena
             _locomotionLockUntil = float.MaxValue;
             if (_ring != null)
                 _ring.SetActive(false);
-            if (_moraleStrip != null)
-                _moraleStrip.gameObject.SetActive(false);
             ApplyStatus(hitFlash: 0f, dissolve: 0f);
 
             if (_deathRoutine != null)
@@ -334,13 +328,10 @@ namespace DeadManZone.Presentation.Combat.Arena
                 Destroy(_modelRoot.gameObject);
             if (_ring != null)
                 Destroy(_ring);
-            if (_moraleStrip != null)
-                Destroy(_moraleStrip.gameObject);
 
             _modelRoot = null;
             _ring = null;
             _ringRenderer = null;
-            _moraleStrip = null;
             _ringTargetFill = 1f;
             _ringDisplayedFill = 1f;
             _ringGutter = 0f;
@@ -491,8 +482,6 @@ namespace DeadManZone.Presentation.Combat.Arena
             ApplyStatus(hitFlash: 0f, dissolve: 1f);
             if (_ring != null)
                 _ring.SetActive(false);
-            if (_moraleStrip != null)
-                _moraleStrip.gameObject.SetActive(false);
 
             _deathRoutine = null;
             onComplete?.Invoke();

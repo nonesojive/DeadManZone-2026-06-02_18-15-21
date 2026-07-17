@@ -28,9 +28,13 @@ namespace DeadManZone.Core.Tests
         private static BoardState BoardWithRifles(int count)
         {
             var board = new BoardState(TestBoards.CombatLayout);
+            // Wrap into further rows once a row fills — the combat board is only
+            // TestBoards.CombatBoardSize wide (6), and Generate_TiersAreOrderedBy... below
+            // needs armies up to 8 rifles to get genuinely uneven strengths.
+            int width = TestBoards.CombatBoardSize;
             for (int i = 0; i < count; i++)
                 Assert.IsTrue(
-                    board.TryPlace(TestPieces.RifleSquad(), new GridCoord(i, 0), $"enemy_{i}").Success,
+                    board.TryPlace(TestPieces.RifleSquad(), new GridCoord(i % width, i / width), $"enemy_{i}").Success,
                     $"rifle {i} must place");
             return board;
         }
@@ -87,6 +91,35 @@ namespace DeadManZone.Core.Tests
 
             foreach (var option in options)
                 Assert.That(option.TemplateFightNumber, Is.InRange(3, 4));
+        }
+
+        [Test]
+        public void Generate_TiersAreOrderedByDisplayedStrength_AcrossManySeedsAndRounds()
+        {
+            // 2026-07-17 fix: tiers are assigned by strength, not by draw slot — an uneven
+            // per-faction pool used to be able to roll a "hard" option weaker than its own
+            // "easy" one (owner playtest: Easy ~360 vs Normal ~207 / Hard ~195). Sweep many
+            // seeds/rounds/dread levels over a pool with genuinely uneven per-army strength
+            // (armies range from 1 to 8 rifles) and assert the three DISPLAYED previews are
+            // never out of order.
+            var armies = Enumerable.Range(1, 8).Select(n => Source(n)).ToList();
+
+            for (int seed = 0; seed < 40; seed++)
+            for (int round = 1; round <= 6; round++)
+            for (int dread = 0; dread <= 12; dread += 3)
+            {
+                var options = FightOptionGenerator.Generate(seed, round, dread, armies);
+                Assert.AreEqual(3, options.Count);
+
+                var easy = options.Single(o => o.Tier == FightOptionTier.Easy);
+                var normal = options.Single(o => o.Tier == FightOptionTier.Normal);
+                var hard = options.Single(o => o.Tier == FightOptionTier.Hard);
+
+                Assert.LessOrEqual(easy.StrengthPreview, normal.StrengthPreview,
+                    $"seed {seed} round {round} dread {dread}: Easy must not preview stronger than Normal");
+                Assert.LessOrEqual(normal.StrengthPreview, hard.StrengthPreview,
+                    $"seed {seed} round {round} dread {dread}: Normal must not preview stronger than Hard");
+            }
         }
 
         [Test]

@@ -28,8 +28,10 @@ namespace DeadManZone.Presentation.Combat.Arena
         void SetHealthFraction(float fraction);
 
         /// <summary>Latest replayed Morale fraction (0..1). Only invoked for units that
-        /// can break (Definition.MaxMorale &gt; 0) — backends lazily build the morale
-        /// strip on the first call, so morale-immune units show nothing new (ADR-0005).</summary>
+        /// can break (Definition.MaxMorale &gt; 0) — backends drive the base ring's _Gutter
+        /// rim from this (achromatic flicker; the ring _Fill stays HP-only), so morale-immune
+        /// units show nothing new (ADR-0005). 2026-07-17: the old floating morale strip
+        /// (CombatUnitMoraleStrip) is gone — the gutter is the only morale display now.</summary>
         void SetMoraleFraction(float fraction);
 
         /// <summary>True when a broken unit runs for its own board edge; vehicles return

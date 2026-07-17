@@ -233,7 +233,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 _actors[cell.InstanceId] = actor;
                 actor.SetFrozen(IsPresentationFrozen);
                 if (_unitMorale.ContainsKey(cell.InstanceId))
-                    actor.SetMoraleFraction(1f); // builds the strip only for breakable units
+                    actor.SetMoraleFraction(1f); // lights the ring gutter only for breakable units
             }
         }
 
