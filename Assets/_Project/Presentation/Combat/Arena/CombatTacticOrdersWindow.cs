@@ -69,7 +69,6 @@ namespace DeadManZone.Presentation.Combat.Arena
         private CombatTacticTargetPicker _picker;
         private Action<List<PhaseCommand>> _onResume;
         private AvailableCommand _pickingCommand;
-        private TransportOrderOption _pickingTransport;
 
         // ---- resume-gated "SELECT TRANSPORT TARGET" state (round-2 playtest fix) ----
         // Clicking RESUME with an armed transport (has cargo, no target set yet) doesn't
@@ -102,7 +101,6 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         private readonly List<(Button button, Image background, TMP_Text label, TacticType tactic)> _tacticButtons = new();
         private readonly List<(Button button, TMP_Text label, AvailableCommand command)> _abilityButtons = new();
-        private readonly List<(Button button, TMP_Text label, TransportOrderOption transport)> _transportButtons = new();
 
         public bool IsOpen { get; private set; }
         public bool IsPickingTarget => _picker != null && _picker.IsPicking;
@@ -140,7 +138,6 @@ namespace DeadManZone.Presentation.Combat.Arena
             SeedFromPendingDraft();
             BuildTacticButtons();
             BuildAbilityButtons();
-            BuildTransportButtons();
             Refresh();
         }
 
@@ -222,45 +219,6 @@ namespace DeadManZone.Presentation.Combat.Arena
             else
                 FlashRejection(reason);
 
-            Refresh();
-        }
-
-        private void OnTransportOrderClicked(TransportOrderOption transport)
-        {
-            if (_ctx.Mapper == null || _ctx.ArenaCamera == null)
-            {
-                FlashRejection("No battlefield mapper/camera");
-                return;
-            }
-
-            _pickingTransport = transport;
-            SetPickMode(true);
-            _picker.BeginPick(
-                _ctx.Mapper,
-                _ctx.ArenaCamera,
-                _ctx.IsValidTransportTargetCell,
-                onPicked: cell =>
-                {
-                    SetPickMode(false);
-                    if (_draft.TrySetTransportOrder(_pickingTransport.SourcePieceId, cell, out string reason))
-                        ClearRejection();
-                    else
-                        FlashRejection(reason);
-                    _pickingTransport = null;
-                    Refresh();
-                },
-                onCancelled: () =>
-                {
-                    SetPickMode(false);
-                    _pickingTransport = null;
-                    Refresh();
-                });
-        }
-
-        private void OnCancelTransportOrderClicked(string transportInstanceId)
-        {
-            _draft.ClearTransportOrder(transportInstanceId);
-            ClearRejection();
             Refresh();
         }
 
@@ -456,13 +414,6 @@ namespace DeadManZone.Presentation.Combat.Arena
                     : CombatGrimdarkSkin.BodyText;
             }
 
-            foreach (var (button, label, transport) in _transportButtons)
-            {
-                bool ordered = _draft.HasTransportOrder(transport.SourcePieceId);
-                button.interactable = _draft.CanSetTransportOrder;
-                label.text = BuildTransportOrderLabel(transport, ordered);
-            }
-
             RebuildQueuedList();
             var markers = _draft.Queued
                 .Where(q => q.TargetCell.HasValue)
@@ -495,17 +446,9 @@ namespace DeadManZone.Presentation.Combat.Arena
                     cancelIndex: i);
             }
 
-            foreach (var (sourceId, cell) in _draft.TransportOrders)
-            {
-                var transport = _ctx.TransportOrders?.FirstOrDefault(t => t.SourcePieceId == sourceId);
-                string name = transport?.SourceDisplayName ?? sourceId;
-                var capturedSourceId = sourceId;
-                AddQueuedRow(
-                    $"DEPLOY — {name} @ {cell.X},{cell.Y}",
-                    $"QueuedRow_TransportOrder_{sourceId}",
-                    $"QueuedCancel_TransportOrder_{sourceId}",
-                    () => OnCancelTransportOrderClicked(capturedSourceId));
-            }
+            // 2026-07-17 round-3 playtest fix: no in-window DEPLOY row anymore — a transport
+            // order is only ever set by the resume-gated SELECT TRANSPORT TARGET prompt
+            // (TryBeginTransportTargetGate), which fires after this window has already closed.
         }
 
         // ---------------------------------------------------------------- pick mode
@@ -817,46 +760,6 @@ namespace DeadManZone.Presentation.Combat.Arena
                 button.onClick.AddListener(() => OnAbilityClicked(captured));
                 _abilityButtons.Add((button, button.GetComponentInChildren<TMP_Text>(), command));
             }
-        }
-
-        /// <summary>2026-07-17 Oathborn transport tentpole (§2.5): "DEPLOY ORDER" — one button
-        /// per fielded transport still carrying cargo, opening-window only. Appended below the
-        /// ability list rather than a whole new column (rare, at most one Ark per army).</summary>
-        private void BuildTransportButtons()
-        {
-            _transportButtons.Clear();
-
-            bool canOrder = _ctx.CheckpointIndex == 0;
-            bool hasOrders = _ctx.TransportOrders != null && _ctx.TransportOrders.Count > 0;
-            if (!canOrder || !hasOrders)
-                return;
-
-            AddSectionLabel(_abilityColumn, "DEPLOY ORDER");
-            var hint = CreateLabel(_abilityColumn, "TransportHint",
-                "NO ORDER — ARK ADVANCES & ENGAGES LIKE ANY UNIT; CARGO RIDES UNTIL IT UNLOADS OR THE ARK IS DESTROYED",
-                11f, Vector2.zero, Vector2.one, TextAlignmentOptions.Left);
-            hint.color = SectionLabelColor;
-            hint.fontStyle = FontStyles.Italic;
-            hint.enableWordWrapping = true;
-            SetColumnItemHeight(hint.rectTransform, 34f);
-
-            foreach (var transport in _ctx.TransportOrders)
-            {
-                var button = CreateColumnButton(
-                    _abilityColumn,
-                    $"TransportButton_{transport.SourcePieceId}",
-                    BuildTransportOrderLabel(transport, ordered: false),
-                    44f);
-                var captured = transport;
-                button.onClick.AddListener(() => OnTransportOrderClicked(captured));
-                _transportButtons.Add((button, button.GetComponentInChildren<TMP_Text>(), transport));
-            }
-        }
-
-        private static string BuildTransportOrderLabel(TransportOrderOption transport, bool ordered)
-        {
-            string state = ordered ? "  — TARGETED" : string.Empty;
-            return $"DEPLOY  ·  {transport.SourceDisplayName}  ({transport.CargoCount} EMBARKED){state}";
         }
 
         private void AddQueuedRow(string text, int? cancelIndex)

@@ -115,18 +115,22 @@ namespace DeadManZone.Core.Board
             if (cargoInstanceId == transportInstanceId)
                 return new PlacementResult { Success = false, Reason = "Cannot load a transport into itself" };
 
-            var occupiedCargoCells = new HashSet<GridCoord>();
-            foreach (var loaded in _pieces.Values)
-            {
-                if (loaded.CarrierInstanceId != transportInstanceId || loaded.CargoAnchor is not { } loadedAnchor)
-                    continue;
-
-                foreach (var cell in loaded.Definition.Shape.GetCells(loadedAnchor, PieceRotation.R0))
-                    occupiedCargoCells.Add(cell);
-            }
+            var occupiedCargoCells = ComputeOccupiedCargoCells(transportInstanceId);
 
             if (!TryFindCargoAnchor(cargo.Definition, occupiedCargoCells, out var anchor))
                 return new PlacementResult { Success = false, Reason = "Cargo does not fit in transport hold" };
+
+            // 2026-07-17 round-3 playtest fix: "a piece is EITHER on the main board OR in a
+            // transport's cargo hold, never both" — rounds 1-2 only tagged the piece, leaving
+            // its main-board cells occupied so it rendered/blocked space in both places at
+            // once. Vacate them now that the fit check above has passed. Guarded on
+            // CarrierInstanceId so re-tagging an already-carried piece (shouldn't happen, but
+            // cheap to make idempotent) never double-frees someone else's cells.
+            if (cargo.CarrierInstanceId == null)
+            {
+                foreach (var cell in cargo.Definition.Shape.GetCells(cargo.Anchor, cargo.Rotation))
+                    _occupied.Remove(cell);
+            }
 
             _pieces[cargoInstanceId] = new PlacedPiece
             {
@@ -140,6 +144,136 @@ namespace DeadManZone.Core.Board
             };
 
             return new PlacementResult { Success = true };
+        }
+
+        /// <summary>2026-07-17 round-3 playtest fix: embark a piece that ISN'T on this board at
+        /// all directly into <paramref name="transportInstanceId"/>'s hold — no main-board cell
+        /// is ever claimed (the shop/reserves "place on the board, then tag it" composite is
+        /// gone; a piece is either on the board or in the hold, never a placeholder for both).
+        /// Same fit-check as <see cref="TryLoadCargo"/>, just without an already-placed source
+        /// piece to read from.</summary>
+        public PlacementResult TryEmbarkCargo(
+            PieceDefinition definition,
+            string transportInstanceId,
+            string instanceId = null,
+            bool isMercenary = false)
+        {
+            instanceId ??= Guid.NewGuid().ToString("N");
+
+            if (definition == null)
+                return new PlacementResult { Success = false, Reason = "No piece to embark" };
+
+            if (!_pieces.TryGetValue(transportInstanceId, out var transport))
+                return new PlacementResult { Success = false, Reason = "Transport piece not found" };
+
+            if (!transport.Definition.IsTransport)
+                return new PlacementResult { Success = false, Reason = "Source is not a transport" };
+
+            if (definition.IsTransport)
+                return new PlacementResult { Success = false, Reason = "A transport cannot be cargo" };
+
+            var occupiedCargoCells = ComputeOccupiedCargoCells(transportInstanceId);
+            if (!TryFindCargoAnchor(definition, occupiedCargoCells, out var anchor))
+                return new PlacementResult { Success = false, Reason = "Cargo does not fit in transport hold" };
+
+            _pieces[instanceId] = new PlacedPiece
+            {
+                InstanceId = instanceId,
+                Definition = definition,
+                // Cosmetic only — this piece never occupies a main-board cell, so any value
+                // works; the transport's own anchor keeps TickCombatRun's pre-re-anchor spawn
+                // step (SpawnCombatants) sane without meaning anything spatially.
+                Anchor = transport.Anchor,
+                Rotation = PieceRotation.R0,
+                CarrierInstanceId = transportInstanceId,
+                CargoAnchor = anchor,
+                IsMercenary = isMercenary
+            };
+
+            return new PlacementResult { Success = true };
+        }
+
+        /// <summary>Every piece currently tagged as <paramref name="transportInstanceId"/>'s
+        /// cargo (empty list if none/unknown).</summary>
+        public IReadOnlyList<PlacedPiece> GetCargo(string transportInstanceId) =>
+            _pieces.Values.Where(p => p.CarrierInstanceId == transportInstanceId).ToList();
+
+        private HashSet<GridCoord> ComputeOccupiedCargoCells(string transportInstanceId)
+        {
+            var occupiedCargoCells = new HashSet<GridCoord>();
+            foreach (var loaded in _pieces.Values)
+            {
+                if (loaded.CarrierInstanceId != transportInstanceId || loaded.CargoAnchor is not { } loadedAnchor)
+                    continue;
+
+                foreach (var cell in loaded.Definition.Shape.GetCells(loadedAnchor, PieceRotation.R0))
+                    occupiedCargoCells.Add(cell);
+            }
+
+            return occupiedCargoCells;
+        }
+
+        /// <summary>2026-07-17 round-3 playtest fix: selling (removing) a transport can't just
+        /// orphan its cargo's CarrierInstanceId tags — every loaded piece evicts to
+        /// <paramref name="reservesForEviction"/> first. Plans every eviction anchor before
+        /// mutating anything (ReservesState.CanPlace doesn't mutate), so a single piece with
+        /// nowhere to go aborts the WHOLE sell — nothing is removed, nothing is destroyed.</summary>
+        public bool TryRemoveTransportEvictingCargo(
+            string transportInstanceId,
+            ReservesState reservesForEviction,
+            out PlacedPiece removedTransport)
+        {
+            removedTransport = null;
+            if (!_pieces.TryGetValue(transportInstanceId, out var transport) || !transport.Definition.IsTransport)
+                return false;
+
+            var cargo = GetCargo(transportInstanceId);
+            if (cargo.Count > 0 && reservesForEviction == null)
+                return false;
+
+            var plannedAnchors = new Dictionary<string, GridCoord>();
+            var claimed = new HashSet<GridCoord>();
+            foreach (var piece in cargo)
+            {
+                if (!TryFindOpenReservesAnchor(reservesForEviction, piece.Definition, claimed, out var anchor))
+                    return false;
+
+                plannedAnchors[piece.InstanceId] = anchor;
+                foreach (var cell in piece.Definition.Shape.GetCells(anchor, PieceRotation.R0))
+                    claimed.Add(cell);
+            }
+
+            foreach (var piece in cargo)
+            {
+                TryRemove(piece.InstanceId, out _);
+                reservesForEviction.TryPlace(
+                    piece.Definition, plannedAnchors[piece.InstanceId], piece.InstanceId, PieceRotation.R0, piece.IsMercenary);
+            }
+
+            return TryRemove(transportInstanceId, out removedTransport);
+        }
+
+        private static bool TryFindOpenReservesAnchor(
+            ReservesState reserves, PieceDefinition definition, HashSet<GridCoord> claimed, out GridCoord anchor)
+        {
+            for (int y = 0; y < ReservesState.Height; y++)
+            {
+                for (int x = 0; x < ReservesState.Width; x++)
+                {
+                    var candidate = new GridCoord(x, y);
+                    if (!reserves.CanPlace(definition, candidate))
+                        continue;
+
+                    if (definition.Shape.GetCells(candidate, PieceRotation.R0).Any(claimed.Contains))
+                        continue;
+
+                    anchor = candidate;
+                    return true;
+                }
+            }
+
+            anchor = default;
+            return false;
         }
 
         /// <summary>First (row-major) anchor in the fixed cargo grid where every cell of
@@ -199,19 +333,33 @@ namespace DeadManZone.Core.Board
             if (!_pieces.TryGetValue(instanceId, out removedPiece))
                 return false;
 
-            foreach (var cell in removedPiece.Definition.Shape.GetCells(removedPiece.Anchor, removedPiece.Rotation))
-                _occupied.Remove(cell);
+            // 2026-07-17 round-3 playtest fix: a carried piece already vacated its main-board
+            // cells on load (TryLoadCargo/TryEmbarkCargo) — its stale Anchor may now coincide
+            // with whatever legitimately occupies that cell today. Only vacate for a piece
+            // that's actually still holding real board cells.
+            if (removedPiece.CarrierInstanceId == null)
+            {
+                foreach (var cell in removedPiece.Definition.Shape.GetCells(removedPiece.Anchor, removedPiece.Rotation))
+                    _occupied.Remove(cell);
+            }
 
             _pieces.Remove(instanceId);
             return true;
         }
 
+        /// <summary>Relocating a normal piece moves it on the main board as before. Relocating a
+        /// CARRIED piece is round-3's "unload-to-cell": it un-tags (TryPlace never carries
+        /// CarrierInstanceId forward) and re-validates at <paramref name="newAnchor"/> with the
+        /// exact same rules as any other placement — a piece is either on the board or in a
+        /// hold, never both, so "relocate" is how cargo gets back onto the board at all.</summary>
         public PlacementResult TryRelocate(string instanceId, GridCoord newAnchor, PieceRotation rotation)
         {
             if (!_pieces.TryGetValue(instanceId, out var piece))
                 return new PlacementResult { Success = false, Reason = "Piece not found" };
 
-            if (piece.Anchor.X == newAnchor.X && piece.Anchor.Y == newAnchor.Y && piece.Rotation == rotation)
+            bool wasCarried = piece.CarrierInstanceId != null;
+
+            if (!wasCarried && piece.Anchor.X == newAnchor.X && piece.Anchor.Y == newAnchor.Y && piece.Rotation == rotation)
                 return new PlacementResult { Success = true };
 
             if (!TryRemove(instanceId, out var removed))
@@ -219,7 +367,14 @@ namespace DeadManZone.Core.Board
 
             if (!CanPlace(removed.Definition, newAnchor, rotation))
             {
-                TryPlace(removed.Definition, removed.Anchor, removed.InstanceId, removed.Rotation, removed.IsMercenary);
+                // Rollback: a normal piece goes back onto the board where it was; a carried
+                // piece goes back into its hold exactly as it was (re-insert verbatim — no
+                // main-board cells to reclaim, nothing else to recompute).
+                if (wasCarried)
+                    _pieces[instanceId] = removed;
+                else
+                    TryPlace(removed.Definition, removed.Anchor, removed.InstanceId, removed.Rotation, removed.IsMercenary);
+
                 return new PlacementResult { Success = false, Reason = "Invalid placement" };
             }
 

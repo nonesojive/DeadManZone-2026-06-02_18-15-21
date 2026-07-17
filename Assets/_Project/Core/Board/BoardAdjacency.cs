@@ -14,7 +14,11 @@ namespace DeadManZone.Core.Board
 
         public static IEnumerable<AdjacentPair> GetTouchingPairs(IEnumerable<PlacedPiece> pieces)
         {
-            var pieceList = pieces.ToList();
+            // 2026-07-17 round-3 playtest fix: a piece carried in a transport's cargo hold no
+            // longer occupies a real main-board cell (BoardState.TryLoadCargo vacates it) — its
+            // Anchor is stale bookkeeping only. Without this filter it would appear "physically
+            // adjacent" to whatever now legitimately sits on that cell.
+            var pieceList = pieces.Where(p => p.CarrierInstanceId == null).ToList();
             var cellOwners = new Dictionary<GridCoord, string>();
 
             foreach (var piece in pieceList)

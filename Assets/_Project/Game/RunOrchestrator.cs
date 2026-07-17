@@ -585,9 +585,25 @@ namespace DeadManZone.Game
             if (State.Phase != RunPhase.Build)
                 return false;
 
-            if (!TryFindPlacedPiece(instanceId, out var board, out var removed)
-                || !board.TryRemove(instanceId, out removed))
+            if (!TryFindPlacedPiece(instanceId, out var board, out var target))
                 return false;
+
+            PlacedPiece removed;
+            if (target.Definition.IsTransport)
+            {
+                // 2026-07-17 round-3 playtest fix: selling a transport can't just orphan its
+                // cargo's CarrierInstanceId tags (cargo has no main-board cell of its own
+                // anymore) — it evicts to reserves first, or the whole sell is refused.
+                var reserves = GetReserves();
+                if (!board.TryRemoveTransportEvictingCargo(instanceId, reserves, out removed))
+                    return false;
+
+                SaveReserves(reserves);
+            }
+            else if (!board.TryRemove(instanceId, out removed))
+            {
+                return false;
+            }
 
             ApplySalvageRefund(removed.Definition, removed.IsMercenary);
             SaveBoardForPiece(removed.Definition, board);

@@ -543,7 +543,12 @@ private PieceDefinition _selectedPiece;
             _lastSynergySnapshot = PieceAbilityEngine.EvaluateFightStart(_boardState);
             var hoverController = ResolvePieceHoverCardController();
 
-            foreach (var piece in _boardState.Pieces)
+            // 2026-07-17 round-3 playtest fix: a piece carried in a transport's cargo hold no
+            // longer occupies a main-board cell (BoardState.TryLoadCargo/TryEmbarkCargo vacates
+            // it) — it renders ONLY inside its TransportCargoPanelPresenter (SyncTransportCargoPanels
+            // below), never here too. Without this filter it kept rendering at its stale
+            // pre-load Anchor, which is exactly the "shows up in both places" bug reported.
+            foreach (var piece in _boardState.Pieces.Where(p => p.CarrierInstanceId == null))
             {
                 foreach (var cell in piece.Definition.Shape.GetCells(piece.Anchor, piece.Rotation))
                 {
@@ -664,14 +669,36 @@ private PieceDefinition _selectedPiece;
                 ? footprintCells.Max(c => c.X) - footprintCells.Min(c => c.X) + 1
                 : 1;
 
-            float rightEdgeX = anchorLocal.Value.x - cellSize * 0.5f + footprintWidthCells * cellStep - gridLayout.spacing.x;
+            // 2026-07-17 round-3 owner playtest fix: "beside the piece" was still ON the
+            // board — with the Ark at the left of a 6-wide board, the panel landed over
+            // playable columns 2-3 as a see-through ghost (owner screenshot, twice). The
+            // panel now sits fully OUTSIDE the board rect, past whichever board edge is
+            // nearest the transport, vertically centered on the transport's footprint rows.
+            var boardGridRect = gridLayout.GetComponent<RectTransform>();
+            float boardHalfWidth = boardGridRect != null ? boardGridRect.rect.width * 0.5f : 3f * cellStep;
             float gap = gridLayout.spacing.x + cellSize * 0.5f;
-            float x = rightEdgeX + gap + rect.rect.width * 0.5f;
-            // Row-aligned with the transport's own anchor cell — board Y increases downward
-            // on screen while local/anchoredPosition Y increases upward, so centering on the
-            // full footprint's height needs a sign this codebase doesn't establish anywhere
-            // else; keeping it simple (and correct) beats guessing that sign.
-            rect.anchoredPosition = new Vector2(x, anchorLocal.Value.y);
+
+            bool transportOnLeftHalf = anchorLocal.Value.x < 0f;
+            float x = transportOnLeftHalf
+                ? -boardHalfWidth - gap - rect.rect.width * 0.5f
+                : boardHalfWidth + gap + rect.rect.width * 0.5f;
+
+            // Vertical center of the footprint, sign-safe: resolve the top-most and
+            // bottom-most footprint rows through the same overlay-space resolver as the
+            // anchor and average them — no assumptions about board-Y direction.
+            float y = anchorLocal.Value.y;
+            if (footprintCells.Count > 0)
+            {
+                int minY = footprintCells.Min(c => c.Y);
+                int maxY = footprintCells.Max(c => c.Y);
+                int footprintX = footprintCells.Min(c => c.X);
+                var top = ResolveCellCenterInOverlay(new DeadManZone.Core.Common.GridCoord(footprintX, minY));
+                var bottom = ResolveCellCenterInOverlay(new DeadManZone.Core.Common.GridCoord(footprintX, maxY));
+                if (top.HasValue && bottom.HasValue)
+                    y = (top.Value.y + bottom.Value.y) * 0.5f;
+            }
+
+            rect.anchoredPosition = new Vector2(x, y);
         }
 
         public void HidePieceHoverCard() => pieceHoverCardController?.Hide();

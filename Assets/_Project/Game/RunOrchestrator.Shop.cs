@@ -202,8 +202,16 @@ namespace DeadManZone.Game
             if (State.Phase != RunPhase.Build)
                 return false;
 
-            if (!TryFindPlacedPiece(boardInstanceId, out var board, out var removed)
-                || !board.TryRemove(boardInstanceId, out removed))
+            if (!TryFindPlacedPiece(boardInstanceId, out var board, out var removed))
+                return false;
+
+            // 2026-07-17 round-3 playtest fix: a transport carrying cargo has nowhere on
+            // ReservesState to keep its hold — refuse rather than orphan the cargo's
+            // CarrierInstanceId tags. Sell it (evicts cargo to reserves) instead.
+            if (removed.Definition.IsTransport && board.GetCargo(boardInstanceId).Count > 0)
+                return false;
+
+            if (!board.TryRemove(boardInstanceId, out removed))
                 return false;
 
             var reserves = GetReserves();
