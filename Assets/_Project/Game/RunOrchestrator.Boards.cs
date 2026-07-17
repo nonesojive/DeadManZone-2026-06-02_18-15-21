@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Common;
@@ -19,9 +20,16 @@ namespace DeadManZone.Game
             if (Faction == null)
                 return new BoardState(BoardLayout.CreateCombatBoard());
 
-            return State.CombatBoard == null
-                ? new BoardState(Faction.CreateCombatBoardLayout())
-                : BoardSnapshotMapper.ToBoard(State.CombatBoard, _registry);
+            if (State.CombatBoard == null)
+                return new BoardState(Faction.CreateCombatBoardLayout());
+
+            // 2026-07-17 round-2 playtest fix: a save made before the cargo-hold-fit rule
+            // existed can list more cargo than now fits its transport's 2x2 hold. Never throw
+            // on load — evict the excess to reserves (or leave it on the board) and log it.
+            var warnings = new List<string>();
+            var board = BoardSnapshotMapper.ToBoard(State.CombatBoard, _registry, GetReserves(), warnings);
+            LogCargoEvictionWarnings(warnings);
+            return board;
         }
 
         public BoardState GetHqBoard()
@@ -29,9 +37,22 @@ namespace DeadManZone.Game
             if (Faction == null)
                 return new BoardState(BoardLayout.CreateHqBoard(3, 6));
 
-            return State.HqBoard == null
-                ? new BoardState(Faction.CreateHqBoardLayout())
-                : BoardSnapshotMapper.ToBoard(State.HqBoard, _registry);
+            if (State.HqBoard == null)
+                return new BoardState(Faction.CreateHqBoardLayout());
+
+            var warnings = new List<string>();
+            var board = BoardSnapshotMapper.ToBoard(State.HqBoard, _registry, GetReserves(), warnings);
+            LogCargoEvictionWarnings(warnings);
+            return board;
+        }
+
+        private static void LogCargoEvictionWarnings(List<string> warnings)
+        {
+            if (warnings == null)
+                return;
+
+            foreach (var warning in warnings)
+                UnityEngine.Debug.LogWarning($"[DeadManZone] {warning}");
         }
 
         public void SaveCombatBoard(BoardState board)

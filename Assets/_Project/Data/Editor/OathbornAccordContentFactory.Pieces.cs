@@ -117,11 +117,15 @@ namespace DeadManZone.Data.Editor
             // pure data manipulation over CombatantState.EmbarkedCargoIds/IsEmbarked, which the
             // sim populates elsewhere; no additional PieceDefinition field is missing). No attack
             // per the spec's Attack="—"; heavy armor, high HP like Grand Battery's scale.
+            // 2026-07-17 round-2 playtest fix: cargo hold is a real 2x2 mini board
+            // (BoardState.CargoGridWidth/Height) — 4 total cells, footprint-fit gated, not a
+            // flat piece count. transportCapacity now documents that total (was 3, a stale
+            // piece-count value from before the fit rule existed).
             SavePiece("armored_ark", "Armored Ark", PieceCategory.Unit, DemoSandboxShapes.Square2x2,
                 GameTagIds.Vehicle, GameTagIds.Transport, FactionIds.OathbornAccord, 150, 0, 5, AttackType.None, ArmorType.Heavy,
                 AttackSpeedTier.Slow, AttackRangeTier.Melee, 1,
                 rarity: Rarity.Rare, maxMorale: 50,
-                isTransport: true, transportCapacity: 3),
+                isTransport: true, transportCapacity: 4),
 
             // Rare — "Units at full morale +damage; all morale damage taken halved". The halved
             // half maps to the piece's own MoraleDamageResistancePercent (50%, like Iron Guard's

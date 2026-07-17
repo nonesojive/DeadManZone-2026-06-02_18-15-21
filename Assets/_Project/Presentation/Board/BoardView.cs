@@ -215,34 +215,49 @@ private PieceDefinition _selectedPiece;
         // (TransportCargoSlotDropTarget) into the matching RunManager composite. No zone-rule
         // pre-check like the methods above — TryLoadCargo's own auto-anchor scan (Run
         // Orchestrator.Transport.cs) already reuses BoardState.CanPlace, the same rule.
-        public bool TryLoadCargoFromBoard(string cargoInstanceId, string transportInstanceId)
+        public bool TryLoadCargoFromBoard(string cargoInstanceId, string transportInstanceId) =>
+            TryLoadCargoFromBoard(cargoInstanceId, transportInstanceId, out _);
+
+        /// <summary>2026-07-17 round-2 playtest fix: reason out-param forwarded from
+        /// BoardState.TryLoadCargo (e.g. "Cargo does not fit in transport hold") so
+        /// TransportCargoSlotDropTarget can show it on a rejected drop.</summary>
+        public bool TryLoadCargoFromBoard(string cargoInstanceId, string transportInstanceId, out string reason)
         {
+            reason = null;
             if (RunManager.Instance == null)
                 return false;
 
-            bool loaded = RunManager.Instance.TryLoadCargoFromBoard(cargoInstanceId, transportInstanceId);
+            bool loaded = RunManager.Instance.TryLoadCargoFromBoard(cargoInstanceId, transportInstanceId, out reason);
             if (loaded)
                 RefreshFromRunManager();
             return loaded;
         }
 
-        public bool TryLoadCargoFromReserves(string reservesInstanceId, string transportInstanceId)
+        public bool TryLoadCargoFromReserves(string reservesInstanceId, string transportInstanceId) =>
+            TryLoadCargoFromReserves(reservesInstanceId, transportInstanceId, out _);
+
+        public bool TryLoadCargoFromReserves(string reservesInstanceId, string transportInstanceId, out string reason)
         {
+            reason = null;
             if (RunManager.Instance == null)
                 return false;
 
-            bool loaded = RunManager.Instance.TryLoadCargoFromReserves(reservesInstanceId, transportInstanceId);
+            bool loaded = RunManager.Instance.TryLoadCargoFromReserves(reservesInstanceId, transportInstanceId, out reason);
             if (loaded)
                 RefreshFromRunManager();
             return loaded;
         }
 
-        public bool TryAcquireOfferToCargo(string offerId, string transportInstanceId)
+        public bool TryAcquireOfferToCargo(string offerId, string transportInstanceId) =>
+            TryAcquireOfferToCargo(offerId, transportInstanceId, out _);
+
+        public bool TryAcquireOfferToCargo(string offerId, string transportInstanceId, out string reason)
         {
+            reason = null;
             if (RunManager.Instance == null)
                 return false;
 
-            bool loaded = RunManager.Instance.TryAcquireOfferToCargo(offerId, transportInstanceId);
+            bool loaded = RunManager.Instance.TryAcquireOfferToCargo(offerId, transportInstanceId, out reason);
             if (loaded)
                 RefreshFromRunManager();
             return loaded;
@@ -621,17 +636,42 @@ private PieceDefinition _selectedPiece;
             }
         }
 
-        /// <summary>Anchors the panel just past the transport's own footprint, in the same
-        /// overlay-local space the piece's own shape visual already renders in.</summary>
+        /// <summary>2026-07-17 round-2 playtest fix: the panel used to render as a tiny
+        /// misaligned cluster floating left of the board. Root cause — a coordinate-space
+        /// mismatch: ResolveCellCenterInOverlay returns a point relative to _piecesOverlay's
+        /// PIVOT (which SyncPiecesOverlay copies from the board grid's own RectTransform —
+        /// center, (0.5,0.5), for the live board), but the panel's own RectTransform anchored
+        /// at its (0,0) corner interprets anchoredPosition as an offset from that CORNER, not
+        /// the center. Every panel silently landed ~half the board's width/height away from
+        /// where it was told to go. Fix: the template's RectTransform is now anchored/pivoted
+        /// at (0.5,0.5) too (ShopV2Canvas/TransportCargoPanelTemplate, hand-edited in-editor —
+        /// see report), so both sides of this assignment share the same "offset from center"
+        /// convention. Anchors just past the transport's own right edge, at board-cell scale
+        /// (reads gridLayout.cellSize/spacing directly rather than a hardcoded fallback), with
+        /// a half-cell gap so it never overlaps the piece's own readability.</summary>
         private void PositionCargoPanel(TransportCargoPanelPresenter panel, PlacedPiece transport)
         {
             var rect = panel.GetComponent<RectTransform>();
             var anchorLocal = ResolveCellCenterInOverlay(transport.Anchor);
-            if (rect == null || !anchorLocal.HasValue)
+            if (rect == null || !anchorLocal.HasValue || gridLayout == null)
                 return;
 
-            float cellSize = gridLayout != null ? gridLayout.cellSize.x : 40f;
-            rect.anchoredPosition = anchorLocal.Value + new Vector2(cellSize * 1.6f, 0f);
+            float cellSize = gridLayout.cellSize.x;
+            float cellStep = cellSize + gridLayout.spacing.x;
+
+            var footprintCells = transport.Definition.Shape.GetCells(transport.Anchor, transport.Rotation).ToList();
+            int footprintWidthCells = footprintCells.Count > 0
+                ? footprintCells.Max(c => c.X) - footprintCells.Min(c => c.X) + 1
+                : 1;
+
+            float rightEdgeX = anchorLocal.Value.x - cellSize * 0.5f + footprintWidthCells * cellStep - gridLayout.spacing.x;
+            float gap = gridLayout.spacing.x + cellSize * 0.5f;
+            float x = rightEdgeX + gap + rect.rect.width * 0.5f;
+            // Row-aligned with the transport's own anchor cell — board Y increases downward
+            // on screen while local/anchoredPosition Y increases upward, so centering on the
+            // full footprint's height needs a sign this codebase doesn't establish anywhere
+            // else; keeping it simple (and correct) beats guessing that sign.
+            rect.anchoredPosition = new Vector2(x, anchorLocal.Value.y);
         }
 
         public void HidePieceHoverCard() => pieceHoverCardController?.Hide();

@@ -85,10 +85,19 @@ namespace DeadManZone.Core.Board
             return new PlacementResult { Success = true };
         }
 
+        /// <summary>2026-07-17 round-2 playtest fix: the Ark's cargo hold is a real 2x2 mini
+        /// board — pieces occupy their actual footprints inside it, not just a piece-count
+        /// slot. Fixed size (no per-piece configurability, no rotation): "a tiny 2x2 board".</summary>
+        public const int CargoGridWidth = 2;
+        public const int CargoGridHeight = 2;
+
         /// <summary>2026-07-15 faction-roster-v1 §2.5 transport tentpole: load an already-placed
-        /// piece as cargo into an already-placed transport during Build. Purely a data tag
-        /// (PlacedPiece.CarrierInstanceId) — the cargo piece's own board cell is untouched, so
-        /// this can't fail on geometry, only on transport validity/capacity.</summary>
+        /// piece as cargo into an already-placed transport during Build. Mostly a data tag
+        /// (PlacedPiece.CarrierInstanceId) — the cargo piece's own board cell is untouched —
+        /// but the load itself is gated by whether the piece's footprint actually FITS into the
+        /// transport's fixed 2x2 cargo hold alongside whatever's already loaded (round-2
+        /// playtest fix: the old rule only counted loaded PIECES, so e.g. a 2-cell piece +
+        /// a 3-cell piece — 5 cells — both fit into what must be a 4-cell hold).</summary>
         public PlacementResult TryLoadCargo(string cargoInstanceId, string transportInstanceId)
         {
             if (!_pieces.TryGetValue(cargoInstanceId, out var cargo))
@@ -106,9 +115,18 @@ namespace DeadManZone.Core.Board
             if (cargoInstanceId == transportInstanceId)
                 return new PlacementResult { Success = false, Reason = "Cannot load a transport into itself" };
 
-            int loaded = _pieces.Values.Count(p => p.CarrierInstanceId == transportInstanceId);
-            if (loaded >= transport.Definition.TransportCapacity)
-                return new PlacementResult { Success = false, Reason = "Transport is full" };
+            var occupiedCargoCells = new HashSet<GridCoord>();
+            foreach (var loaded in _pieces.Values)
+            {
+                if (loaded.CarrierInstanceId != transportInstanceId || loaded.CargoAnchor is not { } loadedAnchor)
+                    continue;
+
+                foreach (var cell in loaded.Definition.Shape.GetCells(loadedAnchor, PieceRotation.R0))
+                    occupiedCargoCells.Add(cell);
+            }
+
+            if (!TryFindCargoAnchor(cargo.Definition, occupiedCargoCells, out var anchor))
+                return new PlacementResult { Success = false, Reason = "Cargo does not fit in transport hold" };
 
             _pieces[cargoInstanceId] = new PlacedPiece
             {
@@ -117,10 +135,49 @@ namespace DeadManZone.Core.Board
                 Anchor = cargo.Anchor,
                 Rotation = cargo.Rotation,
                 CarrierInstanceId = transportInstanceId,
+                CargoAnchor = anchor,
                 IsMercenary = cargo.IsMercenary
             };
 
             return new PlacementResult { Success = true };
+        }
+
+        /// <summary>First (row-major) anchor in the fixed cargo grid where every cell of
+        /// <paramref name="definition"/>'s own shape (no rotation — the hold isn't oriented)
+        /// lands in-bounds and free. Mirrors CanPlace's per-cell checks at 2x2 scale.</summary>
+        private static bool TryFindCargoAnchor(
+            PieceDefinition definition, HashSet<GridCoord> occupiedCargoCells, out GridCoord anchor)
+        {
+            for (int y = 0; y < CargoGridHeight; y++)
+            {
+                for (int x = 0; x < CargoGridWidth; x++)
+                {
+                    var candidate = new GridCoord(x, y);
+                    if (FitsCargoGrid(definition, candidate, occupiedCargoCells))
+                    {
+                        anchor = candidate;
+                        return true;
+                    }
+                }
+            }
+
+            anchor = default;
+            return false;
+        }
+
+        private static bool FitsCargoGrid(
+            PieceDefinition definition, GridCoord anchor, HashSet<GridCoord> occupiedCargoCells)
+        {
+            foreach (var cell in definition.Shape.GetCells(anchor, PieceRotation.R0))
+            {
+                if (cell.X < 0 || cell.Y < 0 || cell.X >= CargoGridWidth || cell.Y >= CargoGridHeight)
+                    return false;
+
+                if (occupiedCargoCells.Contains(cell))
+                    return false;
+            }
+
+            return true;
         }
 
         public bool IsOnSpecialTile(string instanceId)

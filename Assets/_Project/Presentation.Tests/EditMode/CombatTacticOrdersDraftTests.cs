@@ -1,3 +1,4 @@
+using System.Linq;
 using DeadManZone.Core.Board;
 using DeadManZone.Core.Combat;
 using DeadManZone.Core.Common;
@@ -193,6 +194,30 @@ namespace DeadManZone.Presentation.Tests
             var commands = draft.BuildCommands();
 
             Assert.IsFalse(commands.Exists(c => c.Type == CommandType.TransportTarget));
+        }
+
+        /// <summary>2026-07-17 round-2 playtest fix: the resume-gate chains one prompt per
+        /// armed transport, so the draft must be able to hold more than one order at once
+        /// (generalized from the original single TransportOrderSourceId/TargetCell slot).</summary>
+        [Test]
+        public void MultipleTransportOrders_BuildCommands_EmitsOnePerTransport_AndClearsIndependently()
+        {
+            var draft = NewDraft(authority: 8, checkpointIndex: 0);
+            draft.TrySetTransportOrder("ark_1", new GridCoord(1, 1), out _);
+            draft.TrySetTransportOrder("ark_2", new GridCoord(3, 3), out _);
+
+            Assert.IsTrue(draft.HasTransportOrder("ark_1"));
+            Assert.IsTrue(draft.HasTransportOrder("ark_2"));
+
+            var transportCommands = draft.BuildCommands().Where(c => c.Type == CommandType.TransportTarget).ToList();
+            Assert.AreEqual(2, transportCommands.Count);
+            Assert.IsTrue(transportCommands.Any(c => c.SourcePieceId == "ark_1" && c.TargetCell.Value.Equals(new GridCoord(1, 1))));
+            Assert.IsTrue(transportCommands.Any(c => c.SourcePieceId == "ark_2" && c.TargetCell.Value.Equals(new GridCoord(3, 3))));
+
+            draft.ClearTransportOrder("ark_1");
+
+            Assert.IsFalse(draft.HasTransportOrder("ark_1"));
+            Assert.IsTrue(draft.HasTransportOrder("ark_2"), "clearing one transport's order must not clear the other's");
         }
     }
 }

@@ -16,6 +16,15 @@ namespace DeadManZone.Core.Board
         /// (off-field) instead of independently.</summary>
         public string CarrierInstanceId { get; init; }
 
+        /// <summary>2026-07-17 round-2 playtest fix (Armored Ark cargo-as-mini-board): this
+        /// piece's footprint anchor inside its carrier's fixed BoardState.CargoGridWidth x
+        /// BoardState.CargoGridHeight cargo hold. Only meaningful when CarrierInstanceId is
+        /// set — null otherwise. Purely a capacity/rendering bookkeeping coordinate (separate
+        /// coordinate space from this piece's own Anchor on the main board, which stays
+        /// wherever it was placed); recomputed by BoardState.TryLoadCargo, never persisted
+        /// directly (BoardSnapshotMapper.ToBoard re-derives it on load).</summary>
+        public GridCoord? CargoAnchor { get; init; }
+
         /// <summary>2026-07-16 faction-roster-v1 §1.4: acquisition-based and PERMANENT — set
         /// only when this instance was bought through the Cartel mercenary shop slot
         /// (CartelMercenarySlotProvider / ShopOffer.IsMercenary). Suppresses OffFactionRules

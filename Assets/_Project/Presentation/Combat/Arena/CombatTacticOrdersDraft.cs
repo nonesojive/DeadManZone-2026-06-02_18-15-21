@@ -108,14 +108,27 @@ namespace DeadManZone.Presentation.Combat.Arena
             _queued.Any(q => q.Command.Ability == ability);
 
         /// <summary>2026-07-17 Oathborn transport tentpole (§2.5): the opening-window-only,
-        /// free "DEPLOY ORDER" — which fielded transport drives to which cell. Not budget or
+        /// free "DEPLOY ORDER" — which fielded transport(s) drive to which cell. Not budget or
         /// TacticPauseValidator-gated (CommandProcessor's own opening-window-only check is the
         /// single source of truth; this just mirrors it honestly so the button disables outside
-        /// checkpoint 0 instead of round-tripping a rejection).</summary>
-        public string TransportOrderSourceId { get; private set; }
-        public GridCoord? TransportOrderTargetCell { get; private set; }
+        /// checkpoint 0 instead of round-tripping a rejection). One entry per transport instance
+        /// id — round-2 playtest fix generalized this from a single slot to support the
+        /// resume-gate's "chain a prompt per armed transport" flow (still just one Ark today,
+        /// but the sheet itself has no reason to assume that).</summary>
+        private readonly Dictionary<string, GridCoord> _transportOrders = new();
+
+        public IReadOnlyDictionary<string, GridCoord> TransportOrders => _transportOrders;
+
+        /// <summary>Convenience accessor for the (still common) single-transport case — the
+        /// first order recorded, or null/empty if none. Kept for the in-window queued-list
+        /// rendering and existing tests; multi-transport UI iterates <see cref="TransportOrders"/> directly.</summary>
+        public string TransportOrderSourceId => _transportOrders.Count > 0 ? _transportOrders.Keys.First() : null;
+        public GridCoord? TransportOrderTargetCell => _transportOrders.Count > 0 ? _transportOrders.Values.First() : (GridCoord?)null;
 
         public bool CanSetTransportOrder => _checkpointIndex == 0;
+
+        public bool HasTransportOrder(string transportInstanceId) =>
+            !string.IsNullOrEmpty(transportInstanceId) && _transportOrders.ContainsKey(transportInstanceId);
 
         public bool TrySetTransportOrder(string transportInstanceId, GridCoord cell, out string reason)
         {
@@ -131,16 +144,19 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return false;
             }
 
-            TransportOrderSourceId = transportInstanceId;
-            TransportOrderTargetCell = cell;
+            _transportOrders[transportInstanceId] = cell;
             reason = null;
             return true;
         }
 
-        public void ClearTransportOrder()
+        /// <summary>Clears every recorded transport order (the original single-slot behavior —
+        /// still what the in-window CANCEL row uses when only one Ark is fielded).</summary>
+        public void ClearTransportOrder() => _transportOrders.Clear();
+
+        public void ClearTransportOrder(string transportInstanceId)
         {
-            TransportOrderSourceId = null;
-            TransportOrderTargetCell = null;
+            if (!string.IsNullOrEmpty(transportInstanceId))
+                _transportOrders.Remove(transportInstanceId);
         }
 
         /// <summary>The exact PhaseCommands the real flow submits: SetTactic first,
@@ -171,14 +187,14 @@ namespace DeadManZone.Presentation.Combat.Arena
                 });
             }
 
-            if (!string.IsNullOrEmpty(TransportOrderSourceId) && TransportOrderTargetCell.HasValue)
+            foreach (var (sourceId, cell) in _transportOrders)
             {
                 commands.Add(new PhaseCommand
                 {
                     AfterCheckpoint = _checkpointIndex,
                     Type = CommandType.TransportTarget,
-                    SourcePieceId = TransportOrderSourceId,
-                    TargetCell = TransportOrderTargetCell
+                    SourcePieceId = sourceId,
+                    TargetCell = cell
                 });
             }
 

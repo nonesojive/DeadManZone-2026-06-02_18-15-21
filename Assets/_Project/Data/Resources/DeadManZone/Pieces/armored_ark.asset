@@ -54,7 +54,7 @@ MonoBehaviour:
   factionId: oathborn_accord
   appliesSuppressionOnHit: 0
   isTransport: 1
-  transportCapacity: 3
+  transportCapacity: 4
   lowStateDamageBonus: 0
   lowStateAttackSpeedSteps: 0
   healPulseAmount: 0

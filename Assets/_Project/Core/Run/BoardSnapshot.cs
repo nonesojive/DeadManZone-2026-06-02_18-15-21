@@ -85,7 +85,23 @@ namespace DeadManZone.Core.Run
             return snapshot;
         }
 
-        public static BoardState ToBoard(BoardSnapshot snapshot, ContentRegistry registry)
+        public static BoardState ToBoard(BoardSnapshot snapshot, ContentRegistry registry) =>
+            ToBoard(snapshot, registry, null, null);
+
+        /// <summary>2026-07-17 round-2 playtest fix: <paramref name="reservesForEviction"/> and
+        /// <paramref name="warnings"/> are additive — every existing call site (2-arg overload)
+        /// is unaffected. Needed because TryLoadCargo now gates on the cargo hold's fixed 2x2
+        /// footprint (BoardState.CargoGridWidth/Height): a save made before that rule existed
+        /// can legally list more cargo than now fits (the owner's repro: 3 pieces / 5 cells into
+        /// a 4-cell hold). Re-tagging never throws for a fit failure — the excess piece(s) are
+        /// gracefully evicted to <paramref name="reservesForEviction"/> (or just left on the
+        /// board, already legally placed there since Build, if reserves is null/full) and
+        /// logged to <paramref name="warnings"/> — never dropped.</summary>
+        public static BoardState ToBoard(
+            BoardSnapshot snapshot,
+            ContentRegistry registry,
+            ReservesState reservesForEviction,
+            List<string> warnings)
         {
             var layout = CreateLayout(snapshot);
             var board = new BoardState(layout);
@@ -106,18 +122,76 @@ namespace DeadManZone.Core.Run
 
             // Second pass: re-apply cargo tags now every piece (including every transport)
             // is on the board — TryLoadCargo requires both instance ids to already exist.
-            foreach (var record in snapshot.Pieces)
+            // Deterministic order (InstanceId) so which pieces "win" the hold on an
+            // over-capacity legacy save is stable and testable.
+            foreach (var record in snapshot.Pieces.OrderBy(p => p.InstanceId))
             {
                 if (string.IsNullOrEmpty(record.CarrierInstanceId))
                     continue;
 
                 var loadResult = board.TryLoadCargo(record.InstanceId, record.CarrierInstanceId);
-                if (!loadResult.Success)
-                    throw new System.InvalidOperationException(
-                        $"Failed to restore cargo tag for '{record.InstanceId}' onto '{record.CarrierInstanceId}': {loadResult.Reason}");
+                if (loadResult.Success)
+                    continue;
+
+                EvictCargoExcess(board, reservesForEviction, record, loadResult.Reason, warnings);
             }
 
             return board;
+        }
+
+        /// <summary>The piece is already legally placed on <paramref name="board"/> at its own
+        /// Anchor (first pass) — it just fails to be TAGGED as cargo. Prefer moving it to
+        /// reserves (bench it for the player to re-place deliberately); if reserves is
+        /// unavailable or full, leave it on the board exactly where it already is. Either way
+        /// it is never removed without a home.</summary>
+        private static void EvictCargoExcess(
+            BoardState board,
+            ReservesState reservesForEviction,
+            PlacedPieceRecord record,
+            string reason,
+            List<string> warnings)
+        {
+            string outcome = "left on the board";
+
+            if (reservesForEviction != null
+                && board.TryRemove(record.InstanceId, out var removed)
+                && TryFindOpenReservesAnchor(reservesForEviction, removed.Definition, out var reservesAnchor))
+            {
+                var placed = reservesForEviction.TryPlace(
+                    removed.Definition, reservesAnchor, removed.InstanceId, PieceRotation.R0, removed.IsMercenary);
+                if (placed.Success)
+                {
+                    outcome = "evicted to reserves";
+                }
+                else
+                {
+                    // Shouldn't happen (we just found an open anchor) — put it back rather
+                    // than lose it.
+                    board.TryPlace(removed.Definition, removed.Anchor, removed.InstanceId, removed.Rotation, removed.IsMercenary);
+                }
+            }
+
+            warnings?.Add(
+                $"Cargo '{record.InstanceId}' no longer fits transport '{record.CarrierInstanceId}' ({reason}) — {outcome}.");
+        }
+
+        private static bool TryFindOpenReservesAnchor(ReservesState reserves, PieceDefinition definition, out GridCoord anchor)
+        {
+            for (int y = 0; y < ReservesState.Height; y++)
+            {
+                for (int x = 0; x < ReservesState.Width; x++)
+                {
+                    var candidate = new GridCoord(x, y);
+                    if (reserves.CanPlace(definition, candidate))
+                    {
+                        anchor = candidate;
+                        return true;
+                    }
+                }
+            }
+
+            anchor = default;
+            return false;
         }
 
         private static BoardLayout CreateLayout(BoardSnapshot snapshot)

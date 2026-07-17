@@ -209,28 +209,39 @@ namespace DeadManZone.Game
         // 2026-07-17 Oathborn transport tentpole (§2.5 Armored Ark): load an already-placed
         // board piece, a reserves piece, or a fresh shop purchase into a fielded transport's
         // cargo slots. See RunOrchestrator.Transport.cs for why each is a two-step composite.
-        public bool TryLoadCargoFromBoard(string cargoInstanceId, string transportInstanceId)
+        public bool TryLoadCargoFromBoard(string cargoInstanceId, string transportInstanceId) =>
+            TryLoadCargoFromBoard(cargoInstanceId, transportInstanceId, out _);
+
+        /// <summary>2026-07-17 round-2 playtest fix: reason out-param forwarded from
+        /// RunOrchestrator.Transport.cs for the cargo panel's rejected-drop tooltip.</summary>
+        public bool TryLoadCargoFromBoard(string cargoInstanceId, string transportInstanceId, out string reason)
         {
             EnsureOrchestrator();
-            bool ok = _orchestrator.TryLoadCargoFromBoard(cargoInstanceId, transportInstanceId);
+            bool ok = _orchestrator.TryLoadCargoFromBoard(cargoInstanceId, transportInstanceId, out reason);
             if (ok)
                 NotifyStateChanged();
             return ok;
         }
 
-        public bool TryLoadCargoFromReserves(string reservesInstanceId, string transportInstanceId)
+        public bool TryLoadCargoFromReserves(string reservesInstanceId, string transportInstanceId) =>
+            TryLoadCargoFromReserves(reservesInstanceId, transportInstanceId, out _);
+
+        public bool TryLoadCargoFromReserves(string reservesInstanceId, string transportInstanceId, out string reason)
         {
             EnsureOrchestrator();
-            bool ok = _orchestrator.TryLoadCargoFromReserves(reservesInstanceId, transportInstanceId);
+            bool ok = _orchestrator.TryLoadCargoFromReserves(reservesInstanceId, transportInstanceId, out reason);
             if (ok)
                 NotifyStateChanged();
             return ok;
         }
 
-        public bool TryAcquireOfferToCargo(string offerId, string transportInstanceId)
+        public bool TryAcquireOfferToCargo(string offerId, string transportInstanceId) =>
+            TryAcquireOfferToCargo(offerId, transportInstanceId, out _);
+
+        public bool TryAcquireOfferToCargo(string offerId, string transportInstanceId, out string reason)
         {
             EnsureOrchestrator();
-            bool ok = _orchestrator.TryAcquireOfferToCargo(offerId, transportInstanceId);
+            bool ok = _orchestrator.TryAcquireOfferToCargo(offerId, transportInstanceId, out reason);
             if (ok)
                 NotifyStateChanged();
             return ok;

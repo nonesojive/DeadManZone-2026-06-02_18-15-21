@@ -71,6 +71,19 @@ namespace DeadManZone.Presentation.Combat.Arena
         private AvailableCommand _pickingCommand;
         private TransportOrderOption _pickingTransport;
 
+        // ---- resume-gated "SELECT TRANSPORT TARGET" state (round-2 playtest fix) ----
+        // Clicking RESUME with an armed transport (has cargo, no target set yet) doesn't
+        // resume immediately: the orders panel collapses and one prompt per un-targeted
+        // transport chains in turn; only once every transport has a target (or was
+        // explicitly skipped) does resume actually happen.
+        private Queue<TransportOrderOption> _gateQueue;
+        private TransportOrderOption _gateCurrent;
+        private bool _gateSkipRequested;
+        private GameObject _gatePromptRoot;
+        private TMP_Text _gatePromptTitle;
+        private Button _gateSkipButton;
+        private CombatGroundClickRelay _groundClickRelay;
+
         private GameObject _canvasRoot;
         private CanvasGroup _windowGroup;
         private Image _dimImage;
@@ -174,6 +187,11 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             if (_rejectionRoutine != null)
                 StopCoroutine(_rejectionRoutine);
+
+            // _canvasRoot is a detached scene-root object (see EnsureUi) so it no longer gets
+            // auto-destroyed as a child of this transform.
+            if (_canvasRoot != null)
+                Destroy(_canvasRoot);
         }
 
         // ---------------------------------------------------------------- actions
@@ -239,9 +257,9 @@ namespace DeadManZone.Presentation.Combat.Arena
                 });
         }
 
-        private void OnCancelTransportOrderClicked()
+        private void OnCancelTransportOrderClicked(string transportInstanceId)
         {
-            _draft.ClearTransportOrder();
+            _draft.ClearTransportOrder(transportInstanceId);
             ClearRejection();
             Refresh();
         }
@@ -293,9 +311,119 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
             }
 
+            if (TryBeginTransportTargetGate())
+                return; // window collapses into the SELECT TRANSPORT TARGET prompt chain
+
+            FinishResume();
+        }
+
+        private void FinishResume()
+        {
             var commands = _draft.BuildCommands();
             Hide();
             _onResume?.Invoke(commands);
+        }
+
+        /// <summary>2026-07-17 round-2 playtest fix (owner-specified flow): after the player's
+        /// normal tactics-window decisions, clicking RESUME gates on every ARMED transport
+        /// (has cargo, no target set yet — the in-window DEPLOY row is still an optional
+        /// pre-set that skips this gate for that transport) getting a target cell, one prompt
+        /// at a time. Returns false (falls through to a normal resume) when there's nothing
+        /// to gate on, e.g. no fielded transport has cargo, or the arena has no battlefield to
+        /// target against.</summary>
+        private bool TryBeginTransportTargetGate()
+        {
+            if (_ctx.Mapper == null || _ctx.ArenaCamera == null)
+                return false;
+
+            var armed = (_ctx.TransportOrders ?? (IReadOnlyList<TransportOrderOption>)Array.Empty<TransportOrderOption>())
+                .Where(t => t.CargoCount > 0 && !_draft.HasTransportOrder(t.SourcePieceId))
+                .ToList();
+            if (armed.Count == 0)
+                return false;
+
+            _gateQueue = new Queue<TransportOrderOption>(armed);
+            AdvanceTransportGate();
+            return true;
+        }
+
+        private void AdvanceTransportGate()
+        {
+            if (_gateQueue == null || _gateQueue.Count == 0)
+            {
+                _gateQueue = null;
+                _gateCurrent = null;
+                FinishResume();
+                return;
+            }
+
+            _gateCurrent = _gateQueue.Dequeue();
+            ShowTransportGatePrompt(_gateCurrent);
+        }
+
+        private void ShowTransportGatePrompt(TransportOrderOption transport)
+        {
+            // The panel collapses (same "step aside" fade the ability-target picker already
+            // uses) — the prompt band + battlefield own the screen instead.
+            SetPickMode(true);
+            _pickHintRoot.SetActive(false);
+            EnsureGatePromptUi();
+            _gatePromptTitle.text = $"SELECT TARGET FOR {transport.SourceDisplayName.ToUpperInvariant()}";
+            _gatePromptRoot.SetActive(true);
+            _groundClickRelay?.SetActive(true);
+
+            _picker.ClearAll();
+            _picker.BeginPick(
+                _ctx.Mapper,
+                _ctx.ArenaCamera,
+                _ctx.IsValidTransportTargetCell,
+                onPicked: cell =>
+                {
+                    _draft.TrySetTransportOrder(transport.SourcePieceId, cell, out _);
+                    HideTransportGatePrompt();
+                    AdvanceTransportGate();
+                },
+                onCancelled: () =>
+                {
+                    HideTransportGatePrompt();
+                    if (_gateSkipRequested)
+                    {
+                        _gateSkipRequested = false;
+                        AdvanceTransportGate();
+                    }
+                    else
+                    {
+                        AbortTransportGate();
+                    }
+                });
+        }
+
+        /// <summary>The prompt's one escape hatch: don't set a target for THIS transport (it
+        /// simply advances & engages like any unit, per the in-window hint text) and move on
+        /// to the next armed transport (or finish resuming). Never soft-locks the player behind
+        /// a forced pick.</summary>
+        private void OnSkipTransportGateClicked()
+        {
+            _gateSkipRequested = true;
+            _picker.CancelPick();
+        }
+
+        private void HideTransportGatePrompt()
+        {
+            if (_gatePromptRoot != null)
+                _gatePromptRoot.SetActive(false);
+            _groundClickRelay?.SetActive(false);
+        }
+
+        /// <summary>ESC/RMB during a gate pick abandons the whole chain and reopens the orders
+        /// window (as opposed to SKIP, which only skips the current transport and continues
+        /// the chain) — the player can hit RESUME again to re-trigger the gate.</summary>
+        private void AbortTransportGate()
+        {
+            _gateQueue = null;
+            _gateCurrent = null;
+            SetPickMode(false);
+            Refresh();
         }
 
         // ---------------------------------------------------------------- refresh
@@ -330,7 +458,7 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             foreach (var (button, label, transport) in _transportButtons)
             {
-                bool ordered = _draft.TransportOrderSourceId == transport.SourcePieceId;
+                bool ordered = _draft.HasTransportOrder(transport.SourcePieceId);
                 button.interactable = _draft.CanSetTransportOrder;
                 label.text = BuildTransportOrderLabel(transport, ordered);
             }
@@ -340,8 +468,7 @@ namespace DeadManZone.Presentation.Combat.Arena
                 .Where(q => q.TargetCell.HasValue)
                 .Select(q => q.TargetCell.Value)
                 .ToList();
-            if (_draft.TransportOrderTargetCell.HasValue)
-                markers.Add(_draft.TransportOrderTargetCell.Value);
+            markers.AddRange(_draft.TransportOrders.Values);
             _picker.SetPendingMarkers(markers);
 
             _resumeButton.interactable = _draft.Validate(out _);
@@ -368,16 +495,16 @@ namespace DeadManZone.Presentation.Combat.Arena
                     cancelIndex: i);
             }
 
-            if (!string.IsNullOrEmpty(_draft.TransportOrderSourceId) && _draft.TransportOrderTargetCell.HasValue)
+            foreach (var (sourceId, cell) in _draft.TransportOrders)
             {
-                var transport = _ctx.TransportOrders?.FirstOrDefault(t => t.SourcePieceId == _draft.TransportOrderSourceId);
-                string name = transport?.SourceDisplayName ?? _draft.TransportOrderSourceId;
-                var cell = _draft.TransportOrderTargetCell.Value;
+                var transport = _ctx.TransportOrders?.FirstOrDefault(t => t.SourcePieceId == sourceId);
+                string name = transport?.SourceDisplayName ?? sourceId;
+                var capturedSourceId = sourceId;
                 AddQueuedRow(
                     $"DEPLOY — {name} @ {cell.X},{cell.Y}",
-                    "QueuedRow_TransportOrder",
-                    "QueuedCancel_TransportOrder",
-                    OnCancelTransportOrderClicked);
+                    $"QueuedRow_TransportOrder_{sourceId}",
+                    $"QueuedCancel_TransportOrder_{sourceId}",
+                    () => OnCancelTransportOrderClicked(capturedSourceId));
             }
         }
 
@@ -462,7 +589,22 @@ namespace DeadManZone.Presentation.Combat.Arena
                 return;
 
             _canvasRoot = new GameObject("CombatTacticOrdersCanvas");
-            _canvasRoot.transform.SetParent(transform, false);
+            // 2026-07-17 round-2 playtest fix: must be a scene-ROOT canvas, not parented under
+            // this window's own transform. This window lives inside the arena's existing Canvas
+            // hierarchy (Canvas/RunScene/CombatPanel) — parenting under it made the new Canvas
+            // component NESTED (Canvas.isRootCanvas == false). Unity only auto-sizes a Screen
+            // Space - Overlay canvas's RectTransform to the real screen for ROOT canvases; a
+            // nested one keeps whatever RectTransform it was given (Unity's default: 100x100,
+            // anchored center). Center-anchored fixed-size children (the orders panel, the
+            // prompt bands) still LOOKED right, because they only depend on the parent's anchor
+            // POINT (still screen-center) — but every StretchFull() child (BattlefieldDim, the
+            // pick-hint band, and critically GroundClickRelay, the real ground-click catcher)
+            // silently shrank to a ~100x100px hotbox in the dead center of the screen. A real
+            // click anywhere else on the battlefield hit nothing at all — no reject feedback,
+            // just silence. Detaching to the scene root makes this a genuine root canvas so its
+            // rect (and everything stretched to it) actually covers the screen. OnDestroy below
+            // now destroys it explicitly since it's no longer a child that auto-cleans up.
+            _canvasRoot.transform.SetParent(null, false);
             var canvas = _canvasRoot.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 450; // above army HUD (400), under result banner (500)
@@ -489,8 +631,62 @@ namespace DeadManZone.Presentation.Combat.Arena
             _panelHomePosition = _panelRect.anchoredPosition;
 
             BuildPickHint();
+            BuildGroundClickRelay(_canvasRoot.transform);
 
             _canvasRoot.SetActive(false);
+        }
+
+        /// <summary>2026-07-17 round-2 playtest fix: a full-screen, invisible, raycastable
+        /// Image that turns the battlefield ground click into a REAL EventSystem pointer event
+        /// (IPointerClickHandler → CombatGroundClickRelay), not just the legacy Input.mousePosition
+        /// poll CombatTacticTargetPicker.Update already does. Both paths feed the same
+        /// TryPickWorldPoint accept function — this one exists so the click can be exercised
+        /// through ExecuteEvents/ordinary EventSystem dispatch (ability targeting already
+        /// "works" by the raw-poll path; ONLY enabled during picking so it never steals clicks
+        /// meant for buttons the rest of the time).</summary>
+        private void BuildGroundClickRelay(Transform parent)
+        {
+            var go = new GameObject("GroundClickRelay", typeof(RectTransform), typeof(Image));
+            go.transform.SetParent(parent, false);
+            StretchFull(go.GetComponent<RectTransform>());
+            var image = go.GetComponent<Image>();
+            image.color = Color.clear;
+
+            _groundClickRelay = go.AddComponent<CombatGroundClickRelay>();
+            _groundClickRelay.Configure(() => _ctx?.ArenaCamera, worldPoint => _picker.TryPickWorldPoint(worldPoint));
+            _groundClickRelay.SetActive(false);
+        }
+
+        /// <summary>2026-07-17 round-2 playtest fix (owner-specified flow): the collapsed-window
+        /// prompt naming the armed transport, with its one escape hatch — SKIP DEPLOY (the
+        /// owner asked this be flagged for their review; see the shipped report).</summary>
+        private void EnsureGatePromptUi()
+        {
+            if (_gatePromptRoot != null)
+                return;
+
+            _gatePromptRoot = new GameObject("TransportGatePrompt", typeof(RectTransform));
+            _gatePromptRoot.transform.SetParent(_canvasRoot.transform, false);
+            StretchFull(_gatePromptRoot.GetComponent<RectTransform>());
+
+            CombatGrimdarkSkin.AddBand(_gatePromptRoot.transform, 0.88f, 0.965f, "TransportGateBand");
+            _gatePromptTitle = CreateLabel(_gatePromptRoot.transform, "TransportGateTitle",
+                "SELECT TRANSPORT TARGET", 24f,
+                new Vector2(0f, 0.915f), new Vector2(1f, 0.965f), TextAlignmentOptions.Center);
+            CombatGrimdarkSkin.StyleTitle(_gatePromptTitle);
+
+            var body = CreateLabel(_gatePromptRoot.transform, "TransportGateBody",
+                "LEFT CLICK A BATTLEFIELD CELL — DEPLOY THERE       RIGHT CLICK / ESC — BACK TO ORDERS", 13f,
+                new Vector2(0f, 0.885f), new Vector2(1f, 0.915f), TextAlignmentOptions.Center);
+            body.characterSpacing = 2f;
+            CombatGrimdarkSkin.StyleBody(body);
+
+            _gateSkipButton = CreateButton(_gatePromptRoot.transform, "SkipDeployLink",
+                "SKIP DEPLOY — ADVANCE & ENGAGE NORMALLY",
+                new Vector2(0.5f, 0.855f), new Vector2(380f, 28f), 12f);
+            _gateSkipButton.onClick.AddListener(OnSkipTransportGateClicked);
+
+            _gatePromptRoot.SetActive(false);
         }
 
         private RectTransform CreatePanel(Transform parent)

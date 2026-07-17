@@ -26,13 +26,33 @@ namespace DeadManZone.Presentation.DragDrop
             if (_boardView == null || string.IsNullOrEmpty(_transportInstanceId) || payload == null)
                 return false;
 
-            return payload.SourceKind switch
+            bool accepted;
+            string reason;
+            switch (payload.SourceKind)
             {
-                DragSourceKind.ShopOffer => _boardView.TryAcquireOfferToCargo(payload.OfferId, _transportInstanceId),
-                DragSourceKind.ReservesPiece => _boardView.TryLoadCargoFromReserves(payload.ReservesInstanceId, _transportInstanceId),
-                DragSourceKind.BoardPiece => _boardView.TryLoadCargoFromBoard(payload.BoardInstanceId, _transportInstanceId),
-                _ => false
-            };
+                case DragSourceKind.ShopOffer:
+                    accepted = _boardView.TryAcquireOfferToCargo(payload.OfferId, _transportInstanceId, out reason);
+                    break;
+                case DragSourceKind.ReservesPiece:
+                    accepted = _boardView.TryLoadCargoFromReserves(payload.ReservesInstanceId, _transportInstanceId, out reason);
+                    break;
+                case DragSourceKind.BoardPiece:
+                    accepted = _boardView.TryLoadCargoFromBoard(payload.BoardInstanceId, _transportInstanceId, out reason);
+                    break;
+                default:
+                    accepted = false;
+                    reason = null;
+                    break;
+            }
+
+            // 2026-07-17 round-2 playtest fix: rejected-drop affordance — brief shake/flash
+            // + the actual reason (e.g. "Cargo does not fit in transport hold"), not a silent
+            // snap-back. Same GameObject as the panel (TransportCargoPanelPresenter.Configure
+            // adds this drop target to itself), so no lookup needed.
+            if (!accepted && !string.IsNullOrEmpty(reason))
+                GetComponent<TransportCargoPanelPresenter>()?.FlashRejected(reason);
+
+            return accepted;
         }
     }
 }
