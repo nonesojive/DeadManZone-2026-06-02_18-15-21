@@ -32,6 +32,12 @@ namespace DeadManZone.Core.Combat
         // §1.8/§2.5 Oathborn's Armored Ark: transport instance id -> opening-window target cell.
         private readonly Dictionary<string, GridCoord> _transportTargets = new();
 
+        /// <summary>2026-07-17 real-input playtest fix: the SELECT TARGET gate re-fired at every
+        /// later pause because the orders window's per-pause draft resets — the gate must ask
+        /// the SIM whether a transport already has its (once-per-fight) target registered.</summary>
+        public bool HasTransportTarget(string transportInstanceId) =>
+            transportInstanceId != null && _transportTargets.ContainsKey(transportInstanceId);
+
         // §2.7/§4 Blightborn's Yellow Autumn: earlier ambient-gas start + hijacking-side immunity.
         // Tracked per side (not just "player") so an enemy-fielded Yellow Autumn (later enemy
         // rotation waves) is immune on its own side, not the player's.

@@ -80,6 +80,35 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual("ark_1", cargoPiece.CarrierInstanceId);
         }
 
+        /// <summary>2026-07-17 round-4 fix: TryEmbarkCargo (the shop/reserves load path — the
+        /// path RunOrchestrator.TryAcquireOfferToCargo/TryLoadCargoFromReserves actually use,
+        /// unlike the board-to-board TryLoadCargo path already covered above) persists the
+        /// cargo piece's Anchor as the TRANSPORT's own anchor (cosmetic placeholder — see
+        /// TryEmbarkCargo's doc comment — since there's no original board position to keep).
+        /// A restore that ran every piece through the ordinary TryPlace collided with the
+        /// transport sitting on that exact cell ("Cell occupied"), so ANY saved run with a
+        /// loaded transport failed to reload at all. Must round-trip clean.</summary>
+        [Test]
+        public void FromBoard_ToBoard_RoundTripsEmbarkedCargoWithoutCollidingOnTransportAnchor()
+        {
+            var board = new BoardState(TestBoards.Layout);
+            board.TryPlace(Transport(), TestBoards.FrontLineAnchor(), "ark_1");
+            Assert.IsTrue(board.TryEmbarkCargo(Cargo(), "ark_1", "cargo_1").Success);
+
+            var snapshot = BoardSnapshotMapper.FromBoard(board);
+
+            BoardState restored = null;
+            Assert.DoesNotThrow(() => restored = BoardSnapshotMapper.ToBoard(snapshot, BuildRegistry()));
+
+            Assert.AreEqual(2, restored.Pieces.Count);
+            var cargoPiece = restored.Pieces.Single(p => p.InstanceId == "cargo_1");
+            Assert.AreEqual("ark_1", cargoPiece.CarrierInstanceId);
+            Assert.IsNotNull(cargoPiece.CargoAnchor, "TryLoadCargo's re-tag must recompute a real hold slot");
+
+            var arkPiece = restored.Pieces.Single(p => p.InstanceId == "ark_1");
+            Assert.IsNull(arkPiece.CarrierInstanceId);
+        }
+
         [Test]
         public void FromBoard_UnloadedPiece_CarrierInstanceIdIsNull()
         {

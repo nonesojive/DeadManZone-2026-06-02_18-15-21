@@ -464,8 +464,12 @@ namespace DeadManZone.Game
                 PendingSelectedAbilities = State.Combat.PendingSelectedAbilities,
                 StartingTactics = Faction?.startingTactics,
                 EnemyTargetCells = _activeCombat.GetLiveEnemyTargetCells(),
+                // Exclude transports whose target is already registered in the SIM — the
+                // per-pause window draft resets, so filtering there re-gated every later
+                // pause (2026-07-17 real-input playtest catch).
                 TransportOrders = _activeCombat.PlayerCombatantsForTests
-                    .Where(c => c.IsTransport && c.IsActive && c.EmbarkedCargoIds != null && c.EmbarkedCargoIds.Count > 0)
+                    .Where(c => c.IsTransport && c.IsActive && c.EmbarkedCargoIds != null && c.EmbarkedCargoIds.Count > 0
+                        && !_activeCombat.HasTransportTarget(c.InstanceId))
                     .Select(c => new TransportOrderOption
                     {
                         SourcePieceId = c.InstanceId,

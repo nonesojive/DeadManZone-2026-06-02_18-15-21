@@ -637,68 +637,50 @@ private PieceDefinition _selectedPiece;
                     panel.gameObject.SetActive(true);
 
                 PositionCargoPanel(panel, transport);
-                panel.Refresh(_boardState, transport.Definition);
+                panel.Refresh(_boardState, transport);
             }
         }
 
-        /// <summary>2026-07-17 round-2 playtest fix: the panel used to render as a tiny
-        /// misaligned cluster floating left of the board. Root cause — a coordinate-space
-        /// mismatch: ResolveCellCenterInOverlay returns a point relative to _piecesOverlay's
-        /// PIVOT (which SyncPiecesOverlay copies from the board grid's own RectTransform —
-        /// center, (0.5,0.5), for the live board), but the panel's own RectTransform anchored
-        /// at its (0,0) corner interprets anchoredPosition as an offset from that CORNER, not
-        /// the center. Every panel silently landed ~half the board's width/height away from
-        /// where it was told to go. Fix: the template's RectTransform is now anchored/pivoted
-        /// at (0.5,0.5) too (ShopV2Canvas/TransportCargoPanelTemplate, hand-edited in-editor —
-        /// see report), so both sides of this assignment share the same "offset from center"
-        /// convention. Anchors just past the transport's own right edge, at board-cell scale
-        /// (reads gridLayout.cellSize/spacing directly rather than a hardcoded fallback), with
-        /// a half-cell gap so it never overlaps the piece's own readability.</summary>
+        /// <summary>2026-07-17 round-4 owner spec: the hold overlays the Ark's OWN cells —
+        /// no more floating panel off/beside the board (round 3's approach, now superseded).
+        /// Sizes and positions the panel to exactly cover the transport's footprint rect,
+        /// using the same overlay-space resolver the piece visuals use (ResolveCellCenterInOverlay)
+        /// for both the anchor (footprint center) and the extents (top-left/bottom-right
+        /// footprint cells), so the panel tracks the live board layout (resolution/board-width
+        /// independent) rather than a hardcoded offset. Also pushes the board's own cell
+        /// metrics into the panel's SlotsGrid so its 2x2 quadrants line up pixel-for-pixel
+        /// with the footprint cells underneath instead of the template's fixed 54x54 guess.</summary>
         private void PositionCargoPanel(TransportCargoPanelPresenter panel, PlacedPiece transport)
         {
             var rect = panel.GetComponent<RectTransform>();
-            var anchorLocal = ResolveCellCenterInOverlay(transport.Anchor);
-            if (rect == null || !anchorLocal.HasValue || gridLayout == null)
+            if (rect == null || gridLayout == null)
                 return;
 
-            float cellSize = gridLayout.cellSize.x;
-            float cellStep = cellSize + gridLayout.spacing.x;
-
             var footprintCells = transport.Definition.Shape.GetCells(transport.Anchor, transport.Rotation).ToList();
-            int footprintWidthCells = footprintCells.Count > 0
-                ? footprintCells.Max(c => c.X) - footprintCells.Min(c => c.X) + 1
-                : 1;
+            if (footprintCells.Count == 0)
+                return;
 
-            // 2026-07-17 round-3 owner playtest fix: "beside the piece" was still ON the
-            // board — with the Ark at the left of a 6-wide board, the panel landed over
-            // playable columns 2-3 as a see-through ghost (owner screenshot, twice). The
-            // panel now sits fully OUTSIDE the board rect, past whichever board edge is
-            // nearest the transport, vertically centered on the transport's footprint rows.
-            var boardGridRect = gridLayout.GetComponent<RectTransform>();
-            float boardHalfWidth = boardGridRect != null ? boardGridRect.rect.width * 0.5f : 3f * cellStep;
-            float gap = gridLayout.spacing.x + cellSize * 0.5f;
+            int minX = footprintCells.Min(c => c.X);
+            int maxX = footprintCells.Max(c => c.X);
+            int minY = footprintCells.Min(c => c.Y);
+            int maxY = footprintCells.Max(c => c.Y);
 
-            bool transportOnLeftHalf = anchorLocal.Value.x < 0f;
-            float x = transportOnLeftHalf
-                ? -boardHalfWidth - gap - rect.rect.width * 0.5f
-                : boardHalfWidth + gap + rect.rect.width * 0.5f;
+            var topLeft = ResolveCellCenterInOverlay(new GridCoord(minX, minY));
+            var bottomRight = ResolveCellCenterInOverlay(new GridCoord(maxX, maxY));
+            if (!topLeft.HasValue || !bottomRight.HasValue)
+                return;
 
-            // Vertical center of the footprint, sign-safe: resolve the top-most and
-            // bottom-most footprint rows through the same overlay-space resolver as the
-            // anchor and average them — no assumptions about board-Y direction.
-            float y = anchorLocal.Value.y;
-            if (footprintCells.Count > 0)
-            {
-                int minY = footprintCells.Min(c => c.Y);
-                int maxY = footprintCells.Max(c => c.Y);
-                int footprintX = footprintCells.Min(c => c.X);
-                var top = ResolveCellCenterInOverlay(new DeadManZone.Core.Common.GridCoord(footprintX, minY));
-                var bottom = ResolveCellCenterInOverlay(new DeadManZone.Core.Common.GridCoord(footprintX, maxY));
-                if (top.HasValue && bottom.HasValue)
-                    y = (top.Value.y + bottom.Value.y) * 0.5f;
-            }
+            float cellStepX = gridLayout.cellSize.x + gridLayout.spacing.x;
+            float cellStepY = gridLayout.cellSize.y + gridLayout.spacing.y;
+            int footprintWidthCells = maxX - minX + 1;
+            int footprintHeightCells = maxY - minY + 1;
 
-            rect.anchoredPosition = new Vector2(x, y);
+            rect.anchoredPosition = (topLeft.Value + bottomRight.Value) * 0.5f;
+            rect.sizeDelta = new Vector2(
+                footprintWidthCells * cellStepX - gridLayout.spacing.x,
+                footprintHeightCells * cellStepY - gridLayout.spacing.y);
+
+            panel.ApplySlotGridMetrics(gridLayout.cellSize, gridLayout.spacing);
         }
 
         public void HidePieceHoverCard() => pieceHoverCardController?.Hide();

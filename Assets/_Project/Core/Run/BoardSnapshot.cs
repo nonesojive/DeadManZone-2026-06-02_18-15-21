@@ -109,9 +109,24 @@ namespace DeadManZone.Core.Run
             {
                 var definition = registry.GetById(record.PieceId);
                 var rotation = RotationFromDegrees(record.RotationDegrees);
+                var anchor = new GridCoord(record.AnchorX, record.AnchorY);
+
+                // 2026-07-17 round-4 fix: a carried piece's persisted anchor is cosmetic (its
+                // carrier's own anchor, see BoardState.TryEmbarkCargo) — it never claimed a real
+                // board cell, so running it through the ordinary TryPlace here collided with the
+                // transport sitting on that same cell ("Cell occupied", surfaced the moment any
+                // loaded transport survived a save/reload). Stub it in instead; the second pass
+                // below re-tags it via TryLoadCargo exactly like a fresh load would.
+                if (!string.IsNullOrEmpty(record.CarrierInstanceId))
+                {
+                    board.RestoreCargoStub(
+                        definition, record.InstanceId, record.CarrierInstanceId, anchor, rotation, record.IsMercenary);
+                    continue;
+                }
+
                 var result = board.TryPlace(
                     definition,
-                    new GridCoord(record.AnchorX, record.AnchorY),
+                    anchor,
                     record.InstanceId,
                     rotation,
                     record.IsMercenary);

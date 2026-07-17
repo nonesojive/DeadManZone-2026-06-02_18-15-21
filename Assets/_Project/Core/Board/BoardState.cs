@@ -198,6 +198,42 @@ namespace DeadManZone.Core.Board
         public IReadOnlyList<PlacedPiece> GetCargo(string transportInstanceId) =>
             _pieces.Values.Where(p => p.CarrierInstanceId == transportInstanceId).ToList();
 
+        /// <summary>2026-07-17 round-4 fix: snapshot-restore-only seam for a cargo piece.
+        /// BoardSnapshotMapper.ToBoard's two-pass restore (place everything, then re-tag cargo
+        /// via TryLoadCargo) needs a carried piece to already exist in the piece table BEFORE
+        /// the second pass runs — but round 3 made cargo never occupy a real board cell, so its
+        /// persisted anchor is just the transport's own anchor (cosmetic bookkeeping, see
+        /// TryEmbarkCargo). Calling the ordinary TryPlace for it in the first pass collided with
+        /// the transport sitting on that same cell ("Cell occupied") — this bypasses occupancy
+        /// entirely, exactly like TryEmbarkCargo does for a fresh load, so the round trip
+        /// matches how the piece got here in the first place.
+        /// Pre-tagged with its real <paramref name="transportInstanceId"/> (not null) so that IF
+        /// the second pass's TryLoadCargo re-validation fails (a legacy over-capacity save) and
+        /// the caller falls back to TryRemove, TryRemove's own "only vacate cells for a piece
+        /// that isn't already carried" guard correctly treats this stub as never having claimed
+        /// real board cells — it wouldn't, since a null CarrierInstanceId there would have
+        /// wrongly freed whatever the transport itself (sharing this cosmetic anchor) legitimately
+        /// occupies. TryLoadCargo's own success path overwrites this entry unconditionally, so
+        /// pre-tagging changes nothing about the normal (fits fine) restore outcome.</summary>
+        public void RestoreCargoStub(
+            PieceDefinition definition,
+            string instanceId,
+            string transportInstanceId,
+            GridCoord anchor,
+            PieceRotation rotation,
+            bool isMercenary)
+        {
+            _pieces[instanceId] = new PlacedPiece
+            {
+                InstanceId = instanceId,
+                Definition = definition,
+                Anchor = anchor,
+                Rotation = rotation,
+                CarrierInstanceId = transportInstanceId,
+                IsMercenary = isMercenary
+            };
+        }
+
         private HashSet<GridCoord> ComputeOccupiedCargoCells(string transportInstanceId)
         {
             var occupiedCargoCells = new HashSet<GridCoord>();

@@ -22,13 +22,31 @@ namespace DeadManZone.Presentation.Board
     {
         private const int MaxSlots = 4;
 
-        private static readonly Color EmptySlotColor = new(0.12f, 0.11f, 0.095f, 0.55f);
+        // 2026-07-17 round-4 owner spec: the hold overlays the Ark's own footprint now, so an
+        // empty slot must read as mostly-transparent glass (the Ark's own art shows through);
+        // a filled slot stays near-opaque so the loaded unit's icon reads clearly against it.
+        private static readonly Color EmptySlotColor = new(0.12f, 0.11f, 0.095f, 0.16f);
         private static readonly Color FilledSlotColor = new(0.30f, 0.245f, 0.16f, 0.98f);
         private static readonly Color RejectedTitleColor = new(0.86f, 0.27f, 0.21f, 1f);
 
         [SerializeField] private TMP_Text titleLabel;
         [SerializeField] private Image[] slotBackgrounds = new Image[MaxSlots];
         [SerializeField] private Image[] slotIcons = new Image[MaxSlots];
+
+        // 2026-07-17 round-4 owner spec: the hold now overlays the Ark's own footprint, so its
+        // 2x2 SlotsGrid must track the LIVE board cell size (BoardView.PositionCargoPanel pushes
+        // it in via ApplySlotGridMetrics) instead of the template's fixed 54x54 guess — otherwise
+        // the quadrants drift out of alignment with the cells they're supposed to overlay whenever
+        // the board's cell size differs (board width, screen resolution).
+        [SerializeField] private GridLayoutGroup slotsGrid;
+
+        // 2026-07-17 round-4 owner spec: since the hold's 4 slots now cover the WHOLE footprint
+        // (no dead space left for a separate "grab the Ark" hotspot), the Ark's own drag/sell
+        // affordance is this small icon pinned dead-center, drawn on top of all 4 slot quadrants
+        // (last sibling) — the one spot on the footprint that always grabs the ARK, never cargo.
+        // Documented choice (owner asked this be flagged): everywhere else on the footprint is
+        // cargo-slot surface; only this center hotspot drags/sells the transport.
+        [SerializeField] private Image arkGrabHandleIcon;
 
         private string _transportInstanceId;
         private BoardView _boardView;
@@ -56,8 +74,9 @@ namespace DeadManZone.Presentation.Board
         /// cells stay dim/empty. Dragging a marked cell back OUT (see BoardPieceDragSource on
         /// its first occupied cell) is an ordinary drag onto a normal board tile, which
         /// un-embarks it as a side effect of BoardState.TryRelocate.</summary>
-        public void Refresh(BoardState board, PieceDefinition transportDefinition)
+        public void Refresh(BoardState board, PlacedPiece transport)
         {
+            var transportDefinition = transport?.Definition;
             _baseTitle = $"{transportDefinition?.DisplayName ?? "TRANSPORT"} — CARGO";
             if (titleLabel != null && !_isFlashingRejection)
                 titleLabel.text = _baseTitle;
@@ -72,6 +91,45 @@ namespace DeadManZone.Presentation.Board
 
             foreach (var piece in cargo)
                 PaintFootprint(piece);
+
+            RefreshArkGrabHandle(transport);
+        }
+
+        /// <summary>2026-07-17 round-4 owner spec: the Ark's own drag/sell handle — see the
+        /// field doc on <see cref="arkGrabHandleIcon"/> for why this exists. Shows the transport's
+        /// own icon and (re)wires a BoardPieceDragSource for the TRANSPORT's own instance (never
+        /// a cargo piece), so a press-drag starting exactly on this hotspot always picks up the
+        /// Ark, regardless of what the quadrant underneath it is currently holding.</summary>
+        private void RefreshArkGrabHandle(PlacedPiece transport)
+        {
+            if (arkGrabHandleIcon == null || transport == null)
+                return;
+
+            var source = PieceVisualLookup.GetSource(transport.Definition.Id);
+            arkGrabHandleIcon.enabled = source?.icon != null;
+            arkGrabHandleIcon.sprite = source?.icon;
+
+            var dragSource = arkGrabHandleIcon.GetComponent<BoardPieceDragSource>() ??
+                             arkGrabHandleIcon.gameObject.AddComponent<BoardPieceDragSource>();
+            dragSource.Configure(
+                transport.InstanceId,
+                transport.Definition.Id,
+                transport.Anchor,
+                transport.Definition,
+                transport.Rotation,
+                boardView: _boardView);
+        }
+
+        /// <summary>Slots quadrants must line up pixel-for-pixel with the footprint cells they
+        /// overlay (owner spec) — BoardView.PositionCargoPanel pushes the live board cell metrics
+        /// in here every refresh rather than trusting the template's fixed guess.</summary>
+        public void ApplySlotGridMetrics(Vector2 cellSize, Vector2 spacing)
+        {
+            if (slotsGrid == null)
+                return;
+
+            slotsGrid.cellSize = cellSize;
+            slotsGrid.spacing = spacing;
         }
 
         private void ResetSlot(int index)

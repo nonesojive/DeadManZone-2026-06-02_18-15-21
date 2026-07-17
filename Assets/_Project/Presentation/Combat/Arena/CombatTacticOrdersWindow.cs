@@ -81,7 +81,6 @@ namespace DeadManZone.Presentation.Combat.Arena
         private GameObject _gatePromptRoot;
         private TMP_Text _gatePromptTitle;
         private Button _gateSkipButton;
-        private CombatGroundClickRelay _groundClickRelay;
 
         private GameObject _canvasRoot;
         private CanvasGroup _windowGroup;
@@ -319,27 +318,55 @@ namespace DeadManZone.Presentation.Combat.Arena
             ShowTransportGatePrompt(_gateCurrent);
         }
 
+        /// <summary>2026-07-17 round-4 owner spec: ported from the pre-gate DEPLOY-button
+        /// interaction (commit 59c6feb8's OnTransportOrderClicked) — the one the owner says
+        /// "worked correctly". That flow was SetPickMode(true) + _picker.BeginPick with no other
+        /// raycast-blocking element on screen, so CombatTacticTargetPicker.Update's own hover
+        /// marker (gold=valid / dark red=invalid, tracks the mouse every frame) rendered fine.
+        /// Round-2 added a full-screen CombatGroundClickRelay Image here so a synthetic
+        /// EventSystem-dispatched click could also confirm a pick — but that Image, being
+        /// raycastable and covering the whole screen, made EventSystem.IsPointerOverGameObject()
+        /// return true everywhere, which is exactly the flag the picker's Update() checks before
+        /// drawing the hover marker (and the flag that made almost every click land as a "valid"
+        /// pick with zero visible aiming — the reported "click just starts combat, no targeting
+        /// circle" bug). Deleted (see CombatGroundClickRelay.cs removal) — the picker's own
+        /// Input.mousePosition poll already delivers real mouse clicks without it; a synthetic
+        /// check can call TryPickTargetAtWorldPoint directly instead of faking a UI dispatch.</summary>
         private void ShowTransportGatePrompt(TransportOrderOption transport)
         {
-            // The panel collapses (same "step aside" fade the ability-target picker already
-            // uses) — the prompt band + battlefield own the screen instead.
+            // Owner spec 2a: the orders window is FULLY GONE here (SetPickMode below hard-hides
+            // it), not a dimmed ghost — only the gate prompt band + battlefield + hover marker
+            // own the screen.
             SetPickMode(true);
             _pickHintRoot.SetActive(false);
             EnsureGatePromptUi();
             _gatePromptTitle.text = $"SELECT TARGET FOR {transport.SourceDisplayName.ToUpperInvariant()}";
             _gatePromptRoot.SetActive(true);
-            _groundClickRelay?.SetActive(true);
 
             _picker.ClearAll();
+            BeginTransportGatePick(transport);
+        }
+
+        private void BeginTransportGatePick(TransportOrderOption transport)
+        {
             _picker.BeginPick(
                 _ctx.Mapper,
                 _ctx.ArenaCamera,
                 _ctx.IsValidTransportTargetCell,
                 onPicked: cell =>
                 {
-                    _draft.TrySetTransportOrder(transport.SourcePieceId, cell, out _);
-                    HideTransportGatePrompt();
-                    AdvanceTransportGate();
+                    if (_draft.TrySetTransportOrder(transport.SourcePieceId, cell, out string reason))
+                    {
+                        HideTransportGatePrompt();
+                        AdvanceTransportGate();
+                    }
+                    else
+                    {
+                        // Owner spec 2c: an invalid pick gives feedback and STAYS in targeting —
+                        // never silently advances/resumes on a rejected order.
+                        FlashRejection(reason);
+                        BeginTransportGatePick(transport);
+                    }
                 },
                 onCancelled: () =>
                 {
@@ -370,7 +397,6 @@ namespace DeadManZone.Presentation.Combat.Arena
         {
             if (_gatePromptRoot != null)
                 _gatePromptRoot.SetActive(false);
-            _groundClickRelay?.SetActive(false);
         }
 
         /// <summary>ESC/RMB during a gate pick abandons the whole chain and reopens the orders
@@ -453,14 +479,15 @@ namespace DeadManZone.Presentation.Combat.Arena
 
         // ---------------------------------------------------------------- pick mode
 
-        /// <summary>While picking, the window steps aside: the dim + panel stop blocking
-        /// raycasts so battlefield clicks reach the ground, and a hint band explains
-        /// the controls. Restored cleanly on pick or cancel.</summary>
+        /// <summary>2026-07-17 round-4 owner spec: while picking, the orders window is FULLY
+        /// GONE (SetActive(false) on the whole "Window" group) — not a dimmed ghost sitting
+        /// behind the battlefield. The dim image also clears so battlefield clicks/hover reach
+        /// the ground, and a hint band explains the controls. Restored (SetActive(true)) cleanly
+        /// on pick or cancel — right-click/ESC during a pick routes to onCancelled, which calls
+        /// this with picking=false, so ESCing back to orders un-hides the window properly.</summary>
         private void SetPickMode(bool picking)
         {
-            _windowGroup.alpha = picking ? 0.10f : 1f;
-            _windowGroup.interactable = !picking;
-            _windowGroup.blocksRaycasts = !picking;
+            _windowGroup.gameObject.SetActive(!picking);
             _dimImage.raycastTarget = !picking;
             _dimImage.color = picking ? Color.clear : DimColor;
             _pickHintRoot.SetActive(picking);
@@ -574,30 +601,8 @@ namespace DeadManZone.Presentation.Combat.Arena
             _panelHomePosition = _panelRect.anchoredPosition;
 
             BuildPickHint();
-            BuildGroundClickRelay(_canvasRoot.transform);
 
             _canvasRoot.SetActive(false);
-        }
-
-        /// <summary>2026-07-17 round-2 playtest fix: a full-screen, invisible, raycastable
-        /// Image that turns the battlefield ground click into a REAL EventSystem pointer event
-        /// (IPointerClickHandler → CombatGroundClickRelay), not just the legacy Input.mousePosition
-        /// poll CombatTacticTargetPicker.Update already does. Both paths feed the same
-        /// TryPickWorldPoint accept function — this one exists so the click can be exercised
-        /// through ExecuteEvents/ordinary EventSystem dispatch (ability targeting already
-        /// "works" by the raw-poll path; ONLY enabled during picking so it never steals clicks
-        /// meant for buttons the rest of the time).</summary>
-        private void BuildGroundClickRelay(Transform parent)
-        {
-            var go = new GameObject("GroundClickRelay", typeof(RectTransform), typeof(Image));
-            go.transform.SetParent(parent, false);
-            StretchFull(go.GetComponent<RectTransform>());
-            var image = go.GetComponent<Image>();
-            image.color = Color.clear;
-
-            _groundClickRelay = go.AddComponent<CombatGroundClickRelay>();
-            _groundClickRelay.Configure(() => _ctx?.ArenaCamera, worldPoint => _picker.TryPickWorldPoint(worldPoint));
-            _groundClickRelay.SetActive(false);
         }
 
         /// <summary>2026-07-17 round-2 playtest fix (owner-specified flow): the collapsed-window
