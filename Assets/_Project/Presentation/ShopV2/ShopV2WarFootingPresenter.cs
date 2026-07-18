@@ -60,6 +60,16 @@ namespace DeadManZone.Presentation.ShopV2
 
         private static string EnemyPreviewDisplay(RunState state)
         {
+            // Boss rounds leave FightOptions empty and ChosenFightOption at -1, so without
+            // this branch the readout falls through to the em-dash. Mirrors the strength
+            // read in ShopV2FightOrdersPresenter.ShowBossCard.
+            if (RunManager.Instance?.Orchestrator?.IsBossFightPending == true)
+            {
+                var enemyBoard = RunManager.Instance.Orchestrator.GetUpcomingEnemyBoard();
+                if (enemyBoard != null)
+                    return $"~{ArmyStrengthCalculator.Evaluate(enemyBoard).EffectiveTotal}";
+            }
+
             int chosen = state.ChosenFightOption;
             if (state.FightOptions == null || chosen < 0 || chosen >= state.FightOptions.Count)
                 return "—";
