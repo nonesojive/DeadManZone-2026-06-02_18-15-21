@@ -18,7 +18,8 @@ using UnityEngine.UI;
 
 namespace DeadManZone.Presentation.ShopV2
 {
-    /// <summary>Binds the ShopBand's five offer slots and the reroll plate to RunState.Shop. Attach to `ShopBand`.</summary>
+    /// <summary>Binds the ShopBand's five offer slots (plus the optional Cartel mercenary slot,
+    /// `OfferSlot_5`) and the reroll plate to RunState.Shop. Attach to `ShopBand`.</summary>
     public sealed class ShopV2ShopBandPresenter : ShopV2PresenterBase
     {
         private const int OfferSlotCount = 5;
@@ -45,6 +46,11 @@ namespace DeadManZone.Presentation.ShopV2
         private static readonly Color NameIdle = new(0.92f, 0.87f, 0.74f, 1f);
         private static readonly Color NameLocked = new(0.90f, 0.78f, 0.50f, 1f);
 
+        // kit-sprite slots multiply-tint the metal frame; flat colors are for legacy spriteless borders, 2026-07-18
+        private static readonly Color KitBorderIdle = new(0.82f, 0.80f, 0.76f, 1f);
+        private static readonly Color KitBorderHover = Color.white;
+        private static readonly Color KitBorderLocked = new(0.45f, 0.42f, 0.38f, 1f);
+
         private static readonly Color ShapeCellColor = new(
             CombatGrimdarkSkin.Bone.r, CombatGrimdarkSkin.Bone.g, CombatGrimdarkSkin.Bone.b, 0.45f);
 
@@ -67,6 +73,11 @@ namespace DeadManZone.Presentation.ShopV2
         }
 
         private readonly List<Slot> _slots = new();
+
+        /// <summary>The Cartel mercenary slot (`OfferSlot_5`, offer SlotIndex 9). Null in scenes
+        /// authored before the slot existed — every use is null-guarded.</summary>
+        private Slot _mercSlot;
+
         private Button _rerollButton;
         private TMP_Text _rerollCostVal;
         private ContentDatabase _database;
@@ -92,6 +103,19 @@ namespace DeadManZone.Presentation.ShopV2
                     ApplyVisualState(slot);
                 };
                 _slots.Add(slot);
+            }
+
+            // Cartel mercenary slot: hand-authored, inactive by default, absent in older scenes —
+            // transform.Find sees inactive children, and absence is NOT an error.
+            var mercRoot = transform.Find("OfferSlot_5");
+            if (mercRoot != null)
+            {
+                _mercSlot = BuildSlot(mercRoot);
+                _mercSlot.Input.HoverChanged += hovered =>
+                {
+                    _mercSlot.Hovered = hovered;
+                    ApplyVisualState(_mercSlot);
+                };
             }
 
             var rerollPlate = transform.Find("RerollPlate");
@@ -154,15 +178,26 @@ namespace DeadManZone.Presentation.ShopV2
                 slot.Background.color = slot.Locked ? LockedGoldTint : SlotBase;
 
             if (slot.Border != null)
-                slot.Border.color = slot.Locked
-                    ? BorderLocked
-                    : (slot.Hovered ? BorderHover : BorderIdle);
+                slot.Border.color = ResolveBorderTint(slot);
 
             if (slot.Name != null)
                 slot.Name.color = slot.Locked ? NameLocked : NameIdle;
 
             if (slot.LockBanner != null)
                 slot.LockBanner.SetActive(slot.Locked);
+        }
+
+        /// <summary>Flat palette for plain borders; white-based tints when the Border image carries
+        /// a metal-kit sprite (name prefixed "mg_") so the tint doesn't mud the art.</summary>
+        private static Color ResolveBorderTint(Slot slot)
+        {
+            bool kitArt = slot.Border.sprite != null
+                && slot.Border.sprite.name.StartsWith("mg_", StringComparison.Ordinal);
+
+            if (kitArt)
+                return slot.Locked ? KitBorderLocked : (slot.Hovered ? KitBorderHover : KitBorderIdle);
+
+            return slot.Locked ? BorderLocked : (slot.Hovered ? BorderHover : BorderIdle);
         }
 
         protected override void Refresh(RunState state)
@@ -204,6 +239,25 @@ namespace DeadManZone.Presentation.ShopV2
 
                 BindSlot(slot, slotOffer, state, registry);
             }
+
+            // Cartel mercenary offer (SlotIndex 9, IsMercenary) binds to the hand-authored
+            // OfferSlot_5 through the exact same routine as slots 0-4; buy/lock already route by
+            // the offer's own SlotIndex, so 9 flows through untouched. No merc offer → slot hidden.
+            if (_mercSlot != null)
+            {
+                ClearAuthoredMockCells(_mercSlot);
+
+                var mercOffer = state.Shop?.Offers?.FirstOrDefault(o => o != null && o.IsMercenary);
+                if (mercOffer == null)
+                {
+                    _mercSlot.Input.Bind(null, false);
+                    _mercSlot.Root.SetActive(false);
+                }
+                else
+                {
+                    BindSlot(_mercSlot, mercOffer, state, registry);
+                }
+            }
         }
 
         private void BindSlot(Slot slot, ShopOffer offer, RunState state, ContentRegistry registry)
@@ -217,7 +271,9 @@ namespace DeadManZone.Presentation.ShopV2
                 slot.Name.text = (definition?.DisplayName ?? offer.PieceId ?? string.Empty).ToUpperInvariant();
 
             if (slot.Rarity != null)
-                slot.Rarity.text = definition != null ? definition.Rarity.ToString().ToUpperInvariant() : string.Empty;
+                slot.Rarity.text = offer.IsMercenary
+                    ? "MERCENARY"
+                    : (definition != null ? definition.Rarity.ToString().ToUpperInvariant() : string.Empty);
 
             if (slot.CostVal != null)
                 slot.CostVal.text = offer.GoldPrice.ToString();
