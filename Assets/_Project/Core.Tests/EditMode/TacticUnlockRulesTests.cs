@@ -54,6 +54,37 @@ namespace DeadManZone.Core.Tests.EditMode
         }
 
         [Test]
+        public void IsUnlocked_AdvanceAndStandGround_AlwaysUnlockedEvenWhenExcludedFromStartingTactics()
+        {
+            // Owner rule (2026-07-17): Advance + Hold The Line are universal defaults for every
+            // faction, in every fight, from fight 1 — regardless of authored startingTactics.
+            var faction = ScriptableObject.CreateInstance<FactionSO>();
+            faction.startingTactics = new[] { TacticType.ProtectSupport }; // deliberately excludes both
+
+            Assert.IsTrue(TacticUnlockRules.IsUnlocked(faction, TacticType.Advance));
+            Assert.IsTrue(TacticUnlockRules.IsUnlocked(faction, TacticType.StandGround));
+            Assert.IsTrue(TacticUnlockRules.IsUnlocked(faction, TacticType.ProtectSupport));
+            Assert.IsFalse(TacticUnlockRules.IsUnlocked(faction, TacticType.DisciplinedFire));
+        }
+
+        [Test]
+        public void TacticPauseValidator_AdvanceAndStandGround_AlwaysUnlockedEvenWhenExcludedFromStartingTactics()
+        {
+            var startingTactics = new[] { TacticType.ProtectSupport }; // deliberately excludes both
+            var validator = new TacticPauseValidator();
+
+            Assert.IsTrue(validator.ValidatePause(
+                TacticType.Advance, TacticType.ProtectSupport, hasCommandPiece: false,
+                checkpointIndex: 0, authority: 5, abilities: null, out var advanceReason, startingTactics));
+            Assert.IsNull(advanceReason);
+
+            Assert.IsTrue(validator.ValidatePause(
+                TacticType.StandGround, TacticType.ProtectSupport, hasCommandPiece: false,
+                checkpointIndex: 0, authority: 5, abilities: null, out var standGroundReason, startingTactics));
+            Assert.IsNull(standGroundReason);
+        }
+
+        [Test]
         public void TacticPauseValidator_RejectsLockedTactic()
         {
             var startingTactics = new[]

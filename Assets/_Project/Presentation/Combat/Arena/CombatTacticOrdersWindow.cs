@@ -717,9 +717,10 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             foreach (TacticType tactic in Enum.GetValues(typeof(TacticType)))
             {
-                bool unlocked = _ctx.StartingTactics == null
-                                || _ctx.StartingTactics.Length == 0
-                                || Array.IndexOf(_ctx.StartingTactics, tactic) >= 0;
+                // Single source of truth for the lock verdict — TacticPauseValidator (Core) is
+                // what actually gates RESUME; this label must never drift from it (owner rule
+                // 2026-07-17: Advance + Hold The Line always unlocked, see its doc comment).
+                bool unlocked = TacticPauseValidator.IsTacticUnlocked(_ctx.StartingTactics, tactic);
 
                 string label = FormatTactic(tactic) + (unlocked ? string.Empty : "  — LOCKED");
                 var button = CreateColumnButton(_tacticColumn, $"TacticButton_{tactic}", label, 44f);

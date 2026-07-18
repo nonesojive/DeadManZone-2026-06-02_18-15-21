@@ -186,10 +186,24 @@ namespace DeadManZone.Presentation.Combat.Arena
 
             Vector3 current = transform.position;
             Vector3 simWorld = _mapper.ToWorld(_anchor);
-            _smoothedSimWorld = Vector3.Lerp(
+            // 2026-07-17 movement-cadence fix (owner report: "units move ~2 cells then pause
+            // 1-2s"): this used to be an exponential Lerp at a fixed rate of 14, which converges
+            // to a newly-jumped sim anchor in ~0.2s regardless of distance or calibrated speed.
+            // CombatMovementSpeed's charge accrual only advances a unit's grid anchor once every
+            // ~25-50 ticks (2.5-5s of sim time; ~1.1-2.3s of real replay time after
+            // CombatDirector's EmptyTickPaceScale=0.45 charge-tick compression — see its comment).
+            // Snapping this reference point in ~0.2s meant the free-chase SmoothDamp below (or the
+            // plain MoveTowards branch) closed the gap to its target almost immediately, then sat
+            // idle for the remaining ~1-4s until the next anchor tick — an eased "burst, then
+            // freeze" cadence instead of a continuous walk, even though CombatArenaMoveSpeedResolver
+            // calibrates _moveWorldSpeed specifically so a cell crossing takes about that same
+            // real-time interval. MoveTowards at that same calibrated speed makes this reference
+            // creep for the whole interval instead of snapping, so the (SmoothDamp'd) chase target
+            // it feeds moves continuously and the render never runs out of "walk" to do.
+            _smoothedSimWorld = Vector3.MoveTowards(
                 _smoothedSimWorld,
                 simWorld,
-                Mathf.Clamp01(Time.deltaTime * 14f));
+                _moveWorldSpeed * Time.deltaTime);
 
             // Cap the frame step so a hitch (long dt) or a catch-up from accumulated lag can't
             // teleport the unit forward. The visual march lags its sparse sim anchor; letting it

@@ -102,8 +102,17 @@ namespace DeadManZone.Core.Combat
             return true;
         }
 
-        private static bool IsTacticUnlocked(TacticType[] startingTactics, TacticType tactic)
+        /// <summary>Owner rule (2026-07-17): Advance and StandGround (Hold The Line) are the two
+        /// universal default doctrines — always available to every faction, every fight, from
+        /// fight 1, regardless of authored <c>startingTactics</c>. Faction-specific tactics
+        /// (DisciplinedFire, ProtectSupport, ...) unlock on top of these two, per faction data.
+        /// Public so callers outside Core (e.g. the orders window's LOCKED label) share this one
+        /// verdict instead of re-deriving it.</summary>
+        public static bool IsTacticUnlocked(TacticType[] startingTactics, TacticType tactic)
         {
+            if (tactic == TacticType.Advance || tactic == TacticType.StandGround)
+                return true;
+
             if (startingTactics == null || startingTactics.Length == 0)
                 return true; // ponytail: no list = all unlocked
             return Array.IndexOf(startingTactics, tactic) >= 0;

@@ -418,6 +418,13 @@ rarely "is this unit good" — it's "does this tip a threshold".
 - An **opening pause**, plus one when **either army** drops to **60% health**.
   > It fires on the **lower of the two armies'** HP fraction (`TickCombatRun.cs:233-244`) — so the
   > **enemy** collapsing to 60% also triggers your pause.
+- **`Advance` and `StandGround` (Hold The Line) are universal defaults** — always available to
+  every faction, every fight, from fight 1, regardless of that faction's authored
+  `startingTactics`. Faction-specific tactics (`DisciplinedFire`, `ProtectSupport`) unlock on top
+  of these two per faction data (`FactionSO.startingTactics`). Enforced in one place per layer:
+  `TacticPauseValidator.IsTacticUnlocked` (Core, the actual RESUME gate) and
+  `TacticUnlockRules.IsUnlockedForList` (Data, faction-aware wrapper); the orders window's LOCKED
+  label calls the Core validator directly rather than re-deriving the verdict.
 - Orders cost **Authority**:
 
 | Tactic | Effect |

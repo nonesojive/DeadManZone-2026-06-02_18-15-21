@@ -21,6 +21,47 @@ namespace DeadManZone.Presentation.Combat
         // fit inside it (slowest unit is ~50 ticks/cell), only pathological dead air is compressed.
         private const int MaxPacedEmptyTicks = 64;
 
+        // 2026-07-17 movement-cadence investigation (owner report: "units move ~2 cells then
+        // pause for a second or two, then move again" — observed on every unit, including the
+        // Ark transport, so it's the base pipeline, not a doctrine/tactic effect).
+        //
+        // Measured numbers (CombatMovementSpeed: chargePerTick = speed+1; step cost 100 normal /
+        // 200 crossing the neutral column; CombatPacingConfig.TicksPerSecond = 10):
+        //   speed 1: chargePerTick 2 → 50 ticks/cell  (5.0 sim-s)  → ~2.25 real-s/cell paced here
+        //   speed 2: chargePerTick 3 → 34 ticks/cell  (3.4 sim-s)  → ~1.53 real-s/cell paced here
+        //   speed 3: chargePerTick 4 → 25 ticks/cell  (2.5 sim-s)  → ~1.13 real-s/cell paced here
+        // ("real-s/cell paced here" = ticks-per-cell × EmptyTickPaceScale × secondsPerTick, i.e.
+        // what this coroutine actually waits, assuming no other unit's event lands on the same
+        // global tick — attacks elsewhere in the segment insert full-length waits and slow this
+        // down further). None of these tick counts reach MaxPacedEmptyTicks, so the fast-forward
+        // path never engages for ordinary movement (it can for a neutral-column crossing at
+        // speed 1: 100 ticks > 64, so the last 36 ticks skip pacing entirely and the step appears
+        // to snap — a separate, narrower gap from the one below).
+        //
+        // Root cause found and fixed (CombatUnitActor.Update, "_smoothedSimWorld"): the sim
+        // anchor reference the walk math chases was re-synced with a fixed-rate Lerp (~0.2s to
+        // converge) regardless of the real ~1.1-2.3s gap between anchor ticks above, so the
+        // render closed the distance almost immediately and then had nothing left to walk toward
+        // until the next tick — an eased burst-then-freeze even though moveSpeedPresentationScale
+        // is calibrated to make a full continuous walk take exactly that gap. Switched it to
+        // MoveTowards at the same calibrated speed so it creeps for the whole interval instead.
+        //
+        // If the cadence still doesn't feel right after that fix, further *tuning* (not another
+        // bug fix) options, roughly cheapest-to-riskiest:
+        //   1. Lower EmptyTickPaceScale further (e.g. 0.45 → 0.30) and/or raise
+        //      moveSpeedPresentationScale to match: more, smaller real-time waits per cell make
+        //      the walk look more finely sampled without changing the sim's actual pace ratio.
+        //   2. Reduce CombatUnitActor's ChaseGoalBias (0.3 → e.g. 0.15) so the SmoothDamp target
+        //      leans harder on the now-continuous _smoothedSimWorld term and less on the
+        //      leash-clamped goal (which still jumps a full cell the instant an anchor tick
+        //      fires) — shrinks the residual instant-jump component further.
+        //   3. Replay time compression: play empty ticks even faster (lower EmptyTickPaceScale)
+        //      while proportionally speeding up moveWorldSpeed, so a whole march compresses into
+        //      less wall-clock time without changing the tick:real-second ratio — makes fights
+        //      read faster overall, a pacing/runtime choice rather than a smoothness one.
+
+
+
         private Coroutine _playbackRoutine;
         private bool _continueAfterPlayback;
         private float _secondsPerTick = CombatSegmentPlayback.SecondsPerTick;
