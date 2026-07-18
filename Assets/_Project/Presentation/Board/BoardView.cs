@@ -510,9 +510,17 @@ private PieceDefinition _selectedPiece;
                 tile.SetInvalidPreview(false);
         }
 
+        // reroll ghost-flash fix, 2026-07-18 r5 (advisor-reviewed): rebuilding identical chips
+        // (ClearPieceChips + CreateShapeVisual) flashed a one-frame ghost on board-neutral
+        // refreshes like shop reroll. Skip is early and total — when content or any expected
+        // position differs (startup canvas settling moves cell centers, board mutations change
+        // the set), the full rebuild runs as always.
         private void RefreshOccupancyVisuals()
         {
             if (_layout == null)
+                return;
+
+            if (RebuildWouldBeIdentical())
                 return;
 
             ClearPieceChips();
@@ -582,6 +590,62 @@ private PieceDefinition _selectedPiece;
             hoverController?.Hide();
             SyncTransportCargoPanels();
 }
+
+        private const float ChipPositionEpsilon = 0.01f;
+
+        /// <summary>True only when a full RefreshOccupancyVisuals rebuild would recreate
+        /// exactly what's already on screen: same InstanceId set (cargo-filtered, matching
+        /// the loop below), same anchor/rotation each visual was created with, and each
+        /// visual sitting where PieceShapeVisual.ComputeRootPosition — the same math
+        /// Create uses — says it would land today. Combat/snapshot paths go through
+        /// BuildBoard/ClearTiles, which clear _shapeVisualsByInstance first, so the
+        /// empty-dictionary early-out guarantees this can never wrongly skip there.
+        /// Runs on every state refresh — plain loops, no LINQ, count mismatch bails first.</summary>
+        private bool RebuildWouldBeIdentical()
+        {
+            if (_boardState == null || _piecesOverlay == null || gridLayout == null)
+                return false;
+
+            if (_shapeVisualsByInstance.Count == 0)
+                return false;
+
+            int liveCount = 0;
+            foreach (var piece in _boardState.Pieces)
+            {
+                if (piece.CarrierInstanceId == null)
+                    liveCount++;
+            }
+
+            if (liveCount != _shapeVisualsByInstance.Count)
+                return false;
+
+            foreach (var piece in _boardState.Pieces)
+            {
+                if (piece.CarrierInstanceId != null)
+                    continue;
+
+                if (!_shapeVisualsByInstance.TryGetValue(piece.InstanceId, out var visual) || visual == null)
+                    return false;
+
+                if (!visual.Anchor.Equals(piece.Anchor) || visual.Rotation != piece.Rotation)
+                    return false;
+
+                var expected = PieceShapeVisual.ComputeRootPosition(
+                    _piecesOverlay,
+                    gridLayout,
+                    piece.Definition.Shape.GetCells(piece.Anchor, piece.Rotation),
+                    ResolveCellCenterInOverlay);
+                if (!expected.HasValue)
+                    return false;
+
+                var current = visual.Center;
+                if (Mathf.Abs(current.x - expected.Value.x) > ChipPositionEpsilon
+                    || Mathf.Abs(current.y - expected.Value.y) > ChipPositionEpsilon)
+                    return false;
+            }
+
+            return true;
+        }
 
         /// <summary>§2.5 Armored Ark: one TransportCargoPanelPresenter instance per placed
         /// transport, kept in step with the board every time RefreshOccupancyVisuals runs

@@ -18,6 +18,13 @@ namespace DeadManZone.Presentation.Board
     {
         public Vector2 Center => ((RectTransform)transform).localPosition;
 
+        /// <summary>Anchor/rotation the visual was created for — recorded so BoardView's
+        /// reroll ghost-flash skip (RefreshOccupancyVisuals, 2026-07-18 r5) can tell whether
+        /// a rebuild would produce an identical chip without destroying this one first.</summary>
+        public GridCoord Anchor { get; private set; }
+
+        public PieceRotation Rotation { get; private set; }
+
         public static PieceShapeVisual Create(
             RectTransform overlay,
             GridLayoutGroup grid,
@@ -70,7 +77,7 @@ namespace DeadManZone.Presentation.Board
                 artImage.sprite = source.icon;
                 artImage.preserveAspect = true;
                 artImage.raycastTarget = false;
-                return root.AddComponent<PieceShapeVisual>();
+                return Attach(root, anchor, rotation);
             }
 
             float cellW = grid.cellSize.x;
@@ -107,7 +114,38 @@ namespace DeadManZone.Presentation.Board
             if (!hideLabel)
                 AddFootprintLabel(root.transform, definition, footprint.size, theme);
 
-            return root.AddComponent<PieceShapeVisual>();
+            return Attach(root, anchor, rotation);
+        }
+
+        private static PieceShapeVisual Attach(GameObject root, GridCoord anchor, PieceRotation rotation)
+        {
+            var visual = root.AddComponent<PieceShapeVisual>();
+            visual.Anchor = anchor;
+            visual.Rotation = rotation;
+            return visual;
+        }
+
+        /// <summary>The single source of truth for where a piece chip's root sits in overlay
+        /// space. Create uses the same ComputeFootprint result for rootRect.localPosition;
+        /// BoardView's reroll ghost-flash skip (2026-07-18 r5) calls this to predict that
+        /// position without building anything. Returns null when the footprint would be
+        /// degenerate — Create bails out in that case too, so callers treat null as
+        /// "can't compare, do the full rebuild".</summary>
+        internal static Vector2? ComputeRootPosition(
+            RectTransform overlay,
+            GridLayoutGroup grid,
+            IEnumerable<GridCoord> cells,
+            Func<GridCoord, Vector2?> cellCenterResolver = null)
+        {
+            if (overlay == null || grid == null || cells == null)
+                return null;
+
+            var footprint = ComputeFootprint(overlay, grid, cells, cellCenterResolver);
+            if (float.IsInfinity(footprint.size.x) || float.IsInfinity(footprint.size.y)
+                || footprint.size.sqrMagnitude < 1f)
+                return null;
+
+            return footprint.center;
         }
 
         private static void AddFootprintLabel(
@@ -139,7 +177,7 @@ namespace DeadManZone.Presentation.Board
         private static (Vector2 center, Vector2 size) ComputeFootprint(
             RectTransform overlay,
             GridLayoutGroup grid,
-            IReadOnlyList<GridCoord> cells,
+            IEnumerable<GridCoord> cells,
             Func<GridCoord, Vector2?> cellCenterResolver = null)
         {
             float minX = float.MaxValue;
