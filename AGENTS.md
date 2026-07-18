@@ -72,7 +72,7 @@ Lazy-senior-dev / YAGNI bar (mirrors `.cursor/rules/ponytail.mdc`):
 
 - Dust Scourge and Cartel of Echoes are unlocked after a campaign win, and hidden until their content passes land — don't assume they're playable in a fresh checkout.
 - Steam achievements/leaderboards are stubbed (`SteamIntegration.cs`) pending Steamworks SDK wiring.
-- Leaderboard/save data lives under `%USERPROFILE%\AppData\LocalLow\DefaultCompany\The Muck & Grind\` (productName renamed 2026-07-18; older `...\DeadManZone\` and `...\The Muck & The Grind\` folders are stale copies), not in the repo. **The test suite still deletes the live save there — back it up before `tests-run`.**
+- Leaderboard/save data lives under `%LOCALAPPDATA%/DeadManZone/`, not in the repo.
 - **Run-scene UI is hand-authored.** The ShopV2 build surface in `Run.unity` is scene state, not
   code output — `RunUiAuthoringLock` protects it. Never regenerate `Run.unity` from a menu or script
   (the old `RunSceneSetup` builder + "Refresh Run Scene" menu did exactly that and wiped the ShopV2

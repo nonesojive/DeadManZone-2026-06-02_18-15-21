@@ -101,6 +101,21 @@ namespace DeadManZone.Presentation.Editor
 
         private static void CreateMainMenuScene()
         {
+            // MainMenu.unity is hand-authored (see MainMenuAuthoringLock). Regenerating would
+            // wipe the painted-background layout the same way the old Run-scene builder wiped
+            // ShopV2. Disable preserveSceneAuthoring on the lock component to rebuild.
+            if (System.IO.File.Exists(MainMenuPath))
+            {
+                var scene = EditorSceneManager.OpenScene(MainMenuPath, OpenSceneMode.Single);
+                if (MainMenuAuthoringLock.ShouldPreserve(scene))
+                {
+                    Debug.LogWarning(
+                        "MainMenu.unity is hand-authored (MainMenuAuthoringLock present). " +
+                        "Skipping scene regeneration. Disable preserveSceneAuthoring on the lock to rebuild.");
+                    return;
+                }
+            }
+
             CinematicMenuSceneBuilder.BuildAndSave(MainMenuPath);
         }
 

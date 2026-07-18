@@ -99,11 +99,14 @@ namespace DeadManZone.Presentation.MainMenu
         /// dedicated frame image).</summary>
         private void ApplyGrimdarkSkin()
         {
+            // KeepSprite variants: the faction screen is hand-authored with MuckGrind kit art
+            // (card frames, panel, buttons). Falls back to leather when no sprite is assigned.
             foreach (var button in cardButtons)
-                CombatGrimdarkSkin.StyleButton(button);
-            CombatGrimdarkSkin.StyleButton(marchButton);
-            CombatGrimdarkSkin.StyleButton(backButton);
-            CombatGrimdarkSkin.StyleFrame(detailFrameImage);
+                CombatGrimdarkSkin.StyleButtonKeepSprite(button);
+            CombatGrimdarkSkin.StyleButtonKeepSprite(marchButton);
+            CombatGrimdarkSkin.StyleButtonKeepSprite(backButton);
+            if (detailFrameImage == null || detailFrameImage.sprite == null)
+                CombatGrimdarkSkin.StyleFrame(detailFrameImage);
 
             foreach (var text in cardNameTexts)
                 CombatGrimdarkSkin.StyleTitle(text, characterSpacing: 1f);

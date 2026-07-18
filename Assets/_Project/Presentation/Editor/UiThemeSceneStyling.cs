@@ -58,16 +58,40 @@ namespace DeadManZone.Presentation.Editor
             return bg;
         }
 
+        /// <summary>
+        /// Painted IronMarch main-menu background (eagles replaced with the union emblem).
+        /// Takes priority over the kit's menuBackgroundSprite when present.
+        /// </summary>
+        private const string PaintedMenuBackgroundPath =
+            "Assets/_Project/Art/UI/MainMenu/MainMenuBackground_IronMarch.png";
+
         public static void AddDecorBackground(Transform canvasParent, UiThemeSO theme, bool menuScene)
         {
-            var sprite = menuScene ? theme.menuBackgroundSprite : theme.runBackgroundSprite;
+            var painted = menuScene ? LoadPaintedMenuBackground() : null;
+            var sprite = painted != null
+                ? painted
+                : menuScene ? theme.menuBackgroundSprite : theme.runBackgroundSprite;
             if (sprite == null)
                 return;
 
             var bg = MenuSceneSetup.CreateStretchChild(canvasParent, "DecorBackground");
             bg.transform.SetAsFirstSibling();
             var image = bg.AddComponent<Image>();
-            UiThemeApplicator.ApplyBackgroundPlate(image, sprite, menuScene ? 0.72f : 0.55f);
+            // Painted art stays near-opaque; kit screens keep the dimmed plate look.
+            var alpha = painted != null ? 0.92f : menuScene ? 0.72f : 0.55f;
+            UiThemeApplicator.ApplyBackgroundPlate(image, sprite, alpha);
+        }
+
+        private static Sprite LoadPaintedMenuBackground()
+        {
+            if (AssetImporter.GetAtPath(PaintedMenuBackgroundPath) is TextureImporter importer
+                && importer.textureType != TextureImporterType.Sprite)
+            {
+                importer.textureType = TextureImporterType.Sprite;
+                importer.SaveAndReimport();
+            }
+
+            return AssetDatabase.LoadAssetAtPath<Sprite>(PaintedMenuBackgroundPath);
         }
 
         public static void StyleButton(Button button, UiThemeSO theme, bool accent = false)

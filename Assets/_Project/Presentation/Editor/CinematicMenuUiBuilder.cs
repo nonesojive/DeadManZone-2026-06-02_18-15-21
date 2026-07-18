@@ -112,7 +112,7 @@ namespace DeadManZone.Presentation.Editor
         {
             var mainPanel = MenuSceneSetup.CreateStretchChild(parent, "MainPanel");
 
-            var title = MenuSceneSetup.CreateLabelPublic(mainPanel.transform, "Until The Trenches Fall", 52,
+            var title = MenuSceneSetup.CreateLabelPublic(mainPanel.transform, "The Muck & Grind", 52,
                 FontStyles.Bold, new Vector2(0.5f, 0.78f), new Vector2(900, 80));
             title.color = theme.textPrimary;
 

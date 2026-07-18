@@ -82,7 +82,8 @@ namespace DeadManZone.Presentation.MainMenu
             if (mainPanel != null)
             {
                 CombatGrimdarkSkin.StylePanelText(mainPanel);
-                CombatGrimdarkSkin.AddBand(mainPanel.transform, 0.73f, 0.83f, "TitleBand");
+                // TitleBand removed: the hand-authored layout puts the title over the
+                // painted background's dark sky (top-left), which needs no backing strip.
             }
             CombatGrimdarkSkin.StyleBody(subtitleText);
 

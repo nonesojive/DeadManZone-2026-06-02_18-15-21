@@ -61,6 +61,40 @@ namespace DeadManZone.Presentation.Combat
                 label.color = Bone;
         }
 
+        /// <summary>Like <see cref="StyleButton"/> but keeps a scene-authored sprite (MuckGrind
+        /// kit art) instead of flattening to leather. Only the ColorBlock and label color are
+        /// applied; the image tint is reset to white so the sprite shows unmodified.</summary>
+        public static void StyleButtonKeepSprite(Button button)
+        {
+            if (button == null)
+                return;
+
+            var image = button.GetComponent<Image>();
+            if (image != null && image.sprite == null)
+            {
+                StyleButton(button);
+                return;
+            }
+
+            if (image != null)
+                image.color = Color.white;
+
+            // Kit themes wire SpriteSwap transitions to their own button sprites, which would
+            // replace the scene-authored art on hover/select — force plain color tinting.
+            button.transition = Selectable.Transition.ColorTint;
+
+            var colors = button.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color(1.25f, 1.2f, 1.1f, 1f);
+            colors.pressedColor = new Color(0.75f, 0.72f, 0.68f, 1f);
+            colors.selectedColor = new Color(1.35f, 1.28f, 1.05f, 1f);
+            button.colors = colors;
+
+            var label = button.GetComponentInChildren<TMP_Text>(true);
+            if (label != null)
+                label.color = Bone;
+        }
+
         /// <summary>Kit typography sweep for a scene-authored panel: big bold labels read
         /// as titles (bone + letter-spacing), everything else outside buttons as body text.
         /// Button labels are left to <see cref="StyleButton"/>.</summary>
