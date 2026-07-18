@@ -10,6 +10,8 @@ namespace DeadManZone.Data.Editor
     // Morale so they don't rout en route, medics so they survive arriving, one transport
     // that skips the walk." All HP/damage/ManpowerCost numbers are PROVISIONAL (balance pass
     // pending), anchored to IronMarch's numbers by rarity per the spec's own instruction.
+    // PROVISIONAL — melee pace pass 2026-07-18: all AttackType.Melee pieces bumped
+    // movementSpeed 1→2 / 2→3 so they close to range 1 faster than rifle lines.
     public static partial class OathbornAccordContentFactory
     {
         // Plain (non-L) 3-cell straight line — Pilgrim Spears' footprint per §2.5's Cells column.
@@ -29,19 +31,19 @@ namespace DeadManZone.Data.Editor
             // Common — riot-shield peacekeepers, the faction's melee assault line body.
             SavePiece("truncheon_line", "Truncheon Line", PieceCategory.Unit, DemoSandboxShapes.HorizontalPair,
                 GameTagIds.Infantry, GameTagIds.Assault, FactionIds.OathbornAccord, 55, 6, 1, AttackType.Melee, ArmorType.Light,
-                AttackSpeedTier.Medium, AttackRangeTier.Melee, 2,
+                AttackSpeedTier.Medium, AttackRangeTier.Melee, 3,
                 rarity: Rarity.Common),
 
             // Common — cheap swarm, melee count piece. Glassiest/cheapest common per the spec.
             SavePiece("pilgrim_spears", "Pilgrim Spears", PieceCategory.Unit, Triple3,
                 GameTagIds.Infantry, GameTagIds.Assault, FactionIds.OathbornAccord, 35, 4, 1, AttackType.Melee, ArmorType.None,
-                AttackSpeedTier.Medium, AttackRangeTier.Melee, 2,
+                AttackSpeedTier.Medium, AttackRangeTier.Melee, 3,
                 rarity: Rarity.Common),
 
             // Common — shield wall anchor, tankiest common per the spec.
             SavePiece("vow_warden", "Vow Warden", PieceCategory.Unit, DemoSandboxShapes.VerticalPair,
                 GameTagIds.Infantry, GameTagIds.Defender, FactionIds.OathbornAccord, 75, 5, 2, AttackType.Melee, ArmorType.Medium,
-                AttackSpeedTier.Slow, AttackRangeTier.Melee, 1,
+                AttackSpeedTier.Slow, AttackRangeTier.Melee, 2,
                 rarity: Rarity.Common),
 
             // Common — "Adjacent allies +morale". TODO: PieceAbilityEngine/SynergyStat has no
@@ -82,7 +84,7 @@ namespace DeadManZone.Data.Editor
             // [Command] per this pass's mapping rule.
             SavePiece("confessor", "Confessor", PieceCategory.Unit, DemoSandboxShapes.Single,
                 GameTagIds.Infantry, GameTagIds.Utility, FactionIds.OathbornAccord, 40, 5, 2, AttackType.Melee, ArmorType.Light,
-                AttackSpeedTier.Medium, AttackRangeTier.Melee, 2, synergyTags: new[] { GameTagIds.Command },
+                AttackSpeedTier.Medium, AttackRangeTier.Melee, 3, synergyTags: new[] { GameTagIds.Command },
                 customAbilities: new[]
                 {
                     Ability("confessor_adjacent_morale_resist", PieceAbilityTrigger.AdjacentAura, SynergyStat.MoraleResistancePercent, SynergyModType.Percent, 20,
@@ -145,7 +147,7 @@ namespace DeadManZone.Data.Editor
             // of its always-on morale-resist aura.
             SavePiece("high_exarch", "High Exarch", PieceCategory.Unit, DemoSandboxShapes.HorizontalPair,
                 GameTagIds.Infantry, GameTagIds.Utility, FactionIds.OathbornAccord, 70, 8, 3, AttackType.Melee, ArmorType.Medium,
-                AttackSpeedTier.Medium, AttackRangeTier.Melee, 2, synergyTags: new[] { GameTagIds.Command },
+                AttackSpeedTier.Medium, AttackRangeTier.Melee, 3, synergyTags: new[] { GameTagIds.Command },
                 grantedAbility: GrantedAbility.ShieldAllies,
                 customAbilities: new[]
                 {

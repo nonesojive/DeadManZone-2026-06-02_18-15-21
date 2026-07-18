@@ -13,6 +13,8 @@ namespace DeadManZone.Data.Editor
     // on the lower-HP end for commons per the "moth-eaten"/"tarnished" flavor (this is not the
     // tankiest faction). Honest weakness (deliberate, not patched here): gas is weak vs
     // structures/buildings per the existing AttackType damage-triangle.
+    // PROVISIONAL — melee pace pass 2026-07-18: AttackType.Melee pieces bumped movementSpeed
+    // 1→2 / 2→3 so they close to range 1 faster than rifle lines.
     public static partial class BlightbornPactContentFactory
     {
         // Straight 3-in-a-row footprint for the two plain 3-cell buildings in this roster
@@ -53,7 +55,7 @@ namespace DeadManZone.Data.Editor
             // it's the one common built to hold a line).
             SavePiece("iron_veil_guard", "Iron Veil Guard", PieceCategory.Unit, DemoSandboxShapes.HorizontalPair,
                 GameTagIds.Infantry, GameTagIds.Defender, FactionIds.BlightbornPact, 50, 7, 2, AttackType.Melee, ArmorType.Medium,
-                AttackSpeedTier.Slow, AttackRangeTier.Melee, 1,
+                AttackSpeedTier.Slow, AttackRangeTier.Melee, 2,
                 rarity: Rarity.Common),
 
             // Common — adjacent allies +HP. Same tech/magnitude as IronMarch's/Neutral's

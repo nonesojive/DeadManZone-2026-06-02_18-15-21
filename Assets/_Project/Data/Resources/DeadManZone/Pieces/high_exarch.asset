@@ -46,7 +46,7 @@ MonoBehaviour:
   moraleDamageResistancePercent: 50
   attackSpeed: 1
   attackRange: 0
-  movementSpeed: 2
+  movementSpeed: 3
   armorType: 2
   attackType: 6
   grantedAbility: 2

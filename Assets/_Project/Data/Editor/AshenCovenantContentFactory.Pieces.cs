@@ -16,6 +16,8 @@ namespace DeadManZone.Data.Editor
     // HP/damage are PROVISIONAL, same convention as IronmarchUnionContentFactory: a low-HP,
     // moderate-to-high-damage glass-cannon swarm identity (fragile force-multiplier rares, not
     // statball rares), per §2.9.
+    // PROVISIONAL — melee pace pass 2026-07-18: AttackType.Melee pieces bumped movementSpeed
+    // 1→2 / 2→3 (3+ left alone) so they close to range 1 faster than rifle lines.
     public static partial class AshenCovenantContentFactory
     {
         // Straight 3-cell footprint for Zealot Mob (plain 3-cell swarm body, no reason to reuse
@@ -48,7 +50,7 @@ namespace DeadManZone.Data.Editor
             // required, just the field. Also `fanatic` for the swarm identity.
             SavePiece("ash_acolyte", "Ash Acolyte", PieceCategory.Unit, DemoSandboxShapes.Single,
                 GameTagIds.Infantry, GameTagIds.Assault, FactionIds.AshenCovenant, 18, 5, 1,
-                AttackType.Melee, ArmorType.None, AttackSpeedTier.Medium, AttackRangeTier.Melee, 2,
+                AttackType.Melee, ArmorType.None, AttackSpeedTier.Medium, AttackRangeTier.Melee, 3,
                 synergyTags: new[] { GameTagIds.Fanatic },
                 rarity: Rarity.Common,
                 lowStateDamageBonus: 3),
@@ -68,7 +70,7 @@ namespace DeadManZone.Data.Editor
             // roster, per the spec's explicit callout).
             SavePiece("penitent", "Penitent", PieceCategory.Unit, DemoSandboxShapes.VerticalPair,
                 GameTagIds.Infantry, GameTagIds.Defender, FactionIds.AshenCovenant, 75, 4, 1,
-                AttackType.Melee, ArmorType.None, AttackSpeedTier.Slow, AttackRangeTier.Melee, 1,
+                AttackType.Melee, ArmorType.None, AttackSpeedTier.Slow, AttackRangeTier.Melee, 2,
                 rarity: Rarity.Common),
 
             // Hymnal Leader — "adjacent allies +morale". SynergyStat (Tags/SynergyStat.cs) has no
@@ -166,7 +168,7 @@ namespace DeadManZone.Data.Editor
             // genuinely unseamed effects rather than inventing a new trigger type here.
             SavePiece("saint_of_the_embers", "Saint of the Embers", PieceCategory.Unit, DemoSandboxShapes.Single,
                 GameTagIds.Infantry, GameTagIds.Utility, FactionIds.AshenCovenant, 35, 10, 1,
-                AttackType.Melee, ArmorType.None, AttackSpeedTier.Medium, AttackRangeTier.Melee, 2,
+                AttackType.Melee, ArmorType.None, AttackSpeedTier.Medium, AttackRangeTier.Melee, 3,
                 synergyTags: new[] { GameTagIds.Command },
                 rarity: Rarity.Rare,
                 lowStateDamageBonus: 10,
@@ -187,7 +189,7 @@ namespace DeadManZone.Data.Editor
             // alive, not just a walking death trigger.
             SavePiece("the_ash_martyr", "The Ash Martyr", PieceCategory.Unit, DemoSandboxShapes.Single,
                 GameTagIds.Infantry, GameTagIds.Utility, FactionIds.AshenCovenant, 25, 9, 1,
-                AttackType.Melee, ArmorType.None, AttackSpeedTier.Medium, AttackRangeTier.Melee, 2,
+                AttackType.Melee, ArmorType.None, AttackSpeedTier.Medium, AttackRangeTier.Melee, 3,
                 rarity: Rarity.Rare),
 
             // Pyre Cathedral — HQ building granting the Firestorm tactic ("huge fire barrage

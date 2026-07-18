@@ -12,6 +12,8 @@ namespace DeadManZone.Data.Editor
     // "better-equipped, pricier" (Company Rifleman/Strikebreaker get ArmorType.Light at Common,
     // already above IronMarch's ArmorType.None commons). requisitionCost left at 0 throughout
     // (RarityPricing handles shop price at runtime — matches IronMarch convention).
+    // PROVISIONAL — melee pace pass 2026-07-18: AttackType.Melee pieces bumped movementSpeed
+    // 1→2 / 2→3 so they close to range 1 faster than rifle lines.
     public static partial class CartelOfEchoesContentFactory
     {
         // 3-cell footprint for the two Cartel buildings the spec's Cells column marks "3"
@@ -41,7 +43,7 @@ namespace DeadManZone.Data.Editor
             // by stats; no custom ability needed.
             SavePiece("strikebreaker", "Strikebreaker", PieceCategory.Unit, DemoSandboxShapes.VerticalPair,
                 GameTagIds.Infantry, GameTagIds.Defender, FactionIds.CartelOfEchoes, 80, 4, 2, AttackType.Melee, ArmorType.Light,
-                AttackSpeedTier.Slow, AttackRangeTier.Melee, 1,
+                AttackSpeedTier.Slow, AttackRangeTier.Melee, 2,
                 rarity: Rarity.Common),
 
             // Close-range collections — glass-cannon Shredding body, no armor. Identity carried

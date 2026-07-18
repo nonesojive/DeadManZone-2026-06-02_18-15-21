@@ -9,6 +9,8 @@ namespace DeadManZone.Data.Editor
     // 6 Common / 3 Uncommon / 3 Rare = 12 pieces, 3 buildings, 2 tactics, 0 native vehicles.
     // All HP/damage/ManpowerCost numbers below are PROVISIONAL, anchored to IronMarch's own
     // authored numbers by rarity (see IronmarchUnionContentFactory.Pieces.cs for the anchor set).
+    // PROVISIONAL — melee pace pass 2026-07-18: AttackType.Melee pieces bumped movementSpeed
+    // 1→2 / 2→3 so they close to range 1 faster than rifle lines.
     public static partial class DustScourgeContentFactory
     {
         // Straight 3-in-a-row footprint for the two 3-cell pieces in this roster (Chop-Shop,
@@ -50,7 +52,7 @@ namespace DeadManZone.Data.Editor
             // Common — scrap-plated line-holder.
             SavePiece("rust_spear", "Rust Spear", PieceCategory.Unit, DemoSandboxShapes.VerticalPair,
                 GameTagIds.Infantry, GameTagIds.Defender, FactionIds.DustScourge, 65, 5, 2, AttackType.Melee, ArmorType.Light,
-                AttackSpeedTier.Slow, AttackRangeTier.Melee, 1,
+                AttackSpeedTier.Slow, AttackRangeTier.Melee, 2,
                 rarity: Rarity.Common),
 
             // Common — +salvage chance % while fielded. No attack (support skirmisher, per
@@ -154,7 +156,7 @@ namespace DeadManZone.Data.Editor
             // instead as a strong standalone Rare body (good stats for its rarity, no ability).
             SavePiece("warlord_of_many_banners", "Warlord of Many Banners", PieceCategory.Unit, DemoSandboxShapes.HorizontalPair,
                 GameTagIds.Infantry, GameTagIds.Utility, FactionIds.DustScourge, 100, 10, 3, AttackType.Melee, ArmorType.Medium,
-                AttackSpeedTier.Medium, AttackRangeTier.Melee, 2, synergyTags: new[] { GameTagIds.Command },
+                AttackSpeedTier.Medium, AttackRangeTier.Melee, 3, synergyTags: new[] { GameTagIds.Command },
                 rarity: Rarity.Rare)
         };
     }
