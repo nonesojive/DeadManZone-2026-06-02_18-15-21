@@ -343,27 +343,50 @@ namespace DeadManZone.Core.Combat
                 if (mover.EffectiveMovementSpeed == 0)
                     continue;
 
-                int moveChargePerTick = CombatMovementSpeed.GetChargePerTick(
-                    mover.EffectiveMovementSpeed,
-                    mover.Side == CombatSide.Player ? _tactics.PlayerTactic : _tactics.EnemyTactic);
-                if (mover.MoveChargePercentBonus != 0)
-                {
-                    int percentMultiplier = System.Math.Max(0, 100 + mover.MoveChargePercentBonus);
-                    moveChargePerTick = moveChargePerTick * percentMultiplier / 100;
-                }
-
-                moveChargePerTick = MovementSlowRules.ApplyMovementSlow(
-                    moveChargePerTick,
-                    MovementSlowRules.IsSlowed(mover, targets));
-
-                moveChargePerTick = SuppressionRules.ApplyMovementSuppression(moveChargePerTick, mover.IsSuppressed);
-
-                mover.MoveCharge += moveChargePerTick;
-
                 // §1.8/§2.5 Armored Ark: a transport with an assigned opening-window target
                 // drives straight there instead of engaging — "choice of WHERE, not when".
                 var transportGoal = default(GridCoord);
                 bool isTransportRun = mover.IsTransport && _transportTargets.TryGetValue(mover.InstanceId, out transportGoal);
+
+                int moveChargePerTick;
+                if (isTransportRun)
+                {
+                    // 2026-07-17 owner-spec fix: a transport beelining to its target IGNORES
+                    // doctrine/stance (TacticEffects multiplier), movement-slow auras, and
+                    // suppression — all three are "gates", and the whole point of a registered
+                    // target is that nothing gates it anymore. Concretely: under HOLD THE LINE
+                    // (StandGround, 90% charge) a MovementSpeed-1 transport's charge/tick was
+                    // truncating 2*90/100=1 instead of 2 — a silent 50% cut from integer
+                    // division, not the intended 10% — which is why the Ark "stalled" in real
+                    // fights. MoveChargePercentBonus (an aura/buff on the piece itself, not an
+                    // external gate) still applies.
+                    moveChargePerTick = CombatMovementSpeed.GetChargePerTick(mover.EffectiveMovementSpeed);
+                    if (mover.MoveChargePercentBonus != 0)
+                    {
+                        int percentMultiplier = System.Math.Max(0, 100 + mover.MoveChargePercentBonus);
+                        moveChargePerTick = moveChargePerTick * percentMultiplier / 100;
+                    }
+                }
+                else
+                {
+                    moveChargePerTick = CombatMovementSpeed.GetChargePerTick(
+                        mover.EffectiveMovementSpeed,
+                        mover.Side == CombatSide.Player ? _tactics.PlayerTactic : _tactics.EnemyTactic);
+                    if (mover.MoveChargePercentBonus != 0)
+                    {
+                        int percentMultiplier = System.Math.Max(0, 100 + mover.MoveChargePercentBonus);
+                        moveChargePerTick = moveChargePerTick * percentMultiplier / 100;
+                    }
+
+                    moveChargePerTick = MovementSlowRules.ApplyMovementSlow(
+                        moveChargePerTick,
+                        MovementSlowRules.IsSlowed(mover, targets));
+
+                    moveChargePerTick = SuppressionRules.ApplyMovementSuppression(moveChargePerTick, mover.IsSuppressed);
+                }
+
+                mover.MoveCharge += moveChargePerTick;
+
                 GridCoord goal;
                 if (isTransportRun)
                 {

@@ -33,6 +33,11 @@ namespace DeadManZone.Presentation.ShopV2
         private static readonly Color AccentNormal = new(0.73f, 0.57f, 0.31f, 1f);
         private static readonly Color AccentHard = new(0.90f, 0.78f, 0.50f, 1f);
 
+        /// <summary>2026-07-17 boss-pending soft-lock fix: card 0 repurposed as the boss
+        /// report reads with this warning-red accent so it never reads as just another
+        /// (easy/normal/hard) front — it IS the fight, no choice involved.</summary>
+        private static readonly Color AccentBoss = new(0.86f, 0.32f, 0.26f, 1f);
+
         /// <summary>A front you cannot currently take (e.g. not enough authority) reads dead.</summary>
         private static readonly Color Unchoosable = new(0.45f, 0.42f, 0.38f, 1f);
 
@@ -46,6 +51,7 @@ namespace DeadManZone.Presentation.ShopV2
         private sealed class Card
         {
             public GameObject Root;
+            public RectTransform Rect;
             public Image Border;
             public TMP_Text Tier;
             public TMP_Text Faction;
@@ -77,6 +83,20 @@ namespace DeadManZone.Presentation.ShopV2
 
         private bool _autoOpenedThisRound;
         private int _lastFightIndex = int.MinValue;
+
+        /// <summary>2026-07-17 boss-pending soft-lock fix: true while card 0 is repurposed as
+        /// the full-width boss report (no Fight Options this round — DreadRules crossed a
+        /// boss threshold). Read by OnMarchClicked so its card-0 click doesn't try to
+        /// ChooseFightOption(0) against an empty options list.</summary>
+        private bool _bossMode;
+
+        /// <summary>Card 0's authored width/position (three-card layout) and the span computed
+        /// from cards 0..N-1's own authored rects (never hardcoded pixels) — so a boss round
+        /// can stretch card 0 across the whole row and a normal round can restore it, without
+        /// this presenter assuming any particular authored layout.</summary>
+        private bool _cardSpanCached;
+        private Vector2 _normalCard0Size;
+        private Vector2 _bossCardSize;
 
         private void Awake()
         {
@@ -117,6 +137,7 @@ namespace DeadManZone.Presentation.ShopV2
                 {
                     for (int i = 0; i < CardCount; i++)
                         BindCard(panel, i, missing);
+                    CacheCardSpan();
                 }
                 else
                 {
@@ -154,6 +175,7 @@ namespace DeadManZone.Presentation.ShopV2
             var card = new Card
             {
                 Root = root.gameObject,
+                Rect = root.GetComponent<RectTransform>(),
                 Border = border != null ? border.GetComponent<Image>() : null,
                 Tier = FindText(root, "Tier"),
                 Faction = FindText(root, "Faction"),
@@ -189,6 +211,31 @@ namespace DeadManZone.Presentation.ShopV2
                 card.Hovered = hovered;
                 ApplyCardVisual(card);
             };
+        }
+
+        /// <summary>Reads card 0's authored width and the row's total span (card 0's left edge
+        /// to card N-1's right edge) straight off their RectTransforms — never hardcoded — so
+        /// boss mode can stretch card 0 across the row and restore it exactly, on whatever
+        /// layout the report was hand-authored with.</summary>
+        private void CacheCardSpan()
+        {
+            if (_cards.Count == 0 || _cards[0].Rect == null || _cards[^1].Rect == null)
+                return;
+
+            var first = _cards[0].Rect;
+            var last = _cards[^1].Rect;
+            _normalCard0Size = first.sizeDelta;
+            float span = (last.anchoredPosition.x + last.sizeDelta.x) - first.anchoredPosition.x;
+            _bossCardSize = new Vector2(span, first.sizeDelta.y);
+            _cardSpanCached = true;
+        }
+
+        /// <summary>The boss the next combat will be, or null on a normal round. Single source
+        /// of truth for every boss-branch check in this presenter.</summary>
+        private static BossDefinition PendingBoss()
+        {
+            var orchestrator = RunManager.Instance?.Orchestrator;
+            return orchestrator != null && orchestrator.IsBossFightPending ? orchestrator.GetPendingBoss() : null;
         }
 
         /// <summary>
@@ -245,14 +292,37 @@ namespace DeadManZone.Presentation.ShopV2
             if (_chosen == null)
                 return;
 
+            var boss = PendingBoss();
+            if (boss != null)
+            {
+                _chosen.text = $"BOSS FIGHT — {boss.DisplayName.ToUpperInvariant()}";
+                return;
+            }
+
             var option = ChosenOption(state);
             _chosen.text = option == null
                 ? "NO FRONT CHOSEN"
                 : $"{option.Tier.ToString().ToUpperInvariant()} — {Display(option.EnemyFactionId)}";
         }
 
+        /// <summary>2026-07-17 boss-pending soft-lock fix: a boss round crosses a Dread
+        /// threshold — GenerateFightOptions deliberately empties FightOptions for it (see
+        /// RunOrchestrator), which used to leave every card SetActive(false) and the whole
+        /// report reading empty. Card 0 becomes the boss report instead; cards 1/2 stay hidden.</summary>
         private void RefreshCards(RunState state)
         {
+            var boss = PendingBoss();
+            _bossMode = boss != null;
+
+            if (_bossMode)
+            {
+                ShowBossCard(boss);
+                return;
+            }
+
+            if (_cardSpanCached && _cards.Count > 0 && _cards[0].Rect != null)
+                _cards[0].Rect.sizeDelta = _normalCard0Size;
+
             var options = state.FightOptions;
             for (int i = 0; i < _cards.Count; i++)
             {
@@ -302,12 +372,59 @@ namespace DeadManZone.Presentation.ShopV2
             }
         }
 
+        /// <summary>Card 0, stretched across the whole row — "a single dramatic full-width
+        /// boss card" in place of the three normal fronts. No march choice to make (the boss
+        /// IS the fight), so it reads Chosen/lit and its button just closes the modal
+        /// (OnMarchClicked short-circuits on _bossMode).</summary>
+        private void ShowBossCard(BossDefinition boss)
+        {
+            var card = _cards[0];
+            card.Root.SetActive(true);
+            for (int i = 1; i < _cards.Count; i++)
+                _cards[i].Root.SetActive(false);
+
+            if (_cardSpanCached && card.Rect != null)
+                card.Rect.sizeDelta = _bossCardSize;
+
+            if (card.Tier != null)
+                card.Tier.text = "BOSS FIGHT";
+            if (card.Faction != null)
+                card.Faction.text = boss.DisplayName.ToUpperInvariant();
+            if (card.Strength != null)
+            {
+                var enemyBoard = RunManager.Instance?.Orchestrator?.GetUpcomingEnemyBoard();
+                int bossStrength = enemyBoard != null
+                    ? ArmyStrengthCalculator.Evaluate(enemyBoard).EffectiveTotal
+                    : 0;
+                card.Strength.text = $"~{bossStrength}";
+            }
+            if (card.Arena != null)
+                card.Arena.text = $"ARENA: {Display(ArenaThemes.SignatureTheme(boss.EnemyFactionId))}";
+            if (card.Stakes != null)
+                card.Stakes.text =
+                    $"{Display(boss.EnemyFactionId)} · THE ENEMY COMES TO YOU\nNO FRONT TO CHOOSE — PREPARE YOUR LINES";
+
+            card.Condition?.SetActive(false);
+
+            card.Accent = AccentBoss;
+            card.Chosen = true;
+            card.Choosable = true;
+            ApplyCardVisual(card);
+            if (card.MarchLabel != null)
+                card.MarchLabel.text = "PREPARE FOR BATTLE";
+        }
+
+        /// <summary>2026-07-17 boss-pending soft-lock fix: BEGIN COMBAT used to stay disabled
+        /// forever on a boss round because ChosenFightOption never leaves -1 (nothing to
+        /// choose — GenerateFightOptions leaves FightOptions empty for boss rounds). A pending
+        /// boss now arms the button on its own, same as picking a front does.</summary>
         private void RefreshBeginCombat(RunState state)
         {
             var manager = RunManager.Instance;
             string failureReason = null;
             bool canStart = manager != null && manager.CanStartBattle(out failureReason);
-            bool hasChosen = state.ChosenFightOption >= 0;
+            var boss = PendingBoss();
+            bool hasChosen = state.ChosenFightOption >= 0 || boss != null;
 
             if (_beginCombatButton != null)
                 _beginCombatButton.interactable = hasChosen && canStart;
@@ -315,7 +432,11 @@ namespace DeadManZone.Presentation.ShopV2
             if (_hint == null)
                 return;
 
-            if (!hasChosen)
+            if (boss != null)
+                _hint.text = canStart
+                    ? $"THE BOSS AWAITS — {boss.DisplayName.ToUpperInvariant()}"
+                    : failureReason ?? string.Empty;
+            else if (!hasChosen)
                 _hint.text = "CHOOSE A FRONT FROM THE REPORT";
             else if (!canStart)
                 _hint.text = failureReason ?? string.Empty;
@@ -339,7 +460,9 @@ namespace DeadManZone.Presentation.ShopV2
             if (_modal == null || _autoOpenedThisRound || _modal.activeSelf)
                 return;
 
-            if (state.FightOptions != null && state.FightOptions.Count > 0 && state.ChosenFightOption < 0)
+            bool hasUnchosenOptions = state.FightOptions != null && state.FightOptions.Count > 0 && state.ChosenFightOption < 0;
+            bool bossRound = PendingBoss() != null;
+            if (hasUnchosenOptions || bossRound)
             {
                 _modal.SetActive(true);
                 _autoOpenedThisRound = true;
@@ -354,6 +477,16 @@ namespace DeadManZone.Presentation.ShopV2
 
         private void OnMarchClicked(int index)
         {
+            // Boss round: card 0 is the boss report, not a choosable front — there's nothing
+            // to ChooseFightOption against an empty options list. Just close the modal; BEGIN
+            // COMBAT is already armed (RefreshBeginCombat).
+            if (_bossMode)
+            {
+                if (_modal != null)
+                    _modal.SetActive(false);
+                return;
+            }
+
             var manager = RunManager.Instance;
             if (manager == null || !manager.CanChooseFightOption(index, out _))
                 return;
@@ -366,10 +499,12 @@ namespace DeadManZone.Presentation.ShopV2
         private static void OnBeginCombatClicked()
         {
             var manager = RunManager.Instance;
-            if (manager == null)
+            if (manager == null || manager.State == null)
                 return;
 
-            if (manager.State != null && manager.State.ChosenFightOption >= 0 && manager.CanStartBattle(out _))
+            bool bossPending = manager.Orchestrator?.IsBossFightPending ?? false;
+            bool hasFront = bossPending || manager.State.ChosenFightOption >= 0;
+            if (hasFront && manager.CanStartBattle(out _))
                 manager.BeginCombat();
         }
 

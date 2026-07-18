@@ -100,6 +100,35 @@ namespace DeadManZone.Core.Tests
                 "salvage targeting must key on the boss's pool");
         }
 
+        /// <summary>2026-07-17 boss-pending soft-lock fix: the ShopV2 presenter arms BEGIN
+        /// COMBAT off exactly these three signals (IsBossFightPending / GetPendingBoss /
+        /// CanStartBattle) instead of requiring ChosenFightOption &gt;= 0 — there is nothing to
+        /// choose on a boss round, by design (GenerateFightOptions leaves FightOptions empty
+        /// once the round genuinely starts on a boss threshold — see
+        /// FightOptionRunTests.BossPendingRound_GeneratesNoOptions_AndBossBranchStillRuns for
+        /// that half). This pins the OTHER half of the Core contract the UI now depends on:
+        /// BeginCombat's boss branch fires off IsBossFightPending/GetPendingBoss alone — it
+        /// does not require (and is not blocked by) ChosenFightOption ever being set, even
+        /// with a stale non-empty FightOptions list still sitting in State from before Dread
+        /// crossed the threshold.</summary>
+        [Test]
+        public void BossPendingRound_IsMarchableWithoutChoosingAFront()
+        {
+            var orchestrator = StartRun(runSeed: 321);
+            orchestrator.State.Dread = DreadRules.NextThreshold(0);
+            orchestrator.State.Manpower = 9999;
+
+            Assert.IsTrue(orchestrator.IsBossFightPending);
+            Assert.AreEqual(-1, orchestrator.State.ChosenFightOption, "nothing to choose on a boss round");
+            Assert.IsNotNull(orchestrator.GetPendingBoss(), "the UI needs a boss to render its card from");
+            Assert.IsTrue(orchestrator.CanStartBattle(out string reason), reason);
+
+            orchestrator.BeginCombat();
+
+            Assert.AreEqual(RunPhase.Combat, orchestrator.State.Phase);
+            Assert.IsNotNull(orchestrator.State.Combat.BossId, "BeginCombat must take the boss branch with no chosen option");
+        }
+
         [Test]
         public void BossWin_GrantsNoDread_AndAdvancesBossTrack()
         {
@@ -148,7 +177,17 @@ namespace DeadManZone.Core.Tests
             Assert.AreEqual(0, orchestrator.State.BossesDefeated);
             Assert.IsTrue(orchestrator.IsBossFightPending, "the boss awaits the next combat");
 
+            // 2026-07-17 boss-pending soft-lock fix, loss-path audit: the owner suspected a
+            // post-DEFEAT boss round could strand the Front Report — CompleteCombat's defeat
+            // branch re-runs GenerateFightOptions, which must leave options EMPTY (not the
+            // legacy template fallback) so the UI still renders the boss card, not a blank
+            // report with nothing to choose and nothing to march on.
+            Assert.IsEmpty(orchestrator.State.FightOptions,
+                "a boss round stays option-less after a loss too — the UI must show the boss card, not a blank report");
+            Assert.AreEqual(-1, orchestrator.State.ChosenFightOption);
+
             orchestrator.DismissAftermath();
+            Assert.IsTrue(orchestrator.CanStartBattle(out string reason), reason);
             orchestrator.BeginCombat();
             Assert.AreEqual(firstBossId, orchestrator.State.Combat.BossId,
                 "the same boss returns after a loss");
