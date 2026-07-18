@@ -50,7 +50,7 @@ MonoBehaviour:
   gridCellInset: 0
   gridYOffset: 0.04
   moveLerpSeconds: 0.4
-  moveSpeedPresentationScale: 2.2
+  moveSpeedPresentationScale: 0.92
   moveMarchGraceSeconds: 2.4
   attackLungeSeconds: 0.15
   attackLungeDistance: 0.35

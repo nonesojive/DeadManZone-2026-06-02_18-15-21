@@ -410,7 +410,12 @@ namespace DeadManZone.Core.Combat
                     _occupancyGrid,
                     _layout,
                     spawnAnchorY: mover.SpawnAnchorY,
-                    preferLaneHold: RoleEngagement.IsFrontlineMover(mover));
+                    preferLaneHold: RoleEngagement.IsFrontlineMover(mover),
+                    // 2026-07-17 owner-diagnosed "cost-greedy into suicide" fix: a transport with
+                    // a registered target beelines by straight-line progress (crossing the
+                    // neutral column early, not descending its own side first) — see
+                    // ShapePathfinder.GreedyStepTowardGoal's straightLineBias doc comment.
+                    straightLineBias: isTransportRun);
                 if (next == null || next.Value.Equals(mover.AnchorPosition))
                 {
                     if (isTransportRun && mover.AnchorPosition.Equals(transportGoal))

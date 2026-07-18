@@ -27,7 +27,10 @@ namespace DeadManZone.Presentation.Combat.Arena
         private const float HitFlashPeak = 0.45f;
         private const float HitFlashSeconds = 0.12f;
         private const float FallbackDieClipSeconds = 3f;
-        private const float TurnDegreesPerSecond = 720f;
+        // 2026-07-17 fluidity pass: ~0.2s for a 90 degree heading change (was 720 = 0.125s —
+        // already eased via RotateTowards, not an instant snap, but faster than the owner's
+        // ~0.2s target for a visible "turn" rather than a flick).
+        private const float TurnDegreesPerSecond = 450f;
         private const float AttackLungeDistance = 0.22f;
 
         // Rate limit on the port-arms additive rotations: fast enough to track the

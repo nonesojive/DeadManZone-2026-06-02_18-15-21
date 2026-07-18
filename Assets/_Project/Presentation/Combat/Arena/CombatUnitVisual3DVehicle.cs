@@ -27,7 +27,11 @@ namespace DeadManZone.Presentation.Combat.Arena
         private const float AbandonSinkFraction = 0.10f; // vs the 0.22 death sink
         private const float AbandonLingerSeconds = 0.25f;
         private const float RoutDissolveSeconds = 1.2f;
-        private const float TurnDegreesPerSecond = 240f; // vehicles turn slower than infantry
+        // 2026-07-17 fluidity pass: was 240 (0.375s for a 90 degree turn — read as a hard pivot
+        // on the Ark, per the owner's video, especially right after the position-settle fix's
+        // idle gap). Raised toward the ~0.2s target while keeping vehicles visibly heavier/slower
+        // to turn than infantry (450 deg/s).
+        private const float TurnDegreesPerSecond = 360f; // vehicles turn slower than infantry
         private const float RecoilDistanceMeters = 0.09f;
         private const float RecoilOutSeconds = 0.05f;
         private const float RecoilSettleSeconds = 0.25f;

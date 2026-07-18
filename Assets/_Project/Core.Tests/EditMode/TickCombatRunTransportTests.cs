@@ -282,5 +282,66 @@ namespace DeadManZone.Core.Tests.EditMode
             Assert.AreEqual(arkDestroyedTick, cargoSpillTick,
                 "spill happens atomically with the transport's own destruction — cargo is never embarked-but-doomed for even one tick");
         }
+
+        /// <summary>2026-07-17 owner-diagnosed "cost-greedy into suicide": frame-by-frame video
+        /// evidence showed the Ark placed top area of the player board, targeted at the
+        /// bottom-middle of the ENEMY half, advance ~2 cells toward midfield, then turn 90 degrees
+        /// and walk STRAIGHT DOWN the player's own side parallel to the wire — never crossing the
+        /// neutral column — absorbing fire the whole way until destroyed.
+        /// Root cause: ShapePathfinder.GreedyStepTowardGoal's tie-break, when both an X (crossing)
+        /// step and a Y (same-side) step reduce the Manhattan heuristic equally, picked whichever
+        /// was CHEAPER in charge cost. Crossing the neutral column costs 2x a normal step
+        /// (CombatMovementSpeed.NeutralStepChargeCost=200 vs NormalStepChargeCost=100), so the
+        /// pathfinder kept preferring "down" (cheap) over "across" (expensive) at every tie until
+        /// the Y distance to the target's row was fully exhausted — i.e. it descends its own side
+        /// completely before ever crossing, maximizing exposure along the wire.
+        /// This test must fail before the fix: with the target on the far side, the Ark's early
+        /// move events must show it entering the neutral column almost immediately, not only
+        /// after ~9 pure-Y moves down its own side.</summary>
+        [Test]
+        public void TransportTarget_ToFarSideBottomMiddle_CrossesNeutralColumnEarly_NotAfterDescending()
+        {
+            var player = new BoardState(TestBoards.Layout);
+            var arkAnchor = TestBoards.FrontLineAnchor(0); // (7,0) — top area of the player board.
+            player.TryPlace(Transport(), arkAnchor, "ark_1"); // default movementSpeed 3.
+
+            var enemy = new BoardState(TestBoards.Layout);
+            enemy.TryPlace(HarmlessEnemy(), TestBoards.FrontLineAnchor(), "enemy_1"); // out of the Ark's way (middle row).
+
+            var run = TickCombatRun.Start(player, enemy, seed: 7, authority: 0);
+
+            // Bottom-middle of the ENEMY half: EnemyOriginX=14 (9 player + 5 neutral), half is
+            // X 14..22, middle column ~18; bottom row is Height-1=9.
+            var targetCell = new GridCoord(18, 9);
+            run.Continue(new[]
+            {
+                new PhaseCommand
+                {
+                    AfterCheckpoint = 0,
+                    Type = CommandType.TransportTarget,
+                    SourcePieceId = "ark_1",
+                    TargetCell = targetCell
+                }
+            });
+
+            var arkMoves = run.Log.Events
+                .Where(e => e.ActorId == "ark_1" && e.ActionType == "move")
+                .ToList();
+            Assert.GreaterOrEqual(arkMoves.Count, 5, "the Ark must have moved several times toward its far-side target");
+
+            var layout = BattlefieldLayout.FromPlayerBoard(TestBoards.Layout);
+            var firstCrossingIndex = arkMoves.FindIndex(e =>
+            {
+                var parts = e.TargetId.Split(',');
+                int x = int.Parse(parts[0]);
+                return layout.IsNeutralColumn(x) || layout.IsEnemyHalf(x);
+            });
+
+            Assert.GreaterOrEqual(firstCrossingIndex, 0, "the Ark's path never enters the neutral column at all");
+            Assert.LessOrEqual(firstCrossingIndex, 4,
+                "a transport beelining to a far-side target must start crossing the neutral column within " +
+                "its first few moves — not after descending its own side's full height first (the owner's " +
+                "video: 2 cells toward midfield, then 90 degrees straight down the wire, dead before crossing)");
+        }
     }
 }

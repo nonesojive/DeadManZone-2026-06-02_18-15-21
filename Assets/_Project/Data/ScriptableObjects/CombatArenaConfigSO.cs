@@ -18,8 +18,10 @@ namespace DeadManZone.Data
         public bool useTopTroopsProceduralBattlefield = true;
         [Tooltip("Units march in world space toward engagement goals instead of waiting on sparse grid-step events.")]
         public bool useTopTroopsFreeChaseMovement = true;
-        [Tooltip("Multiplier over sim grid-step pace for free chase (1.2 = 20% faster than anchor advance).")]
-        public float topTroopsChaseSpeedMultiplier = 1.2f;
+        [Tooltip("Multiplier over sim grid-step pace for free chase. Keep at 1 (or below) — any value " +
+            "above 1 makes the presentation anchor-follow arrive before the next sim tick and idle " +
+            "until it, which is the 'step-and-settle' bug (2026-07-17 fluidity pass).")]
+        public float topTroopsChaseSpeedMultiplier = 1f;
         [Tooltip("How many grid cells presentation may run ahead of sim anchor while marching.")]
         public float topTroopsChaseMaxLeadCells = 2f;
 

@@ -20,7 +20,14 @@ namespace DeadManZone.Presentation.Combat.Arena
         // Low speed cap => any catch-up is a gentle glide, not a sprint.
         private const float ChaseSmoothTime = 0.14f;
         private const float ChaseMaxSpeedScale = 1.25f;
-        private const float ChaseGoalBias = 0.3f;
+        // 2026-07-17 owner-diagnosed step-and-settle round 2 (post-7e349e8a): the SmoothDamp
+        // target blends the continuous _smoothedSimWorld term with this live chase goal, which is
+        // itself a discrete anchor-tick-driven position — a full-weight bias would jump a whole
+        // cell the instant an anchor tick fires, then decelerate to a stop and idle until the
+        // next tick. Lowered from 0.3 (per CombatDirector's documented tuning option #2) so the
+        // blend leans harder on the continuous term and the residual jump is smaller and eases
+        // out rather than reads as a hitch.
+        private const float ChaseGoalBias = 0.15f;
         // Walk/idle animation switch: compare instantaneous speed (delta/dt), not the
         // raw per-frame delta — a fixed delta threshold flips with frame rate (at the
         // editor's ~500fps a marching unit moves ~0.003u/frame and read as "idle").

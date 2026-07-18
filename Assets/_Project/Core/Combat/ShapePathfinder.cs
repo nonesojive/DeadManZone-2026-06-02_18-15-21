@@ -30,7 +30,8 @@ namespace DeadManZone.Core.Combat
             CombatOccupancyGrid occupancy,
             BattlefieldLayout layout,
             int? spawnAnchorY = null,
-            bool preferLaneHold = true)
+            bool preferLaneHold = true,
+            bool straightLineBias = false)
         {
             if (currentAnchor.Equals(goalAnchor))
                 return null;
@@ -43,7 +44,8 @@ namespace DeadManZone.Core.Combat
                 occupancy,
                 layout,
                 spawnAnchorY,
-                preferLaneHold);
+                preferLaneHold,
+                straightLineBias);
             if (greedy != null)
                 return greedy;
 
@@ -62,6 +64,17 @@ namespace DeadManZone.Core.Combat
             return null;
         }
 
+        /// <summary>2026-07-17 owner-diagnosed "cost-greedy into suicide" fix: with
+        /// straightLineBias off (the default — normal engagement AI), tie-breaking is unchanged
+        /// from before this fix (cheapest charge cost, then coordinate order) — no regression to
+        /// existing lane-holding/formation behavior.
+        /// With straightLineBias on (currently: a transport beelining to a registered target),
+        /// a step that reduces distance to the target's SIDE of the neutral column always beats
+        /// a same-side step while a crossing is still pending — the 2x neutral charge cost must
+        /// not out-vote a straight line to a far-side target and detour the mover down its own
+        /// side first. Once fully across, remaining X/Y distance interleaves proportionally
+        /// (whichever axis has more distance left goes first, like a Bresenham line), and cost is
+        /// only the final tiebreaker, same as always.</summary>
         private static GridCoord? GreedyStepTowardGoal(
             GridCoord currentAnchor,
             GridCoord goalAnchor,
@@ -70,11 +83,18 @@ namespace DeadManZone.Core.Combat
             CombatOccupancyGrid occupancy,
             BattlefieldLayout layout,
             int? spawnAnchorY,
-            bool preferLaneHold)
+            bool preferLaneHold,
+            bool straightLineBias)
         {
             int currentHeuristic = Manhattan(currentAnchor, goalAnchor);
+            bool crossingPending = straightLineBias && NeedsCrossing(currentAnchor.X, goalAnchor.X, layout);
+            int remainingX = System.Math.Abs(goalAnchor.X - currentAnchor.X);
+            int remainingY = System.Math.Abs(goalAnchor.Y - currentAnchor.Y);
+
             GridCoord? best = null;
             int bestHeuristic = currentHeuristic;
+            int bestCrossingRank = int.MaxValue;
+            int bestAxisRemaining = int.MinValue;
             int bestCost = int.MaxValue;
 
             foreach (var neighbor in GetValidNeighbors(
@@ -88,18 +108,50 @@ namespace DeadManZone.Core.Combat
                 if (heuristic >= currentHeuristic)
                     continue;
 
+                bool isXStep = neighbor.X != currentAnchor.X;
                 int cost = GetStepCost(currentAnchor, neighbor, layout, spawnAnchorY, preferLaneHold);
-                if (heuristic < bestHeuristic
-                    || (heuristic == bestHeuristic && cost < bestCost)
-                    || (heuristic == bestHeuristic && cost == bestCost && CompareCoords(neighbor, best ?? neighbor) < 0))
+                int crossingRank = crossingPending && isXStep ? 0 : 1;
+                int axisRemaining = isXStep ? remainingX : remainingY;
+
+                bool better;
+                if (best == null || heuristic < bestHeuristic)
+                    better = true;
+                else if (heuristic > bestHeuristic)
+                    better = false;
+                else if (straightLineBias && crossingRank != bestCrossingRank)
+                    better = crossingRank < bestCrossingRank;
+                else if (straightLineBias && axisRemaining != bestAxisRemaining)
+                    better = axisRemaining > bestAxisRemaining;
+                else if (cost != bestCost)
+                    better = cost < bestCost;
+                else
+                    better = CompareCoords(neighbor, best ?? neighbor) < 0;
+
+                if (better)
                 {
                     bestHeuristic = heuristic;
+                    bestCrossingRank = crossingRank;
+                    bestAxisRemaining = axisRemaining;
                     bestCost = cost;
                     best = neighbor;
                 }
             }
 
             return best;
+        }
+
+        /// <summary>True while currentX still needs to travel through the neutral band to reach
+        /// goalX's side — i.e. a straight-line mover isn't "across" yet. Symmetric for either
+        /// direction of travel; false once currentX has fully entered goalX's half (or goalX
+        /// isn't actually on the far side at all).</summary>
+        private static bool NeedsCrossing(int currentX, int goalX, BattlefieldLayout layout)
+        {
+            if (currentX == goalX)
+                return false;
+
+            return goalX > currentX
+                ? currentX < layout.EnemyOriginX && goalX >= layout.EnemyOriginX
+                : currentX >= layout.NeutralStartX && goalX < layout.NeutralStartX;
         }
 
         private static bool TryBfsFirstStep(
