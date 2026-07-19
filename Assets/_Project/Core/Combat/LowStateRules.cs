@@ -14,8 +14,9 @@ namespace DeadManZone.Core.Combat
             if (combatant == null || !combatant.IsAlive)
                 return false;
 
-            if (combatant.Definition.MaxHp > 0 &&
-                combatant.CurrentHp * 100 <= combatant.Definition.MaxHp * LowStateThresholdPercent)
+            // Threshold against the unit's stored (durability-scaled) fight max, not raw definition HP.
+            if (combatant.MaxHp > 0 &&
+                combatant.CurrentHp * 100 <= combatant.MaxHp * LowStateThresholdPercent)
                 return true;
 
             if (combatant.CanBreak && combatant.Definition.MaxMorale > 0 &&

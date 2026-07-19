@@ -121,7 +121,14 @@ namespace DeadManZone.Core.Tests.EditMode
             var run = TickCombatRun.Start(combat, enemy, seed: 42, playerBuildBoards: boards);
 
             var playerInfantry = FindCombatant(run.PlayerCombatantsForTests, "infantry_1");
-            Assert.AreEqual(20, playerInfantry.CurrentHp);
+            // Spawn HP is durability-scaled (army-size DurabilityScaleFor; 1 spawned unit
+            // total here — 1 player infantry, empty enemy board — which is under
+            // DurabilityFreeUnits, so exactly BaseDurabilityScale). The hospital's +10 flat
+            // is applied on top, unscaled — same +10 intent as before the scale.
+            Assert.AreEqual(CombatPacingConfig.BaseDurabilityScale, run.DurabilityScale);
+            Assert.AreEqual(
+                CombatPacingConfig.ScaleUnitMaxHp(infantry.MaxHp, CombatPacingConfig.BaseDurabilityScale) + 10,
+                playerInfantry.CurrentHp);
         }
 
         private static CombatantState FindCombatant(

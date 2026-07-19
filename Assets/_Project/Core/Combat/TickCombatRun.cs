@@ -45,6 +45,16 @@ namespace DeadManZone.Core.Combat
         private readonly bool _enemyAmbientGasHijack;
         private readonly int _effectiveGasStartTick;
 
+        // 2026-07-19 iter2 army-size durability: the HP scale THIS fight spawns with —
+        // CombatPacingConfig.DurabilityScaleFor over the total units fielded by BOTH sides,
+        // computed from the battlefield in the ctor before either side spawns.
+        private readonly float _durabilityScale;
+
+        /// <summary>The durability scale this fight actually spawned with. Presentation's
+        /// HP-bar registration recomputes the identical value via
+        /// CombatPacingConfig.DurabilityScaleFor(BattlefieldState); tests read it here.</summary>
+        public float DurabilityScale => _durabilityScale;
+
         public BoardState PlayerBoard => _playerBoard;
         public int Authority { get; private set; }
         public int Requisition => Authority;
@@ -102,6 +112,11 @@ namespace DeadManZone.Core.Combat
             _playerArtilleryCount = BuildBoardTagCounter.Count(playerBuildBoards, GameTagIds.Artillery);
             _battlefield = BattlefieldState.FromBoards(playerBoard, enemyBoard);
             _layout = _battlefield.Layout;
+            // 2026-07-19 iter2 army-size durability: count BOTH sides' spawning units (the
+            // battlefield is the unfiltered union of both boards, so this is exactly the set
+            // the two SpawnCombatants calls below will spawn) BEFORE any HP is assigned —
+            // one scale per fight, player and enemy symmetric.
+            _durabilityScale = CombatPacingConfig.DurabilityScaleFor(_battlefield);
             _rng = new Rng(seed);
             Authority = authority;
             _playerCombatants = SpawnCombatants(playerBoard, CombatSide.Player, 0);
@@ -880,12 +895,19 @@ namespace DeadManZone.Core.Combat
                 var anchor = new GridCoord(xOffset + localX, piece.Anchor.Y);
                 anchorByInstanceId[piece.InstanceId] = anchor;
                 var offsets = CombatFootprint.ComputeOffsets(piece.Definition.Shape, rotationIndex);
+                // PROVISIONAL balance dial 2026-07-19 iter2 (_durabilityScale — army-size
+                // DurabilityScaleFor, computed once in the ctor from both boards' spawn
+                // count): the single seam where a combat unit's max HP is read off its
+                // PieceDefinition. Player and enemy armies both spawn through SpawnCombatants,
+                // so both sides scale identically; rounding rule lives in ScaleUnitMaxHp.
+                int scaledMaxHp = CombatPacingConfig.ScaleUnitMaxHp(piece.Definition.MaxHp, _durabilityScale);
                 var combatant = new CombatantState
                 {
                     InstanceId = piece.InstanceId,
                     Side = side,
                     Definition = piece.Definition,
-                    CurrentHp = piece.Definition.MaxHp,
+                    MaxHp = scaledMaxHp,
+                    CurrentHp = scaledMaxHp,
                     CurrentMorale = piece.Definition.MaxMorale,
                     CooldownRemaining = 0,
                     AnchorPosition = anchor,

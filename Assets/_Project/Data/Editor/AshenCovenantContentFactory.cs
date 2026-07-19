@@ -160,9 +160,10 @@ namespace DeadManZone.Data.Editor
             var faction = DemoContentGenerator.SaveFaction(
                 FactionIds.AshenCovenant,
                 "Ashen Covenant",
-                startingSupplies: 50,
+                // PROVISIONAL — economy pass 2026-07-19: 25 baseline, 12/round sustain.
+                startingSupplies: 25,
                 startingManpower: 15,
-                baseSuppliesPerRound: 10,
+                baseSuppliesPerRound: 12,
                 baseMusterPerShop: 4,
                 startingAuthority: 2,
                 baseSalvageChancePercent: 1);

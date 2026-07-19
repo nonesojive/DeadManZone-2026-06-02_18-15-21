@@ -12,10 +12,12 @@ namespace DeadManZone.Data.Editor
         internal static FactionSO[] CreateAll() =>
             new[]
             {
+                // PROVISIONAL — economy pass 2026-07-19: mirrors IronmarchUnionContentFactory's
+                // 25/12 so this legacy pipeline can't clobber the tuned values on regen.
                 DemoContentGenerator.SaveFaction(FactionIds.IronmarchUnion, "IronMarch Union",
-                    startingSupplies: 50,
+                    startingSupplies: 25,
                     startingManpower: 15,
-                    baseSuppliesPerRound: 10,
+                    baseSuppliesPerRound: 12,
                     baseMusterPerShop: 1,
                     startingAuthority: 2,
                     baseSalvageChancePercent: 1),

@@ -209,6 +209,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             _unitMorale.Clear();
             _cellsById.Clear();
             _disembarkedCargoIds.Clear();
+            // Per-fight army-size durability scale — recomputed from the battlefield, which
+            // yields the identical value TickCombatRun spawned with (same two boards).
+            float durabilityScale = CombatPacingConfig.DurabilityScaleFor(battlefield);
             foreach (var cell in battlefield.Cells)
             {
                 if (cell?.Definition == null)
@@ -219,7 +222,9 @@ namespace DeadManZone.Presentation.Combat.Arena
                 if (!PieceCombatRules.ParticipatesInCombat(cell.Definition))
                     continue;
 
-                _unitHealth.RegisterUnit(cell.InstanceId, cell.Side, cell.Definition.MaxHp);
+                // Sim HP is durability-scaled at spawn; register the same scaled max so
+                // per-unit HP fractions match what the replayed damage events actually drain.
+                _unitHealth.RegisterUnit(cell.InstanceId, cell.Side, CombatPacingConfig.ScaleUnitMaxHp(cell.Definition.MaxHp, durabilityScale));
                 if (cell.Definition.MaxMorale > 0)
                 {
                     _unitMorale[cell.InstanceId] = new UnitMorale

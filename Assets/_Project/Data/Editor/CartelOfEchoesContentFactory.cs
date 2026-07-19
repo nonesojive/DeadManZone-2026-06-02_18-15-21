@@ -151,9 +151,11 @@ namespace DeadManZone.Data.Editor
             var faction = DemoContentGenerator.SaveFaction(
                 FactionIds.CartelOfEchoes,
                 "Cartel of Echoes",
-                startingSupplies: 60,
+                // PROVISIONAL — economy pass 2026-07-19: 30 keeps Cartel the richest
+                // faction above the 25 baseline; 12/round sustain.
+                startingSupplies: 30,
                 startingManpower: 15,
-                baseSuppliesPerRound: 8,
+                baseSuppliesPerRound: 12,
                 baseMusterPerShop: 1,
                 startingAuthority: 2,
                 baseSalvageChancePercent: 1);

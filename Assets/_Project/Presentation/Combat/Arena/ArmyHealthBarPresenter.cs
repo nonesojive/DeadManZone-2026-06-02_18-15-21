@@ -32,6 +32,9 @@ namespace DeadManZone.Presentation.Combat.Arena
             _tracker.Clear();
             if (battlefield != null)
             {
+                // Sim HP is durability-scaled at spawn (per-fight army-size scale); this
+                // recomputes the identical value the sim used from the same battlefield.
+                float durabilityScale = CombatPacingConfig.DurabilityScaleFor(battlefield);
                 foreach (var cell in battlefield.Cells)
                 {
                     if (cell?.Definition == null)
@@ -40,7 +43,9 @@ namespace DeadManZone.Presentation.Combat.Arena
                     if (!PieceCombatRules.ParticipatesInCombat(cell.Definition))
                         continue;
 
-                    _tracker.RegisterUnit(cell.InstanceId, cell.Side, cell.Definition.MaxHp);
+                    // Register the same scaled max or the bar's absolute damage events drain
+                    // it at the wrong rate.
+                    _tracker.RegisterUnit(cell.InstanceId, cell.Side, CombatPacingConfig.ScaleUnitMaxHp(cell.Definition.MaxHp, durabilityScale));
                 }
             }
 

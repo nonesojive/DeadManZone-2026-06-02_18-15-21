@@ -24,7 +24,9 @@ namespace DeadManZone.Core.Combat
                     if (!PieceCombatRules.ParticipatesInCombat(combatant.Definition))
                         continue;
 
-                    starting += combatant.Definition.MaxHp;
+                    // Stored (durability-scaled) fight max — CurrentHp is in the same scaled
+                    // units, so pause-threshold fractions are unchanged by the scale.
+                    starting += combatant.MaxHp;
                     // Routed units read as dead on the army bar: 0 current, full weight in max.
                     current += combatant.IsBroken ? 0 : System.Math.Max(0, combatant.CurrentHp);
                 }

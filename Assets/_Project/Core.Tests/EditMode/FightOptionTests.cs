@@ -187,9 +187,11 @@ namespace DeadManZone.Core.Tests
 
             var rear = enemies.Where(e => e.AnchorPosition.X != frontX).ToList();
             Assert.IsNotEmpty(rear, "fixture must field a rear rank");
-            Assert.IsTrue(rear.All(e => e.CurrentHp == e.Definition.MaxHp * 125 / 100));
+            // e.MaxHp = stored durability-scaled fight max; conditions multiply the scaled
+            // spawn HP, so expectations compare against it, not raw Definition.MaxHp.
+            Assert.IsTrue(rear.All(e => e.CurrentHp == e.MaxHp * 125 / 100));
             Assert.IsTrue(enemies.Where(e => e.AnchorPosition.X == frontX)
-                .All(e => e.CurrentHp == e.Definition.MaxHp));
+                .All(e => e.CurrentHp == e.MaxHp));
         }
 
         [Test]
@@ -198,9 +200,9 @@ namespace DeadManZone.Core.Tests
             var run = StartTwoEnemyFight(Resolve(ConditionCatalog.StormBarrage));
 
             Assert.IsTrue(run.PlayerCombatantsForTests
-                .All(p => p.CurrentHp == Math.Max(1, p.Definition.MaxHp * 85 / 100)));
+                .All(p => p.CurrentHp == Math.Max(1, p.MaxHp * 85 / 100)));
             Assert.IsTrue(run.EnemyCombatantsForTests
-                .All(e => e.CurrentHp == e.Definition.MaxHp));
+                .All(e => e.CurrentHp == e.MaxHp));
         }
 
         [Test]
@@ -235,10 +237,10 @@ namespace DeadManZone.Core.Tests
             var suppressed = StartSynergyFight(suppressEnemyEngines: true);
 
             Assert.IsTrue(control.EnemyCombatantsForTests.All(e =>
-                    e.CurrentHp > e.Definition.MaxHp && e.DamageBonus > 0),
+                    e.CurrentHp > e.MaxHp && e.DamageBonus > 0),
                 "control fixture must actually form enemy synergies");
             Assert.IsTrue(suppressed.EnemyCombatantsForTests.All(e =>
-                e.CurrentHp == e.Definition.MaxHp
+                e.CurrentHp == e.MaxHp
                 && e.DamageBonus == 0
                 && e.ArmorBuffSteps == 0));
         }
@@ -258,7 +260,7 @@ namespace DeadManZone.Core.Tests
             }
 
             Assert.IsTrue(suppressed.PlayerCombatantsForTests.Any(p =>
-                    p.CurrentHp > p.Definition.MaxHp),
+                    p.CurrentHp > p.MaxHp),
                 "player fixture must form its own synergies to prove they survive");
         }
 

@@ -83,7 +83,10 @@ namespace DeadManZone.Core.Tests.EditMode
             Assert.IsTrue(
                 run.Log.Events.Any(e => e.ActionType == "heal" && e.ActorId == "healer_1" && e.TargetId == "wounded_1"),
                 "the healer must pulse HP to the wounded ally within radius");
-            Assert.LessOrEqual(wounded.CurrentHp, wounded.Definition.MaxHp, "heal must never overheal past MaxHp");
+            // wounded.MaxHp is the stored durability-scaled fight max (army-size
+            // DurabilityScaleFor; 4 spawned units here, so BaseDurabilityScale) — the heal
+            // clamp caps there, not at raw Definition.MaxHp.
+            Assert.LessOrEqual(wounded.CurrentHp, wounded.MaxHp, "heal must never overheal past MaxHp");
             Assert.Greater(wounded.CurrentHp, 95, "at least one pulse must have landed by the time the fight resolves");
         }
 

@@ -61,7 +61,15 @@ BUILD  →  choose a front  →  COMBAT (auto, with tactical pauses)  →  AFTER
 ### Supplies — the buying currency
 Spent on shop offers and rerolls. Running out means you can't buy; it does not kill you.
 
+- **Starting Supplies — ~25 baseline** (economy pass 2026-07-19, `Data/Editor/*ContentFactory.cs`):
+  **25** for IronMarch/Ashen/Oathborn/Paradox, **22** for Blightborn/Dust (lean-economy identity),
+  **28** Crimson / **30** Cartel (the rich factions). Sized so the first shop affords exactly-ish
+  **{1 Rare} OR {2 Commons} OR {1 Uncommon + 2 rerolls}** at round-1 prices (zero Dread tax).
 - Income per Build: `faction.baseSuppliesPerRound + board bonuses` (`RoundIncomeCalculator`).
+  `baseSuppliesPerRound` is **12** for every faction except Blightborn/Dust at **11** (same
+  factory files). With the Normal front's **+6 victory spoils** (§7, `DreadRules
+  .NormalVictorySupplies`) a win-every-round cadence earns ≈**18**/round — one Uncommon (**15**)
+  plus headroom for the rising Dread tax.
 - `supply_depot` → **+5 flat each** (`BuildingIncomeRules.cs:16-17`), plus Critical-Mass Supplies
   rules (flat + percent).
 - **A piece's Supplies price is derived from its rarity, not authored per piece**
@@ -288,8 +296,14 @@ Three fronts per Build, **one of each tier** (tier = slot index):
 | Tier | Costs | A win gives | Battle Condition |
 |---|---|---|---|
 | **Easy** | **2 Authority** | +1 Dread | none |
-| **Normal** | free | +2 Dread | none |
+| **Normal** | free | +2 Dread, **+6 Supplies** | none |
 | **Hard** | free | +3 Dread, **+15 Supplies, +6 Manpower** | **always one** |
+
+> Normal spoils (economy pass 2026-07-19, `DreadRules.NormalVictorySupplies`, applied in
+> `RunOrchestrator.CompleteCombat` next to the Hard package): +6 Supplies keeps a
+> normal-cadence run at ≈18 Supplies/round — one Uncommon per shop (§3). Easy stays
+> spoils-free (its payoff is the 2-Authority-priced safety); Hard keeps a ≥2× supplies
+> risk premium over Normal (`EconomyBalanceTests.HardVsNormal_SpoilsPremium`).
 
 - Armies drawn from templates within **±1** `FightNumber` of your `FightEquivalent`.
 - Each front shows a **strength preview** and an **arena theme**.
@@ -703,6 +717,13 @@ they're each a future Core seam, not a Wave 2 blocker.s** | 1.30 | — |
 ### Speed, range, movement, accuracy
 - **Attack speed** → cooldown: Slow ×1.5, Medium ×1.0, Fast ×0.75.
 - **Range** (Chebyshev): Melee 1, Short 3, Medium 5, Long 8.
+- **Durability scale (pacing dial):** every combat unit's max HP is multiplied at spawn by
+  `min(4.4, 2.4 + 0.18 × max(0, totalUnitsFielded − 8))` — both sides, symmetric
+  (`CombatPacingConfig.DurabilityScaleFor`, applied once in `TickCombatRun.SpawnCombatants`;
+  PROVISIONAL, balance pass 2026-07-19). Bigger armies fight longer by design: measured medians
+  ~285 ticks at fight 1 rising to ~460 by fight 8 (`CombatDurationBenchmarkTests`), targeting
+  ~30s wall-clock early / 45–60s late (owner spec). Strength previews and run-state HP are
+  intentionally unscaled — the multiplier exists only inside the sim and its health-bar mirrors.
 - **Movement:** charge accrues `movementSpeed + 1`/tick; a step costs **100** (**200** through
   neutral ground — see §5). `trench_works` (2026-07-15 faction-roster-v1) cuts a tick's charge
   accrual **-50%** (PROVISIONAL) for any enemy unit within 1 cell (Chebyshev) of it —
@@ -832,8 +853,9 @@ bosses still field IronMarch/neutral pieces as their (documented) rifleman-fallb
 vehicles/tactics/build-around tags) + **12 `factionId: ironmarch_union`** (§2.2, 6 Common / 3
 Uncommon / 3 Rare). Neutral pieces do **not** count toward the `ironmarch_union` Critical-Mass rule.
 
-**Faction baseline** (`ironmarch_union.asset`): Supplies **50**, Manpower **15**, Authority **2**,
-Supplies/round **10**, Muster/shop **1**, base salvage **1%**, Combat **6×6**, HQ **3×6**.
+**Faction baseline** (`ironmarch_union.asset`, economy pass 2026-07-19): Supplies **25**, Manpower
+**15**, Authority **2**, Supplies/round **12**, Muster/shop **1**, base salvage **1%**, Combat
+**6×6**, HQ **3×6**.
 **Starting board:** `supply_depot`, `command_outpost` (HQ); `field_medic`, `conscript_rifles`
 (Combat).
 

@@ -156,9 +156,11 @@ namespace DeadManZone.Data.Editor
             var faction = DemoContentGenerator.SaveFaction(
                 FactionIds.CrimsonAssembly,
                 "Crimson Assembly",
-                startingSupplies: 55,
+                // PROVISIONAL — economy pass 2026-07-19: 28 keeps Crimson richer than the
+                // 25 baseline (second-wealthiest faction identity); 12/round sustain.
+                startingSupplies: 28,
                 startingManpower: 15,
-                baseSuppliesPerRound: 8,
+                baseSuppliesPerRound: 12,
                 baseMusterPerShop: 1,
                 startingAuthority: 2,
                 baseSalvageChancePercent: 1);

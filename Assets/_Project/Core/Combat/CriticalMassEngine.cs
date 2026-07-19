@@ -98,7 +98,11 @@ namespace DeadManZone.Core.Combat
                     continue;
                 }
 
-                int maxHp = combatant.Definition.MaxHp + mods.MaxHpFlat;
+                // Base on the stored (durability-scaled) fight max, not raw definition HP —
+                // otherwise a CM-modified unit would spawn back at pre-scale HP. CM flat
+                // bonuses themselves are intentionally NOT scaled (the durability scale
+                // applies to definition HP at spawn only).
+                int maxHp = combatant.MaxHp + mods.MaxHpFlat;
                 if (mods.MaxHpPercent != 0)
                     maxHp += (int)System.Math.Round(maxHp * (mods.MaxHpPercent / 100f));
 

@@ -61,7 +61,13 @@ namespace DeadManZone.Core.Run
                     continue;
                 }
 
-                int hpPerBody = HpPerBody(c.Definition);
+                // DamageTakenThisFight is in durability-scaled combat-HP units (the fight's
+                // army-size CombatPacingConfig.DurabilityScaleFor), so the per-body divisor must be the
+                // combatant's stored scaled MaxHp — dividing scaled damage by raw definition HP
+                // would double survivor attrition. Bodies-lost fraction (and thus run-state
+                // Manpower outcomes) is identical to pre-scale. ManpowerCost > 0 is guaranteed
+                // by the guard above.
+                int hpPerBody = c.MaxHp / c.Definition.ManpowerCost;
                 int bodies = hpPerBody > 0 ? c.DamageTakenThisFight / hpPerBody : 0;
                 if (hasFieldHospital)
                     bodies = bodies * (100 - FieldHospitalSurvivorCasualtyReductionPercent) / 100;

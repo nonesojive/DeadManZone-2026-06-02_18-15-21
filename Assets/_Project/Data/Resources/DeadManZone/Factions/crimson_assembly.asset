@@ -28,9 +28,9 @@ MonoBehaviour:
   - {x: 1, y: 4}
   - {x: 4, y: 4}
   - {x: 7, y: 4}
-  startingSupplies: 55
+  startingSupplies: 28
   startingManpower: 15
-  baseSuppliesPerRound: 8
+  baseSuppliesPerRound: 12
   baseMusterPerShop: 1
   startingAuthority: 2
   startingTactics: 00000000010000000200000003000000

@@ -22,6 +22,11 @@ namespace DeadManZone.Core.Run
         public const int HardVictorySupplies = 15;
         public const int HardVictoryManpower = 6;
 
+        /// <summary>Normal-front victory spoils (economy pass 2026-07-19): 12 base income
+        /// + 6 spoils ≈ 18/round sustains ~1 Uncommon (15) per shop against the rising
+        /// Dread price tax. Easy stays spoils-free; Hard keeps its 15S+6M premium.</summary>
+        public const int NormalVictorySupplies = 6;
+
         public const int BossCount = 3;
 
         /// <summary>Dread earned by WINNING at the given Fight Option tier (ADR-0004:

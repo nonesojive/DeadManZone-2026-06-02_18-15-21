@@ -154,9 +154,11 @@ namespace DeadManZone.Data.Editor
             var faction = DemoContentGenerator.SaveFaction(
                 FactionIds.BlightbornPact,
                 "Blightborn Pact",
-                startingSupplies: 45,
+                // PROVISIONAL — economy pass 2026-07-19: 22/11 keeps Blightborn a notch
+                // below the 25/12 baseline (attrition economy, Despair Dividend tops up).
+                startingSupplies: 22,
                 startingManpower: 14,
-                baseSuppliesPerRound: 9,
+                baseSuppliesPerRound: 11,
                 baseMusterPerShop: 1,
                 startingAuthority: 2,
                 baseSalvageChancePercent: 1);

@@ -27,8 +27,8 @@ namespace DeadManZone.Core.Combat
                 .Where(a => a != null
                     && a.InstanceId != healer.InstanceId
                     && a.IsActive
-                    && a.Definition.MaxHp > 0
-                    && a.CurrentHp < a.Definition.MaxHp
+                    && a.MaxHp > 0
+                    && a.CurrentHp < a.MaxHp
                     && CombatRange.Distance(healer.AnchorPosition, a.AnchorPosition) <= healer.Definition.HealPulseRadius)
                 .ToList();
         }
@@ -39,7 +39,8 @@ namespace DeadManZone.Core.Combat
             if (healer == null || target == null)
                 return 0;
 
-            int missing = target.Definition.MaxHp - target.CurrentHp;
+            // Clamp against the unit's stored (durability-scaled) fight max, not raw definition HP.
+            int missing = target.MaxHp - target.CurrentHp;
             return System.Math.Max(0, System.Math.Min(healer.Definition.HealPulseAmount, missing));
         }
     }

@@ -110,8 +110,9 @@ namespace DeadManZone.Core.Tests
             var rear = enemies.Where(e => e.AnchorPosition.X != frontX).ToList();
             Assert.IsNotEmpty(front);
             Assert.IsNotEmpty(rear, "fixture must have a non-front enemy to prove scoping");
-            Assert.IsTrue(front.All(e => e.CurrentHp == e.Definition.MaxHp * 160 / 100));
-            Assert.IsTrue(rear.All(e => e.CurrentHp == e.Definition.MaxHp));
+            // e.MaxHp = stored durability-scaled fight max; the twist multiplies scaled spawn HP.
+            Assert.IsTrue(front.All(e => e.CurrentHp == e.MaxHp * 160 / 100));
+            Assert.IsTrue(rear.All(e => e.CurrentHp == e.MaxHp));
         }
 
         [Test]

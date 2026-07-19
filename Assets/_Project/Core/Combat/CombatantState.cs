@@ -17,6 +17,23 @@ namespace DeadManZone.Core.Combat
         public string InstanceId { get; init; }
         public CombatSide Side { get; init; }
         public PieceDefinition Definition { get; init; }
+
+        /// <summary>Fight max HP: the durability-scaled definition HP
+        /// (CombatPacingConfig.ScaleUnitMaxHp), set once at spawn by
+        /// TickCombatRun.SpawnCombatants — every max-HP magnitude read in the sim (heal clamp,
+        /// low-state threshold, army-bar fractions, critical-mass base, casualty conversion)
+        /// goes through this, never raw Definition.MaxHp. Falls back to raw Definition.MaxHp
+        /// when unset so directly-constructed combatants (pure-rules tests, the synthetic HQ
+        /// ability source) keep pre-scale behavior. Fight-start buffs (critical mass, synergy
+        /// flats, twists/conditions) raise CurrentHp above this cap and never raise the cap
+        /// itself — same semantics as before the scale existed.</summary>
+        public int MaxHp
+        {
+            get => _maxHp > 0 ? _maxHp : Definition?.MaxHp ?? 0;
+            init => _maxHp = value;
+        }
+        private readonly int _maxHp;
+
         public int CurrentHp { get; set; }
         public int CurrentMorale { get; set; }
         /// <summary>Set when morale hit 0: the unit routed — fled the field, alive but out of the fight (ADR-0005).</summary>
