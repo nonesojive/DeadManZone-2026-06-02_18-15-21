@@ -309,6 +309,36 @@ Three fronts per Build, **one of each tier** (tier = slot index):
 - Each front shows a **strength preview** and an **arena theme**.
 - **COMBAT is gated on choosing a front** — `BeginCombat` throws otherwise.
 
+> **PROVISIONAL 2026-07-19 (owner spec) — deliberate strength ratios:** the three displayed
+> strengths are no longer accidental band spreads. After the strength sort, Easy is solved to
+> **0.85×** and Hard to **1.30×** of the Normal draw's `EffectiveTotal` (±5%) by scaling every
+> piece on that board with a uniform per-piece **`StatScale`** (`PlacedPiece.StatScale`,
+> `Core/Run/BoardStrengthScaler.cs` binary search in [0.4, 2.5];
+> `FightOptionGenerator.EasyStrengthRatio` / `.HardStrengthRatio`). Normal is never scaled.
+> Easy is solved on its engines-suppressed basis (see the hidden-discount note below), so its
+> displayed number and its actual green force both sit at the ratio. The scale rides on
+> `FightOptionRecord.StatScale` (additive save field, absent → 1) and is re-applied to the
+> template rebuild at fight time; combat honors it at spawn (scaled max HP and attack damage,
+> `TickCombatRun.SpawnCombatants` → `CombatantState.Damage`).
+
+> **PROVISIONAL 2026-07-19 (owner spec) — the canonical enemy-strength ladder:** enemy template
+> strength is no longer the accidental per-faction authored curves (old symptom: IronMarch fight 9
+> rated 701 vs fight 8's 704, and cross-faction strength varied wildly at the same fight index).
+> `Core/Run/EnemyLadder.cs` defines `TargetStrength(fight) = round(200 × 1.21^(fight−1))`:
+>
+> | Fight | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+> |---|---|---|---|---|---|---|---|---|---|---|
+> | Target | 200 | 242 | 293 | 354 | 429 | 519 | 628 | 759 | 919 | 1112 |
+>
+> Every template board is **normalized onto this curve at the single build choke point**
+> (`EnemyTemplateSO.BuildBoard` solves a uniform per-piece `StatScale` via `BoardStrengthScaler`,
+> engines-on Evaluate basis), so every consumer — Fight Option draws, fight-time rebuilds, tests —
+> sees the deliberate ladder. The per-faction `*EnemyFactory.cs` ladders still author **composition**
+> (which pieces debut when); their raw strength no longer matters. Normal's `FightOptionRecord.StatScale`
+> carries this build-time scale (ApplyScale sets absolutely — a recorded 1 would strip it); Easy/Hard
+> still solve their 0.85×/1.30× ratios on top, per the note above.
+> `BalancePassTests` pins every faction × fight 1–10 within **±5%** of the ladder.
+
 > **Wave 5 (2026-07-17): the rotation is all 8 factions, not just IronMarch.** Every faction now
 > authors its own 10-fight enemy ladder (`Data/Editor/*EnemyFactory.cs` — e.g.
 > `DustScourgeEnemyFactory`, `CrimsonAssemblyEnemyFactory`), all fed into the same
@@ -352,6 +382,12 @@ Three, fixed roster, seeded order. A boss replaces the front choice.
 | Wraith Harbinger | `ashen_covenant` | `deathless_cold` — enemy **front rank +60% HP** |
 
 - Each has **3 stage loadouts** escalating with `BossesDefeated` — the same boss is harder later.
+- **PROVISIONAL 2026-07-19 (owner spec) — boss strength = 1.5× the concurrent ladder:**
+  `BossRoster.BuildStageBoard` normalizes each stage board to
+  `BossRoster.BossStrengthRatio` (**1.5**) × `EnemyLadder.TargetStrength` at the stage's Dread
+  threshold's `FightEquivalent` — thresholds 6/12/18 → fights 4/7/10 → targets **531 / 942 / 1668**
+  (`BossRoster.StageTargetStrength`). Scaling is uniform per stage board, so the authored
+  strict-superset stage composition is preserved. `BalancePassTests` pins each stage within ±6%.
 - Twists and Battle Conditions share one `ICombatRuleModifier` seam, so a save stores one id.
 - **Faction ids corrected 2026-07-17 (Wave 5):** the retired enemy-only pools `crimson_legion` /
   `ash_wraiths` (never had pieces of their own) were replaced by the playable `crimson_assembly` /

@@ -598,7 +598,12 @@ namespace DeadManZone.Core.Combat
                     target.Definition,
                     distance,
                     accuracyMod,
-                    actor.DamageBonus + damageBuff + LowStateRules.GetDamageBonus(actor),
+                    // Route the STORED (StatScale-scaled) base damage through the flat-bonus
+                    // channel: ComputeDamage's base is Definition.BaseDamage, so adding the
+                    // spawn-computed delta makes the effective base exactly actor.Damage —
+                    // integer-exact, and zero when unscaled.
+                    (actor.Damage - actor.Definition.BaseDamage)
+                        + actor.DamageBonus + damageBuff + LowStateRules.GetDamageBonus(actor),
                     target.TotalArmorSteps,
                     actor.DamagePercentBonus,
                     actor.AccuracyPercentBonus,
@@ -900,7 +905,21 @@ namespace DeadManZone.Core.Combat
                 // count): the single seam where a combat unit's max HP is read off its
                 // PieceDefinition. Player and enemy armies both spawn through SpawnCombatants,
                 // so both sides scale identically; rounding rule lives in ScaleUnitMaxHp.
-                int scaledMaxHp = CombatPacingConfig.ScaleUnitMaxHp(piece.Definition.MaxHp, _durabilityScale);
+                // PROVISIONAL 2026-07-19 owner spec (fight-option strength ratios):
+                // PlacedPiece.StatScale multiplies the definition stat line BEFORE the
+                // army-size durability scale. 1 (the default everywhere but scaled enemy
+                // fight-option boards) reproduces the pre-scale numbers bit-for-bit.
+                // Rounding matches ScaleUnitMaxHp's convention (round-half-away, floor 1).
+                float statScale = piece.StatScale > 0f ? piece.StatScale : 1f;
+                int statScaledHp = statScale == 1f
+                    ? piece.Definition.MaxHp
+                    : System.Math.Max(1, (int)System.Math.Round(
+                        piece.Definition.MaxHp * statScale, System.MidpointRounding.AwayFromZero));
+                int scaledDamage = piece.Definition.BaseDamage <= 0
+                    ? 0
+                    : System.Math.Max(1, (int)System.Math.Round(
+                        piece.Definition.BaseDamage * statScale, System.MidpointRounding.AwayFromZero));
+                int scaledMaxHp = CombatPacingConfig.ScaleUnitMaxHp(statScaledHp, _durabilityScale);
                 var combatant = new CombatantState
                 {
                     InstanceId = piece.InstanceId,
@@ -908,6 +927,7 @@ namespace DeadManZone.Core.Combat
                     Definition = piece.Definition,
                     MaxHp = scaledMaxHp,
                     CurrentHp = scaledMaxHp,
+                    Damage = scaledDamage,
                     CurrentMorale = piece.Definition.MaxMorale,
                     CooldownRemaining = 0,
                     AnchorPosition = anchor,

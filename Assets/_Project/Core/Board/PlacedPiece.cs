@@ -31,5 +31,17 @@ namespace DeadManZone.Core.Board
         /// .IsSalvage and sells for 0 (SalvageCalculator.Compute). Carried across
         /// moves/reserves transfers by re-passing it into TryPlace at every re-placement.</summary>
         public bool IsMercenary { get; init; }
+
+        /// <summary>PROVISIONAL 2026-07-19 owner spec (fight-option strength ratios): uniform
+        /// per-piece stat multiplier applied to MaxHp and BaseDamage at combat spawn
+        /// (TickCombatRun.SpawnCombatants) and in the strength rating (PieceCombatRating).
+        /// 1 = unscaled; player pieces are always 1 — only enemy fight-option boards are
+        /// scaled (BoardStrengthScaler solves Easy to 0.85x / Hard to 1.30x of Normal).
+        /// Deliberately settable (unlike the init-only placement fields): the scale is
+        /// applied to an already-built board AFTER placement (BoardStrengthScaler.ApplyScale,
+        /// BoardSnapshotMapper.ToBoard restore) rather than threaded through every TryPlace.
+        /// NOT carried through Build-phase piece reconstruction (TryMove / TryLoadCargo) —
+        /// those paths only ever touch player boards, where the scale is always 1.</summary>
+        public float StatScale { get; set; } = 1f;
     }
 }

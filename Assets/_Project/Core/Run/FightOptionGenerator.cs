@@ -31,11 +31,23 @@ namespace DeadManZone.Core.Run
     /// index, so an uneven per-faction pool could roll a "hard" option weaker than its
     /// own "easy" one). The Battle Condition always lands on whichever army is now Hard,
     /// which may not be the army that was drawn last.
+    /// After tiering, Easy and Hard are STAT-SCALED to deliberate ratios of Normal's
+    /// EffectiveTotal (0.85x / 1.30x — PROVISIONAL 2026-07-19 owner spec) via
+    /// <see cref="BoardStrengthScaler"/>; the solved scale rides on the option record so the
+    /// fight-time template rebuild fields the same army the report displayed.
     /// </summary>
     public static class FightOptionGenerator
     {
         public const int OptionCount = 3;
         public const int FightNumberSpread = 1;
+
+        // PROVISIONAL 2026-07-19 owner spec: the three fronts' DISPLAYED strengths sit in
+        // deliberate ratios to the Normal draw's EffectiveTotal (±5%), enforced by solving a
+        // uniform per-piece StatScale (BoardStrengthScaler) — the ±1-band draws alone gave
+        // accidental spreads. Normal's board is never ratio-scaled; its record carries the
+        // build-time ladder-normalization scale (EnemyLadder — see the tier loop).
+        public const float EasyStrengthRatio = 0.85f;
+        public const float HardStrengthRatio = 1.30f;
 
         public static List<FightOptionRecord> Generate(
             int runSeed,
@@ -97,25 +109,66 @@ namespace DeadManZone.Core.Run
 
             // ---- Tier assignment: by strength, not slot -------------------------------
             // Sort basis = RawStrength (engines always included, computed identically for all
-            // three above). Assign Easy/Normal/Hard weakest-to-strongest so the displayed
-            // StrengthPreview is always non-decreasing Easy -> Hard:
-            //  - Normal/Hard display RawStrength unchanged, so their relative order is exactly
-            //    the sort order.
-            //  - Easy displays a SUPPRESSED reading (engines off, a strictly-lower-or-equal
-            //    number than its own RawStrength — suppressing bonuses never adds power).
-            //    Because Easy is assigned the weakest RawStrength of the three, its suppressed
-            //    display is <= its own RawStrength <= Normal's RawStrength == Normal's display.
+            // three above). Assign Easy/Normal/Hard weakest-to-strongest; the ratio-scaling
+            // step below then pins the DISPLAYED spread around the middle draw (Easy 0.85x,
+            // Hard 1.30x of Normal), which keeps the previews non-decreasing Easy -> Hard by
+            // construction (0.85 < 1 < 1.30, modulo the solver's small residual and its
+            // [0.4, 2.5] clamps — a clamped Easy still lands below Normal, a clamped Hard
+            // still lands above it, because Easy starts weakest and Hard strongest).
             // OrderBy is stable, so ties (e.g. two slots drawing the same army) keep their
             // original slot order rather than reshuffling arbitrarily.
             int[] bySlotAscendingStrength = Enumerable.Range(0, OptionCount)
                 .OrderBy(slot => drafted[slot].RawStrength)
                 .ToArray();
 
+            // ---- Ratio scaling (PROVISIONAL 2026-07-19 owner spec) -----------------------
+            // Pin the displayed spread to Normal's EffectiveTotal: Easy is solved to 0.85x,
+            // Hard to 1.30x, via a uniform per-piece StatScale. Normal's board stays untouched
+            // — but its RECORD carries the scale the board arrived with, because BuildBoard
+            // now ladder-normalizes every template (EnemyLadder, 2026-07-19 deep balance pass)
+            // and ApplyScale at fight time SETS StatScale absolutely: recording 1 would strip
+            // that normalization on the rebuild. Easy
+            // is solved on the ENGINES-SUPPRESSED basis because that is both what it displays
+            // (the existing suppressed-preview behavior, kept) and what actually marches on an
+            // easy front (TickCombatRun's suppressEnemyFightStartEngines). No rng here — the
+            // draw sequence above is unchanged for a given seed. The solved scale is recorded
+            // on the option so the fight-time template rebuild (RunOrchestrator.BeginCombat /
+            // GetOptionEnemyBoard) fields the SAME army the preview rated.
+            int normalRating = drafted[bySlotAscendingStrength[(int)FightOptionTier.Normal]].RawStrength;
+
             var options = new List<FightOptionRecord>(OptionCount);
             for (int tierIndex = 0; tierIndex < OptionCount; tierIndex++)
             {
                 var tier = (FightOptionTier)tierIndex;
                 var (army, themeId, board, rawStrength) = drafted[bySlotAscendingStrength[tierIndex]];
+
+                // Default (Normal): the board's build-time scale — BuildBoard's ladder
+                // normalization is uniform, so any piece carries it; 1 for an unscaled build.
+                float statScale = 1f;
+                foreach (var placed in board.Pieces) { statScale = placed.StatScale; break; }
+                int preview = rawStrength;
+                switch (tier)
+                {
+                    case FightOptionTier.Easy:
+                        statScale = BoardStrengthScaler.SolveScale(
+                            board,
+                            (int)Math.Round(EasyStrengthRatio * normalRating),
+                            includeFightStartEngines: false);
+                        // Preview what will actually MARCH: Easy fields a green force with its
+                        // fight-start engines suppressed, so it previews on that same basis.
+                        preview = ArmyStrengthCalculator.Evaluate(
+                            board, buildBoards: null, includeFightStartEngines: false).EffectiveTotal;
+                        break;
+
+                    case FightOptionTier.Hard:
+                        statScale = BoardStrengthScaler.SolveScale(
+                            board,
+                            (int)Math.Round(HardStrengthRatio * normalRating),
+                            includeFightStartEngines: true);
+                        preview = ArmyStrengthCalculator.Evaluate(
+                            board, buildBoards: null, includeFightStartEngines: true).EffectiveTotal;
+                        break;
+                }
 
                 options.Add(new FightOptionRecord
                 {
@@ -124,16 +177,8 @@ namespace DeadManZone.Core.Run
                     TemplateFightNumber = army.FightNumber,
                     ConditionId = tier == FightOptionTier.Hard ? conditionId : null,
                     ThemeId = themeId,
-
-                    // Preview what will actually MARCH, not the raw stat line: rate the enemy with
-                    // its fight-start engines applied — EXCEPT on Easy, where the enemy fields a
-                    // green force with those engines suppressed (see TickCombatRun's
-                    // suppressEnemyFightStartEngines). So Easy previews lower because it genuinely
-                    // IS weaker, and all three numbers are finally measured on the same basis.
-                    StrengthPreview = tier == FightOptionTier.Easy
-                        ? ArmyStrengthCalculator.Evaluate(
-                            board, buildBoards: null, includeFightStartEngines: false).EffectiveTotal
-                        : rawStrength
+                    StatScale = statScale,
+                    StrengthPreview = preview
                 });
             }
 

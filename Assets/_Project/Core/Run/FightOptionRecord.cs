@@ -35,5 +35,18 @@ namespace DeadManZone.Core.Run
         /// <summary>Army effective strength (ArmyStrengthCalculator EffectiveTotal — the
         /// same number the matchup HUD shows) for the report's strength band.</summary>
         public int StrengthPreview { get; set; }
+
+        /// <summary>PROVISIONAL 2026-07-19 owner spec (fight-option strength ratios): the
+        /// ABSOLUTE uniform per-piece StatScale this front fights at, solved at generation
+        /// so its displayed strength sits at its tier ratio of Normal (Easy 0.85x,
+        /// Hard 1.30x). Normal records the scale its board arrived with from BuildBoard's
+        /// ladder normalization (EnemyLadder, deep balance pass same date) — ApplyScale
+        /// SETS StatScale, so recording 1 would strip the normalization at fight time.
+        /// The army itself still regenerates from <see cref="TemplateFightNumber"/> — this
+        /// is the one extra number needed to rebuild the SAME scaled army at fight time
+        /// (RunOrchestrator.BeginCombat / GetOptionEnemyBoard apply it via
+        /// BoardStrengthScaler.ApplyScale). Additive on the save schema: absent on older
+        /// saves → 1, which fields the raw authored army those older previews rated.</summary>
+        public float StatScale { get; set; } = 1f;
     }
 }

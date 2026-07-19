@@ -34,6 +34,21 @@ namespace DeadManZone.Core.Combat
         }
         private readonly int _maxHp;
 
+        /// <summary>Fight base attack damage: Definition.BaseDamage scaled by the piece's
+        /// StatScale (PROVISIONAL 2026-07-19 owner spec — fight-option strength ratios), set
+        /// once at spawn by TickCombatRun.SpawnCombatants; attack resolution routes through
+        /// this, never raw Definition.BaseDamage. Falls back to raw Definition.BaseDamage
+        /// when unset so directly-constructed combatants (pure-rules tests, the synthetic HQ
+        /// ability source) keep pre-scale behavior — same pattern as <see cref="MaxHp"/>.
+        /// Flat/percent damage bonuses (synergy, tactics, low-state) stack on top of this
+        /// exactly as they stacked on BaseDamage before.</summary>
+        public int Damage
+        {
+            get => _damage > 0 ? _damage : Definition?.BaseDamage ?? 0;
+            init => _damage = value;
+        }
+        private readonly int _damage;
+
         public int CurrentHp { get; set; }
         public int CurrentMorale { get; set; }
         /// <summary>Set when morale hit 0: the unit routed — fled the field, alive but out of the fight (ADR-0005).</summary>

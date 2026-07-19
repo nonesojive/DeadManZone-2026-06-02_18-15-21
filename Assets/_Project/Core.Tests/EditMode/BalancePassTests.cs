@@ -32,8 +32,20 @@ namespace DeadManZone.Core.Tests
             _faction = _database.GetFaction(FactionIds.IronmarchUnion);
         }
 
+        /// <summary>Ladder-band tolerance: BuildBoard's normalization solves to 0.5%
+        /// (BoardStrengthScaler.ConvergenceTolerance) but per-piece integer rounding and
+        /// the [0.4, 2.5] scale clamps leave a residual; ±5% is the owner-spec band.</summary>
+        private const float LadderBandTolerance = 0.05f;
+
+        /// <summary>PROVISIONAL 2026-07-19 owner spec (deep balance pass): templates are
+        /// ladder-NORMALIZED at build time (EnemyTemplateSO.BuildBoard → EnemyLadder), so
+        /// the old non-decreasing golden is guaranteed-monotone and its assertion is now a
+        /// band check against the canonical curve. This also permanently de-flakes the old
+        /// test: it failed intermittently on 701-vs-704 near-ties (IronMarch fights 8/9)
+        /// caused by critical-mass shared state; with 21% ladder gaps and ±5% bands that
+        /// sensitivity is gone.</summary>
         [Test]
-        public void EnemyTemplates_EffectiveTotal_NonDecreasingAcrossFights1To10()
+        public void EnemyTemplates_EffectiveTotal_TracksLadderAcrossFights1To10()
         {
             RequireDatabase();
 
@@ -46,19 +58,27 @@ namespace DeadManZone.Core.Tests
 
                 var board = BuildTemplateBoard(template);
                 int effective = ArmyStrengthCalculator.Evaluate(board).EffectiveTotal;
-                Assert.GreaterOrEqual(effective, previous,
-                    $"fight {fight} (effective {effective}) must not be weaker than fight {fight - 1} (effective {previous}) — the gauntlet ramps");
+                int target = EnemyLadder.TargetStrength(fight);
+                Assert.LessOrEqual(System.Math.Abs(effective - target) / (float)target, LadderBandTolerance,
+                    $"fight {fight} (effective {effective}) must sit within ±5% of the ladder target {target}");
+
+                // Bonus: monotonicity follows from the bands (21% gaps >> 2x5% band widths).
+                Assert.Greater(effective, previous,
+                    $"fight {fight} (effective {effective}) must outgun fight {fight - 1} (effective {previous})");
                 previous = effective;
             }
         }
 
-        /// <summary>Wave 5 (2026-07-17): each of the 8 factions now authors its own 10-fight
+        /// <summary>Wave 5 (2026-07-17): each of the 8 factions authors its own 10-fight
         /// enemy ladder (DustScourgeEnemyFactory etc.) — this is the per-faction version of
         /// the golden above. Filters ContentDatabase.EnemyTemplates by enemyFactionId directly
         /// (not ContentDatabase.GetEnemyTemplate, which is deliberately faction-blind for
-        /// fightNumber-only legacy callers) so each pool's own curve is verified in isolation.</summary>
+        /// fightNumber-only legacy callers) so each pool's own curve is verified in isolation.
+        /// PROVISIONAL 2026-07-19 owner spec: normalization makes every faction's curve THE
+        /// SAME deliberate curve — cross-faction template strength no longer varies wildly
+        /// at the same fight index. Same band assertion (and the same de-flake) as above.</summary>
         [Test]
-        public void EnemyTemplates_PerFaction_EffectiveTotal_NonDecreasingAcrossFights1To10()
+        public void EnemyTemplates_PerFaction_EffectiveTotal_TracksLadderAcrossFights1To10()
         {
             RequireDatabase();
 
@@ -82,8 +102,12 @@ namespace DeadManZone.Core.Tests
                         $"'{factionId}' fight {fight}: every authored placement must land");
 
                     int effective = ArmyStrengthCalculator.Evaluate(board).EffectiveTotal;
-                    Assert.GreaterOrEqual(effective, previous,
-                        $"'{factionId}' fight {fight} (effective {effective}) must not be weaker than fight {fight - 1} (effective {previous})");
+                    int target = EnemyLadder.TargetStrength(fight);
+                    Assert.LessOrEqual(System.Math.Abs(effective - target) / (float)target, LadderBandTolerance,
+                        $"'{factionId}' fight {fight} (effective {effective}) must sit within ±5% of the ladder target {target}");
+
+                    Assert.Greater(effective, previous,
+                        $"'{factionId}' fight {fight} (effective {effective}) must outgun fight {fight - 1} (effective {previous})");
                     previous = effective;
                 }
             }
@@ -122,6 +146,37 @@ namespace DeadManZone.Core.Tests
                     Assert.Greater(effective, previous,
                         $"{boss.BossId} stage {stage} (effective {effective}) must outgun stage {stage - 1} (effective {previous})");
                     previous = effective;
+                }
+            }
+        }
+
+        /// <summary>PROVISIONAL 2026-07-19 owner spec (deep balance pass): bosses are a clear
+        /// step up — each stage board is normalized to BossRoster.BossStrengthRatio (1.5x) of
+        /// the concurrent normal-fight ladder strength. Expected computed from primitives,
+        /// independent of BossRoster.StageTargetStrength: stage s fires at Dread threshold
+        /// 6/12/18 → FightEquivalent 4/7/10 → 1.5 x (354/628/1112) = 531/942/1668. ±6% band
+        /// (one point looser than the template band: boss boards stack rares whose per-piece
+        /// integer rounding steps are coarser).</summary>
+        [Test]
+        public void BossStages_EffectiveTotal_TracksOnePointFiveTimesConcurrentLadder()
+        {
+            RequireDatabase();
+
+            foreach (var boss in BossRoster.All)
+            {
+                for (int stage = 0; stage < boss.StageLoadouts.Count; stage++)
+                {
+                    int threshold = DreadRules.NextThreshold(stage);
+                    int fight = System.Math.Clamp(DreadRules.FightEquivalent(threshold), 1, 10);
+                    int expected = (int)System.Math.Round(
+                        BossRoster.BossStrengthRatio * EnemyLadder.TargetStrength(fight));
+                    Assert.AreEqual(expected, BossRoster.StageTargetStrength(stage),
+                        $"stage {stage}: StageTargetStrength must be 1.5x the concurrent ladder value");
+
+                    var board = BossRoster.BuildStageBoard(boss, stage, _registry);
+                    int effective = ArmyStrengthCalculator.Evaluate(board).EffectiveTotal;
+                    Assert.LessOrEqual(System.Math.Abs(effective - expected) / (float)expected, 0.06f,
+                        $"{boss.BossId} stage {stage} (effective {effective}) must sit within ±6% of {expected}");
                 }
             }
         }

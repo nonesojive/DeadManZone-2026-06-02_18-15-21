@@ -125,15 +125,26 @@ namespace DeadManZone.Core.Tests
         [Test]
         public void Generate_StrengthPreviewMatchesTheHudCalculator()
         {
+            // 2026-07-19 ratio scaling: Easy/Hard preview their SCALED army (StatScale
+            // applied, Easy on the engines-suppressed basis it actually fights on), so the
+            // exact-equality check rebuilds the board the way the fight will: template +
+            // recorded StatScale. Normal stays the untouched template rating (StatScale 1).
             var options = FightOptionGenerator.Generate(123, 2, dread: 2, FourAuthoredArmies());
 
             foreach (var option in options)
             {
-                int expected = ArmyStrengthCalculator
-                    .Evaluate(BoardWithRifles(option.TemplateFightNumber))
+                var board = BoardWithRifles(option.TemplateFightNumber);
+                BoardStrengthScaler.ApplyScale(board, option.StatScale);
+                int expected = ArmyStrengthCalculator.Evaluate(
+                        board,
+                        buildBoards: null,
+                        includeFightStartEngines: option.Tier != FightOptionTier.Easy)
                     .EffectiveTotal;
                 Assert.AreEqual(expected, option.StrengthPreview,
-                    $"fight {option.TemplateFightNumber} preview must reuse ArmyStrengthCalculator");
+                    $"fight {option.TemplateFightNumber} ({option.Tier}) preview must reuse " +
+                    "ArmyStrengthCalculator on the scaled board");
+                if (option.Tier == FightOptionTier.Normal)
+                    Assert.AreEqual(1f, option.StatScale, "Normal is never scaled");
             }
         }
 

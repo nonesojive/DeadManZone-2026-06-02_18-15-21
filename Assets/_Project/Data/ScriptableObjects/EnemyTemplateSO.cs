@@ -65,7 +65,17 @@ namespace DeadManZone.Data
         public BoardState BuildBoard(FactionSO faction, ContentRegistry registry)
         {
             int boardSize = faction != null ? faction.combatBoardSize : 6;
-            return BoardSnapshotMapper.ToBoard(ToBoardSnapshot(boardSize), registry);
+            var board = BoardSnapshotMapper.ToBoard(ToBoardSnapshot(boardSize), registry);
+
+            // PROVISIONAL 2026-07-19 owner spec (deep balance pass): normalize every template
+            // board onto the canonical EnemyLadder curve at the single build choke point, so
+            // EVERY consumer (FightOptionGenerator draws, RunOrchestrator fight-time rebuilds,
+            // benchmarks, tests) sees the deliberate ladder instead of the accidental authored
+            // per-faction curves. SolveScale leaves the board at the solved uniform per-piece
+            // StatScale, on the default engines-on Evaluate basis. Composition (which pieces,
+            // where) stays authored; only the strength is pinned.
+            BoardStrengthScaler.SolveScale(board, EnemyLadder.TargetStrength(fightNumber));
+            return board;
         }
     }
 }

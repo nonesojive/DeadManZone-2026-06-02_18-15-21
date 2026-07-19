@@ -25,6 +25,14 @@ namespace DeadManZone.Core.Run
         /// is placed (the carrier must already exist on the board for TryLoadCargo to accept
         /// it), see <see cref="BoardSnapshotMapper.ToBoard"/>.</summary>
         public string CarrierInstanceId { get; set; }
+
+        /// <summary>PROVISIONAL 2026-07-19 owner spec (fight-option strength ratios):
+        /// additive field, deserializes 1 on older saves (no scaled pieces could exist
+        /// before this wave — Newtonsoft leaves the initializer untouched for a missing
+        /// member). Mirrors PlacedPiece.StatScale; restored in a final pass after every
+        /// piece — including reconstructed cargo — is on the board, see
+        /// <see cref="BoardSnapshotMapper.ToBoard"/>.</summary>
+        public float StatScale { get; set; } = 1f;
     }
 
     public sealed class BoardSnapshot
@@ -72,7 +80,8 @@ namespace DeadManZone.Core.Run
                     AnchorY = p.Anchor.Y,
                     RotationDegrees = (int)p.Rotation,
                     IsMercenary = p.IsMercenary,
-                    CarrierInstanceId = p.CarrierInstanceId
+                    CarrierInstanceId = p.CarrierInstanceId,
+                    StatScale = p.StatScale
                 }).ToList()
             };
 
@@ -149,6 +158,20 @@ namespace DeadManZone.Core.Run
                     continue;
 
                 EvictCargoExcess(board, reservesForEviction, record, loadResult.Reason, warnings);
+            }
+
+            // Final pass: restore StatScale (fight-option ratio scaling). Runs AFTER the
+            // cargo pass because TryLoadCargo reconstructs the PlacedPiece instances it
+            // re-tags — a scale set in the first pass would be lost. <= 0 (corrupt) and 1
+            // (the universal default) both mean "leave the freshly-placed default alone".
+            var piecesById = board.Pieces.ToDictionary(p => p.InstanceId);
+            foreach (var record in snapshot.Pieces)
+            {
+                if (record.StatScale <= 0f || record.StatScale == 1f)
+                    continue;
+
+                if (piecesById.TryGetValue(record.InstanceId, out var placed))
+                    placed.StatScale = record.StatScale;
             }
 
             return board;

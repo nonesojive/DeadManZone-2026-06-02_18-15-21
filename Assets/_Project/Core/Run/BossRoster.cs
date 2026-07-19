@@ -74,6 +74,12 @@ namespace DeadManZone.Core.Run
     /// </summary>
     public static class BossRoster
     {
+        /// <summary>PROVISIONAL 2026-07-19 owner spec (deep balance pass): a boss stage is a
+        /// clear step up — 1.5x the concurrent normal-fight ladder strength
+        /// (<see cref="EnemyLadder.TargetStrength"/> at the stage's Dread threshold's
+        /// <see cref="DreadRules.FightEquivalent"/>).</summary>
+        public const float BossStrengthRatio = 1.5f;
+
         public const string MilitiaWarden = "boss_militia_warden";
         public const string CrimsonMarshal = "boss_crimson_marshal";
         public const string WraithHarbinger = "boss_wraith_harbinger";
@@ -215,8 +221,26 @@ namespace DeadManZone.Core.Run
             return order;
         }
 
+        /// <summary>
+        /// PROVISIONAL 2026-07-19 owner spec: target EffectiveTotal for a boss stage
+        /// (0-based). Stage s fires at Dread threshold <see cref="DreadRules.NextThreshold"/>(s)
+        /// = 6/12/18, whose <see cref="DreadRules.FightEquivalent"/> is fight 4/7/10 (clamped
+        /// to the authored 1..10), so targets are round(1.5 x T(fight)):
+        /// stage 0 → 1.5 x 354 = 531, stage 1 → 1.5 x 628 = 942, stage 2 → 1.5 x 1112 = 1668.
+        /// </summary>
+        public static int StageTargetStrength(int stage)
+        {
+            int threshold = DreadRules.NextThreshold(
+                Math.Clamp(stage, 0, DreadRules.BossCount - 1));
+            int fight = Math.Clamp(DreadRules.FightEquivalent(threshold), 1, 10);
+            return (int)Math.Round(BossStrengthRatio * EnemyLadder.TargetStrength(fight));
+        }
+
         /// <summary>Builds the stage's enemy board the same way EnemyTemplateSO.BuildBoard
-        /// does (unzoned combat board, deterministic instance ids).</summary>
+        /// does (unzoned combat board, deterministic instance ids), then normalizes it onto
+        /// the boss ladder (<see cref="StageTargetStrength"/>) via a uniform per-piece
+        /// StatScale — scaling is uniform per stage board, so the authored strict-superset
+        /// stage composition survives (supersets remain supersets).</summary>
         public static BoardState BuildStageBoard(
             BossDefinition boss,
             int stage,
@@ -243,6 +267,12 @@ namespace DeadManZone.Core.Run
                         $"Boss '{boss.BossId}' stage {stage}: failed to place '{placement.PieceId}' at ({x},{y}): {result.Reason}");
             }
 
+            // PROVISIONAL 2026-07-19 owner spec: boss step-up — normalize the stage board to
+            // 1.5x the concurrent ladder target (engines-on Evaluate basis, same as templates).
+            // Boss boards get a wider solver ceiling (4.0): ability-heavy stage compositions
+            // (e.g. wraith_harbinger stage 0) rate sub-linearly in StatScale, and the default
+            // 2.5 cap left stage 0 at 450 vs its 531 target on the first band-test run.
+            BoardStrengthScaler.SolveScale(board, StageTargetStrength(stage), maxScale: 4.0f);
             return board;
         }
     }

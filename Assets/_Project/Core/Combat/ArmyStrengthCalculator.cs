@@ -58,13 +58,17 @@ namespace DeadManZone.Core.Combat
                 if (!ManpowerCalculator.CountsTowardFielding(placed.Definition))
                     continue;
 
-                baseTotal += PieceCombatRating.ComputeBase(placed.Definition);
+                // StatScale (fight-option ratio scaling, PROVISIONAL 2026-07-19) is part of
+                // the piece's stat line, not an engine — it scales BaseTotal and
+                // EffectiveTotal alike, exactly as it scales the spawned combatant.
+                baseTotal += PieceCombatRating.ComputeBase(placed.Definition, placed.StatScale);
 
                 synergySnapshot.TryGet(placed.InstanceId, out var synergy);
                 criticalMassSnapshot.ModifiersByInstanceId.TryGetValue(
                     placed.InstanceId, out var criticalMass);
 
-                effectiveTotal += PieceCombatRating.Compute(placed.Definition, synergy, criticalMass);
+                effectiveTotal += PieceCombatRating.Compute(
+                    placed.Definition, synergy, criticalMass, placed.StatScale);
             }
 
             return new ArmyStrengthSnapshot
